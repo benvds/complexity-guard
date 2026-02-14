@@ -104,9 +104,11 @@ Plans:
   4. Tool outputs valid JSON with version, timestamp, summary, files, and metrics
   5. Tool exits with appropriate codes (0=pass, 1=errors, 2=warnings, 3=config errors, 4=parse errors)
   6. Output layer handles optional (`null`) metrics gracefully — metrics not yet computed display as `--` or are omitted
-**Plans**: TBD
+**Plans:** 2 plans
 
-Plans: (to be created during /gsd:plan-phase)
+Plans:
+- [ ] 05-01-PLAN.md -- Console output formatter (ESLint-style) and exit code logic
+- [ ] 05-02-PLAN.md -- JSON output format and main.zig pipeline integration
 
 ### Phase 6: Cognitive Complexity
 **Goal**: Tool calculates SonarSource cognitive complexity with nesting penalties
@@ -213,7 +215,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 2. CLI & Configuration | 5/5 | ✓ Complete | 2026-02-14 |
 | 3. File Discovery & Parsing | 3/3 | ✓ Complete | 2026-02-14 |
 | 4. Cyclomatic Complexity | 2/2 | ✓ Complete | 2026-02-14 |
-| 5. Console & JSON Output | 0/TBD | Not started | - |
+| 5. Console & JSON Output | 0/2 | Not started | - |
 | 6. Cognitive Complexity | 0/TBD | Not started | - |
 | 7. Halstead & Structural Metrics | 0/TBD | Not started | - |
 | 8. Composite Health Score | 0/TBD | Not started | - |
