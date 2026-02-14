@@ -182,4 +182,5 @@ test {
     _ = @import("discovery/walker.zig");
     _ = @import("parser/tree_sitter.zig");
     _ = @import("parser/parse.zig");
+    _ = @import("metrics/cyclomatic.zig");
 }
