@@ -1,4 +1,6 @@
 const std = @import("std");
+const discovery = @import("discovery.zig");
+const toml = @import("toml");
 
 /// Top-level configuration structure matching locked schema.
 /// All fields are optional to support partial configs and defaults.
@@ -98,6 +100,226 @@ pub fn defaults() Config {
     };
 }
 
+/// Load configuration from a file (JSON or TOML).
+/// Returns a Config that shares memory with the parser's arena.
+/// Caller should NOT free individual fields - they will be freed when the arena is cleaned up.
+/// For now, we just return the parsed value directly.
+/// In production, we'd either:
+/// 1. Keep the arena alive and pass it back, or
+/// 2. Deep copy all strings into a new allocation
+/// For this phase, we'll use approach #2 to avoid leaks.
+pub fn loadConfig(allocator: std.mem.Allocator, path: []const u8, format: discovery.ConfigFormat) !Config {
+    // Read file contents (max 1MB)
+    const file_contents = try std.fs.cwd().readFileAlloc(allocator, path, 1024 * 1024);
+    defer allocator.free(file_contents);
+
+    switch (format) {
+        .json => {
+            const parsed = try std.json.parseFromSlice(
+                Config,
+                allocator,
+                file_contents,
+                .{ .allocate = .alloc_always, .ignore_unknown_fields = true },
+            );
+            defer parsed.deinit();
+
+            // Deep copy the config so we can free the parser's arena
+            return try deepCopyConfig(allocator, parsed.value);
+        },
+        .toml => {
+            var parser = toml.Parser(Config).init(allocator);
+            defer parser.deinit();
+
+            const parsed = try parser.parseString(file_contents);
+            defer parsed.deinit();
+
+            // Deep copy the config so we can free the parser's arena
+            return try deepCopyConfig(allocator, parsed.value);
+        },
+    }
+}
+
+/// Free a Config struct and all its allocated memory.
+pub fn freeConfig(allocator: std.mem.Allocator, config: Config) void {
+    // Free output config strings
+    if (config.output) |output| {
+        if (output.format) |f| allocator.free(f);
+        if (output.file) |f| allocator.free(f);
+    }
+
+    // Free analysis config strings
+    if (config.analysis) |analysis| {
+        if (analysis.metrics) |metrics| {
+            for (metrics) |metric| {
+                allocator.free(metric);
+            }
+            allocator.free(metrics);
+        }
+    }
+
+    // Free files config strings
+    if (config.files) |files| {
+        if (files.include) |include| {
+            for (include) |pattern| {
+                allocator.free(pattern);
+            }
+            allocator.free(include);
+        }
+        if (files.exclude) |exclude| {
+            for (exclude) |pattern| {
+                allocator.free(pattern);
+            }
+            allocator.free(exclude);
+        }
+    }
+
+    // Overrides not implemented yet
+}
+
+/// Deep copy a Config struct, duplicating all string slices.
+fn deepCopyConfig(allocator: std.mem.Allocator, config: Config) !Config {
+    var result = Config{};
+
+    // Copy output config
+    if (config.output) |output| {
+        result.output = OutputConfig{
+            .format = if (output.format) |f| try allocator.dupe(u8, f) else null,
+            .file = if (output.file) |f| try allocator.dupe(u8, f) else null,
+        };
+    }
+
+    // Copy analysis config
+    if (config.analysis) |analysis| {
+        var metrics_copy: ?[]const []const u8 = null;
+        if (analysis.metrics) |metrics| {
+            var metrics_list = std.ArrayList([]const u8).empty;
+            for (metrics) |metric| {
+                try metrics_list.append(allocator, try allocator.dupe(u8, metric));
+            }
+            metrics_copy = try metrics_list.toOwnedSlice(allocator);
+        }
+
+        result.analysis = AnalysisConfig{
+            .metrics = metrics_copy,
+            .thresholds = analysis.thresholds, // ThresholdPair contains only integers, no strings
+            .no_duplication = analysis.no_duplication,
+            .threads = analysis.threads,
+        };
+    }
+
+    // Copy files config
+    if (config.files) |files| {
+        var include_copy: ?[]const []const u8 = null;
+        if (files.include) |include| {
+            var include_list = std.ArrayList([]const u8).empty;
+            for (include) |pattern| {
+                try include_list.append(allocator, try allocator.dupe(u8, pattern));
+            }
+            include_copy = try include_list.toOwnedSlice(allocator);
+        }
+
+        var exclude_copy: ?[]const []const u8 = null;
+        if (files.exclude) |exclude| {
+            var exclude_list = std.ArrayList([]const u8).empty;
+            for (exclude) |pattern| {
+                try exclude_list.append(allocator, try allocator.dupe(u8, pattern));
+            }
+            exclude_copy = try exclude_list.toOwnedSlice(allocator);
+        }
+
+        result.files = FilesConfig{
+            .include = include_copy,
+            .exclude = exclude_copy,
+        };
+    }
+
+    // Copy weights config (no strings, just floats)
+    result.weights = config.weights;
+
+    // Copy overrides (complex, skip for now - not tested in this phase)
+    result.overrides = null;
+
+    return result;
+}
+
+/// Validation errors.
+pub const ValidationError = error{
+    InvalidFormat,
+    InvalidWeights,
+    InvalidThresholds,
+    InvalidThreads,
+};
+
+/// Validate a configuration.
+pub fn validate(config: Config) ValidationError!void {
+    // Validate output format
+    if (config.output) |output| {
+        if (output.format) |format| {
+            const valid_formats = [_][]const u8{ "console", "json", "sarif", "html" };
+            var format_valid = false;
+            for (valid_formats) |valid_format| {
+                if (std.mem.eql(u8, format, valid_format)) {
+                    format_valid = true;
+                    break;
+                }
+            }
+            if (!format_valid) {
+                return ValidationError.InvalidFormat;
+            }
+        }
+    }
+
+    // Validate weights (all must be 0.0-1.0)
+    if (config.weights) |weights| {
+        if (weights.cyclomatic) |w| {
+            if (w < 0.0 or w > 1.0) return ValidationError.InvalidWeights;
+        }
+        if (weights.cognitive) |w| {
+            if (w < 0.0 or w > 1.0) return ValidationError.InvalidWeights;
+        }
+        if (weights.duplication) |w| {
+            if (w < 0.0 or w > 1.0) return ValidationError.InvalidWeights;
+        }
+        if (weights.halstead) |w| {
+            if (w < 0.0 or w > 1.0) return ValidationError.InvalidWeights;
+        }
+        if (weights.structural) |w| {
+            if (w < 0.0 or w > 1.0) return ValidationError.InvalidWeights;
+        }
+    }
+
+    // Validate thresholds (warning <= error)
+    if (config.analysis) |analysis| {
+        if (analysis.thresholds) |thresholds| {
+            try validateThresholdPair(thresholds.cyclomatic);
+            try validateThresholdPair(thresholds.cognitive);
+            try validateThresholdPair(thresholds.halstead_volume);
+            try validateThresholdPair(thresholds.halstead_difficulty);
+            try validateThresholdPair(thresholds.nesting_depth);
+            try validateThresholdPair(thresholds.line_count);
+            try validateThresholdPair(thresholds.params_count);
+        }
+
+        // Validate thread count
+        if (analysis.threads) |threads| {
+            if (threads < 1) {
+                return ValidationError.InvalidThreads;
+            }
+        }
+    }
+}
+
+/// Validate a single threshold pair (warning <= error).
+fn validateThresholdPair(pair: ?ThresholdPair) ValidationError!void {
+    if (pair) |p| {
+        if (p.warning != null and p.@"error" != null) {
+            if (p.warning.? > p.@"error".?) {
+                return ValidationError.InvalidThresholds;
+            }
+        }
+    }
+}
+
 // TESTS
 
 test "Config can be created with all null fields" {
@@ -169,4 +391,197 @@ test "Config struct is JSON serializable and parseable" {
     try std.testing.expect(parsed.value.analysis != null);
     try std.testing.expectEqual(@as(?bool, true), parsed.value.analysis.?.no_duplication);
     try std.testing.expectEqual(@as(?u32, 4), parsed.value.analysis.?.threads);
+}
+
+test "loadConfig with valid JSON" {
+    const allocator = std.testing.allocator;
+
+    // Create temp file
+    var tmp_dir = std.testing.tmpDir(.{});
+    defer tmp_dir.cleanup();
+
+    const json_content =
+        \\{
+        \\  "output": {
+        \\    "format": "json"
+        \\  },
+        \\  "analysis": {
+        \\    "threads": 8
+        \\  }
+        \\}
+    ;
+
+    try tmp_dir.dir.writeFile(.{ .sub_path = "config.json", .data = json_content });
+
+    const tmp_path = try tmp_dir.dir.realpathAlloc(allocator, ".");
+    defer allocator.free(tmp_path);
+    const config_path = try std.fs.path.join(allocator, &.{ tmp_path, "config.json" });
+    defer allocator.free(config_path);
+
+    // Load config
+    const config = try loadConfig(allocator, config_path, .json);
+    defer freeConfig(allocator, config);
+
+    // Verify fields
+    try std.testing.expect(config.output != null);
+    try std.testing.expectEqualStrings("json", config.output.?.format.?);
+    try std.testing.expect(config.analysis != null);
+    try std.testing.expectEqual(@as(?u32, 8), config.analysis.?.threads);
+}
+
+test "loadConfig with valid TOML" {
+    const allocator = std.testing.allocator;
+
+    // Create temp file
+    var tmp_dir = std.testing.tmpDir(.{});
+    defer tmp_dir.cleanup();
+
+    const toml_content =
+        \\[output]
+        \\format = "console"
+        \\
+        \\[analysis]
+        \\threads = 4
+    ;
+
+    try tmp_dir.dir.writeFile(.{ .sub_path = "config.toml", .data = toml_content });
+
+    const tmp_path = try tmp_dir.dir.realpathAlloc(allocator, ".");
+    defer allocator.free(tmp_path);
+    const config_path = try std.fs.path.join(allocator, &.{ tmp_path, "config.toml" });
+    defer allocator.free(config_path);
+
+    // Load config
+    const config = try loadConfig(allocator, config_path, .toml);
+    defer freeConfig(allocator, config);
+
+    // Verify fields
+    try std.testing.expect(config.output != null);
+    try std.testing.expectEqualStrings("console", config.output.?.format.?);
+    try std.testing.expect(config.analysis != null);
+    try std.testing.expectEqual(@as(?u32, 4), config.analysis.?.threads);
+}
+
+test "JSON and TOML produce identical Config" {
+    const allocator = std.testing.allocator;
+
+    var tmp_dir = std.testing.tmpDir(.{});
+    defer tmp_dir.cleanup();
+
+    const json_content =
+        \\{
+        \\  "output": {
+        \\    "format": "json"
+        \\  }
+        \\}
+    ;
+
+    const toml_content =
+        \\[output]
+        \\format = "json"
+    ;
+
+    try tmp_dir.dir.writeFile(.{ .sub_path = "config.json", .data = json_content });
+    try tmp_dir.dir.writeFile(.{ .sub_path = "config.toml", .data = toml_content });
+
+    const tmp_path = try tmp_dir.dir.realpathAlloc(allocator, ".");
+    defer allocator.free(tmp_path);
+
+    const json_path = try std.fs.path.join(allocator, &.{ tmp_path, "config.json" });
+    defer allocator.free(json_path);
+    const toml_path = try std.fs.path.join(allocator, &.{ tmp_path, "config.toml" });
+    defer allocator.free(toml_path);
+
+    const json_config = try loadConfig(allocator, json_path, .json);
+    defer freeConfig(allocator, json_config);
+    const toml_config = try loadConfig(allocator, toml_path, .toml);
+    defer freeConfig(allocator, toml_config);
+
+    // Verify both have same output format
+    try std.testing.expect(json_config.output != null);
+    try std.testing.expect(toml_config.output != null);
+    try std.testing.expectEqualStrings(json_config.output.?.format.?, toml_config.output.?.format.?);
+}
+
+test "validate passes for default config" {
+    const config = defaults();
+    try validate(config);
+}
+
+test "validate rejects invalid format" {
+    const config = Config{
+        .output = OutputConfig{
+            .format = "xml", // invalid
+            .file = null,
+        },
+        .analysis = null,
+        .files = null,
+        .weights = null,
+        .overrides = null,
+    };
+
+    try std.testing.expectError(ValidationError.InvalidFormat, validate(config));
+}
+
+test "validate rejects negative weights" {
+    const config = Config{
+        .output = null,
+        .analysis = null,
+        .files = null,
+        .weights = WeightsConfig{
+            .cognitive = -0.5, // invalid
+            .cyclomatic = null,
+            .duplication = null,
+            .halstead = null,
+            .structural = null,
+        },
+        .overrides = null,
+    };
+
+    try std.testing.expectError(ValidationError.InvalidWeights, validate(config));
+}
+
+test "validate rejects warning > error threshold" {
+    const config = Config{
+        .output = null,
+        .analysis = AnalysisConfig{
+            .metrics = null,
+            .thresholds = ThresholdsConfig{
+                .cyclomatic = ThresholdPair{
+                    .warning = 20,
+                    .@"error" = 10, // warning > error is invalid
+                },
+                .cognitive = null,
+                .halstead_volume = null,
+                .halstead_difficulty = null,
+                .nesting_depth = null,
+                .line_count = null,
+                .params_count = null,
+            },
+            .no_duplication = null,
+            .threads = null,
+        },
+        .files = null,
+        .weights = null,
+        .overrides = null,
+    };
+
+    try std.testing.expectError(ValidationError.InvalidThresholds, validate(config));
+}
+
+test "validate rejects zero threads" {
+    const config = Config{
+        .output = null,
+        .analysis = AnalysisConfig{
+            .metrics = null,
+            .thresholds = null,
+            .no_duplication = null,
+            .threads = 0, // invalid
+        },
+        .files = null,
+        .weights = null,
+        .overrides = null,
+    };
+
+    try std.testing.expectError(ValidationError.InvalidThreads, validate(config));
 }
