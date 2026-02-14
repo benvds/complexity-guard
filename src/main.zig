@@ -34,4 +34,5 @@ test {
     _ = @import("cli/args.zig");
     _ = @import("cli/help.zig");
     _ = @import("cli/errors.zig");
+    _ = @import("cli/discovery.zig");
 }
