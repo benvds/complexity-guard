@@ -5,6 +5,20 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
+    // Get dependencies
+    const clap_dep = b.dependency("clap", .{
+        .target = target,
+        .optimize = optimize,
+    });
+    const toml_dep = b.dependency("toml", .{
+        .target = target,
+        .optimize = optimize,
+    });
+    const known_folders_dep = b.dependency("known_folders", .{
+        .target = target,
+        .optimize = optimize,
+    });
+
     // Define executable
     const exe = b.addExecutable(.{
         .name = "complexity-guard",
@@ -14,6 +28,11 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
         }),
     });
+
+    // Add dependencies to executable
+    exe.root_module.addImport("clap", clap_dep.module("clap"));
+    exe.root_module.addImport("toml", toml_dep.module("toml"));
+    exe.root_module.addImport("known-folders", known_folders_dep.module("known-folders"));
 
     // Install artifact
     b.installArtifact(exe);
@@ -37,6 +56,11 @@ pub fn build(b: *std.Build) void {
             .target = target,
         }),
     });
+
+    // Add dependencies to test module
+    unit_tests.root_module.addImport("clap", clap_dep.module("clap"));
+    unit_tests.root_module.addImport("toml", toml_dep.module("toml"));
+    unit_tests.root_module.addImport("known-folders", known_folders_dep.module("known-folders"));
 
     const run_unit_tests = b.addRunArtifact(unit_tests);
     const test_step = b.step("test", "Run unit tests");
