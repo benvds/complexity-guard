@@ -6,6 +6,9 @@ const help = @import("cli/help.zig");
 const errors = @import("cli/errors.zig");
 const merge = @import("cli/merge.zig");
 const init = @import("cli/init.zig");
+const walker = @import("discovery/walker.zig");
+const filter = @import("discovery/filter.zig");
+const parse = @import("parser/parse.zig");
 
 const version = "0.1.0";
 
@@ -90,13 +93,71 @@ pub fn main() !void {
     else
         &[_][]const u8{"."};
 
-    // Print summary of what would be analyzed (placeholder for Phase 3)
-    try stdout.writeAll("Analyzing ");
-    for (analysis_paths, 0..) |path, i| {
-        if (i > 0) try stdout.writeAll(", ");
-        try stdout.writeAll(path);
+    // Create filter config from config files section
+    const filter_config = if (cfg.files) |files|
+        filter.FilterConfig{
+            .include_patterns = files.include,
+            .exclude_patterns = files.exclude,
+        }
+    else
+        filter.FilterConfig{};
+
+    // Discover files
+    var discovery_result = walker.discoverFiles(
+        arena_allocator,
+        analysis_paths,
+        filter_config,
+    ) catch |err| {
+        try stderr.print("error: file discovery failed: {s}\n", .{@errorName(err)});
+        std.process.exit(1);
+    };
+    defer discovery_result.deinit(arena_allocator);
+
+    // Parse discovered files
+    var parse_summary = parse.parseFiles(
+        arena_allocator,
+        discovery_result.files,
+    ) catch |err| {
+        try stderr.print("error: parsing failed: {s}\n", .{@errorName(err)});
+        std.process.exit(1);
+    };
+    defer parse_summary.deinit(arena_allocator);
+
+    // Print summary
+    try stdout.print("Discovered {d} files, parsed {d} successfully", .{
+        discovery_result.files.len,
+        parse_summary.successful_parses,
+    });
+
+    if (parse_summary.files_with_errors > 0) {
+        try stdout.print(", {d} with errors", .{parse_summary.files_with_errors});
     }
-    try stdout.writeAll("... (analysis not yet implemented)\n");
+
+    if (parse_summary.failed_parses > 0) {
+        try stdout.print(", {d} failed", .{parse_summary.failed_parses});
+    }
+
+    try stdout.writeAll("\n");
+
+    // Print detailed results if verbose
+    if (cli_args.verbose) {
+        try stdout.writeAll("\nParsed files:\n");
+        for (parse_summary.results) |result| {
+            const status = if (result.has_errors) " (has errors)" else "";
+            try stdout.print("  {s} [{s}]{s}\n", .{
+                result.path,
+                @tagName(result.language),
+                status,
+            });
+        }
+
+        if (parse_summary.errors.len > 0) {
+            try stdout.writeAll("\nFailed files:\n");
+            for (parse_summary.errors) |err| {
+                try stdout.print("  {s}: {s}\n", .{ err.path, err.message });
+            }
+        }
+    }
 }
 
 // Test that version constant exists and is valid
@@ -120,4 +181,5 @@ test {
     _ = @import("discovery/filter.zig");
     _ = @import("discovery/walker.zig");
     _ = @import("parser/tree_sitter.zig");
+    _ = @import("parser/parse.zig");
 }

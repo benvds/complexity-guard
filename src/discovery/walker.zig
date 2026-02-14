@@ -180,11 +180,13 @@ test "discoverFiles: TypeScript directory" {
     var result = try discoverFiles(allocator, &[_][]const u8{"tests/fixtures/typescript"}, config);
     defer result.deinit(allocator);
 
-    try std.testing.expectEqual(@as(usize, 4), result.files.len);
+    // 4 .ts files + 1 .tsx file + 1 syntax_error.ts = 6 files
+    try std.testing.expectEqual(@as(usize, 6), result.files.len);
 
-    // Verify all files are .ts files
+    // Verify all files are .ts or .tsx files
     for (result.files) |path| {
-        try std.testing.expect(std.mem.endsWith(u8, path, ".ts"));
+        const is_ts = std.mem.endsWith(u8, path, ".ts") or std.mem.endsWith(u8, path, ".tsx");
+        try std.testing.expect(is_ts);
         try std.testing.expect(!std.mem.endsWith(u8, path, ".d.ts"));
     }
 }
@@ -196,11 +198,13 @@ test "discoverFiles: JavaScript directory" {
     var result = try discoverFiles(allocator, &[_][]const u8{"tests/fixtures/javascript"}, config);
     defer result.deinit(allocator);
 
-    try std.testing.expectEqual(@as(usize, 2), result.files.len);
+    // 2 .js files + 1 .jsx file = 3 files
+    try std.testing.expectEqual(@as(usize, 3), result.files.len);
 
-    // Verify all files are .js files
+    // Verify all files are .js or .jsx files
     for (result.files) |path| {
-        try std.testing.expect(std.mem.endsWith(u8, path, ".js"));
+        const is_js = std.mem.endsWith(u8, path, ".js") or std.mem.endsWith(u8, path, ".jsx");
+        try std.testing.expect(is_js);
     }
 }
 
@@ -211,8 +215,8 @@ test "discoverFiles: all fixtures" {
     var result = try discoverFiles(allocator, &[_][]const u8{"tests/fixtures"}, config);
     defer result.deinit(allocator);
 
-    // Should find 4 .ts + 2 .js = 6 files
-    try std.testing.expectEqual(@as(usize, 6), result.files.len);
+    // Should find 5 .ts + 1 .tsx + 2 .js + 1 .jsx = 9 files
+    try std.testing.expectEqual(@as(usize, 9), result.files.len);
 }
 
 test "discoverFiles: single file path" {
@@ -256,8 +260,8 @@ test "discoverFiles: exclude pattern" {
     var result = try discoverFiles(allocator, &[_][]const u8{"tests/fixtures/typescript"}, config);
     defer result.deinit(allocator);
 
-    // Should find 3 files (4 total - 1 excluded)
-    try std.testing.expectEqual(@as(usize, 3), result.files.len);
+    // Should find 5 files (6 total - 1 excluded)
+    try std.testing.expectEqual(@as(usize, 5), result.files.len);
 
     // Verify simple_function.ts is not in results
     for (result.files) |path| {
