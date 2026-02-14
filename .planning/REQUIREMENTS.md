@@ -184,13 +184,115 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (Updated by roadmapper) | | |
+| CLI-01 | Phase 2 | Pending |
+| CLI-02 | Phase 2 | Pending |
+| CLI-03 | Phase 2 | Pending |
+| CLI-04 | Phase 2 | Pending |
+| CLI-05 | Phase 2 | Pending |
+| CLI-06 | Phase 2 | Pending |
+| CLI-07 | Phase 2 | Pending |
+| CLI-08 | Phase 2 | Pending |
+| CLI-09 | Phase 2 | Pending |
+| CLI-10 | Phase 2 | Pending |
+| CLI-11 | Phase 2 | Pending |
+| CLI-12 | Phase 2 | Pending |
+| CFG-01 | Phase 2 | Pending |
+| CFG-02 | Phase 2 | Pending |
+| CFG-03 | Phase 2 | Pending |
+| CFG-04 | Phase 2 | Pending |
+| CFG-05 | Phase 2 | Pending |
+| CFG-06 | Phase 2 | Pending |
+| CFG-07 | Phase 2 | Pending |
+| PARSE-01 | Phase 3 | Pending |
+| PARSE-02 | Phase 3 | Pending |
+| PARSE-03 | Phase 3 | Pending |
+| PARSE-04 | Phase 3 | Pending |
+| PARSE-05 | Phase 3 | Pending |
+| PARSE-06 | Phase 3 | Pending |
+| CYCL-01 | Phase 4 | Pending |
+| CYCL-02 | Phase 4 | Pending |
+| CYCL-03 | Phase 4 | Pending |
+| CYCL-04 | Phase 4 | Pending |
+| CYCL-05 | Phase 4 | Pending |
+| CYCL-06 | Phase 4 | Pending |
+| CYCL-07 | Phase 4 | Pending |
+| CYCL-08 | Phase 4 | Pending |
+| CYCL-09 | Phase 4 | Pending |
+| COGN-01 | Phase 5 | Pending |
+| COGN-02 | Phase 5 | Pending |
+| COGN-03 | Phase 5 | Pending |
+| COGN-04 | Phase 5 | Pending |
+| COGN-05 | Phase 5 | Pending |
+| COGN-06 | Phase 5 | Pending |
+| COGN-07 | Phase 5 | Pending |
+| COGN-08 | Phase 5 | Pending |
+| COGN-09 | Phase 5 | Pending |
+| HALT-01 | Phase 6 | Pending |
+| HALT-02 | Phase 6 | Pending |
+| HALT-03 | Phase 6 | Pending |
+| HALT-04 | Phase 6 | Pending |
+| HALT-05 | Phase 6 | Pending |
+| STRC-01 | Phase 6 | Pending |
+| STRC-02 | Phase 6 | Pending |
+| STRC-03 | Phase 6 | Pending |
+| STRC-04 | Phase 6 | Pending |
+| STRC-05 | Phase 6 | Pending |
+| STRC-06 | Phase 6 | Pending |
+| COMP-01 | Phase 7 | Pending |
+| COMP-02 | Phase 7 | Pending |
+| COMP-03 | Phase 7 | Pending |
+| COMP-04 | Phase 7 | Pending |
+| OUT-CON-01 | Phase 8 | Pending |
+| OUT-CON-02 | Phase 8 | Pending |
+| OUT-CON-03 | Phase 8 | Pending |
+| OUT-CON-04 | Phase 8 | Pending |
+| OUT-JSON-01 | Phase 8 | Pending |
+| OUT-JSON-02 | Phase 8 | Pending |
+| OUT-JSON-03 | Phase 8 | Pending |
+| CI-01 | Phase 8 | Pending |
+| CI-02 | Phase 8 | Pending |
+| CI-03 | Phase 8 | Pending |
+| CI-04 | Phase 8 | Pending |
+| CI-05 | Phase 8 | Pending |
+| OUT-SARIF-01 | Phase 9 | Pending |
+| OUT-SARIF-02 | Phase 9 | Pending |
+| OUT-SARIF-03 | Phase 9 | Pending |
+| OUT-SARIF-04 | Phase 9 | Pending |
+| OUT-HTML-01 | Phase 10 | Pending |
+| OUT-HTML-02 | Phase 10 | Pending |
+| OUT-HTML-03 | Phase 10 | Pending |
+| OUT-HTML-04 | Phase 10 | Pending |
+| DUP-01 | Phase 11 | Pending |
+| DUP-02 | Phase 11 | Pending |
+| DUP-03 | Phase 11 | Pending |
+| DUP-04 | Phase 11 | Pending |
+| DUP-05 | Phase 11 | Pending |
+| DUP-06 | Phase 11 | Pending |
+| DUP-07 | Phase 11 | Pending |
+| PERF-01 | Phase 12 | Pending |
+| PERF-02 | Phase 12 | Pending |
+| DIST-01 | Phase 12 | Pending |
+| DIST-02 | Phase 12 | Pending |
 
 **Coverage:**
 - v1 requirements: 72 total
-- Mapped to phases: 0
-- Unmapped: 72
+- Mapped to phases: 72
+- Unmapped: 0
+
+**Phase requirement counts:**
+- Phase 1: 0 requirements (foundational infrastructure)
+- Phase 2: 19 requirements (CLI + Config)
+- Phase 3: 6 requirements (Parsing)
+- Phase 4: 9 requirements (Cyclomatic)
+- Phase 5: 9 requirements (Cognitive)
+- Phase 6: 11 requirements (Halstead + Structural)
+- Phase 7: 4 requirements (Composite)
+- Phase 8: 12 requirements (Console + JSON + CI)
+- Phase 9: 4 requirements (SARIF)
+- Phase 10: 4 requirements (HTML)
+- Phase 11: 7 requirements (Duplication)
+- Phase 12: 4 requirements (Performance + Distribution)
 
 ---
 *Requirements defined: 2026-02-14*
-*Last updated: 2026-02-14 after initial definition*
+*Last updated: 2026-02-14 after roadmap creation*
