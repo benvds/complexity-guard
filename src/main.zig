@@ -25,8 +25,7 @@ test "version format" {
     try std.testing.expect(std.mem.startsWith(u8, version, "0."));
 }
 
-// Placeholder for future module imports
-// TODO: @import("core/types.zig")
-// TODO: @import("core/file_result.zig")
-// TODO: @import("core/function_result.zig")
-// TODO: @import("core/project_result.zig")
+// Import core modules to ensure their tests are discovered
+test {
+    _ = @import("core/types.zig");
+}
