@@ -13,7 +13,7 @@ ComplexityGuard delivers fast, accurate complexity analysis for TypeScript/JavaS
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Project Foundation** - Build system, test infrastructure, core data structures ✓ 2026-02-14
-- [ ] **Phase 2: CLI & Configuration** - Argument parsing, config file loading, flag handling
+- [x] **Phase 2: CLI & Configuration** - Argument parsing, config file loading, flag handling ✓ 2026-02-14
 - [ ] **Phase 3: File Discovery & Parsing** - Tree-sitter integration, recursive file scanning, error handling
 - [ ] **Phase 4: Cyclomatic Complexity** - McCabe metric with threshold validation (vertical slice)
 - [ ] **Phase 5: Cognitive Complexity** - SonarSource metric with nesting tracking
@@ -55,11 +55,11 @@ Plans:
 **Plans:** 5 plans
 
 Plans:
-- [ ] 02-01-PLAN.md -- Dependencies, config types, and CLI argument parsing with zig-clap
-- [ ] 02-02-PLAN.md -- Config discovery (upward search, XDG) and loading (JSON + TOML) with validation
-- [ ] 02-03-PLAN.md -- Help output, version display, Levenshtein did-you-mean, color detection
-- [ ] 02-04-PLAN.md -- Merge logic (flags override config), --init command, main.zig integration
-- [ ] 02-05-PLAN.md -- End-to-end integration testing and human verification
+- [x] 02-01-PLAN.md -- Dependencies, config types, and CLI argument parsing with zig-clap
+- [x] 02-02-PLAN.md -- Config discovery (upward search, XDG) and loading (JSON + TOML) with validation
+- [x] 02-03-PLAN.md -- Help output, version display, Levenshtein did-you-mean, color detection
+- [x] 02-04-PLAN.md -- Merge logic (flags override config), --init command, main.zig integration
+- [x] 02-05-PLAN.md -- End-to-end integration testing and human verification
 
 ### Phase 3: File Discovery & Parsing
 **Goal**: Tool discovers TypeScript/JavaScript files and parses them into ASTs via tree-sitter
@@ -204,7 +204,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Project Foundation | 3/3 | ✓ Complete | 2026-02-14 |
-| 2. CLI & Configuration | 0/5 | Planned | - |
+| 2. CLI & Configuration | 5/5 | ✓ Complete | 2026-02-14 |
 | 3. File Discovery & Parsing | 0/TBD | Not started | - |
 | 4. Cyclomatic Complexity | 0/TBD | Not started | - |
 | 5. Cognitive Complexity | 0/TBD | Not started | - |
