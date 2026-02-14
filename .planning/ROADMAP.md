@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Project Foundation** - Build system, test infrastructure, core data structures ✓ 2026-02-14
 - [x] **Phase 2: CLI & Configuration** - Argument parsing, config file loading, flag handling ✓ 2026-02-14
-- [ ] **Phase 3: File Discovery & Parsing** - Tree-sitter integration, recursive file scanning, error handling
+- [x] **Phase 3: File Discovery & Parsing** - Tree-sitter integration, recursive file scanning, error handling ✓ 2026-02-14
 - [ ] **Phase 4: Cyclomatic Complexity** - McCabe metric with threshold validation (vertical slice)
 - [ ] **Phase 5: Cognitive Complexity** - SonarSource metric with nesting tracking
 - [ ] **Phase 6: Halstead & Structural Metrics** - Information theory and structural metrics
@@ -74,9 +74,9 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 03-01-PLAN.md -- Vendor tree-sitter C libraries and create Zig bindings
-- [ ] 03-02-PLAN.md -- Recursive file discovery with extension filtering
-- [ ] 03-03-PLAN.md -- Parse orchestration, error handling, and main.zig integration
+- [x] 03-01-PLAN.md -- Vendor tree-sitter C libraries and create Zig bindings
+- [x] 03-02-PLAN.md -- Recursive file discovery with extension filtering
+- [x] 03-03-PLAN.md -- Parse orchestration, error handling, and main.zig integration
 
 ### Phase 4: Cyclomatic Complexity
 **Goal**: Tool calculates McCabe cyclomatic complexity per function and validates against thresholds
@@ -208,7 +208,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 |-------|----------------|--------|-----------|
 | 1. Project Foundation | 3/3 | ✓ Complete | 2026-02-14 |
 | 2. CLI & Configuration | 5/5 | ✓ Complete | 2026-02-14 |
-| 3. File Discovery & Parsing | 0/3 | In Progress | - |
+| 3. File Discovery & Parsing | 3/3 | ✓ Complete | 2026-02-14 |
 | 4. Cyclomatic Complexity | 0/TBD | Not started | - |
 | 5. Cognitive Complexity | 0/TBD | Not started | - |
 | 6. Halstead & Structural Metrics | 0/TBD | Not started | - |
