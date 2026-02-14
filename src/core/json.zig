@@ -15,6 +15,8 @@ pub fn serializeResultPretty(allocator: std.mem.Allocator, value: anytype) ![]u8
 }
 
 // TESTS
+// Note: Test helpers for creating sample results will be extracted to a
+// dedicated test_helpers module in Plan 03, establishing reusable fixtures.
 
 test "FunctionResult serializes to JSON with expected keys" {
     const func = types.FunctionResult{

@@ -29,4 +29,5 @@ test "version format" {
 test {
     _ = @import("core/types.zig");
     _ = @import("core/json.zig");
+    _ = @import("test_helpers.zig");
 }
