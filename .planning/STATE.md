@@ -85,7 +85,7 @@ Recent decisions affecting current work:
 - [Phase 04-cyclomatic-complexity]: ThresholdStatus uses @"error" syntax since error is Zig keyword
 - [Phase 04-cyclomatic-complexity]: analyzeFile returns empty slice for null trees instead of erroring
 - [Phase 04-cyclomatic-complexity]: toFunctionResults sets structural fields to 0 (populated in future phases)
-- [Phase 04-cyclomatic-complexity]: Double-analysis in main.zig acceptable for now - Phase 8 will restructure pipeline
+- [Phase 04-cyclomatic-complexity]: Double-analysis in main.zig acceptable for now - Phase 5 will restructure pipeline
 
 ### Pending Todos
 
@@ -101,7 +101,7 @@ None yet.
 **Phase 3 considerations:**
 - Tree-sitter memory management at Zig/C boundary requires careful cleanup patterns (use defer for ts_tree_delete)
 
-**Phase 5 considerations:**
+**Phase 6 considerations:**
 - Cognitive complexity arrow function nesting is controversial in SonarSource spec — may need configuration flag
 
 **Phase 11 considerations:**

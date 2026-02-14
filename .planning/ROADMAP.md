@@ -16,10 +16,10 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: CLI & Configuration** - Argument parsing, config file loading, flag handling ✓ 2026-02-14
 - [x] **Phase 3: File Discovery & Parsing** - Tree-sitter integration, recursive file scanning, error handling ✓ 2026-02-14
 - [x] **Phase 4: Cyclomatic Complexity** - McCabe metric with threshold validation (vertical slice) ✓ 2026-02-14
-- [ ] **Phase 5: Cognitive Complexity** - SonarSource metric with nesting tracking
-- [ ] **Phase 6: Halstead & Structural Metrics** - Information theory and structural metrics
-- [ ] **Phase 7: Composite Health Score** - Weighted scoring and letter grade assignment
-- [ ] **Phase 8: Console & JSON Output** - Primary developer and CI output formats
+- [ ] **Phase 5: Console & JSON Output** - Primary developer and CI output formats
+- [ ] **Phase 6: Cognitive Complexity** - SonarSource metric with nesting tracking
+- [ ] **Phase 7: Halstead & Structural Metrics** - Information theory and structural metrics
+- [ ] **Phase 8: Composite Health Score** - Weighted scoring and letter grade assignment
 - [ ] **Phase 9: SARIF Output** - GitHub Code Scanning integration
 - [ ] **Phase 10: HTML Reports** - Self-contained visual reports for stakeholders
 - [ ] **Phase 11: Duplication Detection** - Rabin-Karp cross-file clone analysis
@@ -93,9 +93,24 @@ Plans:
 - [x] 04-01-PLAN.md -- Cyclomatic complexity calculator with function extraction, decision point counting, and test fixtures
 - [x] 04-02-PLAN.md -- Threshold validation, FunctionResult population, and main.zig pipeline integration
 
-### Phase 5: Cognitive Complexity
-**Goal**: Tool calculates SonarSource cognitive complexity with nesting penalties
+### Phase 5: Console & JSON Output
+**Goal**: Tool displays results in terminal and outputs machine-readable JSON for CI integration
 **Depends on**: Phase 4
+**Requirements**: OUT-CON-01, OUT-CON-02, OUT-CON-03, OUT-CON-04, OUT-JSON-01, OUT-JSON-02, OUT-JSON-03, CI-01, CI-02, CI-03, CI-04, CI-05
+**Success Criteria** (what must be TRUE):
+  1. Tool displays per-file, per-function metric summaries with threshold indicators in console
+  2. Tool displays project summary (files analyzed, functions found, health score (when available), grade (when available))
+  3. Tool supports --verbose (per-function detail) and --quiet (errors only) modes
+  4. Tool outputs valid JSON with version, timestamp, summary, files, and metrics
+  5. Tool exits with appropriate codes (0=pass, 1=errors, 2=warnings, 3=config errors, 4=parse errors)
+  6. Output layer handles optional (`null`) metrics gracefully — metrics not yet computed display as `--` or are omitted
+**Plans**: TBD
+
+Plans: (to be created during /gsd:plan-phase)
+
+### Phase 6: Cognitive Complexity
+**Goal**: Tool calculates SonarSource cognitive complexity with nesting penalties
+**Depends on**: Phase 5
 **Requirements**: COGN-01, COGN-02, COGN-03, COGN-04, COGN-05, COGN-06, COGN-07, COGN-08, COGN-09
 **Success Criteria** (what must be TRUE):
   1. Tool increments for flow breaks (if, else if, switch, loops, catch, ternary) with nesting depth penalties
@@ -107,9 +122,9 @@ Plans:
 
 Plans: (to be created during /gsd:plan-phase)
 
-### Phase 6: Halstead & Structural Metrics
+### Phase 7: Halstead & Structural Metrics
 **Goal**: Tool measures information-theoretic complexity and structural properties per function
-**Depends on**: Phase 5
+**Depends on**: Phase 6
 **Requirements**: HALT-01, HALT-02, HALT-03, HALT-04, HALT-05, STRC-01, STRC-02, STRC-03, STRC-04, STRC-05, STRC-06
 **Success Criteria** (what must be TRUE):
   1. Tool classifies tokens as operators/operands and computes Halstead metrics (vocabulary, volume, difficulty, effort, estimated bugs)
@@ -120,29 +135,15 @@ Plans: (to be created during /gsd:plan-phase)
 
 Plans: (to be created during /gsd:plan-phase)
 
-### Phase 7: Composite Health Score
+### Phase 8: Composite Health Score
 **Goal**: Tool computes weighted composite health score (0-100) per file and project with letter grades
-**Depends on**: Phase 6
+**Depends on**: Phase 7
 **Requirements**: COMP-01, COMP-02, COMP-03, COMP-04
 **Success Criteria** (what must be TRUE):
   1. Tool computes weighted composite score per file using configurable weights across all metric categories
   2. Tool computes project-wide composite score aggregating all files
   3. Tool assigns letter grades (A-F) based on score thresholds
   4. Tool uses default weights (cognitive 0.30, cyclomatic 0.20, duplication 0.20, Halstead 0.15, structural 0.15) unless overridden
-**Plans**: TBD
-
-Plans: (to be created during /gsd:plan-phase)
-
-### Phase 8: Console & JSON Output
-**Goal**: Tool displays results in terminal and outputs machine-readable JSON for CI integration
-**Depends on**: Phase 7
-**Requirements**: OUT-CON-01, OUT-CON-02, OUT-CON-03, OUT-CON-04, OUT-JSON-01, OUT-JSON-02, OUT-JSON-03, CI-01, CI-02, CI-03, CI-04, CI-05
-**Success Criteria** (what must be TRUE):
-  1. Tool displays per-file, per-function metric summaries with threshold indicators in console
-  2. Tool displays project summary (files analyzed, functions found, health score, grade)
-  3. Tool supports --verbose (per-function detail) and --quiet (errors only) modes
-  4. Tool outputs valid JSON with version, timestamp, summary, files, and metrics
-  5. Tool exits with appropriate codes (0=pass, 1=errors, 2=warnings, 3=config errors, 4=parse errors)
 **Plans**: TBD
 
 Plans: (to be created during /gsd:plan-phase)
@@ -212,10 +213,10 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 2. CLI & Configuration | 5/5 | ✓ Complete | 2026-02-14 |
 | 3. File Discovery & Parsing | 3/3 | ✓ Complete | 2026-02-14 |
 | 4. Cyclomatic Complexity | 2/2 | ✓ Complete | 2026-02-14 |
-| 5. Cognitive Complexity | 0/TBD | Not started | - |
-| 6. Halstead & Structural Metrics | 0/TBD | Not started | - |
-| 7. Composite Health Score | 0/TBD | Not started | - |
-| 8. Console & JSON Output | 0/TBD | Not started | - |
+| 5. Console & JSON Output | 0/TBD | Not started | - |
+| 6. Cognitive Complexity | 0/TBD | Not started | - |
+| 7. Halstead & Structural Metrics | 0/TBD | Not started | - |
+| 8. Composite Health Score | 0/TBD | Not started | - |
 | 9. SARIF Output | 0/TBD | Not started | - |
 | 10. HTML Reports | 0/TBD | Not started | - |
 | 11. Duplication Detection | 0/TBD | Not started | - |
@@ -223,4 +224,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 ---
 *Roadmap created: 2026-02-14*
-*Last updated: 2026-02-14 (Phase 4 complete)*
+*Last updated: 2026-02-14 (Phases 5-8 reordered)*
