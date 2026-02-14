@@ -9,6 +9,7 @@ const init = @import("cli/init.zig");
 const walker = @import("discovery/walker.zig");
 const filter = @import("discovery/filter.zig");
 const parse = @import("parser/parse.zig");
+const cyclomatic = @import("metrics/cyclomatic.zig");
 
 const version = "0.1.0";
 
@@ -123,6 +124,30 @@ pub fn main() !void {
     };
     defer parse_summary.deinit(arena_allocator);
 
+    // Run cyclomatic complexity analysis
+    const cycl_config = cyclomatic.CyclomaticConfig.default();
+    var total_warnings: u32 = 0;
+    var total_errors: u32 = 0;
+    var total_functions_analyzed: u32 = 0;
+
+    for (parse_summary.results) |result| {
+        const threshold_results = try cyclomatic.analyzeFile(
+            arena_allocator,
+            result,
+            cycl_config,
+        );
+
+        total_functions_analyzed += @intCast(threshold_results.len);
+
+        for (threshold_results) |tr| {
+            switch (tr.status) {
+                .warning => total_warnings += 1,
+                .@"error" => total_errors += 1,
+                .ok => {},
+            }
+        }
+    }
+
     // Print summary
     try stdout.print("Discovered {d} files, parsed {d} successfully", .{
         discovery_result.files.len,
@@ -137,6 +162,12 @@ pub fn main() !void {
         try stdout.print(", {d} failed", .{parse_summary.failed_parses});
     }
 
+    try stdout.writeAll("\n");
+
+    try stdout.print("Analyzed {d} functions", .{total_functions_analyzed});
+    if (total_warnings > 0 or total_errors > 0) {
+        try stdout.print(": {d} warnings, {d} errors", .{ total_warnings, total_errors });
+    }
     try stdout.writeAll("\n");
 
     // Print detailed results if verbose
@@ -155,6 +186,33 @@ pub fn main() !void {
             try stdout.writeAll("\nFailed files:\n");
             for (parse_summary.errors) |err| {
                 try stdout.print("  {s}: {s}\n", .{ err.path, err.message });
+            }
+        }
+
+        // Show complexity details
+        try stdout.writeAll("\nComplexity analysis:\n");
+        for (parse_summary.results) |result| {
+            const threshold_results = try cyclomatic.analyzeFile(
+                arena_allocator,
+                result,
+                cycl_config,
+            );
+
+            if (threshold_results.len > 0) {
+                try stdout.print("  {s}:\n", .{result.path});
+                for (threshold_results) |tr| {
+                    const status_str = switch (tr.status) {
+                        .ok => "ok",
+                        .warning => "WARN",
+                        .@"error" => "ERROR",
+                    };
+                    try stdout.print("    {s} (line {d}): complexity {d} [{s}]\n", .{
+                        tr.function_name,
+                        tr.start_line,
+                        tr.complexity,
+                        status_str,
+                    });
+                }
             }
         }
     }
