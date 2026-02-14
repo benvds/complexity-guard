@@ -5,33 +5,34 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** Phase 1: Project Foundation
+**Current focus:** Phase 2: CLI & Configuration
 
 ## Current Position
 
-Phase: 1 of 12 (Project Foundation)
-Plan: 3 of 3 (Test infrastructure with helpers and fixtures complete)
-Status: Phase complete - ready for next phase
-Last activity: 2026-02-14 — Completed plan 01-03: Test infrastructure with helpers and fixtures
+Phase: 2 of 12 (CLI & Configuration)
+Plan: 2 of 5 (CLI foundation - dependencies, config types, argument parsing complete)
+Status: In progress
+Last activity: 2026-02-14 — Completed plan 02-01: CLI foundation
 
-Progress: [███░░░░░░░] 25%
+Progress: [███░░░░░░░] 33%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 5 min
-- Total execution time: 0.23 hours
+- Total plans completed: 4
+- Average duration: 6 min
+- Total execution time: 0.62 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01 | 3 | 13 min | 4 min |
+| 02 | 1 | 10 min | 10 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (3 min), 01-02 (8 min), 01-03 (2 min)
-- Trend: Accelerating (test infrastructure streamlined)
+- Last 5 plans: 01-01 (3 min), 01-02 (8 min), 01-03 (2 min), 02-01 (10 min)
+- Trend: Stable (dependency compatibility issues added time to 02-01)
 
 *Updated after each plan completion*
 
@@ -55,6 +56,9 @@ Recent decisions affecting current work:
 - Test helpers use builder pattern with defaults: Reduces test boilerplate from 13 lines to 1-3 lines (01-03)
 - Fixtures include complexity annotations: Hand-crafted synthetic examples with documented expected values for metric validation (01-03)
 - Auto-computation in test helpers: Helpers calculate derived fields (function_count, totals) from input data (01-03)
+- Hand-rolled argument parser for Zig 0.15.2: zig-clap and yazap incompatible with Zig 0.15 API changes (@Tuple/@Struct removed, ArrayList.init removed, std.Io.Threaded removed) (02-01)
+- Zig 0.15.2 ArrayList API: Use ArrayList.empty const instead of .init(), pass allocator to append() and deinit() (02-01)
+- Quoted identifier for ThresholdPair.error: Use @"error" syntax since error is Zig keyword, maintains JSON/TOML schema compatibility (02-01)
 
 ### Pending Todos
 
@@ -80,9 +84,9 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-14 (plan execution)
-Stopped at: Completed 01-03-PLAN.md - Test infrastructure with helpers and fixtures
-Resume file: .planning/phases/01-project-foundation/01-03-SUMMARY.md
+Stopped at: Completed 02-01-PLAN.md - CLI foundation with dependencies, config types, and argument parsing
+Resume file: .planning/phases/02-cli-configuration/02-01-SUMMARY.md
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-14T14:15:30Z*
+*Last updated: 2026-02-14T15:31:00Z*
