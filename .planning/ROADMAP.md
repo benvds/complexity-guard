@@ -87,9 +87,11 @@ Plans:
   2. Tool handles logical operators (&&, ||, ??), ternary operators, and optional chaining per configuration
   3. Tool applies configurable warning and error thresholds per function
   4. Tool identifies function locations (file path, line number, column number) in results
-**Plans**: TBD
+**Plans:** 2 plans
 
-Plans: (to be created during /gsd:plan-phase)
+Plans:
+- [ ] 04-01-PLAN.md -- Cyclomatic complexity calculator with function extraction, decision point counting, and test fixtures
+- [ ] 04-02-PLAN.md -- Threshold validation, FunctionResult population, and main.zig pipeline integration
 
 ### Phase 5: Cognitive Complexity
 **Goal**: Tool calculates SonarSource cognitive complexity with nesting penalties
@@ -209,7 +211,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 1. Project Foundation | 3/3 | ✓ Complete | 2026-02-14 |
 | 2. CLI & Configuration | 5/5 | ✓ Complete | 2026-02-14 |
 | 3. File Discovery & Parsing | 3/3 | ✓ Complete | 2026-02-14 |
-| 4. Cyclomatic Complexity | 0/TBD | Not started | - |
+| 4. Cyclomatic Complexity | 0/2 | Not started | - |
 | 5. Cognitive Complexity | 0/TBD | Not started | - |
 | 6. Halstead & Structural Metrics | 0/TBD | Not started | - |
 | 7. Composite Health Score | 0/TBD | Not started | - |
