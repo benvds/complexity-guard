@@ -5,18 +5,71 @@ const testing = std.testing;
 pub const version = "0.1.0";
 
 /// FunctionResult captures all complexity metrics for a single function.
+///
+/// Identity fields locate the function in source code. Structural metrics
+/// are populated during AST traversal (Phase 2-3). Computed metrics are
+/// placeholders filled in later phases (cyclomatic: Phase 4, cognitive: Phase 5,
+/// halstead: Phase 6, health_score: Phase 7).
 pub const FunctionResult = struct {
-    // TODO: Implement fields to pass tests
+    // Identity fields
+    name: []const u8,        // Function identifier
+    start_line: u32,         // 1-indexed line number where function begins
+    end_line: u32,           // 1-indexed line number where function ends
+    start_col: u32,          // 0-indexed column where function begins
+
+    // Structural metrics (computed during parsing)
+    params_count: u32,       // Number of function parameters
+    line_count: u32,         // Total lines in function body
+    nesting_depth: u32,      // Maximum nesting depth
+
+    // Computed metrics (placeholders - filled in later phases)
+    cyclomatic: ?u32,        // McCabe cyclomatic complexity (Phase 4)
+    cognitive: ?u32,         // Cognitive complexity (Phase 5)
+    halstead_volume: ?f64,   // Halstead volume (Phase 6)
+    halstead_difficulty: ?f64, // Halstead difficulty (Phase 6)
+    halstead_effort: ?f64,   // Halstead effort (Phase 6)
+    health_score: ?f64,      // Weighted composite score (Phase 7)
 };
 
 /// FileResult aggregates all functions found in a single source file.
+///
+/// Contains both file-level structural metadata (line count, export count)
+/// and an array of function-level results. Health score is computed in Phase 7
+/// as the weighted average of constituent function health scores.
 pub const FileResult = struct {
-    // TODO: Implement fields to pass tests
+    // Identity
+    path: []const u8,        // Relative path to source file
+
+    // Structural metrics
+    total_lines: u32,        // Total line count in file
+    function_count: u32,     // Number of functions analyzed
+    export_count: u32,       // Number of exported symbols
+
+    // Nested results
+    functions: []const FunctionResult, // All functions found in this file
+
+    // Computed metrics (placeholders)
+    health_score: ?f64,      // Aggregate health score (Phase 7)
 };
 
 /// ProjectResult is the top-level container for all analysis results.
+///
+/// Aggregates all files analyzed, with project-level summary statistics.
+/// The files array contains complete per-file results including nested function
+/// data. Health score and grade are computed in Phase 7 based on project-wide
+/// metric distributions and configurable thresholds.
 pub const ProjectResult = struct {
-    // TODO: Implement fields to pass tests
+    // Summary metrics
+    files_analyzed: u32,     // Total number of files processed
+    total_functions: u32,    // Total functions across all files
+    total_lines: u32,        // Sum of all file line counts
+
+    // Nested results
+    files: []const FileResult, // All analyzed files with function results
+
+    // Computed metrics (placeholders)
+    health_score: ?f64,      // Project-wide health score (Phase 7)
+    grade: ?[]const u8,      // Letter grade A-F (Phase 7)
 };
 
 // TESTS
