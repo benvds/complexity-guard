@@ -1,4 +1,5 @@
 const std = @import("std");
+const builtin = @import("builtin");
 const errors = @import("errors.zig");
 
 /// Parsed CLI arguments structure.
@@ -114,7 +115,7 @@ pub fn parseArgsFromSlice(allocator: std.mem.Allocator, args: []const []const u8
                 // Unknown long flag - provide did-you-mean suggestion
                 const err_msg = try errors.formatUnknownFlagError(allocator, arg);
                 defer allocator.free(err_msg);
-                std.debug.print("{s}\n", .{err_msg});
+                if (!builtin.is_test) std.debug.print("{s}\n", .{err_msg});
                 return error.UnknownFlag;
             }
         }
@@ -141,7 +142,7 @@ pub fn parseArgsFromSlice(allocator: std.mem.Allocator, args: []const []const u8
                 // Unknown short flag
                 const err_msg = try errors.formatUnknownFlagError(allocator, arg);
                 defer allocator.free(err_msg);
-                std.debug.print("{s}\n", .{err_msg});
+                if (!builtin.is_test) std.debug.print("{s}\n", .{err_msg});
                 return error.UnknownFlag;
             }
         }

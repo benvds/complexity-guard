@@ -130,10 +130,12 @@ pub fn expectJsonContains(json_str: []const u8, expected_substring: []const u8) 
         return;
     }
 
-    // Not found - provide helpful error
-    std.debug.print("\nJSON substring not found!\n", .{});
-    std.debug.print("Expected substring: {s}\n", .{expected_substring});
-    std.debug.print("Full JSON ({d} bytes):\n{s}\n", .{ json_str.len, json_str });
+    // Not found - log diagnostic only when not running under test runner
+    if (@import("builtin").mode == .Debug and !@import("builtin").is_test) {
+        std.debug.print("\nJSON substring not found!\n", .{});
+        std.debug.print("Expected substring: {s}\n", .{expected_substring});
+        std.debug.print("Full JSON ({d} bytes):\n{s}\n", .{ json_str.len, json_str });
+    }
     return error.JsonSubstringNotFound;
 }
 
