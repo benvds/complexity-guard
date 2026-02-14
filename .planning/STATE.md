@@ -89,7 +89,7 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-None yet.
+1. **Add multi-language support via language profile abstraction** (general) — Refactor hardcoded TS/JS assumptions into a `LanguageProfile` abstraction to enable tree-sitter multi-language support
 
 ### Quick Tasks Completed
 
