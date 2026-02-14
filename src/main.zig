@@ -28,4 +28,5 @@ test "version format" {
 // Import core modules to ensure their tests are discovered
 test {
     _ = @import("core/types.zig");
+    _ = @import("core/json.zig");
 }
