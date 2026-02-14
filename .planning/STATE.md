@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 Phase: 4 of 12 (Cyclomatic Complexity) — COMPLETE
 Plan: 2 of 2 (Phase 4 COMPLETE — verified)
 Status: Phase 4 complete - Ready for Phase 5
-Last activity: 2026-02-14 — Phase 4 verified: 6/6 must-haves passed
+Last activity: 2026-02-14 - Completed quick task 1: Reorder phases 5-8: move phase 8 to phase 5, shift phases 5-7 down
 
 Progress: [████████░░] 33% (4/12 phases)
 
@@ -90,6 +90,12 @@ Recent decisions affecting current work:
 ### Pending Todos
 
 None yet.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 1 | Reorder phases 5-8: move phase 8 to phase 5, shift phases 5-7 down | 2026-02-14 | d5337e6 | [1-reorder-phases-5-8-move-phase-8-to-phase](./quick/1-reorder-phases-5-8-move-phase-8-to-phase/) |
 
 ### Blockers/Concerns
 
