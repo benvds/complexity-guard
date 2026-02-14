@@ -1,4 +1,5 @@
 const std = @import("std");
+const errors = @import("errors.zig");
 
 /// Parsed CLI arguments structure.
 /// All fields correspond to the CLI flags defined in CLI-01 through CLI-12.
@@ -109,6 +110,12 @@ pub fn parseArgsFromSlice(allocator: std.mem.Allocator, args: []const []const u8
             } else if (std.mem.eql(u8, flag, "exclude")) {
                 i += 1;
                 if (i < args.len) try exclude_list.append(allocator, args[i]);
+            } else {
+                // Unknown long flag - provide did-you-mean suggestion
+                const err_msg = try errors.formatUnknownFlagError(allocator, arg);
+                defer allocator.free(err_msg);
+                std.debug.print("{s}\n", .{err_msg});
+                return error.UnknownFlag;
             }
         }
         // Short flags
@@ -130,6 +137,12 @@ pub fn parseArgsFromSlice(allocator: std.mem.Allocator, args: []const []const u8
             } else if (flag_char == 'c') {
                 i += 1;
                 if (i < args.len) cli_args.config_path = args[i];
+            } else {
+                // Unknown short flag
+                const err_msg = try errors.formatUnknownFlagError(allocator, arg);
+                defer allocator.free(err_msg);
+                std.debug.print("{s}\n", .{err_msg});
+                return error.UnknownFlag;
             }
         }
         // Positional arguments
@@ -219,4 +232,11 @@ test "parse with no args returns defaults" {
     try std.testing.expect(cli_args.format == null);
     try std.testing.expect(cli_args.output_file == null);
     try std.testing.expectEqual(@as(usize, 0), cli_args.positional_paths.len);
+}
+
+test "parse unknown flag returns error" {
+    const allocator = std.testing.allocator;
+    const args = [_][]const u8{"--foramt"};
+    const result = parseArgsFromSlice(allocator, &args);
+    try std.testing.expectError(error.UnknownFlag, result);
 }
