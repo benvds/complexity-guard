@@ -611,3 +611,60 @@ test "analyzeFunctions finds multiple functions" {
     try std.testing.expectEqual(@as(u32, 1), results[0].complexity);
     try std.testing.expectEqual(@as(u32, 2), results[1].complexity);
 }
+
+test "integration: cyclomatic_cases.ts fixture" {
+    const parser = try tree_sitter.Parser.init();
+    defer parser.deinit();
+    try parser.setLanguage(.typescript);
+
+    // Read the fixture file
+    const fixture_path = "tests/fixtures/typescript/cyclomatic_cases.ts";
+    const file = try std.fs.cwd().openFile(fixture_path, .{});
+    defer file.close();
+
+    const source = try file.readToEndAlloc(std.testing.allocator, 1024 * 1024);
+    defer std.testing.allocator.free(source);
+
+    // Parse the fixture
+    const tree = try parser.parseString(source);
+    defer tree.deinit();
+
+    const root = tree.rootNode();
+    const config = CyclomaticConfig.default();
+    const results = try analyzeFunctions(std.testing.allocator, root, config, source);
+    defer std.testing.allocator.free(results);
+
+    // Expected complexities based on fixture comments
+    // Note: The fixture contains functions with the following expected complexities:
+    // baseline: 1, simpleConditionals: 3, loopWithConditions: 5,
+    // switchStatement: 5, errorHandling: 3, ternaryAndLogical: 3,
+    // nullishCoalescing: 3, nestedFunctions outer: 2, nestedFunctions inner: 2,
+    // arrowFunc: 2, complexLogical: 5, DataProcessor.process: 2
+
+    // We should find at least 11 functions (not counting the class itself)
+    try std.testing.expect(results.len >= 11);
+
+    // Verify some specific functions by checking their complexity values
+    // Since we don't have names extracted yet, we'll verify the values exist
+    var found_complexity_1 = false;
+    var found_complexity_2 = false;
+    var found_complexity_3 = false;
+    var found_complexity_5 = false;
+
+    for (results) |result| {
+        if (result.complexity == 1) found_complexity_1 = true;
+        if (result.complexity == 2) found_complexity_2 = true;
+        if (result.complexity == 3) found_complexity_3 = true;
+        if (result.complexity == 5) found_complexity_5 = true;
+
+        // Verify line numbers are 1-indexed
+        try std.testing.expect(result.start_line > 0);
+        try std.testing.expect(result.end_line >= result.start_line);
+    }
+
+    // Verify we found functions with different complexity levels
+    try std.testing.expect(found_complexity_1);
+    try std.testing.expect(found_complexity_2);
+    try std.testing.expect(found_complexity_3);
+    try std.testing.expect(found_complexity_5);
+}
