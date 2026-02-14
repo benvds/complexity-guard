@@ -1,5 +1,51 @@
 const std = @import("std");
 
+/// Helper function to add tree-sitter C sources to a compile step
+fn addTreeSitterSources(b: *std.Build, step: *std.Build.Step.Compile) void {
+    step.linkLibC();
+
+    // Tree-sitter core library
+    step.addIncludePath(b.path("vendor/tree-sitter/lib/include"));
+    step.addIncludePath(b.path("vendor/tree-sitter/lib/src"));
+    step.addCSourceFile(.{
+        .file = b.path("vendor/tree-sitter/lib/src/lib.c"),
+        .flags = &.{ "-std=c11", "-fno-sanitize=undefined", "-D_POSIX_C_SOURCE=200809L", "-D_DEFAULT_SOURCE" },
+    });
+
+    // TypeScript parser
+    step.addIncludePath(b.path("vendor/tree-sitter-typescript/typescript/src"));
+    step.addCSourceFile(.{
+        .file = b.path("vendor/tree-sitter-typescript/typescript/src/parser.c"),
+        .flags = &.{"-std=c11"},
+    });
+    step.addCSourceFile(.{
+        .file = b.path("vendor/tree-sitter-typescript/typescript/src/scanner.c"),
+        .flags = &.{"-std=c11"},
+    });
+
+    // TSX parser
+    step.addIncludePath(b.path("vendor/tree-sitter-typescript/tsx/src"));
+    step.addCSourceFile(.{
+        .file = b.path("vendor/tree-sitter-typescript/tsx/src/parser.c"),
+        .flags = &.{"-std=c11"},
+    });
+    step.addCSourceFile(.{
+        .file = b.path("vendor/tree-sitter-typescript/tsx/src/scanner.c"),
+        .flags = &.{"-std=c11"},
+    });
+
+    // JavaScript parser
+    step.addIncludePath(b.path("vendor/tree-sitter-javascript/src"));
+    step.addCSourceFile(.{
+        .file = b.path("vendor/tree-sitter-javascript/src/parser.c"),
+        .flags = &.{"-std=c11"},
+    });
+    step.addCSourceFile(.{
+        .file = b.path("vendor/tree-sitter-javascript/src/scanner.c"),
+        .flags = &.{"-std=c11"},
+    });
+}
+
 pub fn build(b: *std.Build) void {
     // Standard options for target and optimization
     const target = b.standardTargetOptions(.{});
@@ -23,6 +69,9 @@ pub fn build(b: *std.Build) void {
 
     // Add dependencies to executable
     exe.root_module.addImport("toml", toml_dep.module("toml"));
+
+    // Add tree-sitter C sources
+    addTreeSitterSources(b, exe);
 
     // Install artifact
     b.installArtifact(exe);
@@ -49,6 +98,9 @@ pub fn build(b: *std.Build) void {
 
     // Add dependencies to test module
     unit_tests.root_module.addImport("toml", toml_dep.module("toml"));
+
+    // Add tree-sitter C sources to tests
+    addTreeSitterSources(b, unit_tests);
 
     const run_unit_tests = b.addRunArtifact(unit_tests);
     const test_step = b.step("test", "Run unit tests");

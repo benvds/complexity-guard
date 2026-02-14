@@ -118,4 +118,5 @@ test {
     _ = @import("cli/merge.zig");
     _ = @import("cli/init.zig");
     _ = @import("discovery/filter.zig");
+    _ = @import("discovery/walker.zig");
 }
