@@ -52,9 +52,14 @@ Plans:
   2. User can specify all flags (--format, --output, --fail-on, --metrics, etc.) and flags override config file values
   3. Tool loads `.complexityguard.json` when present and validates schema
   4. Tool displays version with `--version` and help with `--help`
-**Plans**: TBD
+**Plans:** 5 plans
 
-Plans: (to be created during /gsd:plan-phase)
+Plans:
+- [ ] 02-01-PLAN.md -- Dependencies, config types, and CLI argument parsing with zig-clap
+- [ ] 02-02-PLAN.md -- Config discovery (upward search, XDG) and loading (JSON + TOML) with validation
+- [ ] 02-03-PLAN.md -- Help output, version display, Levenshtein did-you-mean, color detection
+- [ ] 02-04-PLAN.md -- Merge logic (flags override config), --init command, main.zig integration
+- [ ] 02-05-PLAN.md -- End-to-end integration testing and human verification
 
 ### Phase 3: File Discovery & Parsing
 **Goal**: Tool discovers TypeScript/JavaScript files and parses them into ASTs via tree-sitter
@@ -199,7 +204,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Project Foundation | 3/3 | ✓ Complete | 2026-02-14 |
-| 2. CLI & Configuration | 0/TBD | Not started | - |
+| 2. CLI & Configuration | 0/5 | Planned | - |
 | 3. File Discovery & Parsing | 0/TBD | Not started | - |
 | 4. Cyclomatic Complexity | 0/TBD | Not started | - |
 | 5. Cognitive Complexity | 0/TBD | Not started | - |
