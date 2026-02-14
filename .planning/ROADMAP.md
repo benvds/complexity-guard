@@ -12,7 +12,7 @@ ComplexityGuard delivers fast, accurate complexity analysis for TypeScript/JavaS
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Project Foundation** - Build system, test infrastructure, core data structures
+- [x] **Phase 1: Project Foundation** - Build system, test infrastructure, core data structures ✓ 2026-02-14
 - [ ] **Phase 2: CLI & Configuration** - Argument parsing, config file loading, flag handling
 - [ ] **Phase 3: File Discovery & Parsing** - Tree-sitter integration, recursive file scanning, error handling
 - [ ] **Phase 4: Cyclomatic Complexity** - McCabe metric with threshold validation (vertical slice)
@@ -39,9 +39,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 3 plans
 
 Plans:
-- [ ] 01-01-PLAN.md -- Zig project skeleton with build system, entry point, and test runner
-- [ ] 01-02-PLAN.md -- Core data structures (FunctionResult, FileResult, ProjectResult) with TDD and JSON serialization
-- [ ] 01-03-PLAN.md -- Test infrastructure: helper builders and real-world TS/JS fixtures
+- [x] 01-01-PLAN.md -- Zig project skeleton with build system, entry point, and test runner
+- [x] 01-02-PLAN.md -- Core data structures (FunctionResult, FileResult, ProjectResult) with TDD and JSON serialization
+- [x] 01-03-PLAN.md -- Test infrastructure: helper builders and real-world TS/JS fixtures
 
 ### Phase 2: CLI & Configuration
 **Goal**: Users can invoke complexityguard with flags and load configuration from files
@@ -198,7 +198,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Project Foundation | 0/3 | Planned | - |
+| 1. Project Foundation | 3/3 | ✓ Complete | 2026-02-14 |
 | 2. CLI & Configuration | 0/TBD | Not started | - |
 | 3. File Discovery & Parsing | 0/TBD | Not started | - |
 | 4. Cyclomatic Complexity | 0/TBD | Not started | - |
