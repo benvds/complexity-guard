@@ -71,9 +71,12 @@ Plans:
   3. Tool handles syntax errors gracefully (reports error, continues with other files)
   4. Tool integrates tree-sitter with proper memory cleanup (no leaks)
   5. Tool respects glob patterns from config file for file filtering
-**Plans**: TBD
+**Plans:** 3 plans
 
-Plans: (to be created during /gsd:plan-phase)
+Plans:
+- [ ] 03-01-PLAN.md -- Vendor tree-sitter C libraries and create Zig bindings
+- [ ] 03-02-PLAN.md -- Recursive file discovery with extension filtering
+- [ ] 03-03-PLAN.md -- Parse orchestration, error handling, and main.zig integration
 
 ### Phase 4: Cyclomatic Complexity
 **Goal**: Tool calculates McCabe cyclomatic complexity per function and validates against thresholds
@@ -205,7 +208,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 |-------|----------------|--------|-----------|
 | 1. Project Foundation | 3/3 | ✓ Complete | 2026-02-14 |
 | 2. CLI & Configuration | 5/5 | ✓ Complete | 2026-02-14 |
-| 3. File Discovery & Parsing | 0/TBD | Not started | - |
+| 3. File Discovery & Parsing | 0/3 | In Progress | - |
 | 4. Cyclomatic Complexity | 0/TBD | Not started | - |
 | 5. Cognitive Complexity | 0/TBD | Not started | - |
 | 6. Halstead & Structural Metrics | 0/TBD | Not started | - |
