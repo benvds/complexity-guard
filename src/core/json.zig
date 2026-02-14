@@ -4,18 +4,14 @@ const types = @import("types.zig");
 
 /// Serialize a result type to JSON string
 pub fn serializeResult(allocator: std.mem.Allocator, value: anytype) ![]u8 {
-    // TODO: Implement
-    _ = allocator;
-    _ = value;
-    return error.NotImplemented;
+    return try std.json.Stringify.valueAlloc(allocator, value, .{});
 }
 
 /// Serialize a result type to pretty-printed JSON string
 pub fn serializeResultPretty(allocator: std.mem.Allocator, value: anytype) ![]u8 {
-    // TODO: Implement
-    _ = allocator;
-    _ = value;
-    return error.NotImplemented;
+    return try std.json.Stringify.valueAlloc(allocator, value, .{
+        .whitespace = .indent_2,
+    });
 }
 
 // TESTS
