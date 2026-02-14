@@ -7,6 +7,7 @@ fn addTreeSitterSources(b: *std.Build, step: *std.Build.Step.Compile) void {
     // Tree-sitter core library
     step.addIncludePath(b.path("vendor/tree-sitter/lib/include"));
     step.addIncludePath(b.path("vendor/tree-sitter/lib/src"));
+    step.addIncludePath(b.path("vendor/tree-sitter/lib/src/unicode"));
     step.addCSourceFile(.{
         .file = b.path("vendor/tree-sitter/lib/src/lib.c"),
         .flags = &.{ "-std=c11", "-fno-sanitize=undefined", "-D_POSIX_C_SOURCE=200809L", "-D_DEFAULT_SOURCE" },

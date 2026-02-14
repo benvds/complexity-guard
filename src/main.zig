@@ -119,4 +119,5 @@ test {
     _ = @import("cli/init.zig");
     _ = @import("discovery/filter.zig");
     _ = @import("discovery/walker.zig");
+    _ = @import("parser/tree_sitter.zig");
 }
