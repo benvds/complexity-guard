@@ -23,9 +23,19 @@ A fast, zero-dependency code complexity analyzer for TypeScript and JavaScript p
 
 ## Status
 
-**Work in progress** -- Phase 1 (project foundation) is complete. The build system, core data structures, and test infrastructure are in place. Core metric analysis, CLI, output formats, and other features are under active development.
+**Work in progress** -- Phases 1-3 are complete. The build system, core data structures, CLI with argument parsing and config file support, and tree-sitter-based file discovery and parsing are all operational. Metric analysis (cyclomatic, cognitive, Halstead, structural), output formats, and duplication detection are under active development.
 
 See the [roadmap](.planning/ROADMAP.md) for the full development plan.
+
+### Completed
+
+- **Phase 1: Project Foundation** -- Build system, core data structures, JSON serialization, test infrastructure
+- **Phase 2: CLI & Configuration** -- Argument parsing, config file loading (`.complexityguard.json`), flag-over-config merging, `--init` scaffolding, help/version output
+- **Phase 3: File Discovery & Parsing** -- Tree-sitter C library integration, recursive file scanning with extension filtering, include/exclude pattern matching, error-tolerant parsing
+
+### Up Next
+
+- **Phase 4: Cyclomatic Complexity** -- McCabe metric with threshold validation
 
 ## Building
 
@@ -44,7 +54,7 @@ zig build test
 
 The build produces a single static binary at `zig-out/bin/complexity-guard`.
 
-## Planned Usage
+## Usage
 
 ```sh
 # Analyze a directory
@@ -67,7 +77,12 @@ complexityguard --fail-health-below 70 src/
 
 # Use a config file
 complexityguard --config .complexityguard.json src/
+
+# Generate a default config file
+complexityguard --init
 ```
+
+> **Note:** The CLI accepts all flags today. Output formats and metric analysis are still being implemented -- currently the tool discovers files and parses them via tree-sitter.
 
 ## Configuration
 
@@ -119,9 +134,34 @@ ComplexityGuard loads configuration from `.complexityguard.json` when present. C
 
 Parsing is handled by [tree-sitter](https://tree-sitter.github.io/) with error-tolerant grammars.
 
+## Project Structure
+
+```
+src/
+  main.zig              # entry point, module imports for test discovery
+  core/types.zig        # core data structures (FunctionResult, FileResult, ProjectResult)
+  core/json.zig         # JSON serialization helpers
+  cli/args.zig          # argument parsing (hand-rolled, ripgrep-style UX)
+  cli/config.zig        # config file discovery and loading (.complexityguard.json)
+  cli/merge.zig         # flag-over-config merge logic
+  cli/help.zig          # help text and version display
+  cli/init.zig          # --init config scaffolding
+  cli/errors.zig        # CLI error types
+  cli/discovery.zig     # config file search (CWD upward, XDG)
+  discovery/walker.zig  # recursive directory traversal
+  discovery/filter.zig  # extension and glob pattern filtering
+  parser/tree_sitter.zig # tree-sitter Zig bindings (wraps C API)
+  parser/parse.zig      # parse orchestration and error handling
+  test_helpers.zig      # test builders (createTestFunction, createTestFile, etc.)
+vendor/                 # vendored tree-sitter + TS/JS/TSX grammars (C sources)
+tests/fixtures/         # real-world TS/JS fixture files for testing
+```
+
 ## Architecture
 
-ComplexityGuard is written in Zig for single-binary output and fast C interop with tree-sitter. The analysis pipeline runs all metrics in a single AST pass per file, with cross-file duplication detection as a second phase. Files are processed in parallel via a thread pool.
+ComplexityGuard is written in Zig for single-binary output and fast C interop with tree-sitter. The analysis pipeline will run all metrics in a single AST pass per file, with cross-file duplication detection as a second phase. Files will be processed in parallel via a thread pool.
+
+Currently the tool discovers files via recursive directory walking with extension filtering, parses them into ASTs via tree-sitter (TypeScript, TSX, JavaScript, JSX grammars), and handles syntax errors gracefully by continuing with remaining files.
 
 ## License
 
