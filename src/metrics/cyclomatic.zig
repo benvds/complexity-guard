@@ -1,5 +1,7 @@
 const std = @import("std");
 const tree_sitter = @import("../parser/tree_sitter.zig");
+const types = @import("../core/types.zig");
+const parse = @import("../parser/parse.zig");
 const Allocator = std.mem.Allocator;
 
 /// Configuration for cyclomatic complexity calculation
@@ -16,6 +18,10 @@ pub const CyclomaticConfig = struct {
     count_default_params: bool = true,
     /// Switch/case counting mode
     switch_case_mode: SwitchCaseMode = .classic,
+    /// Warning threshold (default: 10)
+    warning_threshold: u32 = 10,
+    /// Error threshold (default: 20)
+    error_threshold: u32 = 20,
 
     /// Switch/case counting modes
     pub const SwitchCaseMode = enum {
@@ -31,6 +37,22 @@ pub const CyclomaticConfig = struct {
     }
 };
 
+/// Threshold status for a function
+pub const ThresholdStatus = enum {
+    ok,      // Below warning threshold
+    warning, // At or above warning, below error
+    @"error", // At or above error threshold
+};
+
+/// Threshold validation result
+pub const ThresholdResult = struct {
+    complexity: u32,
+    status: ThresholdStatus,
+    function_name: []const u8,
+    start_line: u32,
+    start_col: u32,
+};
+
 /// Per-function complexity result
 pub const FunctionComplexity = struct {
     /// Function name extracted from AST
@@ -44,6 +66,13 @@ pub const FunctionComplexity = struct {
     /// Start column (0-indexed)
     start_col: u32,
 };
+
+/// Validate complexity against thresholds
+pub fn validateThreshold(complexity: u32, warning: u32, err_level: u32) ThresholdStatus {
+    if (complexity >= err_level) return .@"error";
+    if (complexity >= warning) return .warning;
+    return .ok;
+}
 
 /// Check if a node represents a function
 pub fn isFunctionNode(node: tree_sitter.Node) bool {
@@ -267,6 +296,81 @@ pub fn analyzeFunctions(
     return try results.toOwnedSlice(allocator);
 }
 
+/// Analyze a parsed file and return threshold results
+pub fn analyzeFile(
+    allocator: Allocator,
+    parse_result: parse.ParseResult,
+    config: CyclomaticConfig,
+) ![]ThresholdResult {
+    // If parse failed or tree is null, return empty slice
+    if (parse_result.tree == null) {
+        return &[_]ThresholdResult{};
+    }
+
+    const tree = parse_result.tree.?;
+    const root = tree.rootNode();
+
+    // Get function complexities
+    const function_complexities = try analyzeFunctions(
+        allocator,
+        root,
+        config,
+        parse_result.source,
+    );
+    defer allocator.free(function_complexities);
+
+    // Convert to threshold results
+    var results = std.ArrayList(ThresholdResult).empty;
+    errdefer results.deinit(allocator);
+
+    for (function_complexities) |fc| {
+        const status = validateThreshold(
+            fc.complexity,
+            config.warning_threshold,
+            config.error_threshold,
+        );
+
+        try results.append(allocator, ThresholdResult{
+            .complexity = fc.complexity,
+            .status = status,
+            .function_name = fc.name,
+            .start_line = fc.start_line,
+            .start_col = fc.start_col,
+        });
+    }
+
+    return try results.toOwnedSlice(allocator);
+}
+
+/// Convert FunctionComplexity results to FunctionResult structs
+pub fn toFunctionResults(
+    allocator: Allocator,
+    function_complexities: []const FunctionComplexity,
+) ![]types.FunctionResult {
+    var results = std.ArrayList(types.FunctionResult).empty;
+    errdefer results.deinit(allocator);
+
+    for (function_complexities) |fc| {
+        try results.append(allocator, types.FunctionResult{
+            .name = fc.name,
+            .start_line = fc.start_line,
+            .end_line = fc.end_line,
+            .start_col = fc.start_col,
+            .params_count = 0, // Not populated yet (future phase)
+            .line_count = 0, // Not populated yet (future phase)
+            .nesting_depth = 0, // Not populated yet (future phase)
+            .cyclomatic = fc.complexity,
+            .cognitive = null,
+            .halstead_volume = null,
+            .halstead_difficulty = null,
+            .halstead_effort = null,
+            .health_score = null,
+        });
+    }
+
+    return try results.toOwnedSlice(allocator);
+}
+
 /// Recursive walker that finds functions and analyzes them
 fn walkAndAnalyze(
     allocator: Allocator,
@@ -353,6 +457,43 @@ test "CyclomaticConfig.default returns expected values" {
     try std.testing.expect(config.count_ternary);
     try std.testing.expect(config.count_default_params);
     try std.testing.expectEqual(CyclomaticConfig.SwitchCaseMode.classic, config.switch_case_mode);
+    try std.testing.expectEqual(@as(u32, 10), config.warning_threshold);
+    try std.testing.expectEqual(@as(u32, 20), config.error_threshold);
+}
+
+test "validateThreshold: complexity below warning" {
+    const status = validateThreshold(5, 10, 20);
+    try std.testing.expectEqual(ThresholdStatus.ok, status);
+}
+
+test "validateThreshold: complexity at warning" {
+    const status = validateThreshold(10, 10, 20);
+    try std.testing.expectEqual(ThresholdStatus.warning, status);
+}
+
+test "validateThreshold: complexity between warning and error" {
+    const status = validateThreshold(15, 10, 20);
+    try std.testing.expectEqual(ThresholdStatus.warning, status);
+}
+
+test "validateThreshold: complexity at error" {
+    const status = validateThreshold(20, 10, 20);
+    try std.testing.expectEqual(ThresholdStatus.@"error", status);
+}
+
+test "validateThreshold: complexity above error" {
+    const status = validateThreshold(25, 10, 20);
+    try std.testing.expectEqual(ThresholdStatus.@"error", status);
+}
+
+test "validateThreshold: custom thresholds warning" {
+    const status = validateThreshold(5, 5, 15);
+    try std.testing.expectEqual(ThresholdStatus.warning, status);
+}
+
+test "validateThreshold: custom thresholds error" {
+    const status = validateThreshold(15, 5, 15);
+    try std.testing.expectEqual(ThresholdStatus.@"error", status);
 }
 
 test "isFunctionNode identifies function_declaration" {
@@ -610,6 +751,88 @@ test "analyzeFunctions finds multiple functions" {
     try std.testing.expectEqual(@as(usize, 2), results.len);
     try std.testing.expectEqual(@as(u32, 1), results[0].complexity);
     try std.testing.expectEqual(@as(u32, 2), results[1].complexity);
+}
+
+test "analyzeFile: simple parsed file" {
+    const parser = try tree_sitter.Parser.init();
+    defer parser.deinit();
+    try parser.setLanguage(.typescript);
+
+    const source = "function foo() { return 1; }";
+    const tree = try parser.parseString(source);
+    defer tree.deinit();
+
+    const parse_result = parse.ParseResult{
+        .path = "test.ts",
+        .tree = tree,
+        .language = .typescript,
+        .has_errors = false,
+        .source = source,
+    };
+
+    const config = CyclomaticConfig.default();
+    const results = try analyzeFile(std.testing.allocator, parse_result, config);
+    defer std.testing.allocator.free(results);
+
+    try std.testing.expectEqual(@as(usize, 1), results.len);
+    try std.testing.expectEqual(@as(u32, 1), results[0].complexity);
+    try std.testing.expectEqual(ThresholdStatus.ok, results[0].status);
+    try std.testing.expectEqual(@as(u32, 1), results[0].start_line);
+}
+
+test "analyzeFile: null tree returns empty slice" {
+    const parse_result = parse.ParseResult{
+        .path = "test.ts",
+        .tree = null,
+        .language = .typescript,
+        .has_errors = true,
+        .source = "",
+    };
+
+    const config = CyclomaticConfig.default();
+    const results = try analyzeFile(std.testing.allocator, parse_result, config);
+    defer std.testing.allocator.free(results);
+
+    try std.testing.expectEqual(@as(usize, 0), results.len);
+}
+
+test "toFunctionResults: populates cyclomatic field" {
+    const function_complexities = [_]FunctionComplexity{
+        .{
+            .name = "foo",
+            .complexity = 5,
+            .start_line = 1,
+            .end_line = 10,
+            .start_col = 0,
+        },
+        .{
+            .name = "bar",
+            .complexity = 12,
+            .start_line = 15,
+            .end_line = 25,
+            .start_col = 4,
+        },
+    };
+
+    const results = try toFunctionResults(std.testing.allocator, &function_complexities);
+    defer std.testing.allocator.free(results);
+
+    try std.testing.expectEqual(@as(usize, 2), results.len);
+
+    // First function
+    try std.testing.expectEqualStrings("foo", results[0].name);
+    try std.testing.expectEqual(@as(u32, 1), results[0].start_line);
+    try std.testing.expectEqual(@as(u32, 10), results[0].end_line);
+    try std.testing.expectEqual(@as(u32, 0), results[0].start_col);
+    try std.testing.expectEqual(@as(?u32, 5), results[0].cyclomatic);
+    try std.testing.expectEqual(@as(?u32, null), results[0].cognitive);
+    try std.testing.expectEqual(@as(u32, 0), results[0].params_count);
+    try std.testing.expectEqual(@as(u32, 0), results[0].line_count);
+    try std.testing.expectEqual(@as(u32, 0), results[0].nesting_depth);
+
+    // Second function
+    try std.testing.expectEqualStrings("bar", results[1].name);
+    try std.testing.expectEqual(@as(?u32, 12), results[1].cyclomatic);
 }
 
 test "integration: cyclomatic_cases.ts fixture" {
