@@ -36,9 +36,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Test suite runs via `zig build test` with CI integration ready
   3. Core data structures (FileResult, FunctionResult, ProjectResult) exist and serialize to JSON
   4. Build produces single static binary under 5 MB target
-**Plans**: TBD
+**Plans:** 3 plans
 
-Plans: (to be created during /gsd:plan-phase)
+Plans:
+- [ ] 01-01-PLAN.md -- Zig project skeleton with build system, entry point, and test runner
+- [ ] 01-02-PLAN.md -- Core data structures (FunctionResult, FileResult, ProjectResult) with TDD and JSON serialization
+- [ ] 01-03-PLAN.md -- Test infrastructure: helper builders and real-world TS/JS fixtures
 
 ### Phase 2: CLI & Configuration
 **Goal**: Users can invoke complexityguard with flags and load configuration from files
@@ -191,11 +194,11 @@ Plans: (to be created during /gsd:plan-phase)
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11 → 12
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Project Foundation | 0/TBD | Not started | - |
+| 1. Project Foundation | 0/3 | Planned | - |
 | 2. CLI & Configuration | 0/TBD | Not started | - |
 | 3. File Discovery & Parsing | 0/TBD | Not started | - |
 | 4. Cyclomatic Complexity | 0/TBD | Not started | - |
