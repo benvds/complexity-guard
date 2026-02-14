@@ -32,4 +32,6 @@ test {
     _ = @import("test_helpers.zig");
     _ = @import("cli/config.zig");
     _ = @import("cli/args.zig");
+    _ = @import("cli/help.zig");
+    _ = @import("cli/discovery.zig");
 }

@@ -10,10 +10,6 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    const known_folders_dep = b.dependency("known_folders", .{
-        .target = target,
-        .optimize = optimize,
-    });
 
     // Define executable
     const exe = b.addExecutable(.{
@@ -27,7 +23,6 @@ pub fn build(b: *std.Build) void {
 
     // Add dependencies to executable
     exe.root_module.addImport("toml", toml_dep.module("toml"));
-    exe.root_module.addImport("known-folders", known_folders_dep.module("known-folders"));
 
     // Install artifact
     b.installArtifact(exe);
@@ -54,7 +49,6 @@ pub fn build(b: *std.Build) void {
 
     // Add dependencies to test module
     unit_tests.root_module.addImport("toml", toml_dep.module("toml"));
-    unit_tests.root_module.addImport("known-folders", known_folders_dep.module("known-folders"));
 
     const run_unit_tests = b.addRunArtifact(unit_tests);
     const test_step = b.step("test", "Run unit tests");

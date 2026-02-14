@@ -9,10 +9,6 @@
             .url = "git+https://github.com/sam701/zig-toml#cf50bd59c6276fb2b6d34b8d71d35486eecc719c",
             .hash = "toml-0.3.0-bV14Bd-EAQBKoXhpYft303BtA2vgLNlxntUCIWgRUl46",
         },
-        .known_folders = .{
-            .url = "git+https://github.com/ziglibs/known-folders#d002ad87b1f8c238eb080c185bb0b93cfd946b9d",
-            .hash = "known_folders-0.0.0-Fy-PJiXKAACLbIUjxVqJRTSLc6HNnMkCSBnC5LW0Lx_v",
-        },
     },
 
     .paths = .{
