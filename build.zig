@@ -6,10 +6,6 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
 
     // Get dependencies
-    const clap_dep = b.dependency("clap", .{
-        .target = target,
-        .optimize = optimize,
-    });
     const toml_dep = b.dependency("toml", .{
         .target = target,
         .optimize = optimize,
@@ -30,7 +26,6 @@ pub fn build(b: *std.Build) void {
     });
 
     // Add dependencies to executable
-    exe.root_module.addImport("clap", clap_dep.module("clap"));
     exe.root_module.addImport("toml", toml_dep.module("toml"));
     exe.root_module.addImport("known-folders", known_folders_dep.module("known-folders"));
 
@@ -58,7 +53,6 @@ pub fn build(b: *std.Build) void {
     });
 
     // Add dependencies to test module
-    unit_tests.root_module.addImport("clap", clap_dep.module("clap"));
     unit_tests.root_module.addImport("toml", toml_dep.module("toml"));
     unit_tests.root_module.addImport("known-folders", known_folders_dep.module("known-folders"));
 

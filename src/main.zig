@@ -31,4 +31,5 @@ test {
     _ = @import("core/json.zig");
     _ = @import("test_helpers.zig");
     _ = @import("cli/config.zig");
+    _ = @import("cli/args.zig");
 }
