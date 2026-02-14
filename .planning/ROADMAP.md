@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Project Foundation** - Build system, test infrastructure, core data structures ✓ 2026-02-14
 - [x] **Phase 2: CLI & Configuration** - Argument parsing, config file loading, flag handling ✓ 2026-02-14
 - [x] **Phase 3: File Discovery & Parsing** - Tree-sitter integration, recursive file scanning, error handling ✓ 2026-02-14
-- [ ] **Phase 4: Cyclomatic Complexity** - McCabe metric with threshold validation (vertical slice)
+- [x] **Phase 4: Cyclomatic Complexity** - McCabe metric with threshold validation (vertical slice) ✓ 2026-02-14
 - [ ] **Phase 5: Cognitive Complexity** - SonarSource metric with nesting tracking
 - [ ] **Phase 6: Halstead & Structural Metrics** - Information theory and structural metrics
 - [ ] **Phase 7: Composite Health Score** - Weighted scoring and letter grade assignment
@@ -90,8 +90,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 04-01-PLAN.md -- Cyclomatic complexity calculator with function extraction, decision point counting, and test fixtures
-- [ ] 04-02-PLAN.md -- Threshold validation, FunctionResult population, and main.zig pipeline integration
+- [x] 04-01-PLAN.md -- Cyclomatic complexity calculator with function extraction, decision point counting, and test fixtures
+- [x] 04-02-PLAN.md -- Threshold validation, FunctionResult population, and main.zig pipeline integration
 
 ### Phase 5: Cognitive Complexity
 **Goal**: Tool calculates SonarSource cognitive complexity with nesting penalties
@@ -211,7 +211,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 1. Project Foundation | 3/3 | ✓ Complete | 2026-02-14 |
 | 2. CLI & Configuration | 5/5 | ✓ Complete | 2026-02-14 |
 | 3. File Discovery & Parsing | 3/3 | ✓ Complete | 2026-02-14 |
-| 4. Cyclomatic Complexity | 0/2 | Not started | - |
+| 4. Cyclomatic Complexity | 2/2 | ✓ Complete | 2026-02-14 |
 | 5. Cognitive Complexity | 0/TBD | Not started | - |
 | 6. Halstead & Structural Metrics | 0/TBD | Not started | - |
 | 7. Composite Health Score | 0/TBD | Not started | - |
@@ -223,4 +223,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 ---
 *Roadmap created: 2026-02-14*
-*Last updated: 2026-02-14*
+*Last updated: 2026-02-14 (Phase 4 complete)*
