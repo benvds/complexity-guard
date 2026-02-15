@@ -17,3 +17,12 @@ zig-pkg/
 # OS artifacts
 .DS_Store
 Thumbs.db
+
+# Secrets
+.env
+.env.local
+.env.*.local
+
+# npm platform binaries (placed by release workflow)
+npm/*/complexity-guard
+npm/*/complexity-guard.exe
