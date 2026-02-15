@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 ## Current Position
 
 Phase: 05.1 of 12 (CI/CD, Release Pipeline & Documentation)
-Plan: 2 of 4
-Status: In Progress - Plan 02 complete
-Last activity: 2026-02-15 - Completed 05.1-02: npm Platform Packages and Homebrew Formula
+Plan: 3 of 4
+Status: In Progress - Plan 03 complete
+Last activity: 2026-02-15 - Completed 05.1-03: User Documentation (README, Getting Started, CLI Reference, Examples)
 
 Progress: [████████░░] 42% (5/12 phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 16
+- Total plans completed: 17
 - Average duration: 4 min
-- Total execution time: 1.65 hours
+- Total execution time: 1.70 hours
 
 **By Phase:**
 
@@ -32,15 +32,16 @@ Progress: [████████░░] 42% (5/12 phases)
 | 03 | 3 | 18 min | 6 min |
 | 04 | 2 | 7 min | 3.5 min |
 | 05 | 2 | 7 min | 3.5 min |
-| 05.1 | 2 | 6 min | 3 min |
+| 05.1 | 3 | 9 min | 3 min |
 
 **Recent Trend:**
-- Last 5 plans: 04-02 (2 min), 05-01 (4 min), 05-02 (3 min), 05.1-01 (4 min), 05.1-02 (2 min)
+- Last 5 plans: 05-01 (4 min), 05-02 (3 min), 05.1-01 (4 min), 05.1-02 (2 min), 05.1-03 (3 min)
 - Trend: Consistently fast execution (sub-5 minute average)
 
 *Updated after each plan completion*
 | Phase 05.1 P01 | 81 | 2 tasks | 3 files |
 | Phase 05.1 P02 | 2 | 2 tasks | 13 files |
+| Phase 05.1 P03 | 3 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -99,6 +100,9 @@ Recent decisions affecting current work:
 - [Phase 05.1]: Keep a Changelog 1.1.0 format for release history
 - [Phase 05.1]: Portable sed pattern (create .bak, then rm) for macOS/Linux compatibility
 - [Phase 05.1]: mlugg/setup-zig@v2 for GitHub Actions Zig setup with locked version 0.15.2
+- [Phase 05.1-03]: TanStack-style progressive disclosure for README (quick start path without overwhelming detail)
+- [Phase 05.1-03]: Document only current features in user docs (prevents confusion, sets accurate expectations)
+- [Phase 05.1-03]: Friendly and thorough tone throughout documentation (TanStack/Astro style per user decision)
 
 ### Pending Todos
 
@@ -136,9 +140,9 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-15 (execute-phase)
-Stopped at: Completed 05.1-02-PLAN.md
-Resume file: .planning/phases/05.1-ci-cd-release-pipeline-documentation/05.1-02-SUMMARY.md
+Stopped at: Completed 05.1-03-PLAN.md
+Resume file: .planning/phases/05.1-ci-cd-release-pipeline-documentation/05.1-03-SUMMARY.md
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-15T10:42:24Z*
+*Last updated: 2026-02-15T10:46:10Z*
