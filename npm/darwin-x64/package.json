@@ -1,19 +1,19 @@
 {
-  "name": "@complexity-guard/darwin-x64",
-  "version": "0.1.0",
-  "description": "ComplexityGuard binary for macOS x64",
-  "os": [
-    "darwin"
-  ],
-  "cpu": [
-    "x64"
-  ],
-  "files": [
-    "complexity-guard"
-  ],
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/user/complexity-guard"
-  }
+    "name": "@complexity-guard/darwin-x64",
+    "version": "0.1.1",
+    "description": "ComplexityGuard binary for macOS x64",
+    "os": [
+        "darwin"
+    ],
+    "cpu": [
+        "x64"
+    ],
+    "files": [
+        "complexity-guard"
+    ],
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/benvds/complexity-guard"
+    }
 }
