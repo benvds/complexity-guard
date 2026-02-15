@@ -1,18 +1,22 @@
-# Release workflow - triggered manually for milestone releases
+# Release workflow - triggered by tag push or manual dispatch
 #
 # This workflow orchestrates the complete release pipeline:
-# 1. Validates semver version input
-# 2. Cross-compiles binaries for all 5 target platforms (Linux, macOS, Windows on x64/ARM64)
+# 1. Validates semver version (from tag name or manual input)
+# 2. Cross-compiles binaries for all 5 target platforms
 # 3. Creates GitHub release with binary archives
 # 4. Publishes npm packages (main + 5 platform packages)
 # 5. Updates Homebrew formula with SHA256 checksums
 #
-# Trigger: Manual dispatch via GitHub Actions UI
-# Input: Version string (e.g., 0.1.0)
+# Triggers:
+#   - Tag push: Push a v* tag (e.g., via scripts/release.sh)
+#   - Manual: workflow_dispatch via GitHub Actions UI
 
 name: Release
 
 on:
+  push:
+    tags:
+      - 'v*'
   workflow_dispatch:
     inputs:
       version:
@@ -32,10 +36,15 @@ jobs:
         with:
           fetch-depth: 0  # Fetch all tags for duplicate check
 
-      - name: Validate version format
+      - name: Validate and extract version
         id: validate
         run: |
-          VERSION="${{ inputs.version }}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ inputs.version }}"
+          else
+            # Tag push: extract version from tag name (strip 'v' prefix)
+            VERSION="${GITHUB_REF_NAME#v}"
+          fi
 
           # Validate semver format (e.g., 0.1.0, 1.2.3)
           if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
@@ -43,10 +52,12 @@ jobs:
             exit 1
           fi
 
-          # Check if tag already exists
-          if git tag | grep -q "^v$VERSION$"; then
-            echo "Error: Tag v$VERSION already exists. Cannot create duplicate release."
-            exit 1
+          # Only check for existing tag on workflow_dispatch (tag push already has the tag)
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            if git tag | grep -q "^v$VERSION$"; then
+              echo "Error: Tag v$VERSION already exists. Cannot create duplicate release."
+              exit 1
+            fi
           fi
 
           echo "Version validation passed: $VERSION"
@@ -120,6 +131,7 @@ jobs:
         run: ls -lh complexity-guard-*
 
       - name: Create git tag
+        if: github.event_name == 'workflow_dispatch'
         run: |
           VERSION="${{ needs.validate.outputs.version }}"
           git config user.name "github-actions[bot]"
