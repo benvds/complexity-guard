@@ -104,6 +104,7 @@ Recent decisions affecting current work:
 |---|-------------|------|--------|-----------|
 | 1 | Reorder phases 5-8: move phase 8 to phase 5, shift phases 5-7 down | 2026-02-14 | d5337e6 | [1-reorder-phases-5-8-move-phase-8-to-phase](./quick/1-reorder-phases-5-8-move-phase-8-to-phase/) |
 | 2 | Show function indicator and actual function names | 2026-02-15 | 53021f1 | [2-show-function-indicator-and-actual-funct](./quick/2-show-function-indicator-and-actual-funct/) |
+| 3 | Document credentials and create .env.example | 2026-02-15 | 1b64692 | [3-document-credentials-create-env-example-](./quick/3-document-credentials-create-env-example-/) |
 
 ### Blockers/Concerns
 
@@ -122,12 +123,16 @@ Recent decisions affecting current work:
 - Rabin-Karp hash collision rate needs empirical tuning with large TypeScript codebases
 - Duplication detection may conflict with < 1s performance target on 10K files — consider opt-in flag
 
+### Roadmap Evolution
+
+- Phase 05.1 inserted after Phase 5: CI/CD, Release Pipeline & Documentation (URGENT)
+
 ## Session Continuity
 
 Last session: 2026-02-15 (quick task)
-Stopped at: Completed quick-02 - Show function indicator and actual function names
-Resume file: .planning/quick/2-show-function-indicator-and-actual-funct/2-SUMMARY.md
+Stopped at: Completed quick-03 - Document credentials and create .env.example
+Resume file: .planning/quick/3-document-credentials-create-env-example-/3-SUMMARY.md
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-15T06:41:00Z*
+*Last updated: 2026-02-15T09:43:40Z*
