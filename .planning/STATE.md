@@ -9,19 +9,19 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 
 ## Current Position
 
-Phase: 4 of 12 (Cyclomatic Complexity) — COMPLETE
-Plan: 2 of 2 (Phase 4 COMPLETE — verified)
-Status: Phase 4 complete - Ready for Phase 5
-Last activity: 2026-02-14 - Completed quick task 1: Reorder phases 5-8: move phase 8 to phase 5, shift phases 5-7 down
+Phase: 5 of 12 (Console and JSON Output)
+Plan: 1 of 2
+Status: In progress - Phase 5 Plan 1 complete
+Last activity: 2026-02-15 - Completed 05-01-PLAN.md - Console output formatter and exit codes
 
-Progress: [████████░░] 33% (4/12 phases)
+Progress: [████████░░] 38% (4.5/12 phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 13
+- Total plans completed: 14
 - Average duration: 5 min
-- Total execution time: 1.50 hours
+- Total execution time: 1.57 hours
 
 **By Phase:**
 
@@ -31,10 +31,11 @@ Progress: [████████░░] 33% (4/12 phases)
 | 02 | 5 | 39 min | 8 min |
 | 03 | 3 | 18 min | 6 min |
 | 04 | 2 | 7 min | 3.5 min |
+| 05 | 1 | 4 min | 4 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-01 (9 min), 03-03 (4 min), 04-01 (5 min), 04-02 (2 min)
-- Trend: Accelerating (Phase 4 executing faster than average)
+- Last 5 plans: 03-03 (4 min), 04-01 (5 min), 04-02 (2 min), 05-01 (4 min)
+- Trend: Consistently fast execution (sub-5 minute average)
 
 *Updated after each plan completion*
 
@@ -86,6 +87,9 @@ Recent decisions affecting current work:
 - [Phase 04-cyclomatic-complexity]: analyzeFile returns empty slice for null trees instead of erroring
 - [Phase 04-cyclomatic-complexity]: toFunctionResults sets structural fields to 0 (populated in future phases)
 - [Phase 04-cyclomatic-complexity]: Double-analysis in main.zig acceptable for now - Phase 5 will restructure pipeline
+- [Phase 05-console-json-output]: Default thresholds hardcoded in formatFileResults (acceptable as values match defaults)
+- [Phase 05-console-json-output]: Bubble sort for hotspot ranking (sufficient for top-5 list, max ~hundreds of functions)
+- [Phase 05-console-json-output]: Exit code priority order: parse_error > errors > warnings > success (matches CI integration needs)
 
 ### Pending Todos
 
@@ -116,10 +120,10 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-02-14 (plan execution)
-Stopped at: Completed 04-02-PLAN.md - Threshold validation and pipeline integration
-Resume file: .planning/phases/04-cyclomatic-complexity/04-02-SUMMARY.md
+Last session: 2026-02-15 (plan execution)
+Stopped at: Completed 05-01-PLAN.md - Console output formatter and exit codes
+Resume file: .planning/phases/05-console-json-output/05-01-SUMMARY.md
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-14T20:27:04Z*
+*Last updated: 2026-02-15T05:52:29Z*
