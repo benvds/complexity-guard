@@ -10,6 +10,9 @@ const walker = @import("discovery/walker.zig");
 const filter = @import("discovery/filter.zig");
 const parse = @import("parser/parse.zig");
 const cyclomatic = @import("metrics/cyclomatic.zig");
+const console = @import("output/console.zig");
+const json_output = @import("output/json_output.zig");
+const exit_codes = @import("output/exit_codes.zig");
 
 const version = "0.1.0";
 
@@ -124,11 +127,14 @@ pub fn main() !void {
     };
     defer parse_summary.deinit(arena_allocator);
 
-    // Run cyclomatic complexity analysis
+    // Step 1: Analyze all files once and store results
     const cycl_config = cyclomatic.CyclomaticConfig.default();
+    var file_results_list = std.ArrayList(console.FileThresholdResults).empty;
+    defer file_results_list.deinit(arena_allocator);
+
     var total_warnings: u32 = 0;
     var total_errors: u32 = 0;
-    var total_functions_analyzed: u32 = 0;
+    var total_functions: u32 = 0;
 
     for (parse_summary.results) |result| {
         const threshold_results = try cyclomatic.analyzeFile(
@@ -137,84 +143,104 @@ pub fn main() !void {
             cycl_config,
         );
 
-        total_functions_analyzed += @intCast(threshold_results.len);
+        total_functions += @intCast(threshold_results.len);
 
-        for (threshold_results) |tr| {
-            switch (tr.status) {
-                .warning => total_warnings += 1,
-                .@"error" => total_errors += 1,
-                .ok => {},
-            }
+        const violations = exit_codes.countViolations(threshold_results);
+        total_warnings += violations.warnings;
+        total_errors += violations.errors;
+
+        try file_results_list.append(arena_allocator, console.FileThresholdResults{
+            .path = result.path,
+            .results = threshold_results,
+        });
+    }
+
+    const file_results = file_results_list.items;
+
+    // Step 2: Determine output format
+    const effective_format = cli_args.format orelse (if (cfg.output) |out| (out.format orelse "console") else "console");
+
+    // Step 3: Determine verbosity
+    const verbosity: console.Verbosity = if (cli_args.quiet)
+        .quiet
+    else if (cli_args.verbose)
+        .verbose
+    else
+        .default;
+
+    // Step 4: Determine color
+    const use_color = help.shouldUseColor(cli_args.color, cli_args.no_color);
+
+    // Step 5: Output based on format
+    if (std.mem.eql(u8, effective_format, "json")) {
+        // JSON output
+        const json_result = try json_output.buildJsonOutput(
+            arena_allocator,
+            file_results,
+            total_warnings,
+            total_errors,
+        );
+        const json_str = try json_output.serializeJsonOutput(arena_allocator, json_result);
+        defer arena_allocator.free(json_str);
+
+        // Write to stdout
+        try stdout.writeAll(json_str);
+        try stdout.writeAll("\n");
+
+        // Also write to file if specified
+        if (cli_args.output_file) |output_path| {
+            const file = try std.fs.cwd().createFile(output_path, .{});
+            defer file.close();
+            try file.writeAll(json_str);
+            try file.writeAll("\n");
         }
-    }
+    } else {
+        // Console output (default)
+        const output_config = console.OutputConfig{
+            .use_color = use_color,
+            .verbosity = verbosity,
+        };
 
-    // Print summary
-    try stdout.print("Discovered {d} files, parsed {d} successfully", .{
-        discovery_result.files.len,
-        parse_summary.successful_parses,
-    });
-
-    if (parse_summary.files_with_errors > 0) {
-        try stdout.print(", {d} with errors", .{parse_summary.files_with_errors});
-    }
-
-    if (parse_summary.failed_parses > 0) {
-        try stdout.print(", {d} failed", .{parse_summary.failed_parses});
-    }
-
-    try stdout.writeAll("\n");
-
-    try stdout.print("Analyzed {d} functions", .{total_functions_analyzed});
-    if (total_warnings > 0 or total_errors > 0) {
-        try stdout.print(": {d} warnings, {d} errors", .{ total_warnings, total_errors });
-    }
-    try stdout.writeAll("\n");
-
-    // Print detailed results if verbose
-    if (cli_args.verbose) {
-        try stdout.writeAll("\nParsed files:\n");
-        for (parse_summary.results) |result| {
-            const status = if (result.has_errors) " (has errors)" else "";
-            try stdout.print("  {s} [{s}]{s}\n", .{
-                result.path,
-                @tagName(result.language),
-                status,
-            });
-        }
-
-        if (parse_summary.errors.len > 0) {
-            try stdout.writeAll("\nFailed files:\n");
-            for (parse_summary.errors) |err| {
-                try stdout.print("  {s}: {s}\n", .{ err.path, err.message });
-            }
-        }
-
-        // Show complexity details
-        try stdout.writeAll("\nComplexity analysis:\n");
-        for (parse_summary.results) |result| {
-            const threshold_results = try cyclomatic.analyzeFile(
+        // Display per-file results
+        for (file_results) |fr| {
+            _ = try console.formatFileResults(
+                stdout,
                 arena_allocator,
-                result,
-                cycl_config,
+                fr.path,
+                fr.results,
+                output_config,
             );
-
-            if (threshold_results.len > 0) {
-                try stdout.print("  {s}:\n", .{result.path});
-                for (threshold_results) |tr| {
-                    const status_str = switch (tr.status) {
-                        .ok => "ok",
-                        .warning => "WARN",
-                        .@"error" => "ERROR",
-                    };
-                    try stdout.print("    {s} (line {d}): complexity {d} [{s}]\n", .{
-                        tr.function_name,
-                        tr.start_line,
-                        tr.complexity,
-                        status_str,
-                    });
-                }
-            }
         }
+
+        // Display summary
+        try console.formatSummary(
+            stdout,
+            arena_allocator,
+            @intCast(parse_summary.results.len),
+            total_functions,
+            total_warnings,
+            total_errors,
+            file_results,
+            output_config,
+        );
+    }
+
+    // Step 6: Determine and apply exit code
+    const fail_on_warnings = if (cli_args.fail_on) |fo|
+        std.mem.eql(u8, fo, "warning")
+    else
+        false;
+
+    const exit_code = exit_codes.determineExitCode(
+        parse_summary.failed_parses > 0,
+        total_errors,
+        total_warnings,
+        fail_on_warnings,
+    );
+
+    if (exit_code != .success) {
+        stdout.flush() catch {};
+        std.process.exit(exit_code.toInt());
     }
 }
 
