@@ -61,7 +61,7 @@ jobs:
 
       - name: Install ComplexityGuard
         run: |
-          curl -L https://github.com/yourname/complexity-guard/releases/latest/download/complexity-guard-linux-x64 -o complexity-guard
+          curl -L https://github.com/benvds/complexity-guard/releases/latest/download/complexity-guard-linux-x64 -o complexity-guard
           chmod +x complexity-guard
           sudo mv complexity-guard /usr/local/bin/
 
@@ -140,7 +140,7 @@ Use the JSON output to post a comment on pull requests:
 complexity:
   stage: test
   script:
-    - curl -L https://github.com/yourname/complexity-guard/releases/latest/download/complexity-guard-linux-x64 -o complexity-guard
+    - curl -L https://github.com/benvds/complexity-guard/releases/latest/download/complexity-guard-linux-x64 -o complexity-guard
     - chmod +x complexity-guard
     - ./complexity-guard --fail-on warning src/
 ```
@@ -159,7 +159,7 @@ jobs:
       - run:
           name: Install ComplexityGuard
           command: |
-            curl -L https://github.com/yourname/complexity-guard/releases/latest/download/complexity-guard-linux-x64 -o complexity-guard
+            curl -L https://github.com/benvds/complexity-guard/releases/latest/download/complexity-guard-linux-x64 -o complexity-guard
             chmod +x complexity-guard
             sudo mv complexity-guard /usr/local/bin/
       - run:
@@ -175,7 +175,7 @@ pipeline {
   stages {
     stage('Complexity Analysis') {
       steps {
-        sh 'curl -L https://github.com/yourname/complexity-guard/releases/latest/download/complexity-guard-linux-x64 -o complexity-guard'
+        sh 'curl -L https://github.com/benvds/complexity-guard/releases/latest/download/complexity-guard-linux-x64 -o complexity-guard'
         sh 'chmod +x complexity-guard'
         sh './complexity-guard --fail-on warning src/'
       }
@@ -519,4 +519,4 @@ make complexity-strict
 
 - Review the [CLI Reference](cli-reference.md) for complete flag documentation
 - Check out the [Getting Started](getting-started.md) guide for configuration details
-- Star the project on [GitHub](https://github.com/yourname/complexity-guard) if you find it useful!
+- Star the project on [GitHub](https://github.com/benvds/complexity-guard) if you find it useful!

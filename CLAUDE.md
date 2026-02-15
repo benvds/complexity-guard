@@ -46,3 +46,7 @@ tests/fixtures/         # real-world TS/JS fixture files for testing
 - JSON serialization uses `std.json.Stringify.valueAlloc` with allocator pattern.
 - Test helpers follow options-struct pattern (`TestFunctionOpts`) for builder-style construction.
 - File paths in results are relative. Line numbers are 1-indexed. Columns are 0-indexed.
+
+## GSD Workflow Rules
+
+- When using `/gsd:plan-phase` or `/gsd:quick`, always include tasks to update README.md and docs/ pages (docs/getting-started.md, docs/cli-reference.md, docs/examples.md) to reflect any user-facing changes.

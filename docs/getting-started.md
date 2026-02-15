@@ -21,7 +21,7 @@ complexity-guard --version
 ### Homebrew (macOS/Linux)
 
 ```sh
-brew install yourname/tap/complexity-guard
+brew install benvds/tap/complexity-guard
 ```
 
 Verify the installation:
@@ -32,7 +32,7 @@ complexity-guard --version
 
 ### Direct Download
 
-1. Visit the [GitHub releases page](https://github.com/yourname/complexity-guard/releases)
+1. Visit the [GitHub releases page](https://github.com/benvds/complexity-guard/releases)
 2. Download the binary for your platform:
    - `complexity-guard-linux-x64` for Linux
    - `complexity-guard-macos-arm64` for macOS (Apple Silicon)
@@ -58,7 +58,7 @@ complexity-guard --version
 If you have Zig installed (0.14.0 or later), you can build from source:
 
 ```sh
-git clone https://github.com/yourname/complexity-guard.git
+git clone https://github.com/benvds/complexity-guard.git
 cd complexity-guard
 zig build
 ```
