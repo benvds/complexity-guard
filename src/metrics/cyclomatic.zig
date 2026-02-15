@@ -49,6 +49,7 @@ pub const ThresholdResult = struct {
     complexity: u32,
     status: ThresholdStatus,
     function_name: []const u8,
+    function_kind: []const u8,
     start_line: u32,
     start_col: u32,
 };
@@ -57,6 +58,8 @@ pub const ThresholdResult = struct {
 pub const FunctionComplexity = struct {
     /// Function name extracted from AST
     name: []const u8,
+    /// Function kind (function, method, arrow, generator)
+    kind: []const u8,
     /// Computed cyclomatic complexity
     complexity: u32,
     /// Start line (1-indexed)
@@ -74,6 +77,12 @@ pub fn validateThreshold(complexity: u32, warning: u32, err_level: u32) Threshol
     return .ok;
 }
 
+/// Function information extracted from AST
+pub const FunctionInfo = struct {
+    name: []const u8,
+    kind: []const u8,
+};
+
 /// Check if a node represents a function
 pub fn isFunctionNode(node: tree_sitter.Node) bool {
     const node_type = node.nodeType();
@@ -85,10 +94,25 @@ pub fn isFunctionNode(node: tree_sitter.Node) bool {
         std.mem.eql(u8, node_type, "generator_function_declaration");
 }
 
-/// Extract function name from AST node
-pub fn extractFunctionName(node: tree_sitter.Node, source: []const u8) []const u8 {
-    _ = source;
+/// Extract function name and kind from AST node
+pub fn extractFunctionInfo(node: tree_sitter.Node, source: []const u8) FunctionInfo {
     const node_type = node.nodeType();
+
+    // Determine kind based on node type
+    const kind = if (std.mem.eql(u8, node_type, "function_declaration"))
+        "function"
+    else if (std.mem.eql(u8, node_type, "generator_function_declaration"))
+        "generator"
+    else if (std.mem.eql(u8, node_type, "generator_function"))
+        "generator"
+    else if (std.mem.eql(u8, node_type, "method_definition"))
+        "method"
+    else if (std.mem.eql(u8, node_type, "arrow_function"))
+        "arrow"
+    else if (std.mem.eql(u8, node_type, "function"))
+        "function"
+    else
+        "function";
 
     // For function/generator declarations, look for identifier child
     if (std.mem.eql(u8, node_type, "function_declaration") or
@@ -99,13 +123,14 @@ pub fn extractFunctionName(node: tree_sitter.Node, source: []const u8) []const u
             if (node.child(i)) |child| {
                 const child_type = child.nodeType();
                 if (std.mem.eql(u8, child_type, "identifier")) {
-                    const start = child.startPoint();
-                    const end = child.endPoint();
-                    // TODO: Extract actual name from source using points
-                    // For now, we'll handle this in analyzeFunctions which has full context
-                    _ = start;
-                    _ = end;
-                    return "<function>";
+                    const start_byte = child.startByte();
+                    const end_byte = child.endByte();
+                    if (start_byte < source.len and end_byte <= source.len) {
+                        return FunctionInfo{
+                            .name = source[start_byte..end_byte],
+                            .kind = kind,
+                        };
+                    }
                 }
             }
         }
@@ -118,7 +143,14 @@ pub fn extractFunctionName(node: tree_sitter.Node, source: []const u8) []const u
             if (node.child(i)) |child| {
                 const child_type = child.nodeType();
                 if (std.mem.eql(u8, child_type, "property_identifier")) {
-                    return "<method>";
+                    const start_byte = child.startByte();
+                    const end_byte = child.endByte();
+                    if (start_byte < source.len and end_byte <= source.len) {
+                        return FunctionInfo{
+                            .name = source[start_byte..end_byte],
+                            .kind = kind,
+                        };
+                    }
                 }
             }
         }
@@ -126,7 +158,10 @@ pub fn extractFunctionName(node: tree_sitter.Node, source: []const u8) []const u
 
     // For arrow functions and function expressions, return anonymous
     // (name extraction requires parent context which we don't have here)
-    return "<anonymous>";
+    return FunctionInfo{
+        .name = "<anonymous>",
+        .kind = kind,
+    };
 }
 
 /// Count decision points in an AST subtree
@@ -278,7 +313,7 @@ pub fn calculateComplexity(node: tree_sitter.Node, config: CyclomaticConfig, sou
 /// Context for tracking function scope during traversal
 const FunctionContext = struct {
     name: []const u8,
-    node: tree_sitter.Node,
+    kind: []const u8,
 };
 
 /// Analyze all functions in an AST, returning complexity results
@@ -334,6 +369,7 @@ pub fn analyzeFile(
             .complexity = fc.complexity,
             .status = status,
             .function_name = fc.name,
+            .function_kind = fc.kind,
             .start_line = fc.start_line,
             .start_col = fc.start_col,
         });
@@ -378,18 +414,21 @@ fn walkAndAnalyze(
     results: *std.ArrayList(FunctionComplexity),
     config: CyclomaticConfig,
     source: []const u8,
-    parent_context: ?[]const u8,
+    parent_context: ?FunctionContext,
 ) !void {
     const node_type = node.nodeType();
 
     // Check if this is a function node
     if (isFunctionNode(node)) {
-        // Extract function name with context
-        var func_name = extractFunctionName(node, source);
+        // Extract function name and kind
+        const func_info = extractFunctionInfo(node, source);
+        var func_name = func_info.name;
+        const func_kind = func_info.kind;
 
         // Override name if we have parent context (e.g., variable assignment)
         if (parent_context) |ctx| {
-            func_name = ctx;
+            func_name = ctx.name;
+            // Keep the kind from the actual function node type, not the variable
         }
 
         // Calculate complexity
@@ -402,6 +441,7 @@ fn walkAndAnalyze(
         // Add result
         try results.append(allocator, FunctionComplexity{
             .name = func_name,
+            .kind = func_kind,
             .complexity = complexity,
             .start_line = start.row + 1,
             .end_line = end.row + 1,
@@ -413,7 +453,7 @@ fn walkAndAnalyze(
     }
 
     // Track variable declarations that might contain function expressions
-    var child_context: ?[]const u8 = null;
+    var child_context: ?FunctionContext = null;
 
     if (std.mem.eql(u8, node_type, "variable_declarator")) {
         // Look for identifier child to use as function name
@@ -422,16 +462,15 @@ fn walkAndAnalyze(
             if (node.child(i)) |child| {
                 const child_type = child.nodeType();
                 if (std.mem.eql(u8, child_type, "identifier")) {
-                    // Extract identifier text from source
-                    const id_start = child.startPoint();
-                    const id_end = child.endPoint();
-                    const start_byte = id_start.row * 1000 + id_start.column; // Simplified byte offset
-                    const end_byte = id_end.row * 1000 + id_end.column;
-
-                    // For now, use placeholder - proper implementation needs byte offsets
-                    child_context = "<variable>";
-                    _ = start_byte;
-                    _ = end_byte;
+                    // Extract identifier text from source using byte offsets
+                    const id_start_byte = child.startByte();
+                    const id_end_byte = child.endByte();
+                    if (id_start_byte < source.len and id_end_byte <= source.len) {
+                        child_context = FunctionContext{
+                            .name = source[id_start_byte..id_end_byte],
+                            .kind = "variable", // Placeholder, will be overridden by actual function kind
+                        };
+                    }
                     break;
                 }
             }
@@ -751,6 +790,11 @@ test "analyzeFunctions finds multiple functions" {
     try std.testing.expectEqual(@as(usize, 2), results.len);
     try std.testing.expectEqual(@as(u32, 1), results[0].complexity);
     try std.testing.expectEqual(@as(u32, 2), results[1].complexity);
+    // Verify actual names are extracted
+    try std.testing.expectEqualStrings("foo", results[0].name);
+    try std.testing.expectEqualStrings("bar", results[1].name);
+    try std.testing.expectEqualStrings("function", results[0].kind);
+    try std.testing.expectEqualStrings("function", results[1].kind);
 }
 
 test "analyzeFile: simple parsed file" {
@@ -800,6 +844,7 @@ test "toFunctionResults: populates cyclomatic field" {
     const function_complexities = [_]FunctionComplexity{
         .{
             .name = "foo",
+            .kind = "function",
             .complexity = 5,
             .start_line = 1,
             .end_line = 10,
@@ -807,6 +852,7 @@ test "toFunctionResults: populates cyclomatic field" {
         },
         .{
             .name = "bar",
+            .kind = "function",
             .complexity = 12,
             .start_line = 15,
             .end_line = 25,
@@ -868,17 +914,38 @@ test "integration: cyclomatic_cases.ts fixture" {
     try std.testing.expect(results.len >= 11);
 
     // Verify some specific functions by checking their complexity values
-    // Since we don't have names extracted yet, we'll verify the values exist
     var found_complexity_1 = false;
     var found_complexity_2 = false;
     var found_complexity_3 = false;
     var found_complexity_5 = false;
+    var found_baseline = false;
+    var found_arrow = false;
+    var found_method = false;
 
     for (results) |result| {
         if (result.complexity == 1) found_complexity_1 = true;
         if (result.complexity == 2) found_complexity_2 = true;
         if (result.complexity == 3) found_complexity_3 = true;
         if (result.complexity == 5) found_complexity_5 = true;
+
+        // Verify actual names are extracted
+        if (std.mem.eql(u8, result.name, "baseline")) {
+            found_baseline = true;
+            try std.testing.expectEqualStrings("function", result.kind);
+        }
+        if (std.mem.eql(u8, result.name, "arrowFunc")) {
+            found_arrow = true;
+            try std.testing.expectEqualStrings("arrow", result.kind);
+        }
+        if (std.mem.eql(u8, result.name, "process")) {
+            found_method = true;
+            try std.testing.expectEqualStrings("method", result.kind);
+        }
+
+        // Verify no placeholder names exist
+        try std.testing.expect(!std.mem.eql(u8, result.name, "<function>"));
+        try std.testing.expect(!std.mem.eql(u8, result.name, "<method>"));
+        try std.testing.expect(!std.mem.eql(u8, result.name, "<variable>"));
 
         // Verify line numbers are 1-indexed
         try std.testing.expect(result.start_line > 0);
@@ -890,4 +957,8 @@ test "integration: cyclomatic_cases.ts fixture" {
     try std.testing.expect(found_complexity_2);
     try std.testing.expect(found_complexity_3);
     try std.testing.expect(found_complexity_5);
+    // Verify specific named functions were found
+    try std.testing.expect(found_baseline);
+    try std.testing.expect(found_arrow);
+    try std.testing.expect(found_method);
 }

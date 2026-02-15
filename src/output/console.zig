@@ -274,8 +274,8 @@ test "formatFileResults: all-ok results in default mode writes nothing" {
     defer buffer.deinit(allocator);
 
     const results = [_]cyclomatic.ThresholdResult{
-        .{ .complexity = 5, .status = .ok, .function_name = "foo", .start_line = 1, .start_col = 0 },
-        .{ .complexity = 8, .status = .ok, .function_name = "bar", .start_line = 10, .start_col = 4 },
+        .{ .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function", .start_line = 1, .start_col = 0 },
+        .{ .complexity = 8, .status = .ok, .function_name = "bar", .function_kind = "function", .start_line = 10, .start_col = 4 },
     };
 
     const config = OutputConfig{ .use_color = false, .verbosity = .default };
@@ -297,9 +297,9 @@ test "formatFileResults: warning/error results in default mode writes file heade
     defer buffer.deinit(allocator);
 
     const results = [_]cyclomatic.ThresholdResult{
-        .{ .complexity = 5, .status = .ok, .function_name = "foo", .start_line = 1, .start_col = 0 },
-        .{ .complexity = 12, .status = .warning, .function_name = "bar", .start_line = 10, .start_col = 4 },
-        .{ .complexity = 25, .status = .@"error", .function_name = "baz", .start_line = 20, .start_col = 2 },
+        .{ .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function", .start_line = 1, .start_col = 0 },
+        .{ .complexity = 12, .status = .warning, .function_name = "bar", .function_kind = "function", .start_line = 10, .start_col = 4 },
+        .{ .complexity = 25, .status = .@"error", .function_name = "baz", .function_kind = "function", .start_line = 20, .start_col = 2 },
     };
 
     const config = OutputConfig{ .use_color = false, .verbosity = .default };
@@ -335,8 +335,8 @@ test "formatFileResults: verbose mode writes all functions including ok" {
     defer buffer.deinit(allocator);
 
     const results = [_]cyclomatic.ThresholdResult{
-        .{ .complexity = 5, .status = .ok, .function_name = "foo", .start_line = 1, .start_col = 0 },
-        .{ .complexity = 12, .status = .warning, .function_name = "bar", .start_line = 10, .start_col = 4 },
+        .{ .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function", .start_line = 1, .start_col = 0 },
+        .{ .complexity = 12, .status = .warning, .function_name = "bar", .function_kind = "function", .start_line = 10, .start_col = 4 },
     };
 
     const config = OutputConfig{ .use_color = false, .verbosity = .verbose };
@@ -362,9 +362,9 @@ test "formatFileResults: quiet mode writes only error-level functions" {
     defer buffer.deinit(allocator);
 
     const results = [_]cyclomatic.ThresholdResult{
-        .{ .complexity = 5, .status = .ok, .function_name = "foo", .start_line = 1, .start_col = 0 },
-        .{ .complexity = 12, .status = .warning, .function_name = "bar", .start_line = 10, .start_col = 4 },
-        .{ .complexity = 25, .status = .@"error", .function_name = "baz", .start_line = 20, .start_col = 2 },
+        .{ .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function", .start_line = 1, .start_col = 0 },
+        .{ .complexity = 12, .status = .warning, .function_name = "bar", .function_kind = "function", .start_line = 10, .start_col = 4 },
+        .{ .complexity = 25, .status = .@"error", .function_name = "baz", .function_kind = "function", .start_line = 20, .start_col = 2 },
     };
 
     const config = OutputConfig{ .use_color = false, .verbosity = .quiet };
@@ -391,7 +391,7 @@ test "formatFileResults: no_color produces no ANSI codes" {
     defer buffer.deinit(allocator);
 
     const results = [_]cyclomatic.ThresholdResult{
-        .{ .complexity = 25, .status = .@"error", .function_name = "baz", .start_line = 20, .start_col = 2 },
+        .{ .complexity = 25, .status = .@"error", .function_name = "baz", .function_kind = "function", .start_line = 20, .start_col = 2 },
     };
 
     const config = OutputConfig{ .use_color = false, .verbosity = .default };
@@ -444,11 +444,11 @@ test "formatSummary: shows top 5 hotspots when functions exist" {
     defer buffer.deinit(allocator);
 
     const results = [_]cyclomatic.ThresholdResult{
-        .{ .complexity = 15, .status = .warning, .function_name = "func1", .start_line = 1, .start_col = 0 },
-        .{ .complexity = 25, .status = .@"error", .function_name = "func2", .start_line = 10, .start_col = 0 },
-        .{ .complexity = 10, .status = .warning, .function_name = "func3", .start_line = 20, .start_col = 0 },
-        .{ .complexity = 30, .status = .@"error", .function_name = "func4", .start_line = 30, .start_col = 0 },
-        .{ .complexity = 5, .status = .ok, .function_name = "func5", .start_line = 40, .start_col = 0 },
+        .{ .complexity = 15, .status = .warning, .function_name = "func1", .function_kind = "function", .start_line = 1, .start_col = 0 },
+        .{ .complexity = 25, .status = .@"error", .function_name = "func2", .function_kind = "function", .start_line = 10, .start_col = 0 },
+        .{ .complexity = 10, .status = .warning, .function_name = "func3", .function_kind = "function", .start_line = 20, .start_col = 0 },
+        .{ .complexity = 30, .status = .@"error", .function_name = "func4", .function_kind = "function", .start_line = 30, .start_col = 0 },
+        .{ .complexity = 5, .status = .ok, .function_name = "func5", .function_kind = "function", .start_line = 40, .start_col = 0 },
     };
 
     const file_results = [_]FileThresholdResults{

@@ -70,6 +70,16 @@ pub const Node = struct {
         };
     }
 
+    /// Get the byte offset where this node starts
+    pub fn startByte(self: Node) u32 {
+        return c.ts_node_start_byte(self.inner);
+    }
+
+    /// Get the byte offset where this node ends
+    pub fn endByte(self: Node) u32 {
+        return c.ts_node_end_byte(self.inner);
+    }
+
     /// Get a child node by index, returns null if out of bounds
     pub fn child(self: Node, index: u32) ?Node {
         const child_node = c.ts_node_child(self.inner, index);

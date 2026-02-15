@@ -101,12 +101,12 @@ test "determineExitCode: priority parse_error > errors_found > warnings_found" {
 
 test "countViolations: counts correctly with mixed statuses" {
     const results = [_]cyclomatic.ThresholdResult{
-        .{ .complexity = 5, .status = .ok, .function_name = "foo", .start_line = 1, .start_col = 0 },
-        .{ .complexity = 12, .status = .warning, .function_name = "bar", .start_line = 10, .start_col = 0 },
-        .{ .complexity = 15, .status = .warning, .function_name = "baz", .start_line = 20, .start_col = 0 },
-        .{ .complexity = 25, .status = .@"error", .function_name = "qux", .start_line = 30, .start_col = 0 },
-        .{ .complexity = 8, .status = .ok, .function_name = "quux", .start_line = 40, .start_col = 0 },
-        .{ .complexity = 30, .status = .@"error", .function_name = "corge", .start_line = 50, .start_col = 0 },
+        .{ .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function", .start_line = 1, .start_col = 0 },
+        .{ .complexity = 12, .status = .warning, .function_name = "bar", .function_kind = "function", .start_line = 10, .start_col = 0 },
+        .{ .complexity = 15, .status = .warning, .function_name = "baz", .function_kind = "function", .start_line = 20, .start_col = 0 },
+        .{ .complexity = 25, .status = .@"error", .function_name = "qux", .function_kind = "function", .start_line = 30, .start_col = 0 },
+        .{ .complexity = 8, .status = .ok, .function_name = "quux", .function_kind = "function", .start_line = 40, .start_col = 0 },
+        .{ .complexity = 30, .status = .@"error", .function_name = "corge", .function_kind = "function", .start_line = 50, .start_col = 0 },
     };
 
     const counts = countViolations(&results);
@@ -116,9 +116,9 @@ test "countViolations: counts correctly with mixed statuses" {
 
 test "countViolations: returns zeros for all-ok results" {
     const results = [_]cyclomatic.ThresholdResult{
-        .{ .complexity = 5, .status = .ok, .function_name = "foo", .start_line = 1, .start_col = 0 },
-        .{ .complexity = 8, .status = .ok, .function_name = "bar", .start_line = 10, .start_col = 0 },
-        .{ .complexity = 3, .status = .ok, .function_name = "baz", .start_line = 20, .start_col = 0 },
+        .{ .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function", .start_line = 1, .start_col = 0 },
+        .{ .complexity = 8, .status = .ok, .function_name = "bar", .function_kind = "function", .start_line = 10, .start_col = 0 },
+        .{ .complexity = 3, .status = .ok, .function_name = "baz", .function_kind = "function", .start_line = 20, .start_col = 0 },
     };
 
     const counts = countViolations(&results);
