@@ -165,4 +165,4 @@ Currently the tool discovers files via recursive directory walking with extensio
 
 ## License
 
-TBD
+[MIT](LICENSE)
