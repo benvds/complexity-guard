@@ -242,4 +242,5 @@ test {
     _ = @import("parser/parse.zig");
     _ = @import("metrics/cyclomatic.zig");
     _ = @import("output/exit_codes.zig");
+    _ = @import("output/console.zig");
 }
