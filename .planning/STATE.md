@@ -107,6 +107,9 @@ Recent decisions affecting current work:
 - [Phase 05.1-04]: Manual dispatch trigger with version validation for release workflow
 - [Phase 05.1-04]: Single Ubuntu runner for all Zig cross-compilation targets (5 platforms)
 - [Phase 05.1-04]: Separate job dependency chain: validate -> build -> release -> (npm-publish || homebrew-update)
+- [Quick Task 4]: Tag push trigger enables automatic workflow execution from local release script
+- [Quick Task 4]: Dual-trigger workflow extracts version from tag name (push) or manual input (dispatch)
+- [Quick Task 4]: Confirmation prompt in release script prevents accidental pushes during testing
 
 ### Pending Todos
 
@@ -119,6 +122,7 @@ Recent decisions affecting current work:
 | 1 | Reorder phases 5-8: move phase 8 to phase 5, shift phases 5-7 down | 2026-02-14 | d5337e6 | [1-reorder-phases-5-8-move-phase-8-to-phase](./quick/1-reorder-phases-5-8-move-phase-8-to-phase/) |
 | 2 | Show function indicator and actual function names | 2026-02-15 | 53021f1 | [2-show-function-indicator-and-actual-funct](./quick/2-show-function-indicator-and-actual-funct/) |
 | 3 | Document credentials and create .env.example | 2026-02-15 | 1b64692 | [3-document-credentials-create-env-example-](./quick/3-document-credentials-create-env-example-/) |
+| 4 | Add tag push trigger to release workflow | 2026-02-15 | 39a02d6 | [4-add-tag-push-trigger-to-release-workflow](./quick/4-add-tag-push-trigger-to-release-workflow/) |
 
 ### Blockers/Concerns
 
@@ -144,9 +148,9 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-15 (execute-phase)
-Stopped at: Completed Phase 05.1 — all 4 plans, verified passed
-Resume file: .planning/phases/05.1-ci-cd-release-pipeline-documentation/05.1-VERIFICATION.md
+Stopped at: Completed Quick Task 4: Add tag push trigger to release workflow
+Resume file: .planning/quick/4-add-tag-push-trigger-to-release-workflow/4-SUMMARY.md
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-15T10:48:44Z*
+*Last updated: 2026-02-15T16:24:38Z*
