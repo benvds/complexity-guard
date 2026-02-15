@@ -9,19 +9,19 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 
 ## Current Position
 
-Phase: 6 of 12 (Cognitive Complexity)
-Plan: 0 of 2
-Status: Ready - Phase 5 complete
-Last activity: 2026-02-15 - Completed quick task 3: Document credentials, create .env.example and local publish script
+Phase: 05.1 of 12 (CI/CD, Release Pipeline & Documentation)
+Plan: 2 of 4
+Status: In Progress - Plan 02 complete
+Last activity: 2026-02-15 - Completed 05.1-02: npm Platform Packages and Homebrew Formula
 
 Progress: [████████░░] 42% (5/12 phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 15
-- Average duration: 5 min
-- Total execution time: 1.62 hours
+- Total plans completed: 16
+- Average duration: 4 min
+- Total execution time: 1.65 hours
 
 **By Phase:**
 
@@ -32,12 +32,15 @@ Progress: [████████░░] 42% (5/12 phases)
 | 03 | 3 | 18 min | 6 min |
 | 04 | 2 | 7 min | 3.5 min |
 | 05 | 2 | 7 min | 3.5 min |
+| 05.1 | 2 | 6 min | 3 min |
 
 **Recent Trend:**
-- Last 5 plans: 04-01 (5 min), 04-02 (2 min), 05-01 (4 min), 05-02 (3 min)
+- Last 5 plans: 04-02 (2 min), 05-01 (4 min), 05-02 (3 min), 05.1-01 (4 min), 05.1-02 (2 min)
 - Trend: Consistently fast execution (sub-5 minute average)
 
 *Updated after each plan completion*
+| Phase 05.1 P01 | 81 | 2 tasks | 3 files |
+| Phase 05.1 P02 | 2 | 2 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -93,6 +96,9 @@ Recent decisions affecting current work:
 - [Phase 05-console-json-output]: snake_case field naming in JSON output (matches existing codebase convention in core/types.zig, core/json.zig)
 - [Phase 05-console-json-output]: Single-pass analysis eliminates double-analysis pattern from Phase 4 (analyze once, store results, format from stored data)
 - [Phase 05-console-json-output]: Structural fields set to 0 in JSON FunctionOutput (ThresholdResult doesn't include end_line, nesting_depth, line_count, params_count)
+- [Phase 05.1]: Keep a Changelog 1.1.0 format for release history
+- [Phase 05.1]: Portable sed pattern (create .bak, then rm) for macOS/Linux compatibility
+- [Phase 05.1]: mlugg/setup-zig@v2 for GitHub Actions Zig setup with locked version 0.15.2
 
 ### Pending Todos
 
@@ -129,10 +135,10 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-02-15 (quick task)
-Stopped at: Completed quick-03 - Document credentials and create .env.example
-Resume file: .planning/quick/3-document-credentials-create-env-example-/3-SUMMARY.md
+Last session: 2026-02-15 (execute-phase)
+Stopped at: Completed 05.1-02-PLAN.md
+Resume file: .planning/phases/05.1-ci-cd-release-pipeline-documentation/05.1-02-SUMMARY.md
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-15T09:43:40Z*
+*Last updated: 2026-02-15T10:42:24Z*
