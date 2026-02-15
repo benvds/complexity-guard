@@ -1,0 +1,19 @@
+{
+  "name": "@complexity-guard/linux-arm64",
+  "version": "0.1.0",
+  "description": "ComplexityGuard binary for Linux ARM64",
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "arm64"
+  ],
+  "files": [
+    "complexity-guard"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/user/complexity-guard"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "@complexity-guard/windows-x64",
+  "version": "0.1.0",
+  "description": "ComplexityGuard binary for Windows x64",
+  "os": [
+    "win32"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "files": [
+    "complexity-guard.exe"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/user/complexity-guard"
+  }
+}
