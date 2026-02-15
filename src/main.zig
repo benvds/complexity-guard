@@ -243,4 +243,5 @@ test {
     _ = @import("metrics/cyclomatic.zig");
     _ = @import("output/exit_codes.zig");
     _ = @import("output/console.zig");
+    _ = @import("output/json_output.zig");
 }
