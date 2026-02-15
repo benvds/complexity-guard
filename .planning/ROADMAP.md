@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: File Discovery & Parsing** - Tree-sitter integration, recursive file scanning, error handling ✓ 2026-02-14
 - [x] **Phase 4: Cyclomatic Complexity** - McCabe metric with threshold validation (vertical slice) ✓ 2026-02-14
 - [x] **Phase 5: Console & JSON Output** - Primary developer and CI output formats ✓ 2026-02-15
-- [x] **Phase 5.1: CI/CD, Release Pipeline & Documentation** - Changelog, GitHub workflows, publishing, docs (INSERTED) ✓ 2026-02-15
+- [ ] **Phase 5.1: CI/CD, Release Pipeline & Documentation** - Changelog, GitHub workflows, publishing, docs (INSERTED) -- gap closure in progress
 - [ ] **Phase 6: Cognitive Complexity** - SonarSource metric with nesting tracking
 - [ ] **Phase 7: Halstead & Structural Metrics** - Information theory and structural metrics
 - [ ] **Phase 8: Composite Health Score** - Weighted scoring and letter grade assignment
@@ -115,13 +115,15 @@ Plans:
 
 **Goal:** Set up changelog, release automation, CI test pipelines, multi-channel distribution (npm, Homebrew, GitHub releases), and progressive disclosure documentation
 **Depends on:** Phase 5
-**Plans:** 4 plans
+**Plans:** 6 plans
 
 Plans:
 - [x] 05.1-01-PLAN.md -- Release infrastructure: CHANGELOG.md, release script, CI test workflow
 - [x] 05.1-02-PLAN.md -- npm platform packages and Homebrew formula template
 - [x] 05.1-03-PLAN.md -- Documentation: README rewrite and docs/ pages (getting started, CLI reference, examples)
 - [x] 05.1-04-PLAN.md -- GitHub Actions release workflow (build, publish, distribute)
+- [ ] 05.1-05-PLAN.md -- Gap closure: move publication files to publication/ directory (structural refactor)
+- [ ] 05.1-06-PLAN.md -- Gap closure: release process documentation (docs/releasing.md) and Homebrew SHA256 docs
 
 ### Phase 6: Cognitive Complexity
 **Goal**: Tool calculates SonarSource cognitive complexity with nesting penalties
@@ -229,7 +231,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 3. File Discovery & Parsing | 3/3 | ✓ Complete | 2026-02-14 |
 | 4. Cyclomatic Complexity | 2/2 | ✓ Complete | 2026-02-14 |
 | 5. Console & JSON Output | 2/2 | ✓ Complete | 2026-02-15 |
-| 5.1 CI/CD, Release & Docs | 4/4 | ✓ Complete | 2026-02-15 |
+| 5.1 CI/CD, Release & Docs | 4/6 | Gap closure | 2026-02-15 |
 | 6. Cognitive Complexity | 0/TBD | Not started | - |
 | 7. Halstead & Structural Metrics | 0/TBD | Not started | - |
 | 8. Composite Health Score | 0/TBD | Not started | - |
@@ -240,4 +242,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 ---
 *Roadmap created: 2026-02-14*
-*Last updated: 2026-02-15 (Phase 5.1 complete)*
+*Last updated: 2026-02-15 (Phase 5.1 gap closure plans created)*
