@@ -17,6 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: File Discovery & Parsing** - Tree-sitter integration, recursive file scanning, error handling ✓ 2026-02-14
 - [x] **Phase 4: Cyclomatic Complexity** - McCabe metric with threshold validation (vertical slice) ✓ 2026-02-14
 - [x] **Phase 5: Console & JSON Output** - Primary developer and CI output formats ✓ 2026-02-15
+- [ ] **Phase 5.1: CI/CD, Release Pipeline & Documentation** - Changelog, GitHub workflows, publishing, docs (INSERTED)
 - [ ] **Phase 6: Cognitive Complexity** - SonarSource metric with nesting tracking
 - [ ] **Phase 7: Halstead & Structural Metrics** - Information theory and structural metrics
 - [ ] **Phase 8: Composite Health Score** - Weighted scoring and letter grade assignment
@@ -109,6 +110,18 @@ Plans:
 Plans:
 - [x] 05-01-PLAN.md -- Console output formatter (ESLint-style) and exit code logic
 - [x] 05-02-PLAN.md -- JSON output format and main.zig pipeline integration
+
+### Phase 05.1: CI/CD, Release Pipeline & Documentation (INSERTED)
+
+**Goal:** Set up changelog, release automation, CI test pipelines, multi-channel distribution (npm, Homebrew, GitHub releases), and progressive disclosure documentation
+**Depends on:** Phase 5
+**Plans:** 4 plans
+
+Plans:
+- [ ] 05.1-01-PLAN.md -- Release infrastructure: CHANGELOG.md, release script, CI test workflow
+- [ ] 05.1-02-PLAN.md -- npm platform packages and Homebrew formula template
+- [ ] 05.1-03-PLAN.md -- Documentation: README rewrite and docs/ pages (getting started, CLI reference, examples)
+- [ ] 05.1-04-PLAN.md -- GitHub Actions release workflow (build, publish, distribute)
 
 ### Phase 6: Cognitive Complexity
 **Goal**: Tool calculates SonarSource cognitive complexity with nesting penalties
