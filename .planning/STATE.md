@@ -103,6 +103,7 @@ Recent decisions affecting current work:
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 1 | Reorder phases 5-8: move phase 8 to phase 5, shift phases 5-7 down | 2026-02-14 | d5337e6 | [1-reorder-phases-5-8-move-phase-8-to-phase](./quick/1-reorder-phases-5-8-move-phase-8-to-phase/) |
+| 2 | Show function indicator and actual function names | 2026-02-15 | 53021f1 | [2-show-function-indicator-and-actual-funct](./quick/2-show-function-indicator-and-actual-funct/) |
 
 ### Blockers/Concerns
 
@@ -123,10 +124,10 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-02-15 (plan execution)
-Stopped at: Completed 05-02-PLAN.md - JSON output and pipeline integration
-Resume file: .planning/phases/05-console-json-output/05-02-SUMMARY.md
+Last session: 2026-02-15 (quick task)
+Stopped at: Completed quick-02 - Show function indicator and actual function names
+Resume file: .planning/quick/2-show-function-indicator-and-actual-funct/2-SUMMARY.md
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-15T05:59:00Z*
+*Last updated: 2026-02-15T06:41:00Z*
