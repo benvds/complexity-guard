@@ -102,14 +102,27 @@ pub fn formatFileResults(
             .@"error" => "error",
         };
 
+        // Capitalize kind for display
+        const kind_display = if (std.mem.eql(u8, result.function_kind, "function"))
+            "Function"
+        else if (std.mem.eql(u8, result.function_kind, "method"))
+            "Method"
+        else if (std.mem.eql(u8, result.function_kind, "arrow"))
+            "Arrow function"
+        else if (std.mem.eql(u8, result.function_kind, "generator"))
+            "Generator"
+        else
+            "Function";
+
         // ESLint-style format: indented 2 spaces
-        try writer.print("  {d}:{d}  {s}{s}{s}  {s}  Function '{s}' has complexity {d} (threshold: {d})  cyclomatic\n", .{
+        try writer.print("  {d}:{d}  {s}{s}{s}  {s}  {s} '{s}' has complexity {d} (threshold: {d})  cyclomatic\n", .{
             result.start_line,
             result.start_col,
             color,
             symbol,
             reset,
             severity,
+            kind_display,
             result.function_name,
             result.complexity,
             if (result.status == .@"error") @as(u32, 20) else @as(u32, 10), // Use default thresholds
