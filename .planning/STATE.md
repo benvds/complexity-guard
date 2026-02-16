@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 Phase: 6 of 12 (Cognitive Complexity)
 Plan: 0 of TBD
 Status: Ready - Phase 5.1 complete with all gap closures
-Last activity: 2026-02-16 - Completed quick-9: Fix Windows build failure by replacing std.posix.getenv
+Last activity: 2026-02-16 - Completed quick-10: Fix release script to update optionalDependencies
 
 Progress: [████████░░] 46% (6/13 phases)
 
@@ -47,6 +47,7 @@ Progress: [████████░░] 46% (6/13 phases)
 | Phase 05.1 P06 | 178 | 2 tasks | 3 files |
 | Phase quick-8 P1 | 20 | 1 tasks | 1 files |
 | Phase quick-9 P1 | 1 | 1 tasks | 2 files |
+| Phase quick-10 P1 | 42 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -139,6 +140,7 @@ Recent decisions affecting current work:
 | 7 | Fix CI test failure: vendor/tree-sitter/lib/src/lib.c FileNotFound in GitHub Actions | 2026-02-16 | 2cd0eca | [7-fix-ci-test-failure-vendor-tree-sitter-l](./quick/7-fix-ci-test-failure-vendor-tree-sitter-l/) |
 | 8 | Skip test workflow on release tag pushes | 2026-02-16 | b4dd0be | [8-skip-test-workflow-on-release-tag-pushes](./quick/8-skip-test-workflow-on-release-tag-pushes/) |
 | 9 | Fix Windows build failure: replace std.posix.getenv with cross-platform APIs | 2026-02-16 | b77d545 | [9-fix-windows-build-failure-replace-std-po](./quick/9-fix-windows-build-failure-replace-std-po/) |
+| 10 | Fix release script to update optionalDependencies | 2026-02-16 | dd2d90f | [10-fix-release-script-to-update-optionaldep](./quick/10-fix-release-script-to-update-optionaldep/) |
 
 ### Blockers/Concerns
 
@@ -164,9 +166,9 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-16 (execute-phase)
-Stopped at: Completed quick-9: Fix Windows build failure by replacing std.posix.getenv
-Resume file: .planning/quick/9-fix-windows-build-failure-replace-std-po/9-SUMMARY.md
+Stopped at: Completed quick-10: Fix release script to update optionalDependencies
+Resume file: .planning/quick/10-fix-release-script-to-update-optionaldep/10-SUMMARY.md
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-16T11:56:43Z*
+*Last updated: 2026-02-16T15:22:34Z*
