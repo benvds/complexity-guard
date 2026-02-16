@@ -5,7 +5,7 @@ set -euo pipefail
 # Usage: ./scripts/release.sh <major|minor|patch>
 #
 # Flow:
-#   1. Bumps version in src/main.zig, publication/npm/package.json, and npm platform packages
+#   1. Bumps version in src/main.zig, publication/npm/package.json (including optionalDependencies), and npm platform packages
 #   2. Creates git commit and tag
 #   3. Pushes to origin (with confirmation) to trigger GitHub Actions release
 
@@ -63,6 +63,8 @@ rm src/main.zig.bak
 # Update version in package.json if it exists
 if [[ -f publication/npm/package.json ]]; then
   sed -i.bak "s/\"version\": \".*\"/\"version\": \"$NEW_VERSION\"/" publication/npm/package.json
+  rm publication/npm/package.json.bak
+  sed -i.bak "s/\(\"@complexity-guard\/[^\"]*\": \"\)[^\"]*/\1$NEW_VERSION/" publication/npm/package.json
   rm publication/npm/package.json.bak
   git add publication/npm/package.json
 fi

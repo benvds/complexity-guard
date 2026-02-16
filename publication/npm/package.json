@@ -9,11 +9,11 @@
         "bin/"
     ],
     "optionalDependencies": {
-        "@complexity-guard/darwin-arm64": "0.1.0",
-        "@complexity-guard/darwin-x64": "0.1.0",
-        "@complexity-guard/linux-arm64": "0.1.0",
-        "@complexity-guard/linux-x64": "0.1.0",
-        "@complexity-guard/windows-x64": "0.1.0"
+        "@complexity-guard/darwin-arm64": "0.1.5",
+        "@complexity-guard/darwin-x64": "0.1.5",
+        "@complexity-guard/linux-arm64": "0.1.5",
+        "@complexity-guard/linux-x64": "0.1.5",
+        "@complexity-guard/windows-x64": "0.1.5"
     },
     "license": "MIT",
     "repository": {
