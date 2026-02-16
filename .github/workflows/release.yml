@@ -154,7 +154,7 @@ jobs:
   # Job 4: Publish npm packages (main + 5 platform packages)
   npm-publish:
     runs-on: ubuntu-latest
-    needs: release
+    needs: [validate, release]
     permissions:
       id-token: write  # Required for OIDC trusted publishing (future)
       contents: read
