@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 Phase: 6 of 12 (Cognitive Complexity)
 Plan: 0 of TBD
 Status: Ready - Phase 5.1 complete with all gap closures
-Last activity: 2026-02-16 - Completed quick-14: Fix GitHub release name to show package@version format
+Last activity: 2026-02-16 - Completed quick-15: Add automatic CHANGELOG.md generation from conventional commits
 
 Progress: [████████░░] 46% (6/13 phases)
 
@@ -52,6 +52,7 @@ Progress: [████████░░] 46% (6/13 phases)
 | Phase quick-12 P01 | 59 | 1 tasks | 1 files |
 | Phase quick-13 P01 | 62 | 2 tasks | 6 files |
 | Phase quick-14 P01 | 24 | 1 tasks | 1 files |
+| Phase quick-15 P01 | 4 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -130,6 +131,8 @@ Recent decisions affecting current work:
 - [Phase quick-12]: Interactive npm login over NPM_TOKEN for initial publish (one-time bootstrap)
 - [Phase quick-12]: Warn-but-continue on org access check (npm publish handles access)
 - [Phase quick-14]: Use package@version naming convention for GitHub releases (matches industry standard)
+- [Phase quick-15]: Temp file approach for CHANGELOG.md insertion (portable across macOS/Linux, avoids sed newline issues)
+- [Phase quick-15]: Combined feat/fix regex with explicit type capture group for reliable bash matching
 
 ### Pending Todos
 
@@ -153,6 +156,7 @@ Recent decisions affecting current work:
 | 12 | Create bash script for initial manual npm publish | 2026-02-16 | a89cabf | [12-create-bash-script-for-initial-manual-np](./quick/12-create-bash-script-for-initial-manual-np/) |
 | 13 | Create README files for each package under publication/npm | 2026-02-16 | a536031 | [13-create-readme-files-for-each-package-und](./quick/13-create-readme-files-for-each-package-und/) |
 | 14 | Fix GitHub release name to show package@version format | 2026-02-16 | 415d57f | [14-fix-github-release-name-to-show-package-](./quick/14-fix-github-release-name-to-show-package-/) |
+| 15 | Add automatic CHANGELOG.md generation from conventional commits | 2026-02-16 | bdd0b4a | [15-add-automatic-changelog-md-generation-fr](./quick/15-add-automatic-changelog-md-generation-fr/) |
 
 ### Blockers/Concerns
 
@@ -178,9 +182,9 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-16 (quick)
-Stopped at: Completed quick-14: Fix GitHub release name to show package@version format
-Resume file: .planning/quick/14-fix-github-release-name-to-show-package-/14-SUMMARY.md
+Stopped at: Completed quick-15: Add automatic CHANGELOG.md generation from conventional commits
+Resume file: .planning/quick/15-add-automatic-changelog-md-generation-fr/15-SUMMARY.md
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-16T18:42:00Z*
+*Last updated: 2026-02-16T20:10:00Z*
