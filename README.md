@@ -60,6 +60,7 @@ Top complexity hotspots:
 - **[Getting Started](docs/getting-started.md)** — Installation, first analysis, configuration basics
 - **[CLI Reference](docs/cli-reference.md)** — All flags, config options, exit codes
 - **[Examples](docs/examples.md)** — Real-world usage patterns, CI integration recipes
+- **[Releasing](docs/releasing.md)** — Release process, publishing, version management
 
 ## Configuration
 
