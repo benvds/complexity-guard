@@ -6,7 +6,7 @@ set -euo pipefail
 #
 # Prerequisites:
 #   1. Copy .env.example to .env and fill in NPM_TOKEN
-#   2. Platform binaries must exist in npm/<platform>/ directories
+#   2. Platform binaries must exist in publication/npm/packages/<platform>/ directories
 #      (either from local Zig cross-compilation or downloaded from a release)
 #
 # Usage: ./scripts/publish.sh [--dry-run]
@@ -53,7 +53,7 @@ echo "Publishing platform packages..."
 echo ""
 
 for platform in "${PLATFORMS[@]}"; do
-  pkg_dir="$PROJECT_ROOT/npm/$platform"
+  pkg_dir="$PROJECT_ROOT/publication/npm/packages/$platform"
   if [ ! -f "$pkg_dir/package.json" ]; then
     echo "Warning: $pkg_dir/package.json not found, skipping"
     continue
@@ -64,7 +64,7 @@ done
 
 echo ""
 echo "Publishing main package (complexity-guard)..."
-(cd "$PROJECT_ROOT" && npm publish --access public $DRY_RUN)
+(cd "$PROJECT_ROOT/publication/npm" && npm publish --access public $DRY_RUN)
 
 echo ""
 echo "Done! All packages published."

@@ -6,7 +6,7 @@ set -euo pipefail
 #   Defaults to 'patch' if no argument provided
 #
 # Flow:
-#   1. Bumps version in src/main.zig, package.json, and npm packages
+#   1. Bumps version in src/main.zig, publication/npm/package.json, and npm platform packages
 #   2. Creates git commit and tag
 #   3. Pushes to origin (with confirmation) to trigger GitHub Actions release
 
@@ -55,15 +55,15 @@ sed -i.bak "s/^const version = \".*\";/const version = \"$NEW_VERSION\";/" src/m
 rm src/main.zig.bak
 
 # Update version in package.json if it exists
-if [[ -f package.json ]]; then
-  sed -i.bak "s/\"version\": \".*\"/\"version\": \"$NEW_VERSION\"/" package.json
-  rm package.json.bak
-  git add package.json
+if [[ -f publication/npm/package.json ]]; then
+  sed -i.bak "s/\"version\": \".*\"/\"version\": \"$NEW_VERSION\"/" publication/npm/package.json
+  rm publication/npm/package.json.bak
+  git add publication/npm/package.json
 fi
 
 # Update version in npm platform packages if they exist
-if [[ -d npm ]]; then
-  for pkg_json in npm/*/package.json; do
+if [[ -d publication/npm/packages ]]; then
+  for pkg_json in publication/npm/packages/*/package.json; do
     if [[ -f "$pkg_json" ]]; then
       sed -i.bak "s/\"version\": \".*\"/\"version\": \"$NEW_VERSION\"/" "$pkg_json"
       rm "${pkg_json}.bak"

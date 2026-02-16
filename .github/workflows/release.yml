@@ -174,30 +174,30 @@ jobs:
       - name: Extract binaries to platform packages
         run: |
           # Extract Linux x64
-          tar xzf complexity-guard-x86_64-linux.tar.gz -C npm/linux-x64/
+          tar xzf complexity-guard-x86_64-linux.tar.gz -C publication/npm/packages/linux-x64/
 
           # Extract Linux ARM64
-          tar xzf complexity-guard-aarch64-linux.tar.gz -C npm/linux-arm64/
+          tar xzf complexity-guard-aarch64-linux.tar.gz -C publication/npm/packages/linux-arm64/
 
           # Extract macOS x64
-          tar xzf complexity-guard-x86_64-macos.tar.gz -C npm/darwin-x64/
+          tar xzf complexity-guard-x86_64-macos.tar.gz -C publication/npm/packages/darwin-x64/
 
           # Extract macOS ARM64
-          tar xzf complexity-guard-aarch64-macos.tar.gz -C npm/darwin-arm64/
+          tar xzf complexity-guard-aarch64-macos.tar.gz -C publication/npm/packages/darwin-arm64/
 
           # Extract Windows x64
-          unzip -o complexity-guard-x86_64-windows.zip -d npm/windows-x64/
+          unzip -o complexity-guard-x86_64-windows.zip -d publication/npm/packages/windows-x64/
 
           # Verify all binaries extracted
           for pkg in linux-x64 linux-arm64 darwin-x64 darwin-arm64; do
-            if [ ! -f "npm/$pkg/complexity-guard" ]; then
-              echo "Error: Binary missing in npm/$pkg/"
+            if [ ! -f "publication/npm/packages/$pkg/complexity-guard" ]; then
+              echo "Error: Binary missing in publication/npm/packages/$pkg/"
               exit 1
             fi
           done
 
-          if [ ! -f "npm/windows-x64/complexity-guard.exe" ]; then
-            echo "Error: Binary missing in npm/windows-x64/"
+          if [ ! -f "publication/npm/packages/windows-x64/complexity-guard.exe" ]; then
+            echo "Error: Binary missing in publication/npm/packages/windows-x64/"
             exit 1
           fi
 
@@ -206,36 +206,36 @@ jobs:
           VERSION="${{ needs.validate.outputs.version }}"
 
           # Update main package.json
-          sed -i.bak "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" package.json
-          rm package.json.bak
+          sed -i.bak "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" publication/npm/package.json
+          rm publication/npm/package.json.bak
 
           # Update platform packages and their optionalDependencies versions
-          for pkg in npm/darwin-arm64 npm/darwin-x64 npm/linux-arm64 npm/linux-x64 npm/windows-x64; do
+          for pkg in publication/npm/packages/darwin-arm64 publication/npm/packages/darwin-x64 publication/npm/packages/linux-arm64 publication/npm/packages/linux-x64 publication/npm/packages/windows-x64; do
             sed -i.bak "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" "$pkg/package.json"
             rm "$pkg/package.json.bak"
           done
 
           # Update optionalDependencies versions in main package.json
-          sed -i.bak -E "s/\"@complexity-guard\/(darwin-arm64|darwin-x64|linux-arm64|linux-x64|windows-x64)\": \".*\"/\"@complexity-guard\/\1\": \"$VERSION\"/g" package.json
-          rm package.json.bak
+          sed -i.bak -E "s/\"@complexity-guard\/(darwin-arm64|darwin-x64|linux-arm64|linux-x64|windows-x64)\": \".*\"/\"@complexity-guard\/\1\": \"$VERSION\"/g" publication/npm/package.json
+          rm publication/npm/package.json.bak
 
       - name: Publish platform packages to npm
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           # Publish each platform package
-          for pkg in npm/darwin-arm64 npm/darwin-x64 npm/linux-arm64 npm/linux-x64 npm/windows-x64; do
+          for pkg in publication/npm/packages/darwin-arm64 publication/npm/packages/darwin-x64 publication/npm/packages/linux-arm64 publication/npm/packages/linux-x64 publication/npm/packages/windows-x64; do
             echo "Publishing $pkg..."
             cd "$pkg"
             npm publish --access public
-            cd ../..
+            cd -
           done
 
       - name: Publish main package to npm
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          npm publish --access public
+          cd publication/npm && npm publish --access public
 
   # Job 5: Update Homebrew formula with SHA256 checksums
   homebrew-update:
@@ -275,21 +275,21 @@ jobs:
           VERSION="${{ needs.validate.outputs.version }}"
 
           # Update version in formula
-          sed -i.bak "s/version \".*\"/version \"$VERSION\"/" homebrew/complexity-guard.rb
-          rm homebrew/complexity-guard.rb.bak
+          sed -i.bak "s/version \".*\"/version \"$VERSION\"/" publication/homebrew/complexity-guard.rb
+          rm publication/homebrew/complexity-guard.rb.bak
 
           # Update SHA256 placeholders with actual checksums
-          sed -i.bak "s/PLACEHOLDER_SHA256_AARCH64_MACOS/${{ steps.checksums.outputs.aarch64_macos }}/" homebrew/complexity-guard.rb
-          sed -i.bak "s/PLACEHOLDER_SHA256_X86_64_MACOS/${{ steps.checksums.outputs.x86_64_macos }}/" homebrew/complexity-guard.rb
-          sed -i.bak "s/PLACEHOLDER_SHA256_AARCH64_LINUX/${{ steps.checksums.outputs.aarch64_linux }}/" homebrew/complexity-guard.rb
-          sed -i.bak "s/PLACEHOLDER_SHA256_X86_64_LINUX/${{ steps.checksums.outputs.x86_64_linux }}/" homebrew/complexity-guard.rb
-          rm homebrew/complexity-guard.rb.bak
+          sed -i.bak "s/PLACEHOLDER_SHA256_AARCH64_MACOS/${{ steps.checksums.outputs.aarch64_macos }}/" publication/homebrew/complexity-guard.rb
+          sed -i.bak "s/PLACEHOLDER_SHA256_X86_64_MACOS/${{ steps.checksums.outputs.x86_64_macos }}/" publication/homebrew/complexity-guard.rb
+          sed -i.bak "s/PLACEHOLDER_SHA256_AARCH64_LINUX/${{ steps.checksums.outputs.aarch64_linux }}/" publication/homebrew/complexity-guard.rb
+          sed -i.bak "s/PLACEHOLDER_SHA256_X86_64_LINUX/${{ steps.checksums.outputs.x86_64_linux }}/" publication/homebrew/complexity-guard.rb
+          rm publication/homebrew/complexity-guard.rb.bak
 
           echo "Updated Homebrew formula:"
-          cat homebrew/complexity-guard.rb
+          cat publication/homebrew/complexity-guard.rb
 
       - name: Output updated formula
         run: |
           echo "::notice::Homebrew formula updated locally with SHA256 checksums."
-          echo "::notice::Manual step: Copy homebrew/complexity-guard.rb to Homebrew tap repository."
+          echo "::notice::Manual step: Copy publication/homebrew/complexity-guard.rb to Homebrew tap repository."
           echo "::notice::Future enhancement: Automate tap update using PAT and git commit."
