@@ -7,6 +7,68 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.8] - 2026-02-16
+
+### Added
+
+- Create platform binary package READMEs
+- Create main npm package README
+- Add initial npm publish script
+
+## [0.1.7] - 2026-02-16
+
+### Added
+
+- Switch npm publish to OIDC trusted publishing (no token needed)
+
+### Fixed
+
+- Normalize npm package.json repository URLs to git+https format
+
+## [0.1.6] - 2026-02-16
+
+### Fixed
+
+- Update optionalDependencies versions and automate future bumps
+
+## [0.1.5] - 2026-02-16
+
+## [0.1.4] - 2026-02-16
+
+### Fixed
+
+- Add validate to npm-publish job needs for version access
+
+## [0.1.3] - 2026-02-16
+
+### Fixed
+
+- Replace std.posix.getenv with cross-platform APIs
+
+## [0.1.2] - 2026-02-16
+
+### Added
+
+- Update path references to publication/ directory
+- Add confirmation and push to release script
+- Add tag push trigger and conditional logic to release workflow
+
+### Fixed
+
+- Add submodule checkout to CI workflows
+
+## [0.1.1] - 2026-02-15
+
+### Added
+
+- CI test workflow with GitHub Actions
+- Release script for automated version bumping
+- GitHub Actions release workflow with cross-platform builds
+- npm platform packages and wrapper script
+- Homebrew formula template
+- Comprehensive user documentation (getting started, CLI reference, examples)
+- Release process documentation
+
 ## [0.1.0] - 2026-02-15
 
 ### Added
@@ -20,5 +82,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tree-sitter based parsing with error-tolerant syntax handling
 - CLI with --help, --version, --verbose, --quiet, --format, --output, --config, --init flags
 
-[Unreleased]: https://github.com/benvds/complexity-guard/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/benvds/complexity-guard/compare/v0.1.8...HEAD
+[0.1.8]: https://github.com/benvds/complexity-guard/compare/v0.1.7...v0.1.8
+[0.1.7]: https://github.com/benvds/complexity-guard/compare/v0.1.6...v0.1.7
+[0.1.6]: https://github.com/benvds/complexity-guard/compare/v0.1.5...v0.1.6
+[0.1.5]: https://github.com/benvds/complexity-guard/compare/v0.1.4...v0.1.5
+[0.1.4]: https://github.com/benvds/complexity-guard/compare/v0.1.3...v0.1.4
+[0.1.3]: https://github.com/benvds/complexity-guard/compare/v0.1.2...v0.1.3
+[0.1.2]: https://github.com/benvds/complexity-guard/compare/v0.1.1...v0.1.2
+[0.1.1]: https://github.com/benvds/complexity-guard/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/benvds/complexity-guard/releases/tag/v0.1.0
