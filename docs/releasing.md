@@ -53,9 +53,9 @@ Follow these steps to create a new release:
 
 2. **Run the release script**
    ```sh
-   ./scripts/release.sh [major|minor|patch]
+   ./scripts/release.sh <major|minor|patch>
    ```
-   The bump type defaults to `patch` if not specified.
+   The bump type is required.
 
 3. **The script reads the current version** from `src/main.zig` (the source of truth)
 
@@ -92,9 +92,6 @@ Follow these steps to create a new release:
 
 # Major release (0.2.0 -> 1.0.0)
 ./scripts/release.sh major
-
-# Default behavior (patch if no argument)
-./scripts/release.sh
 ```
 
 ## What Happens After Push (CI Pipeline)

@@ -2,15 +2,21 @@
 set -euo pipefail
 
 # Release script - bumps version, commits, tags, and pushes to trigger release workflow
-# Usage: ./scripts/release.sh [major|minor|patch]
-#   Defaults to 'patch' if no argument provided
+# Usage: ./scripts/release.sh <major|minor|patch>
 #
 # Flow:
 #   1. Bumps version in src/main.zig, publication/npm/package.json, and npm platform packages
 #   2. Creates git commit and tag
 #   3. Pushes to origin (with confirmation) to trigger GitHub Actions release
 
-BUMP_TYPE="${1:-patch}"
+BUMP_TYPE="${1:-}"
+
+# Check if bump type was provided
+if [[ -z "$BUMP_TYPE" ]]; then
+  echo "Usage: ./scripts/release.sh <major|minor|patch>"
+  echo "Error: Bump type is required. Must be: major, minor, or patch"
+  exit 1
+fi
 
 # Validate bump type
 if [[ ! "$BUMP_TYPE" =~ ^(major|minor|patch)$ ]]; then
