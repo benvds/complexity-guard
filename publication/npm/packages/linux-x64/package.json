@@ -1,6 +1,6 @@
 {
     "name": "@complexity-guard/linux-x64",
-    "version": "0.1.4",
+    "version": "0.1.5",
     "description": "ComplexityGuard binary for Linux x64",
     "os": [
         "linux"
