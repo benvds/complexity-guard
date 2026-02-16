@@ -1,5 +1,9 @@
 {
     "name": "complexity-guard",
+    "author": {
+        "name": "Ben van de Sande",
+        "email": "info@getlean.digital"
+    },
     "version": "0.1.6",
     "description": "Fast complexity analysis for TypeScript/JavaScript — single static binary",
     "bin": {

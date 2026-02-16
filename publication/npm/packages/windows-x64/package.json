@@ -1,5 +1,9 @@
 {
     "name": "@complexity-guard/windows-x64",
+    "author": {
+        "name": "Ben van de Sande",
+        "email": "info@getlean.digital"
+    },
     "version": "0.1.6",
     "description": "ComplexityGuard binary for Windows x64",
     "os": [
