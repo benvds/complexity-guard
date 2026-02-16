@@ -14,7 +14,7 @@ const console = @import("output/console.zig");
 const json_output = @import("output/json_output.zig");
 const exit_codes = @import("output/exit_codes.zig");
 
-const version = "0.1.8";
+const version = "0.1.9";
 
 pub fn main() !void {
     // Set up arena allocator for CLI lifecycle

@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.9] - 2026-02-16
+
+### Added
+
+- Backfill CHANGELOG.md for v0.1.1 through v0.1.8
+- Add changelog generation to release script
+
+### Fixed
+
+- Update GitHub release name to complexity-guard@version format
+
 ## [0.1.8] - 2026-02-16
 
 ### Added
@@ -82,7 +93,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tree-sitter based parsing with error-tolerant syntax handling
 - CLI with --help, --version, --verbose, --quiet, --format, --output, --config, --init flags
 
-[Unreleased]: https://github.com/benvds/complexity-guard/compare/v0.1.8...HEAD
+[Unreleased]: https://github.com/benvds/complexity-guard/compare/v0.1.9...HEAD
+[0.1.9]: https://github.com/benvds/complexity-guard/compare/v0.1.8...v0.1.9
 [0.1.8]: https://github.com/benvds/complexity-guard/compare/v0.1.7...v0.1.8
 [0.1.7]: https://github.com/benvds/complexity-guard/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/benvds/complexity-guard/compare/v0.1.5...v0.1.6
