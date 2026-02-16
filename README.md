@@ -10,9 +10,6 @@ Install ComplexityGuard:
 # npm (global install)
 npm install -g complexity-guard
 
-# Homebrew (macOS/Linux)
-brew install benvds/tap/complexity-guard
-
 # Direct download (all platforms)
 # Download the binary for your platform from GitHub releases:
 # https://github.com/benvds/complexity-guard/releases

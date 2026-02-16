@@ -18,18 +18,6 @@ After installation, verify it works:
 complexity-guard --version
 ```
 
-### Homebrew (macOS/Linux)
-
-```sh
-brew install benvds/tap/complexity-guard
-```
-
-Verify the installation:
-
-```sh
-complexity-guard --version
-```
-
 ### Direct Download
 
 1. Visit the [GitHub releases page](https://github.com/benvds/complexity-guard/releases)

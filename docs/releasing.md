@@ -17,7 +17,7 @@ CI:                                            tag push triggers
                                                      |
                                                   release (GitHub)
                                                    /       \
-                                         npm-publish    homebrew-update
+                                         npm-publish    homebrew-update (DISABLED)
 ```
 
 ## Concepts: Release vs Publish
@@ -35,7 +35,7 @@ It's important to understand the distinction between these two steps:
 - Builds binaries for all 5 target platforms
 - Creates a GitHub release with binary archives
 - Publishes packages to npm registry
-- Updates the Homebrew formula with SHA256 checksums
+- (DISABLED) Updates the Homebrew formula with SHA256 checksums
 - **This is what GitHub Actions does automatically**
 
 You trigger the process locally with `release.sh`. Everything else happens automatically in CI.
@@ -164,7 +164,9 @@ Once you push the tag, GitHub Actions takes over with a 5-job pipeline. Here's w
 
 **Result:** 6 packages published to npmjs.com registry
 
-### 5. homebrew-update Job
+### 5. homebrew-update Job (DISABLED)
+
+> **Note:** This job is currently disabled in the workflow. The documentation is preserved for when Homebrew publication is re-enabled.
 
 **Purpose:** Compute SHA256 checksums and update the Homebrew formula
 
@@ -284,7 +286,7 @@ After pushing the tag, monitor the release and verify completion:
 
 - [ ] GitHub Actions release workflow completed successfully
   - Check: `https://github.com/benvds/complexity-guard/actions`
-  - All 5 jobs (validate, build, release, npm-publish, homebrew-update) should be green
+  - All 4 jobs (validate, build, release, npm-publish) should be green (homebrew-update DISABLED)
 - [ ] GitHub release page shows all 5 binary archives
   - Check: `https://github.com/benvds/complexity-guard/releases/tag/vX.Y.Z`
   - Should see: 4 `.tar.gz` files and 1 `.zip` file
@@ -292,7 +294,7 @@ After pushing the tag, monitor the release and verify completion:
   - Check: `npm view complexity-guard versions`
   - Check: `npm view @complexity-guard/darwin-arm64 versions`
   - Latest version should appear in the output
-- [ ] Copy updated Homebrew formula to tap repository (until automated)
+- [ ] (DISABLED) Copy updated Homebrew formula to tap repository (until automated)
   - Download the formula from CI artifacts or view it in the workflow logs
   - Commit to `benvds/homebrew-tap` repository
 
