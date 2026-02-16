@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 Phase: 6 of 12 (Cognitive Complexity)
 Plan: 0 of TBD
 Status: Ready - Phase 5.1 complete with all gap closures
-Last activity: 2026-02-16 - Completed quick-7: Fix CI test failure: vendor/tree-sitter/lib/src/lib.c FileNotFound in GitHub Actions
+Last activity: 2026-02-16 - Completed quick-8: Skip test workflow on release tag pushes
 
 Progress: [████████░░] 46% (6/13 phases)
 
@@ -45,6 +45,7 @@ Progress: [████████░░] 46% (6/13 phases)
 | Phase 05.1 P04 | 79 | 1 tasks | 1 files |
 | Phase 05.1 P05 | 165 | 2 tasks | 4 files |
 | Phase 05.1 P06 | 178 | 2 tasks | 3 files |
+| Phase quick-8 P1 | 20 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -118,6 +119,7 @@ Recent decisions affecting current work:
 - [Phase 05.1-06]: Homebrew formula comments explain SHA256 placeholder mechanism inline
 - [Quick Task 6]: DISABLED marker pattern for temporarily disabled workflow jobs (comment out with clear re-enablement instructions)
 - [Quick Task 7]: Selective submodule checkout in CI workflows (only enable where builds occur to minimize checkout time)
+- [Quick Task 8]: tags-ignore pattern in test workflow prevents redundant CI runs when release tags are pushed (release workflow already handles builds)
 
 ### Pending Todos
 
@@ -134,6 +136,7 @@ Recent decisions affecting current work:
 | 5 | Update release script to require explicit bump type | 2026-02-16 | 9fa4762 | [5-update-the-release-script-to-have-no-def](./quick/5-update-the-release-script-to-have-no-def/) |
 | 6 | Disable Homebrew publication but keep code for re-enablement | 2026-02-16 | 8cafb14 | [6-disable-the-homebrew-publication-but-kee](./quick/6-disable-the-homebrew-publication-but-kee/) |
 | 7 | Fix CI test failure: vendor/tree-sitter/lib/src/lib.c FileNotFound in GitHub Actions | 2026-02-16 | 2cd0eca | [7-fix-ci-test-failure-vendor-tree-sitter-l](./quick/7-fix-ci-test-failure-vendor-tree-sitter-l/) |
+| 8 | Skip test workflow on release tag pushes | 2026-02-16 | b4dd0be | [8-skip-test-workflow-on-release-tag-pushes](./quick/8-skip-test-workflow-on-release-tag-pushes/) |
 
 ### Blockers/Concerns
 
@@ -159,9 +162,9 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-16 (execute-phase)
-Stopped at: Completed quick-7: Fix CI test failure: vendor/tree-sitter/lib/src/lib.c FileNotFound in GitHub Actions
-Resume file: .planning/quick/7-fix-ci-test-failure-vendor-tree-sitter-l/7-SUMMARY.md
+Stopped at: Completed quick-8: Skip test workflow on release tag pushes
+Resume file: .planning/quick/8-skip-test-workflow-on-release-tag-pushes/8-SUMMARY.md
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-16T09:18:00Z*
+*Last updated: 2026-02-16T11:43:24Z*
