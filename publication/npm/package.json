@@ -1,6 +1,6 @@
 {
     "name": "complexity-guard",
-    "version": "0.1.5",
+    "version": "0.1.6",
     "description": "Fast complexity analysis for TypeScript/JavaScript — single static binary",
     "bin": {
         "complexity-guard": "bin/complexity-guard.js"
@@ -9,11 +9,11 @@
         "bin/"
     ],
     "optionalDependencies": {
-        "@complexity-guard/darwin-arm64": "0.1.5",
-        "@complexity-guard/darwin-x64": "0.1.5",
-        "@complexity-guard/linux-arm64": "0.1.5",
-        "@complexity-guard/linux-x64": "0.1.5",
-        "@complexity-guard/windows-x64": "0.1.5"
+        "@complexity-guard/darwin-arm64": "0.1.6",
+        "@complexity-guard/darwin-x64": "0.1.6",
+        "@complexity-guard/linux-arm64": "0.1.6",
+        "@complexity-guard/linux-x64": "0.1.6",
+        "@complexity-guard/windows-x64": "0.1.6"
     },
     "license": "MIT",
     "repository": {
