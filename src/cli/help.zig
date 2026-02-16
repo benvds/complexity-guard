@@ -59,17 +59,11 @@ pub fn shouldUseColor(force_color: bool, no_color: bool) bool {
     if (force_color) return true;
 
     // Check NO_COLOR environment variable (https://no-color.org/)
-    if (std.posix.getenv("NO_COLOR")) |_| {
-        return false;
-    }
+    if (std.process.hasEnvVarConstant("NO_COLOR")) return false;
 
     // Check FORCE_COLOR or YES_COLOR environment variables
-    if (std.posix.getenv("FORCE_COLOR")) |_| {
-        return true;
-    }
-    if (std.posix.getenv("YES_COLOR")) |_| {
-        return true;
-    }
+    if (std.process.hasEnvVarConstant("FORCE_COLOR")) return true;
+    if (std.process.hasEnvVarConstant("YES_COLOR")) return true;
 
     // Default: detect TTY on stdout
     const config = std.io.tty.detectConfig(std.fs.File.stdout());

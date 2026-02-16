@@ -131,19 +131,28 @@ fn searchUserConfig(allocator: std.mem.Allocator) !?[]const u8 {
 /// Returns $XDG_CONFIG_HOME if set, otherwise ~/.config on Unix or %APPDATA% on Windows.
 fn getConfigHome(allocator: std.mem.Allocator) !?[]const u8 {
     // Check XDG_CONFIG_HOME environment variable
-    if (std.posix.getenv("XDG_CONFIG_HOME")) |xdg_config| {
-        return try allocator.dupe(u8, xdg_config);
-    }
+    const xdg_config = std.process.getEnvVarOwned(allocator, "XDG_CONFIG_HOME") catch |err| switch (err) {
+        error.EnvironmentVariableNotFound => null,
+        else => |e| return e,
+    };
+    if (xdg_config) |val| return val;
 
     // Fall back to HOME/.config on Unix-like systems
-    if (std.posix.getenv("HOME")) |home| {
-        return try std.fs.path.join(allocator, &.{ home, ".config" });
+    const home = std.process.getEnvVarOwned(allocator, "HOME") catch |err| switch (err) {
+        error.EnvironmentVariableNotFound => null,
+        else => |e| return e,
+    };
+    if (home) |home_val| {
+        defer allocator.free(home_val);
+        return try std.fs.path.join(allocator, &.{ home_val, ".config" });
     }
 
     // Fall back to APPDATA on Windows
-    if (std.posix.getenv("APPDATA")) |appdata| {
-        return try allocator.dupe(u8, appdata);
-    }
+    const appdata = std.process.getEnvVarOwned(allocator, "APPDATA") catch |err| switch (err) {
+        error.EnvironmentVariableNotFound => null,
+        else => |e| return e,
+    };
+    if (appdata) |val| return val;
 
     return null;
 }
