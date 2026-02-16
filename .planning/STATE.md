@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 Phase: 6 of 12 (Cognitive Complexity)
 Plan: 0 of TBD
 Status: Ready - Phase 5.1 complete with all gap closures
-Last activity: 2026-02-16 - Completed quick-11: Fix npm package.json repository URLs and switch to OIDC trusted publishing
+Last activity: 2026-02-16 - Completed quick-12: Create bash script for initial manual npm publish
 
 Progress: [████████░░] 46% (6/13 phases)
 
@@ -49,6 +49,7 @@ Progress: [████████░░] 46% (6/13 phases)
 | Phase quick-9 P1 | 1 | 1 tasks | 2 files |
 | Phase quick-10 P1 | 42 | 1 tasks | 2 files |
 | Phase quick-11 P1 | 62 | 2 tasks | 6 files |
+| Phase quick-12 P01 | 59 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -124,6 +125,8 @@ Recent decisions affecting current work:
 - [Quick Task 7]: Selective submodule checkout in CI workflows (only enable where builds occur to minimize checkout time)
 - [Quick Task 8]: tags-ignore pattern in test workflow prevents redundant CI runs when release tags are pushed (release workflow already handles builds)
 - [Phase quick-11]: Use npm trusted publishing (OIDC) instead of secret tokens for improved supply chain security
+- [Phase quick-12]: Interactive npm login over NPM_TOKEN for initial publish (one-time bootstrap)
+- [Phase quick-12]: Warn-but-continue on org access check (npm publish handles access)
 
 ### Pending Todos
 
@@ -144,6 +147,7 @@ Recent decisions affecting current work:
 | 9 | Fix Windows build failure: replace std.posix.getenv with cross-platform APIs | 2026-02-16 | b77d545 | [9-fix-windows-build-failure-replace-std-po](./quick/9-fix-windows-build-failure-replace-std-po/) |
 | 10 | Fix release script to update optionalDependencies | 2026-02-16 | dd2d90f | [10-fix-release-script-to-update-optionaldep](./quick/10-fix-release-script-to-update-optionaldep/) |
 | 11 | Fix npm package.json repository URLs and switch to OIDC trusted publishing | 2026-02-16 | c5ba6ae | [11-fix-npm-package-json-repository-urls-and](./quick/11-fix-npm-package-json-repository-urls-and/) |
+| 12 | Create bash script for initial manual npm publish | 2026-02-16 | a89cabf | [12-create-bash-script-for-initial-manual-np](./quick/12-create-bash-script-for-initial-manual-np/) |
 
 ### Blockers/Concerns
 
