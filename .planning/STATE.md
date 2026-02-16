@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 Phase: 6 of 12 (Cognitive Complexity)
 Plan: 0 of TBD
 Status: Ready - Phase 5.1 complete with all gap closures
-Last activity: 2026-02-16 - Completed quick-10: Fix release script to update optionalDependencies
+Last activity: 2026-02-16 - Completed quick-11: Fix npm package.json repository URLs and switch to OIDC trusted publishing
 
 Progress: [████████░░] 46% (6/13 phases)
 
@@ -48,6 +48,7 @@ Progress: [████████░░] 46% (6/13 phases)
 | Phase quick-8 P1 | 20 | 1 tasks | 1 files |
 | Phase quick-9 P1 | 1 | 1 tasks | 2 files |
 | Phase quick-10 P1 | 42 | 1 tasks | 2 files |
+| Phase quick-11 P1 | 62 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -122,6 +123,7 @@ Recent decisions affecting current work:
 - [Quick Task 6]: DISABLED marker pattern for temporarily disabled workflow jobs (comment out with clear re-enablement instructions)
 - [Quick Task 7]: Selective submodule checkout in CI workflows (only enable where builds occur to minimize checkout time)
 - [Quick Task 8]: tags-ignore pattern in test workflow prevents redundant CI runs when release tags are pushed (release workflow already handles builds)
+- [Phase quick-11]: Use npm trusted publishing (OIDC) instead of secret tokens for improved supply chain security
 
 ### Pending Todos
 
@@ -141,6 +143,7 @@ Recent decisions affecting current work:
 | 8 | Skip test workflow on release tag pushes | 2026-02-16 | b4dd0be | [8-skip-test-workflow-on-release-tag-pushes](./quick/8-skip-test-workflow-on-release-tag-pushes/) |
 | 9 | Fix Windows build failure: replace std.posix.getenv with cross-platform APIs | 2026-02-16 | b77d545 | [9-fix-windows-build-failure-replace-std-po](./quick/9-fix-windows-build-failure-replace-std-po/) |
 | 10 | Fix release script to update optionalDependencies | 2026-02-16 | dd2d90f | [10-fix-release-script-to-update-optionaldep](./quick/10-fix-release-script-to-update-optionaldep/) |
+| 11 | Fix npm package.json repository URLs and switch to OIDC trusted publishing | 2026-02-16 | c5ba6ae | [11-fix-npm-package-json-repository-urls-and](./quick/11-fix-npm-package-json-repository-urls-and/) |
 
 ### Blockers/Concerns
 
@@ -166,9 +169,9 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-16 (execute-phase)
-Stopped at: Completed quick-10: Fix release script to update optionalDependencies
-Resume file: .planning/quick/10-fix-release-script-to-update-optionaldep/10-SUMMARY.md
+Stopped at: Completed quick-11: Fix npm package.json repository URLs and switch to OIDC trusted publishing
+Resume file: .planning/quick/11-fix-npm-package-json-repository-urls-and/11-SUMMARY.md
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-16T15:22:34Z*
+*Last updated: 2026-02-16T17:01:48Z*
