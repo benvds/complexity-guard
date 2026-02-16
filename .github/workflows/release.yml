@@ -5,7 +5,7 @@
 # 2. Cross-compiles binaries for all 5 target platforms
 # 3. Creates GitHub release with binary archives
 # 4. Publishes npm packages (main + 5 platform packages)
-# 5. Updates Homebrew formula with SHA256 checksums
+# 5. (DISABLED) Updates Homebrew formula with SHA256 checksums
 #
 # Triggers:
 #   - Tag push: Push a v* tag (e.g., via scripts/release.sh)
@@ -237,59 +237,63 @@ jobs:
         run: |
           cd publication/npm && npm publish --access public
 
+  # DISABLED: homebrew-update job
+  # To re-enable Homebrew publication, uncomment this entire job block.
+  # See also: README.md, docs/getting-started.md, docs/releasing.md for doc sections to restore.
+  #
   # Job 5: Update Homebrew formula with SHA256 checksums
-  homebrew-update:
-    runs-on: ubuntu-latest
-    needs: release
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          merge-multiple: true
-
-      - name: Compute SHA256 checksums
-        id: checksums
-        run: |
-          # Compute SHA256 for each macOS and Linux archive
-          SHA_AARCH64_MACOS=$(shasum -a 256 complexity-guard-aarch64-macos.tar.gz | awk '{print $1}')
-          SHA_X86_64_MACOS=$(shasum -a 256 complexity-guard-x86_64-macos.tar.gz | awk '{print $1}')
-          SHA_AARCH64_LINUX=$(shasum -a 256 complexity-guard-aarch64-linux.tar.gz | awk '{print $1}')
-          SHA_X86_64_LINUX=$(shasum -a 256 complexity-guard-x86_64-linux.tar.gz | awk '{print $1}')
-
-          echo "aarch64_macos=$SHA_AARCH64_MACOS" >> "$GITHUB_OUTPUT"
-          echo "x86_64_macos=$SHA_X86_64_MACOS" >> "$GITHUB_OUTPUT"
-          echo "aarch64_linux=$SHA_AARCH64_LINUX" >> "$GITHUB_OUTPUT"
-          echo "x86_64_linux=$SHA_X86_64_LINUX" >> "$GITHUB_OUTPUT"
-
-          echo "SHA256 checksums computed:"
-          echo "  aarch64-macos: $SHA_AARCH64_MACOS"
-          echo "  x86_64-macos: $SHA_X86_64_MACOS"
-          echo "  aarch64-linux: $SHA_AARCH64_LINUX"
-          echo "  x86_64-linux: $SHA_X86_64_LINUX"
-
-      - name: Update Homebrew formula
-        run: |
-          VERSION="${{ needs.validate.outputs.version }}"
-
-          # Update version in formula
-          sed -i.bak "s/version \".*\"/version \"$VERSION\"/" publication/homebrew/complexity-guard.rb
-          rm publication/homebrew/complexity-guard.rb.bak
-
-          # Update SHA256 placeholders with actual checksums
-          sed -i.bak "s/PLACEHOLDER_SHA256_AARCH64_MACOS/${{ steps.checksums.outputs.aarch64_macos }}/" publication/homebrew/complexity-guard.rb
-          sed -i.bak "s/PLACEHOLDER_SHA256_X86_64_MACOS/${{ steps.checksums.outputs.x86_64_macos }}/" publication/homebrew/complexity-guard.rb
-          sed -i.bak "s/PLACEHOLDER_SHA256_AARCH64_LINUX/${{ steps.checksums.outputs.aarch64_linux }}/" publication/homebrew/complexity-guard.rb
-          sed -i.bak "s/PLACEHOLDER_SHA256_X86_64_LINUX/${{ steps.checksums.outputs.x86_64_linux }}/" publication/homebrew/complexity-guard.rb
-          rm publication/homebrew/complexity-guard.rb.bak
-
-          echo "Updated Homebrew formula:"
-          cat publication/homebrew/complexity-guard.rb
-
-      - name: Output updated formula
-        run: |
-          echo "::notice::Homebrew formula updated locally with SHA256 checksums."
-          echo "::notice::Manual step: Copy publication/homebrew/complexity-guard.rb to Homebrew tap repository."
-          echo "::notice::Future enhancement: Automate tap update using PAT and git commit."
+  # homebrew-update:
+  #   runs-on: ubuntu-latest
+  #   needs: release
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Download all artifacts
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         merge-multiple: true
+  #
+  #     - name: Compute SHA256 checksums
+  #       id: checksums
+  #       run: |
+  #         # Compute SHA256 for each macOS and Linux archive
+  #         SHA_AARCH64_MACOS=$(shasum -a 256 complexity-guard-aarch64-macos.tar.gz | awk '{print $1}')
+  #         SHA_X86_64_MACOS=$(shasum -a 256 complexity-guard-x86_64-macos.tar.gz | awk '{print $1}')
+  #         SHA_AARCH64_LINUX=$(shasum -a 256 complexity-guard-aarch64-linux.tar.gz | awk '{print $1}')
+  #         SHA_X86_64_LINUX=$(shasum -a 256 complexity-guard-x86_64-linux.tar.gz | awk '{print $1}')
+  #
+  #         echo "aarch64_macos=$SHA_AARCH64_MACOS" >> "$GITHUB_OUTPUT"
+  #         echo "x86_64_macos=$SHA_X86_64_MACOS" >> "$GITHUB_OUTPUT"
+  #         echo "aarch64_linux=$SHA_AARCH64_LINUX" >> "$GITHUB_OUTPUT"
+  #         echo "x86_64_linux=$SHA_X86_64_LINUX" >> "$GITHUB_OUTPUT"
+  #
+  #         echo "SHA256 checksums computed:"
+  #         echo "  aarch64-macos: $SHA_AARCH64_MACOS"
+  #         echo "  x86_64-macos: $SHA_X86_64_MACOS"
+  #         echo "  aarch64-linux: $SHA_AARCH64_LINUX"
+  #         echo "  x86_64-linux: $SHA_X86_64_LINUX"
+  #
+  #     - name: Update Homebrew formula
+  #       run: |
+  #         VERSION="${{ needs.validate.outputs.version }}"
+  #
+  #         # Update version in formula
+  #         sed -i.bak "s/version \".*\"/version \"$VERSION\"/" publication/homebrew/complexity-guard.rb
+  #         rm publication/homebrew/complexity-guard.rb.bak
+  #
+  #         # Update SHA256 placeholders with actual checksums
+  #         sed -i.bak "s/PLACEHOLDER_SHA256_AARCH64_MACOS/${{ steps.checksums.outputs.aarch64_macos }}/" publication/homebrew/complexity-guard.rb
+  #         sed -i.bak "s/PLACEHOLDER_SHA256_X86_64_MACOS/${{ steps.checksums.outputs.x86_64_macos }}/" publication/homebrew/complexity-guard.rb
+  #         sed -i.bak "s/PLACEHOLDER_SHA256_AARCH64_LINUX/${{ steps.checksums.outputs.aarch64_linux }}/" publication/homebrew/complexity-guard.rb
+  #         sed -i.bak "s/PLACEHOLDER_SHA256_X86_64_LINUX/${{ steps.checksums.outputs.x86_64_linux }}/" publication/homebrew/complexity-guard.rb
+  #         rm publication/homebrew/complexity-guard.rb.bak
+  #
+  #         echo "Updated Homebrew formula:"
+  #         cat publication/homebrew/complexity-guard.rb
+  #
+  #     - name: Output updated formula
+  #       run: |
+  #         echo "::notice::Homebrew formula updated locally with SHA256 checksums."
+  #         echo "::notice::Manual step: Copy publication/homebrew/complexity-guard.rb to Homebrew tap repository."
+  #         echo "::notice::Future enhancement: Automate tap update using PAT and git commit."
