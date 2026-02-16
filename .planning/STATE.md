@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 Phase: 6 of 12 (Cognitive Complexity)
 Plan: 0 of TBD
 Status: Ready - Phase 5.1 complete with all gap closures
-Last activity: 2026-02-16 - Completed quick-5: Require explicit bump type in release script - prevents accidental releases
+Last activity: 2026-02-16 - Completed quick-6: Disable Homebrew publication but keep code for re-enablement
 
 Progress: [████████░░] 46% (6/13 phases)
 
@@ -116,6 +116,7 @@ Recent decisions affecting current work:
 - [Phase 05.1-05]: All workflow and script references updated to publication/ paths
 - [Phase 05.1-06]: Comprehensive release documentation following TanStack/Astro friendly style
 - [Phase 05.1-06]: Homebrew formula comments explain SHA256 placeholder mechanism inline
+- [Quick Task 6]: DISABLED marker pattern for temporarily disabled workflow jobs (comment out with clear re-enablement instructions)
 
 ### Pending Todos
 
@@ -130,6 +131,7 @@ Recent decisions affecting current work:
 | 3 | Document credentials and create .env.example | 2026-02-15 | 1b64692 | [3-document-credentials-create-env-example-](./quick/3-document-credentials-create-env-example-/) |
 | 4 | Add tag push trigger to release workflow | 2026-02-15 | 39a02d6 | [4-add-tag-push-trigger-to-release-workflow](./quick/4-add-tag-push-trigger-to-release-workflow/) |
 | 5 | Update release script to require explicit bump type | 2026-02-16 | 9fa4762 | [5-update-the-release-script-to-have-no-def](./quick/5-update-the-release-script-to-have-no-def/) |
+| 6 | Disable Homebrew publication but keep code for re-enablement | 2026-02-16 | 8cafb14 | [6-disable-the-homebrew-publication-but-kee](./quick/6-disable-the-homebrew-publication-but-kee/) |
 
 ### Blockers/Concerns
 
@@ -155,9 +157,9 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-16 (execute-phase)
-Stopped at: Completed quick-5: Update release script to require explicit bump type
-Resume file: .planning/quick/5-update-the-release-script-to-have-no-def/5-SUMMARY.md
+Stopped at: Completed quick-6: Disable Homebrew publication but keep code for re-enablement
+Resume file: .planning/quick/6-disable-the-homebrew-publication-but-kee/6-SUMMARY.md
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-16T09:00:01Z*
+*Last updated: 2026-02-16T09:06:27Z*
