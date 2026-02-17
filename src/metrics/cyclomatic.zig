@@ -52,6 +52,10 @@ pub const ThresholdResult = struct {
     function_kind: []const u8,
     start_line: u32,
     start_col: u32,
+    /// Cognitive complexity score (0 until Phase 6 populates it)
+    cognitive_complexity: u32,
+    /// Cognitive complexity threshold status (ok until Phase 6 populates it)
+    cognitive_status: ThresholdStatus,
 };
 
 /// Per-function complexity result
@@ -372,6 +376,8 @@ pub fn analyzeFile(
             .function_kind = fc.kind,
             .start_line = fc.start_line,
             .start_col = fc.start_col,
+            .cognitive_complexity = 0,
+            .cognitive_status = .ok,
         });
     }
 

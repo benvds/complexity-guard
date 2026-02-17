@@ -136,7 +136,7 @@ test "buildJsonOutput: produces correct version and status fields" {
     const allocator = std.testing.allocator;
 
     const results = [_]cyclomatic.ThresholdResult{
-        .{ .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function", .start_line = 1, .start_col = 0 },
+        .{ .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function", .start_line = 1, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok },
     };
 
     const file_results = [_]console.FileThresholdResults{
@@ -161,9 +161,9 @@ test "buildJsonOutput: counts warnings/errors in summary correctly" {
     const allocator = std.testing.allocator;
 
     const results = [_]cyclomatic.ThresholdResult{
-        .{ .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function", .start_line = 1, .start_col = 0 },
-        .{ .complexity = 12, .status = .warning, .function_name = "bar", .function_kind = "function", .start_line = 10, .start_col = 0 },
-        .{ .complexity = 25, .status = .@"error", .function_name = "baz", .function_kind = "function", .start_line = 20, .start_col = 0 },
+        .{ .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function", .start_line = 1, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok },
+        .{ .complexity = 12, .status = .warning, .function_name = "bar", .function_kind = "function", .start_line = 10, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok },
+        .{ .complexity = 25, .status = .@"error", .function_name = "baz", .function_kind = "function", .start_line = 20, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok },
     };
 
     const file_results = [_]console.FileThresholdResults{
@@ -187,7 +187,7 @@ test "buildJsonOutput: converts file/function data correctly" {
     const allocator = std.testing.allocator;
 
     const results = [_]cyclomatic.ThresholdResult{
-        .{ .complexity = 12, .status = .warning, .function_name = "testFunc", .function_kind = "function", .start_line = 42, .start_col = 4 },
+        .{ .complexity = 12, .status = .warning, .function_name = "testFunc", .function_kind = "function", .start_line = 42, .start_col = 4, .cognitive_complexity = 0, .cognitive_status = .ok },
     };
 
     const file_results = [_]console.FileThresholdResults{
@@ -218,7 +218,7 @@ test "serializeJsonOutput: produces valid JSON" {
     const allocator = std.testing.allocator;
 
     const results = [_]cyclomatic.ThresholdResult{
-        .{ .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function", .start_line = 1, .start_col = 0 },
+        .{ .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function", .start_line = 1, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok },
     };
 
     const file_results = [_]console.FileThresholdResults{
@@ -256,7 +256,7 @@ test "JSON includes null for uncomputed metrics" {
     const allocator = std.testing.allocator;
 
     const results = [_]cyclomatic.ThresholdResult{
-        .{ .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function", .start_line = 1, .start_col = 0 },
+        .{ .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function", .start_line = 1, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok },
     };
 
     const file_results = [_]console.FileThresholdResults{
