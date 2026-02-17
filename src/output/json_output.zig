@@ -1,6 +1,7 @@
 const std = @import("std");
 const console = @import("console.zig");
 const cyclomatic = @import("../metrics/cyclomatic.zig");
+const exit_codes = @import("exit_codes.zig");
 const Allocator = std.mem.Allocator;
 
 /// JSON output envelope for ComplexityGuard results
@@ -22,6 +23,10 @@ pub const JsonOutput = struct {
     pub const FileOutput = struct {
         path: []const u8,
         functions: []const FunctionOutput,
+        /// File length in logical lines (null when structural metrics not computed)
+        file_length: ?u32,
+        /// Export count (null when structural metrics not computed)
+        export_count: ?u32,
     };
 
     pub const FunctionOutput = struct {
@@ -31,9 +36,10 @@ pub const JsonOutput = struct {
         start_col: u32,
         cyclomatic: ?u32,
         cognitive: ?u32, // Populated by Phase 6 pipeline
-        halstead_volume: ?f64, // null - Phase 7
-        halstead_difficulty: ?f64, // null - Phase 7
-        halstead_effort: ?f64, // null - Phase 7
+        halstead_volume: f64,       // Populated by Phase 7 pipeline
+        halstead_difficulty: f64,   // Populated by Phase 7 pipeline
+        halstead_effort: f64,       // Populated by Phase 7 pipeline
+        halstead_bugs: f64,         // Populated by Phase 7 pipeline
         nesting_depth: u32,
         line_count: u32,
         params_count: u32,
@@ -42,12 +48,7 @@ pub const JsonOutput = struct {
     };
 };
 
-/// Return the worse of two threshold statuses (error > warning > ok)
-fn worstStatus(a: cyclomatic.ThresholdStatus, b: cyclomatic.ThresholdStatus) cyclomatic.ThresholdStatus {
-    if (a == .@"error" or b == .@"error") return .@"error";
-    if (a == .warning or b == .warning) return .warning;
-    return .ok;
-}
+// Use worstStatusAll from exit_codes for consistent all-metric status calculation
 
 /// Build JSON output envelope from analysis results
 pub fn buildJsonOutput(
@@ -89,8 +90,8 @@ pub fn buildJsonOutput(
         defer functions_list.deinit(allocator);
 
         for (fr.results) |result| {
-            // Status reflects worst of both metrics
-            const worst = worstStatus(result.status, result.cognitive_status);
+            // Status reflects worst across all metric families
+            const worst = exit_codes.worstStatusAll(result);
             const func_status = switch (worst) {
                 .ok => "ok",
                 .warning => "warning",
@@ -100,24 +101,31 @@ pub fn buildJsonOutput(
             try functions_list.append(allocator, JsonOutput.FunctionOutput{
                 .name = result.function_name,
                 .start_line = result.start_line,
-                .end_line = 0, // Not available in ThresholdResult, set to 0
+                .end_line = result.end_line,
                 .start_col = result.start_col,
                 .cyclomatic = result.complexity,
-                .cognitive = result.cognitive_complexity, // Populated by Phase 6 pipeline
-                .halstead_volume = null,
-                .halstead_difficulty = null,
-                .halstead_effort = null,
-                .nesting_depth = 0, // Not available in ThresholdResult, set to 0
-                .line_count = 0, // Not available in ThresholdResult, set to 0
-                .params_count = 0, // Not available in ThresholdResult, set to 0
+                .cognitive = result.cognitive_complexity,
+                .halstead_volume = result.halstead_volume,
+                .halstead_difficulty = result.halstead_difficulty,
+                .halstead_effort = result.halstead_effort,
+                .halstead_bugs = result.halstead_bugs,
+                .nesting_depth = result.nesting_depth,
+                .line_count = result.function_length,
+                .params_count = result.params_count,
                 .health_score = null,
                 .status = func_status,
             });
         }
 
+        // File-level structural metrics (null when not computed)
+        const file_length: ?u32 = if (fr.structural) |s| s.file_length else null;
+        const export_count: ?u32 = if (fr.structural) |s| s.export_count else null;
+
         try files_list.append(allocator, JsonOutput.FileOutput{
             .path = fr.path,
             .functions = try allocator.dupe(JsonOutput.FunctionOutput, functions_list.items),
+            .file_length = file_length,
+            .export_count = export_count,
         });
     }
 
@@ -261,11 +269,13 @@ test "serializeJsonOutput: produces valid JSON" {
     try std.testing.expect(parsed.value.object.get("files") != null);
 }
 
-test "JSON includes null for uncomputed metrics" {
+test "JSON includes Halstead fields populated (non-null)" {
     const allocator = std.testing.allocator;
 
     const results = [_]cyclomatic.ThresholdResult{
-        .{ .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function", .start_line = 1, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok },
+        .{ .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function",
+           .start_line = 1, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok,
+           .halstead_volume = 150.0, .halstead_difficulty = 5.0, .halstead_effort = 750.0, .halstead_bugs = 0.05 },
     };
 
     const file_results = [_]console.FileThresholdResults{
@@ -283,14 +293,16 @@ test "JSON includes null for uncomputed metrics" {
     const json_str = try serializeJsonOutput(allocator, output);
     defer allocator.free(json_str);
 
-    // Verify null fields are present (with space after colon due to pretty-printing)
-    // cognitive is now populated (not null) since Phase 6 pipeline sets it
-    try std.testing.expect(std.mem.indexOf(u8, json_str, "\"cognitive\": null") == null);
-    try std.testing.expect(std.mem.indexOf(u8, json_str, "\"cognitive\":") != null);
-    try std.testing.expect(std.mem.indexOf(u8, json_str, "\"halstead_volume\": null") != null);
-    try std.testing.expect(std.mem.indexOf(u8, json_str, "\"halstead_difficulty\": null") != null);
-    try std.testing.expect(std.mem.indexOf(u8, json_str, "\"halstead_effort\": null") != null);
+    // Verify Halstead fields are populated (non-null numeric values in JSON)
+    try std.testing.expect(std.mem.indexOf(u8, json_str, "\"halstead_volume\": null") == null);
+    try std.testing.expect(std.mem.indexOf(u8, json_str, "\"halstead_difficulty\": null") == null);
+    try std.testing.expect(std.mem.indexOf(u8, json_str, "\"halstead_effort\": null") == null);
+    try std.testing.expect(std.mem.indexOf(u8, json_str, "\"halstead_volume\":") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json_str, "\"halstead_bugs\":") != null);
+    // health_score is still null (Phase 8)
     try std.testing.expect(std.mem.indexOf(u8, json_str, "\"health_score\": null") != null);
+    // cognitive is populated (Phase 6)
+    try std.testing.expect(std.mem.indexOf(u8, json_str, "\"cognitive\": null") == null);
 }
 
 test "buildJsonOutput: cognitive field is populated from cognitive_complexity" {

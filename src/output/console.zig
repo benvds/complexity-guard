@@ -42,24 +42,38 @@ fn worstStatus(a: cyclomatic.ThresholdStatus, b: cyclomatic.ThresholdStatus) cyc
     return .ok;
 }
 
+/// Return the worst status across all metric families for a ThresholdResult.
+fn worstStatusAll(result: cyclomatic.ThresholdResult) cyclomatic.ThresholdStatus {
+    var worst = worstStatus(result.status, result.cognitive_status);
+    worst = worstStatus(worst, result.halstead_volume_status);
+    worst = worstStatus(worst, result.halstead_difficulty_status);
+    worst = worstStatus(worst, result.halstead_effort_status);
+    worst = worstStatus(worst, result.halstead_bugs_status);
+    worst = worstStatus(worst, result.function_length_status);
+    worst = worstStatus(worst, result.params_count_status);
+    worst = worstStatus(worst, result.nesting_depth_status);
+    return worst;
+}
+
 /// Format results for a single file in ESLint style
 /// Returns true if any output was written for this file
 pub fn formatFileResults(
     writer: anytype,
     allocator: Allocator,
-    file_path: []const u8,
-    results: []const cyclomatic.ThresholdResult,
+    file_results: FileThresholdResults,
     config: OutputConfig,
 ) !bool {
     _ = allocator;
+    const file_path = file_results.path;
+    const results = file_results.results;
 
     // Filter results based on verbosity
     var has_output = false;
     var has_problems = false;
 
-    // Check if file has any problems (using worst of both metrics)
+    // Check if file has any problems (using worst of all metrics)
     for (results) |result| {
-        const worst = worstStatus(result.status, result.cognitive_status);
+        const worst = worstStatusAll(result);
         if (config.verbosity == .quiet and worst != .@"error") continue;
         if (config.verbosity == .default and worst == .ok) continue;
 
@@ -67,6 +81,19 @@ pub fn formatFileResults(
             has_problems = true;
         }
         has_output = true;
+    }
+
+    // Check file-level structural violations
+    var has_file_level_violations = false;
+    if (file_results.structural) |str| {
+        if (str.file_length >= 300 or str.export_count >= 15) {
+            has_file_level_violations = true;
+            has_problems = true;
+            has_output = true;
+        }
+        if (config.verbosity == .verbose) {
+            has_output = true;
+        }
     }
 
     // In default mode, skip files with no problems
@@ -86,10 +113,47 @@ pub fn formatFileResults(
         try writer.print("{s}\n", .{file_path});
     }
 
+    // Write file-level structural metrics if present
+    if (file_results.structural) |str| {
+        const show_file_line = config.verbosity == .verbose or has_file_level_violations;
+        if (show_file_line) {
+            const file_worst: cyclomatic.ThresholdStatus = blk: {
+                var w: cyclomatic.ThresholdStatus = .ok;
+                if (str.file_length >= 600) w = .@"error" else if (str.file_length >= 300) w = .warning;
+                const ec: cyclomatic.ThresholdStatus = if (str.export_count >= 30) .@"error" else if (str.export_count >= 15) .warning else .ok;
+                break :blk worstStatus(w, ec);
+            };
+            const file_symbol: []const u8 = switch (file_worst) {
+                .ok => "✓",
+                .warning => "⚠",
+                .@"error" => "✗",
+            };
+            const file_color: []const u8 = if (config.use_color) switch (file_worst) {
+                .ok => AnsiCode.green,
+                .warning => AnsiCode.yellow,
+                .@"error" => AnsiCode.red,
+            } else "";
+            const file_reset = if (config.use_color) AnsiCode.reset else "";
+            const file_severity = switch (file_worst) {
+                .ok => "ok",
+                .warning => "warning",
+                .@"error" => "error",
+            };
+            try writer.print("  file  {s}{s}{s}  {s}  file length {d} logical lines, {d} exports\n", .{
+                file_color,
+                file_symbol,
+                file_reset,
+                file_severity,
+                str.file_length,
+                str.export_count,
+            });
+        }
+    }
+
     // Write function results
     for (results) |result| {
-        // Compute worst status across both metrics
-        const worst = worstStatus(result.status, result.cognitive_status);
+        // Compute worst status across all metric families
+        const worst = worstStatusAll(result);
 
         // Skip based on verbosity mode (using worst status)
         if (config.verbosity == .quiet and worst != .@"error") continue;
@@ -128,8 +192,8 @@ pub fn formatFileResults(
         else
             "Function";
 
-        // Side-by-side format: both cyclomatic and cognitive on one line
-        try writer.print("  {d}:{d}  {s}{s}{s}  {s}  {s} '{s}' cyclomatic {d} cognitive {d}\n", .{
+        // Base line: cyclomatic and cognitive side-by-side
+        try writer.print("  {d}:{d}  {s}{s}{s}  {s}  {s} '{s}' cyclomatic {d} cognitive {d}", .{
             result.start_line,
             result.start_col,
             color,
@@ -141,6 +205,35 @@ pub fn formatFileResults(
             result.complexity,
             result.cognitive_complexity,
         });
+
+        // Add Halstead info if verbose OR if Halstead has non-ok status
+        if (config.verbosity == .verbose or
+            result.halstead_volume_status != .ok or
+            result.halstead_difficulty_status != .ok or
+            result.halstead_effort_status != .ok or
+            result.halstead_bugs_status != .ok)
+        {
+            try writer.print(" [halstead vol {d:.0}]", .{result.halstead_volume});
+        }
+
+        // Add structural info if verbose OR if structural has non-ok status
+        if (config.verbosity == .verbose or
+            result.function_length_status != .ok)
+        {
+            try writer.print(" [length {d}]", .{result.function_length});
+        }
+        if (config.verbosity == .verbose or
+            result.params_count_status != .ok)
+        {
+            try writer.print(" [params {d}]", .{result.params_count});
+        }
+        if (config.verbosity == .verbose or
+            result.nesting_depth_status != .ok)
+        {
+            try writer.print(" [depth {d}]", .{result.nesting_depth});
+        }
+
+        try writer.writeAll("\n");
     }
 
     return true;
@@ -174,12 +267,20 @@ pub fn formatSummary(
         try writer.print("Found {d} warnings, {d} errors\n", .{ warning_count, error_count });
     }
 
-    // Hotspot item type used for both lists
+    // Hotspot item type for integer-valued metrics
     const HotspotItem = struct {
         name: []const u8,
         path: []const u8,
         line: u32,
         complexity: u32,
+    };
+
+    // Hotspot item type for float-valued metrics (Halstead volume)
+    const HalsteadHotspotItem = struct {
+        name: []const u8,
+        path: []const u8,
+        line: u32,
+        volume: f64,
     };
 
     // Top 5 cyclomatic hotspots
@@ -190,7 +291,11 @@ pub fn formatSummary(
     var cog_hotspots = std.ArrayList(HotspotItem).empty;
     defer cog_hotspots.deinit(allocator);
 
-    // Collect all results into both hotspot lists
+    // Top 5 Halstead volume hotspots
+    var hal_hotspots = std.ArrayList(HalsteadHotspotItem).empty;
+    defer hal_hotspots.deinit(allocator);
+
+    // Collect all results into hotspot lists
     for (all_results) |file_results| {
         for (file_results.results) |result| {
             if (result.complexity > 1) {
@@ -207,6 +312,14 @@ pub fn formatSummary(
                     .path = file_results.path,
                     .line = result.start_line,
                     .complexity = result.cognitive_complexity,
+                });
+            }
+            if (result.halstead_volume > 0) {
+                try hal_hotspots.append(allocator, .{
+                    .name = result.function_name,
+                    .path = file_results.path,
+                    .line = result.start_line,
+                    .volume = result.halstead_volume,
                 });
             }
         }
@@ -269,6 +382,37 @@ pub fn formatSummary(
                     hotspot.path,
                     hotspot.line,
                     hotspot.complexity,
+                });
+            }
+        }
+    }
+
+    // Sort Halstead volume hotspots by volume descending
+    {
+        const items = hal_hotspots.items;
+        if (items.len > 0) {
+            var i: usize = 0;
+            while (i < items.len) : (i += 1) {
+                var j: usize = i + 1;
+                while (j < items.len) : (j += 1) {
+                    if (items[j].volume > items[i].volume) {
+                        const temp = items[i];
+                        items[i] = items[j];
+                        items[j] = temp;
+                    }
+                }
+            }
+            const top_count = @min(5, items.len);
+            try writer.writeAll("\nTop Halstead volume hotspots:\n");
+            var idx: usize = 0;
+            while (idx < top_count) : (idx += 1) {
+                const hotspot = items[idx];
+                try writer.print("  {d}. {s} ({s}:{d}) volume {d:.0}\n", .{
+                    idx + 1,
+                    hotspot.name,
+                    hotspot.path,
+                    hotspot.line,
+                    hotspot.volume,
                 });
             }
         }
@@ -351,8 +495,7 @@ test "formatFileResults: all-ok results in default mode writes nothing" {
     const wrote_output = try formatFileResults(
         buffer.writer(allocator),
         allocator,
-        "test.ts",
-        &results,
+        FileThresholdResults{ .path = "test.ts", .results = &results },
         config,
     );
 
@@ -375,8 +518,7 @@ test "formatFileResults: warning/error results in default mode writes file heade
     const wrote_output = try formatFileResults(
         buffer.writer(allocator),
         allocator,
-        "test.ts",
-        &results,
+        FileThresholdResults{ .path = "test.ts", .results = &results },
         config,
     );
 
@@ -412,8 +554,7 @@ test "formatFileResults: verbose mode writes all functions including ok" {
     const wrote_output = try formatFileResults(
         buffer.writer(allocator),
         allocator,
-        "test.ts",
-        &results,
+        FileThresholdResults{ .path = "test.ts", .results = &results },
         config,
     );
 
@@ -440,8 +581,7 @@ test "formatFileResults: quiet mode writes only error-level functions" {
     const wrote_output = try formatFileResults(
         buffer.writer(allocator),
         allocator,
-        "test.ts",
-        &results,
+        FileThresholdResults{ .path = "test.ts", .results = &results },
         config,
     );
 
@@ -467,8 +607,7 @@ test "formatFileResults: no_color produces no ANSI codes" {
     _ = try formatFileResults(
         buffer.writer(allocator),
         allocator,
-        "test.ts",
-        &results,
+        FileThresholdResults{ .path = "test.ts", .results = &results },
         config,
     );
 
@@ -636,8 +775,7 @@ test "formatFileResults: shows both cyclomatic and cognitive on same line" {
     _ = try formatFileResults(
         buffer.writer(allocator),
         allocator,
-        "test.ts",
-        &results,
+        FileThresholdResults{ .path = "test.ts", .results = &results },
         config,
     );
 
@@ -662,8 +800,7 @@ test "formatFileResults: worst status shown when metrics differ" {
     _ = try formatFileResults(
         buffer.writer(allocator),
         allocator,
-        "test.ts",
-        &results,
+        FileThresholdResults{ .path = "test.ts", .results = &results },
         config,
     );
 
@@ -672,6 +809,77 @@ test "formatFileResults: worst status shown when metrics differ" {
     // Should show warning (worst status) even though cyclomatic is ok
     try std.testing.expect(std.mem.indexOf(u8, output, "warning") != null);
     try std.testing.expect(std.mem.indexOf(u8, output, "foo") != null);
+}
+
+test "formatFileResults: verbose mode shows Halstead volume" {
+    const allocator = std.testing.allocator;
+    var buffer = std.ArrayList(u8).empty;
+    defer buffer.deinit(allocator);
+
+    const results = [_]cyclomatic.ThresholdResult{
+        .{ .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function",
+           .start_line = 1, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok,
+           .halstead_volume = 150.5 },
+    };
+
+    const config = OutputConfig{ .use_color = false, .verbosity = .verbose };
+    _ = try formatFileResults(
+        buffer.writer(allocator),
+        allocator,
+        FileThresholdResults{ .path = "test.ts", .results = &results },
+        config,
+    );
+
+    const output = buffer.items;
+    // Verbose mode should show halstead volume
+    try std.testing.expect(std.mem.indexOf(u8, output, "halstead vol") != null);
+}
+
+test "formatFileResults: Halstead volume violation shown in default mode" {
+    const allocator = std.testing.allocator;
+    var buffer = std.ArrayList(u8).empty;
+    defer buffer.deinit(allocator);
+
+    const results = [_]cyclomatic.ThresholdResult{
+        .{ .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function",
+           .start_line = 1, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok,
+           .halstead_volume = 600.0, .halstead_volume_status = .warning },
+    };
+
+    const config = OutputConfig{ .use_color = false, .verbosity = .default };
+    const wrote_output = try formatFileResults(
+        buffer.writer(allocator),
+        allocator,
+        FileThresholdResults{ .path = "test.ts", .results = &results },
+        config,
+    );
+
+    try std.testing.expectEqual(true, wrote_output);
+    const output = buffer.items;
+    // Should show the function because Halstead volume has warning status
+    try std.testing.expect(std.mem.indexOf(u8, output, "foo") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "halstead vol") != null);
+}
+
+test "formatFileResults: file-level structural shown in verbose mode" {
+    const allocator = std.testing.allocator;
+    var buffer = std.ArrayList(u8).empty;
+    defer buffer.deinit(allocator);
+
+    const results = [_]cyclomatic.ThresholdResult{};
+    const str_result = structural.FileStructuralResult{ .file_length = 50, .export_count = 3 };
+
+    const config = OutputConfig{ .use_color = false, .verbosity = .verbose };
+    _ = try formatFileResults(
+        buffer.writer(allocator),
+        allocator,
+        FileThresholdResults{ .path = "test.ts", .results = &results, .structural = str_result },
+        config,
+    );
+
+    const output = buffer.items;
+    try std.testing.expect(std.mem.indexOf(u8, output, "file length") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "50") != null);
 }
 
 test "formatSummary: shows separate cyclomatic and cognitive hotspot lists" {
@@ -706,4 +914,43 @@ test "formatSummary: shows separate cyclomatic and cognitive hotspot lists" {
     // Both hotspot sections should appear
     try std.testing.expect(std.mem.indexOf(u8, output, "Top cyclomatic hotspots:") != null);
     try std.testing.expect(std.mem.indexOf(u8, output, "Top cognitive hotspots:") != null);
+}
+
+test "formatSummary: shows Halstead volume hotspot list" {
+    const allocator = std.testing.allocator;
+    var buffer = std.ArrayList(u8).empty;
+    defer buffer.deinit(allocator);
+
+    const results = [_]cyclomatic.ThresholdResult{
+        .{ .complexity = 5, .status = .ok, .function_name = "bigFunc", .function_kind = "function",
+           .start_line = 1, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok,
+           .halstead_volume = 800.0 },
+        .{ .complexity = 3, .status = .ok, .function_name = "smallFunc", .function_kind = "function",
+           .start_line = 20, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok,
+           .halstead_volume = 50.0 },
+    };
+
+    const file_results = [_]FileThresholdResults{
+        .{ .path = "test.ts", .results = &results },
+    };
+
+    const config = OutputConfig{ .use_color = false, .verbosity = .default };
+
+    try formatSummary(
+        buffer.writer(allocator),
+        allocator,
+        1,
+        2,
+        0,
+        0,
+        &file_results,
+        config,
+    );
+
+    const output = buffer.items;
+
+    // Halstead hotspot section should appear
+    try std.testing.expect(std.mem.indexOf(u8, output, "Top Halstead volume hotspots:") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "bigFunc") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "volume 800") != null);
 }

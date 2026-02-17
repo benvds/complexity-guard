@@ -47,9 +47,22 @@ fn worstStatus(a: cyclomatic.ThresholdStatus, b: cyclomatic.ThresholdStatus) cyc
     return .ok;
 }
 
+/// Return the worst status across all metric families for a ThresholdResult.
+pub fn worstStatusAll(result: cyclomatic.ThresholdResult) cyclomatic.ThresholdStatus {
+    var worst = worstStatus(result.status, result.cognitive_status);
+    worst = worstStatus(worst, result.halstead_volume_status);
+    worst = worstStatus(worst, result.halstead_difficulty_status);
+    worst = worstStatus(worst, result.halstead_effort_status);
+    worst = worstStatus(worst, result.halstead_bugs_status);
+    worst = worstStatus(worst, result.function_length_status);
+    worst = worstStatus(worst, result.params_count_status);
+    worst = worstStatus(worst, result.nesting_depth_status);
+    return worst;
+}
+
 /// Count warnings and errors from threshold results.
-/// Considers both cyclomatic and cognitive status — a function counts as the
-/// worst of its two metric statuses for exit code purposes.
+/// Considers all metric families — a function counts as the worst status
+/// across cyclomatic, cognitive, Halstead, and structural metrics.
 pub fn countViolations(
     threshold_results: []const cyclomatic.ThresholdResult,
 ) struct { warnings: u32, errors: u32 } {
@@ -57,7 +70,7 @@ pub fn countViolations(
     var errors: u32 = 0;
 
     for (threshold_results) |result| {
-        const worst = worstStatus(result.status, result.cognitive_status);
+        const worst = worstStatusAll(result);
         switch (worst) {
             .warning => warnings += 1,
             .@"error" => errors += 1,
@@ -164,6 +177,53 @@ test "countViolations: both ok means no violations" {
 
     const counts = countViolations(&results);
     try std.testing.expectEqual(@as(u32, 0), counts.warnings);
+    try std.testing.expectEqual(@as(u32, 0), counts.errors);
+}
+
+test "worstStatusAll: picks halstead volume warning" {
+    const result = cyclomatic.ThresholdResult{
+        .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function",
+        .start_line = 1, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok,
+        .halstead_volume_status = .warning,
+    };
+    try std.testing.expectEqual(cyclomatic.ThresholdStatus.warning, worstStatusAll(result));
+}
+
+test "worstStatusAll: picks halstead effort error over volume warning" {
+    const result = cyclomatic.ThresholdResult{
+        .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function",
+        .start_line = 1, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok,
+        .halstead_volume_status = .warning,
+        .halstead_effort_status = .@"error",
+    };
+    try std.testing.expectEqual(cyclomatic.ThresholdStatus.@"error", worstStatusAll(result));
+}
+
+test "worstStatusAll: picks structural nesting_depth warning" {
+    const result = cyclomatic.ThresholdResult{
+        .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function",
+        .start_line = 1, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok,
+        .nesting_depth_status = .warning,
+    };
+    try std.testing.expectEqual(cyclomatic.ThresholdStatus.warning, worstStatusAll(result));
+}
+
+test "worstStatusAll: all ok returns ok" {
+    const result = cyclomatic.ThresholdResult{
+        .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function",
+        .start_line = 1, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok,
+    };
+    try std.testing.expectEqual(cyclomatic.ThresholdStatus.ok, worstStatusAll(result));
+}
+
+test "countViolations: Halstead violation counted" {
+    const results = [_]cyclomatic.ThresholdResult{
+        .{ .complexity = 3, .status = .ok, .function_name = "foo", .function_kind = "function",
+           .start_line = 1, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok,
+           .halstead_volume_status = .warning },
+    };
+    const counts = countViolations(&results);
+    try std.testing.expectEqual(@as(u32, 1), counts.warnings);
     try std.testing.expectEqual(@as(u32, 0), counts.errors);
 }
 
