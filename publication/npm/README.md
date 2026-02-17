@@ -30,6 +30,7 @@ src/auth/login.ts
 
 Analyzed 12 files, 47 functions
 Found 3 warnings, 1 errors
+Health: 73
 
 Top cyclomatic hotspots:
   1. handleComplexAuthFlow (src/auth/login.ts:89) complexity 25
@@ -52,6 +53,7 @@ Top Halstead volume hotspots:
 - **Cognitive Complexity**: SonarSource-based metric with nesting depth penalties — measures understandability
 - **Halstead Metrics**: Information-theoretic vocabulary density, volume, difficulty, effort, and estimated bugs
 - **Structural Metrics**: Function length, parameter count, nesting depth, file length, and export count
+- **Composite Health Score**: Single 0–100 score combining all metric families with configurable weights — enforce in CI with `--fail-health-below`
 - **Console + JSON Output**: Human-readable terminal display and machine-readable JSON for CI integration
 - **Configurable Thresholds**: Warning and error levels for all four metric families, customizable per project
 - **Selective Metrics**: Use `--metrics cyclomatic,halstead` to compute only specific families

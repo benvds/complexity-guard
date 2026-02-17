@@ -16,6 +16,7 @@ npm install -g complexity-guard
 - **Cognitive Complexity** — nesting-penalized readability score
 - **Halstead Metrics** — vocabulary density, volume, difficulty, effort, estimated bugs
 - **Structural Metrics** — function length, parameters, nesting depth, file length, exports
+- **Health Score** — composite 0–100 score combining all metrics; enforce in CI with `--fail-health-below`
 
 ## Links
 

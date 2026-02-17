@@ -24,6 +24,12 @@ Run analysis on your codebase:
 complexity-guard src/
 ```
 
+Set up health score tracking (analyzes your code, suggests weights, saves baseline):
+
+```sh
+complexity-guard --init src/
+```
+
 ## Example Output
 
 ```
@@ -36,6 +42,7 @@ src/auth/login.ts
 
 Analyzed 12 files, 47 functions
 Found 3 warnings, 1 errors
+Health: 73
 
 Top cyclomatic hotspots:
   1. handleComplexAuthFlow (src/auth/login.ts:89) complexity 25
@@ -58,6 +65,7 @@ Top Halstead volume hotspots:
 - **Cognitive Complexity**: SonarSource-based metric with nesting depth penalties — measures understandability
 - **Halstead Metrics**: Information-theoretic vocabulary density, volume, difficulty, effort, and estimated bugs
 - **Structural Metrics**: Function length, parameter count, nesting depth, file length, and export count
+- **Composite Health Score**: Single 0–100 score combining all metric families with configurable weights — enforce in CI with `--fail-health-below`
 - **Console + JSON Output**: Human-readable terminal display and machine-readable JSON for CI integration
 - **Configurable Thresholds**: Warning and error levels for all four metric families, customizable per project
 - **Selective Metrics**: Use `--metrics cyclomatic,halstead` to compute only specific families
@@ -74,6 +82,7 @@ Top Halstead volume hotspots:
 
 ### Metrics
 
+- **[Health Score](docs/health-score.md)** — Composite 0–100 score, formula, weights, and baseline + ratchet workflow
 - **[Cyclomatic Complexity](docs/cyclomatic-complexity.md)** — Path counting for testability, ESLint-aligned rules
 - **[Cognitive Complexity](docs/cognitive-complexity.md)** — Nesting-aware readability metric from SonarSource
 - **[Halstead Metrics](docs/halstead-metrics.md)** — Vocabulary density, volume, difficulty, effort, estimated bugs
@@ -107,7 +116,14 @@ Create a `.complexityguard.json` file in your project root to customize behavior
     "nullish_coalescing": true,
     "optional_chaining": true,
     "switch_case_mode": "perCase"
-  }
+  },
+  "weights": {
+    "cognitive": 0.30,
+    "cyclomatic": 0.20,
+    "halstead": 0.15,
+    "structural": 0.15
+  },
+  "baseline": 73.2
 }
 ```
 
