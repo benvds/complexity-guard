@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** Phase 8 in progress - plan 01 complete (scoring module with sigmoid normalization)
+**Current focus:** Phase 8 in progress - plan 02 complete (pipeline wiring: health scores in console, JSON, exit codes)
 
 ## Current Position
 
 Phase: 8 of 12 (Composite Health Score)
-Plan: 1 of 5
-Status: In Progress - Phase 08-01 done (scoring module: sigmoid normalization, weight redistribution, composite computation)
-Last activity: 2026-02-17 - Completed 08-01: Scoring module with sigmoid normalization and composite computation
+Plan: 2 of 5
+Status: In Progress - Phase 08-02 done (pipeline wiring: health score in console/JSON/exit codes, baseline ratchet)
+Last activity: 2026-02-17 - Completed 08-02: Health score wired into full pipeline
 
 Progress: [████████░░] 58% (7/12 phases complete)
 
@@ -62,6 +62,7 @@ Progress: [████████░░] 58% (7/12 phases complete)
 | Phase 07 P04 | 4 | 2 tasks | 11 files |
 | Phase 07 P05 | 2 | 1 tasks | 2 files |
 | Phase 08 P01 | 5 | 3 tasks | 2 files |
+| Phase 08 P02 | 4 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -170,6 +171,10 @@ Recent decisions affecting current work:
 - [Phase 08-01]: Duplication always excluded from effective weights — four-metric normalization (cyclomatic, cognitive, halstead, structural)
 - [Phase 08-01]: All-zero weights fallback returns equal 0.25 weights (avoids division by zero, defensive default)
 - [Phase 08-01]: computeProjectScore uses function-count-weighted average (files with more functions carry proportionally more weight)
+- [Phase 08-02]: health_score: f64 = 0.0 default on ThresholdResult (not optional) — always computable, consistent with halstead pattern
+- [Phase 08-02]: determineExitCode baseline_failed param at priority 2 (after parse_error, before threshold errors_found)
+- [Phase 08-02]: Console Health: NN color thresholds: green>=80, yellow>=50, red<50
+- [Phase 08-02]: FunctionOutput.health_score changed from ?f64 to f64 (always populated post-Phase 8, matches halstead pattern)
 
 ### Pending Todos
 
@@ -220,8 +225,8 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-17 (execute-phase)
-Stopped at: Completed 08-01-PLAN.md (scoring module)
+Stopped at: Completed 08-02-PLAN.md (pipeline wiring: scoring into console, JSON, exit codes)
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-17T13:58:00Z*
+*Last updated: 2026-02-17T14:04:00Z*
