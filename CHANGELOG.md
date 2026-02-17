@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-02-17
+
+### Added
+
+- Add example config
+- Simplify --init to always write default config
+- Enhanced --init with analysis, weight optimization, and baseline capture
+- Add --save-baseline flag and --fail-health-below CLI override
+- Wire scoring pipeline into main, console, and JSON output
+- Config baseline field, ThresholdResult health_score, determineExitCode baseline_failed param
+- Implement scoring module - sigmoid normalization and composite computation
+
+### Fixed
+
+- Copy baseline field in deepCopyConfig
+
 ## [0.3.0] - 2026-02-17
 
 ### Added
@@ -119,7 +135,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tree-sitter based parsing with error-tolerant syntax handling
 - CLI with --help, --version, --verbose, --quiet, --format, --output, --config, --init flags
 
-[Unreleased]: https://github.com/benvds/complexity-guard/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/benvds/complexity-guard/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/benvds/complexity-guard/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/benvds/complexity-guard/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/benvds/complexity-guard/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/benvds/complexity-guard/compare/v0.1.9...v0.2.0

@@ -18,7 +18,7 @@ const console = @import("output/console.zig");
 const json_output = @import("output/json_output.zig");
 const exit_codes = @import("output/exit_codes.zig");
 
-const version = "0.3.0";
+const version = "0.4.0";
 
 /// Write a minimal config file with a baseline field.
 /// Used by --save-baseline when no existing config file is found.
