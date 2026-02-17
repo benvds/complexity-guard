@@ -13,6 +13,7 @@ const cyclomatic = @import("metrics/cyclomatic.zig");
 const cognitive = @import("metrics/cognitive.zig");
 const halstead = @import("metrics/halstead.zig");
 const structural = @import("metrics/structural.zig");
+const scoring = @import("metrics/scoring.zig");
 const console = @import("output/console.zig");
 const json_output = @import("output/json_output.zig");
 const exit_codes = @import("output/exit_codes.zig");
@@ -216,8 +217,33 @@ pub fn main() !void {
     else
         default_str;
 
+    // Build MetricThresholds for scoring (used across all files)
+    const metric_thresholds = scoring.MetricThresholds{
+        .cyclomatic_warning = @as(f64, @floatFromInt(cycl_config.warning_threshold)),
+        .cyclomatic_error = @as(f64, @floatFromInt(cycl_config.error_threshold)),
+        .cognitive_warning = @as(f64, @floatFromInt(cog_config.warning_threshold)),
+        .cognitive_error = @as(f64, @floatFromInt(cog_config.error_threshold)),
+        .halstead_warning = hal_config.volume_warning,
+        .halstead_error = hal_config.volume_error,
+        .function_length_warning = @as(f64, @floatFromInt(str_config.function_length_warning)),
+        .function_length_error = @as(f64, @floatFromInt(str_config.function_length_error)),
+        .params_count_warning = @as(f64, @floatFromInt(str_config.params_count_warning)),
+        .params_count_error = @as(f64, @floatFromInt(str_config.params_count_error)),
+        .nesting_depth_warning = @as(f64, @floatFromInt(str_config.nesting_depth_warning)),
+        .nesting_depth_error = @as(f64, @floatFromInt(str_config.nesting_depth_error)),
+    };
+
+    // Resolve effective weights once (applies config overrides, normalizes)
+    const effective_weights = scoring.resolveEffectiveWeights(cfg.weights);
+
     var file_results_list = std.ArrayList(console.FileThresholdResults).empty;
     defer file_results_list.deinit(arena_allocator);
+
+    // Per-file score tracking for project score computation
+    var file_scores_list = std.ArrayList(f64).empty;
+    defer file_scores_list.deinit(arena_allocator);
+    var file_function_counts = std.ArrayList(u32).empty;
+    defer file_function_counts.deinit(arena_allocator);
 
     var total_warnings: u32 = 0;
     var total_errors: u32 = 0;
@@ -340,6 +366,20 @@ pub fn main() !void {
             }
         }
 
+        // Compute health scores for each function (always runs, not gated by --metrics)
+        var func_scores = std.ArrayList(f64).empty;
+        defer func_scores.deinit(arena_allocator);
+        for (cycl_results) |*tr| {
+            const breakdown = scoring.computeFunctionScore(tr.*, effective_weights, metric_thresholds);
+            tr.health_score = breakdown.total;
+            try func_scores.append(arena_allocator, breakdown.total);
+        }
+
+        // Compute file score and track for project score
+        const file_score = scoring.computeFileScore(func_scores.items);
+        try file_scores_list.append(arena_allocator, file_score);
+        try file_function_counts.append(arena_allocator, @intCast(cycl_results.len));
+
         total_functions += @intCast(cycl_results.len);
 
         const violations = exit_codes.countViolations(cycl_results);
@@ -354,6 +394,9 @@ pub fn main() !void {
     }
 
     const file_results = file_results_list.items;
+
+    // Compute project score from all file scores
+    const project_score = scoring.computeProjectScore(file_scores_list.items, file_function_counts.items);
 
     // Step 2: Determine output format
     const effective_format = cli_args.format orelse (if (cfg.output) |out| (out.format orelse "console") else "console");
@@ -377,6 +420,7 @@ pub fn main() !void {
             file_results,
             total_warnings,
             total_errors,
+            project_score,
         );
         const json_str = try json_output.serializeJsonOutput(arena_allocator, json_result);
         defer arena_allocator.free(json_str);
@@ -420,6 +464,7 @@ pub fn main() !void {
             total_errors,
             file_results,
             output_config,
+            project_score,
         );
     }
 
@@ -429,12 +474,32 @@ pub fn main() !void {
     else
         false;
 
+    // Baseline ratchet check: compare project score against configured baseline
+    var baseline_failed = false;
+    // Check config baseline
+    if (cfg.baseline) |baseline_val| {
+        if (project_score < baseline_val - 0.5) {
+            baseline_failed = true;
+            try stderr.print("Health score {d:.1} is below baseline {d:.1}\n", .{ project_score, baseline_val });
+        }
+    }
+    // Check CLI --baseline flag
+    if (!baseline_failed) {
+        if (cli_args.baseline) |baseline_str| {
+            const baseline_val = std.fmt.parseFloat(f64, baseline_str) catch 0.0;
+            if (project_score < baseline_val - 0.5) {
+                baseline_failed = true;
+                try stderr.print("Health score {d:.1} is below baseline {d:.1}\n", .{ project_score, baseline_val });
+            }
+        }
+    }
+
     const exit_code = exit_codes.determineExitCode(
         parse_summary.failed_parses > 0,
         total_errors,
         total_warnings,
         fail_on_warnings,
-        false, // baseline_failed wired in Task 2
+        baseline_failed,
     );
 
     if (exit_code != .success) {

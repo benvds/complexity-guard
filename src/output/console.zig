@@ -275,6 +275,7 @@ pub fn formatSummary(
     error_count: u32,
     all_results: []const FileThresholdResults,
     config: OutputConfig,
+    project_score: f64,
 ) !void {
     // In quiet mode, only show verdict
     if (config.verbosity == .quiet) {
@@ -287,6 +288,19 @@ pub fn formatSummary(
 
     // Files and functions analyzed
     try writer.print("Analyzed {d} files, {d} functions\n", .{ file_count, function_count });
+
+    // Health score display (always shown, color-coded)
+    if (config.use_color) {
+        const score_color: []const u8 = if (project_score >= 80.0)
+            AnsiCode.green
+        else if (project_score >= 50.0)
+            AnsiCode.yellow
+        else
+            AnsiCode.red;
+        try writer.print("{s}Health: {d:.0}{s}\n", .{ score_color, project_score, AnsiCode.reset });
+    } else {
+        try writer.print("Health: {d:.0}\n", .{project_score});
+    }
 
     // Warning/error counts if any
     if (warning_count > 0 or error_count > 0) {
@@ -660,6 +674,7 @@ test "formatSummary: includes file count, function count, verdict" {
         0,
         &file_results,
         config,
+        95.0,
     );
 
     const output = buffer.items;
@@ -667,6 +682,9 @@ test "formatSummary: includes file count, function count, verdict" {
     // Check counts
     try std.testing.expect(std.mem.indexOf(u8, output, "Analyzed 5 files") != null);
     try std.testing.expect(std.mem.indexOf(u8, output, "20 functions") != null);
+
+    // Check health score
+    try std.testing.expect(std.mem.indexOf(u8, output, "Health: 95") != null);
 
     // Check verdict
     try std.testing.expect(std.mem.indexOf(u8, output, "All checks passed") != null);
@@ -700,6 +718,7 @@ test "formatSummary: shows top 5 hotspots when functions exist" {
         2,
         &file_results,
         config,
+        42.0,
     );
 
     const output = buffer.items;
@@ -731,6 +750,7 @@ test "formatSummary: quiet mode shows only verdict" {
         1,
         &file_results,
         config,
+        30.0,
     );
 
     const output = buffer.items;
@@ -933,6 +953,7 @@ test "formatSummary: shows separate cyclomatic and cognitive hotspot lists" {
         0,
         &file_results,
         config,
+        65.0,
     );
 
     const output = buffer.items;
@@ -971,6 +992,7 @@ test "formatSummary: shows Halstead volume hotspot list" {
         0,
         &file_results,
         config,
+        88.0,
     );
 
     const output = buffer.items;

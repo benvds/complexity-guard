@@ -18,6 +18,7 @@ pub const JsonOutput = struct {
         warnings: u32,
         errors: u32,
         status: []const u8, // "pass", "warning", "error"
+        health_score: f64,
     };
 
     pub const FileOutput = struct {
@@ -43,7 +44,7 @@ pub const JsonOutput = struct {
         nesting_depth: u32,
         line_count: u32,
         params_count: u32,
-        health_score: ?f64, // null - Phase 8
+        health_score: f64, // Populated by Phase 8 pipeline
         status: []const u8, // "ok", "warning", "error"
     };
 };
@@ -56,6 +57,7 @@ pub fn buildJsonOutput(
     file_results: []const console.FileThresholdResults,
     warning_count: u32,
     error_count: u32,
+    project_score: f64,
 ) !JsonOutput {
     // Determine overall status
     const status = if (error_count > 0)
@@ -78,6 +80,7 @@ pub fn buildJsonOutput(
         .warnings = warning_count,
         .errors = error_count,
         .status = status,
+        .health_score = project_score,
     };
 
     // Build file outputs
@@ -112,7 +115,7 @@ pub fn buildJsonOutput(
                 .nesting_depth = result.nesting_depth,
                 .line_count = result.function_length,
                 .params_count = result.params_count,
-                .health_score = null,
+                .health_score = result.health_score,
                 .status = func_status,
             });
         }
@@ -160,7 +163,7 @@ test "buildJsonOutput: produces correct version and status fields" {
         .{ .path = "test.ts", .results = &results },
     };
 
-    const output = try buildJsonOutput(allocator, &file_results, 0, 0);
+    const output = try buildJsonOutput(allocator, &file_results, 0, 0, 100.0);
     defer {
         for (output.files) |file| {
             allocator.free(file.functions);
@@ -187,7 +190,7 @@ test "buildJsonOutput: counts warnings/errors in summary correctly" {
         .{ .path = "test.ts", .results = &results },
     };
 
-    const output = try buildJsonOutput(allocator, &file_results, 1, 1);
+    const output = try buildJsonOutput(allocator, &file_results, 1, 1, 75.0);
     defer {
         for (output.files) |file| {
             allocator.free(file.functions);
@@ -211,7 +214,7 @@ test "buildJsonOutput: converts file/function data correctly" {
         .{ .path = "src/example.ts", .results = &results },
     };
 
-    const output = try buildJsonOutput(allocator, &file_results, 1, 0);
+    const output = try buildJsonOutput(allocator, &file_results, 1, 0, 50.0);
     defer {
         for (output.files) |file| {
             allocator.free(file.functions);
@@ -242,7 +245,7 @@ test "serializeJsonOutput: produces valid JSON" {
         .{ .path = "test.ts", .results = &results },
     };
 
-    const output = try buildJsonOutput(allocator, &file_results, 0, 0);
+    const output = try buildJsonOutput(allocator, &file_results, 0, 0, 100.0);
     defer {
         for (output.files) |file| {
             allocator.free(file.functions);
@@ -282,7 +285,7 @@ test "JSON includes Halstead fields populated (non-null)" {
         .{ .path = "test.ts", .results = &results },
     };
 
-    const output = try buildJsonOutput(allocator, &file_results, 0, 0);
+    const output = try buildJsonOutput(allocator, &file_results, 0, 0, 100.0);
     defer {
         for (output.files) |file| {
             allocator.free(file.functions);
@@ -299,8 +302,9 @@ test "JSON includes Halstead fields populated (non-null)" {
     try std.testing.expect(std.mem.indexOf(u8, json_str, "\"halstead_effort\": null") == null);
     try std.testing.expect(std.mem.indexOf(u8, json_str, "\"halstead_volume\":") != null);
     try std.testing.expect(std.mem.indexOf(u8, json_str, "\"halstead_bugs\":") != null);
-    // health_score is still null (Phase 8)
-    try std.testing.expect(std.mem.indexOf(u8, json_str, "\"health_score\": null") != null);
+    // health_score is now a number (Phase 8)
+    try std.testing.expect(std.mem.indexOf(u8, json_str, "\"health_score\": null") == null);
+    try std.testing.expect(std.mem.indexOf(u8, json_str, "\"health_score\":") != null);
     // cognitive is populated (Phase 6)
     try std.testing.expect(std.mem.indexOf(u8, json_str, "\"cognitive\": null") == null);
 }
@@ -317,7 +321,7 @@ test "buildJsonOutput: cognitive field is populated from cognitive_complexity" {
         .{ .path = "test.ts", .results = &results },
     };
 
-    const output = try buildJsonOutput(allocator, &file_results, 1, 0);
+    const output = try buildJsonOutput(allocator, &file_results, 1, 0, 80.0);
     defer {
         for (output.files) |file| {
             allocator.free(file.functions);
@@ -346,7 +350,7 @@ test "buildJsonOutput: status reflects worst of cyclomatic and cognitive" {
         .{ .path = "test.ts", .results = &results },
     };
 
-    const output = try buildJsonOutput(allocator, &file_results, 1, 1);
+    const output = try buildJsonOutput(allocator, &file_results, 1, 1, 60.0);
     defer {
         for (output.files) |file| {
             allocator.free(file.functions);
@@ -364,7 +368,7 @@ test "empty results produce valid JSON with zero counts and pass status" {
 
     const file_results = [_]console.FileThresholdResults{};
 
-    const output = try buildJsonOutput(allocator, &file_results, 0, 0);
+    const output = try buildJsonOutput(allocator, &file_results, 0, 0, 100.0);
     defer allocator.free(output.files);
 
     try std.testing.expectEqualStrings("pass", output.summary.status);
