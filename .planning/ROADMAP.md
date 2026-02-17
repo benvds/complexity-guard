@@ -187,9 +187,11 @@ Plans:
   2. Tool maps each metric violation to SARIF result with ruleId, level, and physicalLocation
   3. Tool uses 1-indexed line/column numbers in SARIF locations
   4. Tool output passes GitHub Code Scanning upload validation
-**Plans**: TBD
+**Plans:** 2 plans
 
-Plans: (to be created during /gsd:plan-phase)
+Plans:
+- [ ] 09-01-PLAN.md -- SARIF output module (structs, rules, build/serialize) and main.zig pipeline integration (TDD)
+- [ ] 09-02-PLAN.md -- Documentation: sarif-output.md page, README, cli-reference, examples, getting-started, publication READMEs
 
 ### Phase 10: HTML Reports
 **Goal**: Tool generates self-contained HTML reports with interactive visualizations
@@ -248,7 +250,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 6. Cognitive Complexity | 3/3 | ✓ Complete | 2026-02-17 |
 | 7. Halstead & Structural Metrics | 5/5 | Complete    | 2026-02-17 |
 | 8. Composite Health Score | 4/5 | Complete    | 2026-02-17 |
-| 9. SARIF Output | 0/TBD | Not started | - |
+| 9. SARIF Output | 0/2 | Planned | - |
 | 10. HTML Reports | 0/TBD | Not started | - |
 | 11. Duplication Detection | 0/TBD | Not started | - |
 | 12. Parallelization & Distribution | 0/TBD | Not started | - |
