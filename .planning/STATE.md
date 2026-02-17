@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** Phase 8 in progress - plan 04 complete (comprehensive health score documentation)
+**Current focus:** Phase 8 complete - all 5 plans done (composite health score, baseline ratchet, --save-baseline, docs, deepCopyConfig bug fix)
 
 ## Current Position
 
 Phase: 8 of 12 (Composite Health Score)
-Plan: 4 of 5
-Status: In Progress - Phase 08-04 done (health score documentation, health-score.md, all docs and READMEs updated)
-Last activity: 2026-02-17 - Completed quick task 16: remove the functionality which suggests adjusted weights scores, always init the config with default weights
+Plan: 5 of 5 (COMPLETE)
+Status: Phase 08 Complete - deepCopyConfig baseline bug fixed, human-verified end-to-end baseline ratchet enforcement
+Last activity: 2026-02-17 - Completed 08-05: fix deepCopyConfig to copy baseline field, enabling config-file baseline ratchet enforcement
 
-Progress: [████████░░] 58% (7/12 phases complete)
+Progress: [█████████░] 67% (8/12 phases complete)
 
 ## Performance Metrics
 
@@ -184,6 +184,7 @@ Recent decisions affecting current work:
 - [Phase 08-04]: health-score.md structure mirrors cognitive-complexity.md style (intro, formula, normalization, weights, aggregation, baseline workflow, config reference, score interpretation)
 - [Phase 08-04]: health_score updated from null/reserved to real f64 values in all JSON schema documentation examples
 - [Phase 08-04]: Exit code table updated to document baseline-failed as priority 2 (after parse error, before threshold errors)
+- [Phase 08-05]: deepCopyConfig missing one-liner bug: result.baseline = config.baseline; was never copied, silently dropping config-file baselines to null on every load path
 
 ### Pending Todos
 
@@ -235,8 +236,8 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-17 (execute-phase)
-Stopped at: Completed quick-16-PLAN.md (removed weight optimization from --init, simplified to default config only)
+Stopped at: Completed 08-05-PLAN.md (fixed deepCopyConfig baseline bug; human-verified baseline ratchet enforcement end-to-end)
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-17T14:21:00Z*
+*Last updated: 2026-02-17T16:13:00Z*
