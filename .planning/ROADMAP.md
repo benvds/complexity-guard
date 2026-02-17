@@ -138,9 +138,9 @@ Plans:
 **Plans:** 3/3 plans complete
 
 Plans:
-- [ ] 06-01-PLAN.md -- Core cognitive complexity algorithm, test fixture, and ThresholdResult extension
-- [ ] 06-02-PLAN.md -- Pipeline integration (main.zig, console, JSON, exit codes)
-- [ ] 06-03-PLAN.md -- Documentation (cognitive/cyclomatic docs pages, README, docs updates)
+- [x] 06-01-PLAN.md -- Core cognitive complexity algorithm, test fixture, and ThresholdResult extension
+- [x] 06-02-PLAN.md -- Pipeline integration (main.zig, console, JSON, exit codes)
+- [x] 06-03-PLAN.md -- Documentation (cognitive/cyclomatic docs pages, README, docs updates)
 
 ### Phase 7: Halstead & Structural Metrics
 **Goal**: Tool measures information-theoretic complexity and structural properties per function
@@ -151,9 +151,13 @@ Plans:
   2. Tool handles edge cases without divide-by-zero errors
   3. Tool measures structural properties (function length, parameter count, nesting depth, file length, export count)
   4. Tool applies configurable thresholds for all Halstead and structural metrics
-**Plans**: TBD
+**Plans:** 4 plans
 
-Plans: (to be created during /gsd:plan-phase)
+Plans:
+- [ ] 07-01-PLAN.md -- Halstead metrics core: token classification, counting, and formula computation (TDD)
+- [ ] 07-02-PLAN.md -- Structural metrics core: logical lines, params, nesting, file length, exports (TDD)
+- [ ] 07-03-PLAN.md -- Pipeline integration: ThresholdResult extension, main.zig wiring, console/JSON output, --metrics flag
+- [ ] 07-04-PLAN.md -- Documentation: Halstead/structural docs pages, README, CLI reference, examples
 
 ### Phase 8: Composite Health Score
 **Goal**: Tool computes weighted composite health score (0-100) per file and project with letter grades
@@ -236,7 +240,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 5. Console & JSON Output | 2/2 | ✓ Complete | 2026-02-15 |
 | 5.1 CI/CD, Release & Docs | 6/6 | ✓ Complete | 2026-02-15 |
 | 6. Cognitive Complexity | 0/3 | Complete    | 2026-02-17 |
-| 7. Halstead & Structural Metrics | 0/TBD | Not started | - |
+| 7. Halstead & Structural Metrics | 0/4 | Not started | - |
 | 8. Composite Health Score | 0/TBD | Not started | - |
 | 9. SARIF Output | 0/TBD | Not started | - |
 | 10. HTML Reports | 0/TBD | Not started | - |
