@@ -239,6 +239,9 @@ fn deepCopyConfig(allocator: std.mem.Allocator, config: Config) !Config {
     // Copy weights config (no strings, just floats)
     result.weights = config.weights;
 
+    // Copy baseline (plain ?f64, no allocation needed)
+    result.baseline = config.baseline;
+
     // Copy overrides (complex, skip for now - not tested in this phase)
     result.overrides = null;
 
@@ -587,4 +590,13 @@ test "validate rejects zero threads" {
     };
 
     try std.testing.expectError(ValidationError.InvalidThreads, validate(config));
+}
+
+test "deepCopyConfig preserves baseline field" {
+    const allocator = std.testing.allocator;
+    const original = Config{
+        .baseline = 77.5,
+    };
+    const copy = try deepCopyConfig(allocator, original);
+    try std.testing.expectEqual(@as(?f64, 77.5), copy.baseline);
 }
