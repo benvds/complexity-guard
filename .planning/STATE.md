@@ -55,6 +55,7 @@ Progress: [████████░░] 46% (6/13 phases)
 | Phase quick-15 P01 | 4 | 2 tasks | 2 files |
 | Phase 06 P01 | 7 | 3 tasks | 7 files |
 | Phase 06 P03 | 3 | 2 tasks | 6 files |
+| Phase 06 P02 | 4 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -140,6 +141,9 @@ Recent decisions affecting current work:
 - [Phase 06-01]: Scope isolation: inner function bodies don't inflate outer cognitive complexity
 - [Phase 06]: Cognitive complexity docs credit G. Ann Campbell/SonarSource per locked requirement
 - [Phase 06]: Example output format updated to show side-by-side cyclomatic/cognitive scores
+- [Phase 06]: Worst-of-both-metrics for exit codes and display: cognitive violations treated at same severity as cyclomatic
+- [Phase 06]: Index alignment merge pattern: cyclomatic and cognitive walkers produce same-order results from same AST walk
+- [Phase 06]: Side-by-side console format: 'Function name cyclomatic N cognitive N' on single line for compact output
 
 ### Pending Todos
 
