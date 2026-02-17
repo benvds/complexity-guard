@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** Phase 7 complete - all 5 plans executed (gap closure plan 05 resolves UAT test 6)
+**Current focus:** Phase 8 in progress - plan 01 complete (scoring module with sigmoid normalization)
 
 ## Current Position
 
-Phase: 7 of 12 (Halstead + Structural Metrics)
-Plan: 5 of 5
-Status: Complete - Phase 07 done (all metric families implemented, --metrics filtering wired through output layer)
-Last activity: 2026-02-17 - Completed 07-05: Wire --metrics flag through to console output layer (gap closure)
+Phase: 8 of 12 (Composite Health Score)
+Plan: 1 of 5
+Status: In Progress - Phase 08-01 done (scoring module: sigmoid normalization, weight redistribution, composite computation)
+Last activity: 2026-02-17 - Completed 08-01: Scoring module with sigmoid normalization and composite computation
 
 Progress: [████████░░] 58% (7/12 phases complete)
 
@@ -61,6 +61,7 @@ Progress: [████████░░] 58% (7/12 phases complete)
 | Phase 07 P03 | 6 | 2 tasks | 5 files |
 | Phase 07 P04 | 4 | 2 tasks | 11 files |
 | Phase 07 P05 | 2 | 1 tasks | 2 files |
+| Phase 08 P01 | 5 | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -165,6 +166,10 @@ Recent decisions affecting current work:
 - [Phase 07-05]: OutputConfig.selected_metrics null means all metrics enabled (backward compatible); isMetricEnabled duplicated in console.zig to avoid circular imports
 - [Phase 07-05]: Per-function base line always shows status/kind/name; cyclomatic and cognitive values appended conditionally by selected_metrics
 - [Phase 07-05]: worstStatusAll considers ALL metrics for verbosity filtering — --metrics flag only controls display, not which functions appear
+- [Phase 08-01]: Sigmoid centered at warning threshold: 50.0 at warning, ~20 at error, approaches 100 as complexity approaches 0 (smooth, no hard cutoffs)
+- [Phase 08-01]: Duplication always excluded from effective weights — four-metric normalization (cyclomatic, cognitive, halstead, structural)
+- [Phase 08-01]: All-zero weights fallback returns equal 0.25 weights (avoids division by zero, defensive default)
+- [Phase 08-01]: computeProjectScore uses function-count-weighted average (files with more functions carry proportionally more weight)
 
 ### Pending Todos
 
@@ -214,10 +219,9 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-02-17 (discuss-phase)
-Stopped at: Phase 8 context gathered
-Resume file: .planning/phases/08-composite-health-score/08-CONTEXT.md
+Last session: 2026-02-17 (execute-phase)
+Stopped at: Completed 08-01-PLAN.md (scoring module)
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-17T12:01:16Z*
+*Last updated: 2026-02-17T13:58:00Z*
