@@ -185,8 +185,8 @@ complexity-guard --format json src/ | jq '[.files[].functions[]] | sort_by(.heal
 Set a baseline once, then enforce it in CI to prevent regression:
 
 ```sh
-# Step 1: Analyze and set up with optimized weights + baseline
-complexity-guard --init src/
+# Step 1: Generate default config
+complexity-guard --init
 
 # Step 2: Or just capture the current score as a baseline
 complexity-guard --save-baseline src/

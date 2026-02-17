@@ -53,19 +53,13 @@ complexity-guard --version
 
 **`--init`**
 
-Generate a `.complexityguard.json` configuration file. When a source path is provided, analyzes the codebase first and writes an optimized config with suggested weights and a baseline health score.
+Generate a `.complexityguard.json` configuration file with default thresholds and weights.
 
 ```sh
-# Analyze src/ and write optimized config (recommended)
-complexity-guard --init src/
-
-# Write a default config without analysis
 complexity-guard --init
 ```
 
-The enhanced workflow (with a path) compares default vs. suggested weights, displays the before/after health score, and writes the config with the suggested weights and baseline. This sets your team up with a favorable starting point for CI enforcement.
-
-Without a path (or when no TypeScript/JavaScript files are found), a default config is written with standard thresholds and no baseline.
+Creates a config file with standard thresholds, default metric weights, and common exclude patterns. Edit the generated file to customize for your project.
 
 ### Output
 

@@ -180,31 +180,6 @@ complexity-guard --save-baseline src/
 
 The ratchet only ever moves forward — toward a healthier codebase.
 
-## Enhanced --init
-
-Running `complexity-guard --init src/` with source files does more than write a default config. It:
-
-1. Analyzes all files in the given path
-2. Computes the project health score with **default weights**
-3. Runs **coordinate descent optimization** to find weights that maximize your current score
-4. Displays the before/after comparison:
-
-```
-Analyzed 12 files, 47 functions
-Default weights score:   73
-Suggested weights score: 81
-
-Writing config to .complexityguard.json with suggested weights and baseline 81.0
-```
-
-The optimized weights give your team a favorable starting position — rather than fighting an immediate CI failure, you start from a score that reflects your current code with the best weighting for it. Then improve from there.
-
-### How the Optimization Works
-
-ComplexityGuard uses **coordinate descent**: for each weight dimension (cognitive, cyclomatic, halstead, structural), it tries increasing and decreasing by 0.10 and keeps the change if it improves the score. It runs up to 20 iterations or until no further improvement is found.
-
-This is a local search — it finds a good set of weights quickly, not a mathematically optimal global solution. For most codebases, the result is close enough to be practically useful.
-
 ## Configuration Reference
 
 ```json

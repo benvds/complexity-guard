@@ -169,17 +169,13 @@ ComplexityGuard works great with zero configuration, but you can customize its b
 
 ### Creating a Config File
 
-Use the `--init` command to generate a configuration. When you pass a source path, it analyzes your code first and writes an optimized config:
+Use the `--init` command to generate a default configuration file:
 
 ```sh
-# Analyze src/ and write a config with suggested weights and baseline
-complexity-guard --init src/
-
-# Or generate a default config without analysis
 complexity-guard --init
 ```
 
-The enhanced `--init` workflow (with a path) shows a before/after comparison of the health score with default vs. suggested weights, then writes the optimized config including a baseline. This gives your CI enforcement a favorable starting point.
+This creates a `.complexityguard.json` file with standard thresholds, default metric weights, and common exclude patterns. You can then adjust the values to suit your project.
 
 This creates a `.complexityguard.json` file:
 
@@ -324,10 +320,10 @@ ComplexityGuard follows ESLint-aligned counting rules by default, but you can cu
 Once you have a baseline analysis, use `--save-baseline` to capture it as a CI enforcement threshold:
 
 ```sh
-# Run --init to get optimized weights + baseline written automatically
-complexity-guard --init src/
+# Generate a default config file
+complexity-guard --init
 
-# Or capture the current score as a baseline at any time
+# Capture the current score as a baseline
 complexity-guard --save-baseline src/
 
 # In CI: enforce the baseline (exits 1 if score drops below it)
