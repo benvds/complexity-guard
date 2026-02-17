@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** Phase 7 in progress - Plan 01 (Halstead metrics core) complete
+**Current focus:** Phase 7 in progress - Plan 03 (pipeline integration) complete
 
 ## Current Position
 
 Phase: 7 of 12 (Halstead + Structural Metrics)
-Plan: 1 of 4
-Status: In Progress - Plan 01 complete (Halstead metrics core)
-Last activity: 2026-02-17 - Completed 07-01: Halstead metrics core (token classification, formula computation)
+Plan: 3 of 4
+Status: In Progress - Plan 03 complete (pipeline integration, all 4 metric families wired)
+Last activity: 2026-02-17 - Completed 07-03: Pipeline integration (ThresholdResult extended, all 4 passes, console/JSON/exit codes updated)
 
 Progress: [████████░░] 54% (7/13 phases)
 
@@ -58,6 +58,7 @@ Progress: [████████░░] 54% (7/13 phases)
 | Phase 06 P02 | 4 | 2 tasks | 4 files |
 | Phase 07 P01 | 4 | 2 tasks | 4 files |
 | Phase 07 P02 | 7 | 1 tasks | 2 files |
+| Phase 07 P03 | 6 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -153,6 +154,10 @@ Recent decisions affecting current work:
 - [Phase 07]: Standalone brace-only lines excluded from logical line count (structural delimiters, not code)
 - [Phase 07]: Function declarations used for scope isolation tests (TypeScript function expressions have different AST representation)
 - [Phase 07]: Single-expression arrow functions count as 1 logical line (locked decision: expression body != statement_block)
+- [Phase 07-03]: formatFileResults signature takes FileThresholdResults struct (cleaner, carries structural field alongside path and results)
+- [Phase 07-03]: worstStatusAll duplicated in exit_codes.zig and console.zig independently (avoids circular import; json_output imports exit_codes)
+- [Phase 07-03]: Halstead fields in JSON changed from ?f64 to f64 (Phase 7 always computes them; 0.0 valid for empty functions)
+- [Phase 07-03]: isMetricEnabled helper: returns true when metrics is null (all enabled) or metric name is in list
 
 ### Pending Todos
 
@@ -203,9 +208,9 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-17 (execute-phase)
-Stopped at: Completed 07-02-PLAN.md (structural metrics: logical lines, params, nesting depth, exports)
-Resume file: .planning/phases/07-halstead-structural-metrics/07-02-SUMMARY.md
+Stopped at: Completed 07-03-PLAN.md (pipeline integration: all 4 metric families wired, output updated)
+Resume file: .planning/phases/07-halstead-structural-metrics/07-03-SUMMARY.md
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-17T10:02:00Z*
+*Last updated: 2026-02-17T10:10:00Z*
