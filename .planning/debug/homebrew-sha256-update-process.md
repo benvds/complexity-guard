@@ -1,5 +1,5 @@
 ---
-status: diagnosed
+status: resolved
 issue_type: "UAT Gap - Homebrew SHA256 Update Documentation"
 trigger: "Phase 05.1 UAT test 5 failure: 'gap: unclear how dese SHA256 are updated, create docs and necessary scripts'"
 diagnosed: 2026-02-15T16:30:00Z
