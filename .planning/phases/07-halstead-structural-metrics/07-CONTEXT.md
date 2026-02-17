@@ -22,8 +22,8 @@ Implement Halstead metrics (vocabulary, volume, difficulty, effort, estimated bu
 ### Default thresholds
 - Halstead metrics: use industry-standard defaults from academic literature (research specific values from SonarQube, CodeClimate, etc.)
 - Function length warning: 25 logical lines (strict, pushes toward single-responsibility functions)
-- Parameter count warning: 4 parameters
-- Max nesting depth warning: 4 levels
+- Parameter count warning: 3 parameters
+- Max nesting depth warning: 3 levels
 
 ### Function length counting
 - "Logical lines" = lines with actual code only. Exclude blank lines and comment-only lines.
