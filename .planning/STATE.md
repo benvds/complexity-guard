@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** Phase 8 in progress - plan 03 complete (--save-baseline, enhanced --init with weight optimization)
+**Current focus:** Phase 8 in progress - plan 04 complete (comprehensive health score documentation)
 
 ## Current Position
 
 Phase: 8 of 12 (Composite Health Score)
-Plan: 3 of 5
-Status: In Progress - Phase 08-03 done (--save-baseline, --fail-health-below, enhanced --init with coordinate descent)
-Last activity: 2026-02-17 - Completed 08-03: save-baseline CLI and enhanced init workflow
+Plan: 4 of 5
+Status: In Progress - Phase 08-04 done (health score documentation, health-score.md, all docs and READMEs updated)
+Last activity: 2026-02-17 - Completed 08-04: health score documentation
 
 Progress: [████████░░] 58% (7/12 phases complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 21
+- Total plans completed: 22
 - Average duration: 4 min
-- Total execution time: 2.0 hours
+- Total execution time: 2.1 hours
 
 **By Phase:**
 
@@ -64,6 +64,7 @@ Progress: [████████░░] 58% (7/12 phases complete)
 | Phase 08 P01 | 5 | 3 tasks | 2 files |
 | Phase 08 P02 | 4 | 2 tasks | 6 files |
 | Phase 08 P03 | 329 | 2 tasks | 4 files |
+| Phase 08 P04 | 318 | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -179,6 +180,9 @@ Recent decisions affecting current work:
 - [Phase 08-03]: --init moved post-analysis: handles full analysis first then calls runEnhancedInit with results; falls back to runInit when no files found
 - [Phase 08-03]: Coordinate descent weight optimization: step=0.10, 4 dimensions, max 20 iterations, improvement threshold 0.001 to avoid floating point drift
 - [Phase 08-03]: stderr flush added before process.exit: buffered writer needs explicit flush to ensure baseline failure messages appear
+- [Phase 08-04]: health-score.md structure mirrors cognitive-complexity.md style (intro, formula, normalization, weights, aggregation, baseline workflow, config reference, score interpretation)
+- [Phase 08-04]: health_score updated from null/reserved to real f64 values in all JSON schema documentation examples
+- [Phase 08-04]: Exit code table updated to document baseline-failed as priority 2 (after parse error, before threshold errors)
 
 ### Pending Todos
 
@@ -229,8 +233,8 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-17 (execute-phase)
-Stopped at: Completed 08-03-PLAN.md (--save-baseline, enhanced --init with weight optimization)
+Stopped at: Completed 08-04-PLAN.md (health score documentation, docs/health-score.md, all docs and READMEs updated)
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-17T14:13:00Z*
+*Last updated: 2026-02-17T14:21:00Z*
