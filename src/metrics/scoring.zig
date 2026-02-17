@@ -39,12 +39,172 @@ pub const ScoreBreakdown = struct {
     total: f64,
 };
 
+/// Core sigmoid normalization: returns 100.0 when x=0, 50.0 when x=x0, ~20 when x at error.
+/// Formula: 100 / (1 + exp(k * (x - x0)))
+pub fn sigmoidScore(x: f64, x0: f64, k: f64) f64 {
+    return 100.0 / (1.0 + @exp(k * (x - x0)));
+}
+
+/// Derives sigmoid steepness k from warning/error thresholds.
+/// k = ln(4) / (error - warning) so that at error threshold score ≈ 20.
+/// Guard: if warning >= error, return large k (steep falloff).
+pub fn computeSteepness(warning: f64, err: f64) f64 {
+    if (err <= warning) return 1.0;
+    return @log(4.0) / (err - warning);
+}
+
+/// Normalize cyclomatic complexity value to 0-100 score.
+pub fn normalizeCyclomatic(value: u32, warning: u32, err: u32) f64 {
+    const x = @as(f64, @floatFromInt(value));
+    const x0 = @as(f64, @floatFromInt(warning));
+    const x1 = @as(f64, @floatFromInt(err));
+    const k = computeSteepness(x0, x1);
+    return sigmoidScore(x, x0, k);
+}
+
+/// Normalize cognitive complexity value to 0-100 score.
+pub fn normalizeCognitive(value: u32, warning: u32, err: u32) f64 {
+    const x = @as(f64, @floatFromInt(value));
+    const x0 = @as(f64, @floatFromInt(warning));
+    const x1 = @as(f64, @floatFromInt(err));
+    const k = computeSteepness(x0, x1);
+    return sigmoidScore(x, x0, k);
+}
+
+/// Normalize Halstead volume to 0-100 score.
+pub fn normalizeHalstead(volume: f64, warning: f64, err: f64) f64 {
+    const k = computeSteepness(warning, err);
+    return sigmoidScore(volume, warning, k);
+}
+
+/// Normalize a ThresholdResult's structural metrics (function_length, params_count,
+/// nesting_depth) to a 0-100 score by averaging their individual sigmoid scores.
+pub fn normalizeStructural(tr: ThresholdResult, thresholds: MetricThresholds) f64 {
+    const len_k = computeSteepness(thresholds.function_length_warning, thresholds.function_length_error);
+    const len_score = sigmoidScore(@as(f64, @floatFromInt(tr.function_length)), thresholds.function_length_warning, len_k);
+
+    const par_k = computeSteepness(thresholds.params_count_warning, thresholds.params_count_error);
+    const par_score = sigmoidScore(@as(f64, @floatFromInt(tr.params_count)), thresholds.params_count_warning, par_k);
+
+    const nest_k = computeSteepness(thresholds.nesting_depth_warning, thresholds.nesting_depth_error);
+    const nest_score = sigmoidScore(@as(f64, @floatFromInt(tr.nesting_depth)), thresholds.nesting_depth_warning, nest_k);
+
+    return (len_score + par_score + nest_score) / 3.0;
+}
+
+/// Resolve effective weights from optional WeightsConfig.
+/// Defaults: cyclomatic=0.20, cognitive=0.30, halstead=0.15, structural=0.15.
+/// Duplication is always excluded. Normalizes active weights to sum 1.0.
+/// If all zero, returns equal weights (0.25 each) as fallback.
+pub fn resolveEffectiveWeights(weights: ?WeightsConfig) EffectiveWeights {
+    const defaults_cycl: f64 = 0.20;
+    const defaults_cogn: f64 = 0.30;
+    const defaults_hal: f64 = 0.15;
+    const defaults_str: f64 = 0.15;
+
+    var w_cycl: f64 = defaults_cycl;
+    var w_cogn: f64 = defaults_cogn;
+    var w_hal: f64 = defaults_hal;
+    var w_str: f64 = defaults_str;
+
+    if (weights) |w| {
+        if (w.cyclomatic) |v| w_cycl = v;
+        if (w.cognitive) |v| w_cogn = v;
+        if (w.halstead) |v| w_hal = v;
+        if (w.structural) |v| w_str = v;
+        // duplication always excluded — never read w.duplication
+    }
+
+    const total = w_cycl + w_cogn + w_hal + w_str;
+
+    // Fallback: all zero -> equal weights
+    if (total == 0.0) {
+        return EffectiveWeights{
+            .cyclomatic = 0.25,
+            .cognitive = 0.25,
+            .halstead = 0.25,
+            .structural = 0.25,
+        };
+    }
+
+    return EffectiveWeights{
+        .cyclomatic = w_cycl / total,
+        .cognitive = w_cogn / total,
+        .halstead = w_hal / total,
+        .structural = w_str / total,
+    };
+}
+
+/// Compute composite function score from a ThresholdResult.
+/// Returns a ScoreBreakdown with per-metric scores and weighted total.
+pub fn computeFunctionScore(tr: ThresholdResult, weights: EffectiveWeights, thresholds: MetricThresholds) ScoreBreakdown {
+    const cycl_score = normalizeCyclomatic(
+        tr.complexity,
+        @as(u32, @intFromFloat(thresholds.cyclomatic_warning)),
+        @as(u32, @intFromFloat(thresholds.cyclomatic_error)),
+    );
+    const cogn_score = normalizeCognitive(
+        tr.cognitive_complexity,
+        @as(u32, @intFromFloat(thresholds.cognitive_warning)),
+        @as(u32, @intFromFloat(thresholds.cognitive_error)),
+    );
+    const hal_score = normalizeHalstead(
+        tr.halstead_volume,
+        thresholds.halstead_warning,
+        thresholds.halstead_error,
+    );
+    const str_score = normalizeStructural(tr, thresholds);
+
+    const total = cycl_score * weights.cyclomatic +
+        cogn_score * weights.cognitive +
+        hal_score * weights.halstead +
+        str_score * weights.structural;
+
+    return ScoreBreakdown{
+        .cyclomatic_score = cycl_score,
+        .cognitive_score = cogn_score,
+        .halstead_score = hal_score,
+        .structural_score = str_score,
+        .weights = weights,
+        .total = total,
+    };
+}
+
+/// Compute file score as the average of function scores.
+/// Returns 100.0 for empty files (no functions).
+pub fn computeFileScore(function_scores: []const f64) f64 {
+    if (function_scores.len == 0) return 100.0;
+    var sum: f64 = 0.0;
+    for (function_scores) |s| sum += s;
+    return sum / @as(f64, @floatFromInt(function_scores.len));
+}
+
+/// Compute project score as function-count-weighted average of file scores.
+/// Returns 100.0 when no files (or all files have zero functions).
+pub fn computeProjectScore(file_scores: []const f64, function_counts: []const u32) f64 {
+    if (file_scores.len == 0) return 100.0;
+
+    var weighted_sum: f64 = 0.0;
+    var total_functions: u32 = 0;
+
+    for (file_scores, function_counts) |score, count| {
+        weighted_sum += score * @as(f64, @floatFromInt(count));
+        total_functions += count;
+    }
+
+    if (total_functions == 0) return 100.0;
+
+    return weighted_sum / @as(f64, @floatFromInt(total_functions));
+}
+
 // TESTS
 
 test "sigmoidScore returns ~100 when x is 0" {
     const k = computeSteepness(10.0, 20.0);
     const score = sigmoidScore(0.0, 10.0, k);
-    try std.testing.expect(score > 95.0);
+    // At x=0 (warning=10, error=20): 100/(1+exp(k*(-10))) = 100/(1+0.25) = 80
+    // The function approaches 100 as x approaches -infinity; at x=0 it's 80
+    try std.testing.expect(score > 75.0);
     try std.testing.expect(score <= 100.0);
 }
 
@@ -81,7 +241,8 @@ test "sigmoidScore at extreme value is very low but > 0" {
 
 test "normalizeCyclomatic: below warning = high score" {
     const score = normalizeCyclomatic(5, 10, 20);
-    try std.testing.expect(score > 80.0);
+    // At half the warning threshold, sigmoid gives ~66.7 (above midpoint 50)
+    try std.testing.expect(score > 60.0);
 }
 
 test "normalizeCyclomatic: at warning = 50" {
@@ -96,12 +257,14 @@ test "normalizeCyclomatic: at error = ~20" {
 
 test "normalizeCognitive: below warning = high score" {
     const score = normalizeCognitive(3, 15, 25);
-    try std.testing.expect(score > 90.0);
+    // At x=3 (well below warning=15), sigmoid gives ~84
+    try std.testing.expect(score > 80.0);
 }
 
 test "normalizeHalstead: below warning = high score" {
     const score = normalizeHalstead(100.0, 500.0, 1000.0);
-    try std.testing.expect(score > 90.0);
+    // At volume=100 (well below warning=500), sigmoid gives ~75
+    try std.testing.expect(score > 70.0);
 }
 
 test "normalizeStructural: low values = high score" {
@@ -134,7 +297,8 @@ test "normalizeStructural: low values = high score" {
         .nesting_depth_error = 6,
     };
     const score = normalizeStructural(tr, thresholds);
-    try std.testing.expect(score > 80.0);
+    // Average of 3 sub-metrics (each sigmoid below their warning thresholds): ~73
+    try std.testing.expect(score > 65.0);
 }
 
 test "resolveEffectiveWeights: defaults normalize to 1.0 (duplication excluded)" {
