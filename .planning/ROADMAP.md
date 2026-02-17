@@ -135,9 +135,12 @@ Plans:
   3. Tool handles logical operator sequences (same-operator vs mixed-operator counting)
   4. Tool increments for recursive function calls
   5. Tool applies configurable warning and error thresholds
-**Plans**: TBD
+**Plans:** 3 plans
 
-Plans: (to be created during /gsd:plan-phase)
+Plans:
+- [ ] 06-01-PLAN.md -- Core cognitive complexity algorithm, test fixture, and ThresholdResult extension
+- [ ] 06-02-PLAN.md -- Pipeline integration (main.zig, console, JSON, exit codes)
+- [ ] 06-03-PLAN.md -- Documentation (cognitive/cyclomatic docs pages, README, docs updates)
 
 ### Phase 7: Halstead & Structural Metrics
 **Goal**: Tool measures information-theoretic complexity and structural properties per function
@@ -231,8 +234,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 3. File Discovery & Parsing | 3/3 | ✓ Complete | 2026-02-14 |
 | 4. Cyclomatic Complexity | 2/2 | ✓ Complete | 2026-02-14 |
 | 5. Console & JSON Output | 2/2 | ✓ Complete | 2026-02-15 |
-| 5.1 CI/CD, Release & Docs | 4/6 | Gap closure | 2026-02-15 |
-| 6. Cognitive Complexity | 0/TBD | Not started | - |
+| 5.1 CI/CD, Release & Docs | 6/6 | ✓ Complete | 2026-02-15 |
+| 6. Cognitive Complexity | 0/3 | Planned | - |
 | 7. Halstead & Structural Metrics | 0/TBD | Not started | - |
 | 8. Composite Health Score | 0/TBD | Not started | - |
 | 9. SARIF Output | 0/TBD | Not started | - |
@@ -242,4 +245,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 ---
 *Roadmap created: 2026-02-14*
-*Last updated: 2026-02-15 (Phase 5.1 gap closure plans created)*
+*Last updated: 2026-02-17 (Phase 6 plans created)*
