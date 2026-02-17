@@ -32,6 +32,13 @@ pub const FileThresholdResults = struct {
     results: []const cyclomatic.ThresholdResult,
 };
 
+/// Return the worse of two threshold statuses (error > warning > ok)
+fn worstStatus(a: cyclomatic.ThresholdStatus, b: cyclomatic.ThresholdStatus) cyclomatic.ThresholdStatus {
+    if (a == .@"error" or b == .@"error") return .@"error";
+    if (a == .warning or b == .warning) return .warning;
+    return .ok;
+}
+
 /// Format results for a single file in ESLint style
 /// Returns true if any output was written for this file
 pub fn formatFileResults(
@@ -47,12 +54,13 @@ pub fn formatFileResults(
     var has_output = false;
     var has_problems = false;
 
-    // Check if file has any problems
+    // Check if file has any problems (using worst of both metrics)
     for (results) |result| {
-        if (config.verbosity == .quiet and result.status != .@"error") continue;
-        if (config.verbosity == .default and result.status == .ok) continue;
+        const worst = worstStatus(result.status, result.cognitive_status);
+        if (config.verbosity == .quiet and worst != .@"error") continue;
+        if (config.verbosity == .default and worst == .ok) continue;
 
-        if (result.status != .ok) {
+        if (worst != .ok) {
             has_problems = true;
         }
         has_output = true;
@@ -77,18 +85,21 @@ pub fn formatFileResults(
 
     // Write function results
     for (results) |result| {
-        // Skip based on verbosity mode
-        if (config.verbosity == .quiet and result.status != .@"error") continue;
-        if (config.verbosity == .default and result.status == .ok) continue;
+        // Compute worst status across both metrics
+        const worst = worstStatus(result.status, result.cognitive_status);
 
-        // Determine symbol and color
-        const symbol: []const u8 = switch (result.status) {
+        // Skip based on verbosity mode (using worst status)
+        if (config.verbosity == .quiet and worst != .@"error") continue;
+        if (config.verbosity == .default and worst == .ok) continue;
+
+        // Determine symbol and color based on worst status
+        const symbol: []const u8 = switch (worst) {
             .ok => "✓",
             .warning => "⚠",
             .@"error" => "✗",
         };
 
-        const color: []const u8 = if (config.use_color) switch (result.status) {
+        const color: []const u8 = if (config.use_color) switch (worst) {
             .ok => AnsiCode.green,
             .warning => AnsiCode.yellow,
             .@"error" => AnsiCode.red,
@@ -96,7 +107,7 @@ pub fn formatFileResults(
 
         const reset = if (config.use_color) AnsiCode.reset else "";
 
-        const severity = switch (result.status) {
+        const severity = switch (worst) {
             .ok => "ok",
             .warning => "warning",
             .@"error" => "error",
@@ -114,8 +125,8 @@ pub fn formatFileResults(
         else
             "Function";
 
-        // ESLint-style format: indented 2 spaces
-        try writer.print("  {d}:{d}  {s}{s}{s}  {s}  {s} '{s}' has complexity {d} (threshold: {d})  cyclomatic\n", .{
+        // Side-by-side format: both cyclomatic and cognitive on one line
+        try writer.print("  {d}:{d}  {s}{s}{s}  {s}  {s} '{s}' cyclomatic {d} cognitive {d}\n", .{
             result.start_line,
             result.start_col,
             color,
@@ -125,7 +136,7 @@ pub fn formatFileResults(
             kind_display,
             result.function_name,
             result.complexity,
-            if (result.status == .@"error") @as(u32, 20) else @as(u32, 10), // Use default thresholds
+            result.cognitive_complexity,
         });
     }
 
@@ -160,50 +171,92 @@ pub fn formatSummary(
         try writer.print("Found {d} warnings, {d} errors\n", .{ warning_count, error_count });
     }
 
-    // Top 5 hotspots
-    var hotspots = std.ArrayList(struct {
+    // Hotspot item type used for both lists
+    const HotspotItem = struct {
         name: []const u8,
         path: []const u8,
         line: u32,
         complexity: u32,
-    }).empty;
-    defer hotspots.deinit(allocator);
+    };
 
-    // Collect all results
+    // Top 5 cyclomatic hotspots
+    var cycl_hotspots = std.ArrayList(HotspotItem).empty;
+    defer cycl_hotspots.deinit(allocator);
+
+    // Top 5 cognitive hotspots
+    var cog_hotspots = std.ArrayList(HotspotItem).empty;
+    defer cog_hotspots.deinit(allocator);
+
+    // Collect all results into both hotspot lists
     for (all_results) |file_results| {
         for (file_results.results) |result| {
-            // Only include functions with complexity > 1
             if (result.complexity > 1) {
-                try hotspots.append(allocator, .{
+                try cycl_hotspots.append(allocator, .{
                     .name = result.function_name,
                     .path = file_results.path,
                     .line = result.start_line,
                     .complexity = result.complexity,
                 });
             }
+            if (result.cognitive_complexity > 0) {
+                try cog_hotspots.append(allocator, .{
+                    .name = result.function_name,
+                    .path = file_results.path,
+                    .line = result.start_line,
+                    .complexity = result.cognitive_complexity,
+                });
+            }
         }
     }
 
-    // Sort by complexity descending
-    const items = hotspots.items;
-    if (items.len > 0) {
-        // Simple bubble sort (fine for small lists)
-        var i: usize = 0;
-        while (i < items.len) : (i += 1) {
-            var j: usize = i + 1;
-            while (j < items.len) : (j += 1) {
-                if (items[j].complexity > items[i].complexity) {
-                    const temp = items[i];
-                    items[i] = items[j];
-                    items[j] = temp;
+    // Sort cyclomatic hotspots by complexity descending
+    {
+        const items = cycl_hotspots.items;
+        if (items.len > 0) {
+            var i: usize = 0;
+            while (i < items.len) : (i += 1) {
+                var j: usize = i + 1;
+                while (j < items.len) : (j += 1) {
+                    if (items[j].complexity > items[i].complexity) {
+                        const temp = items[i];
+                        items[i] = items[j];
+                        items[j] = temp;
+                    }
                 }
             }
+            const top_count = @min(5, items.len);
+            try writer.writeAll("\nTop cyclomatic hotspots:\n");
+            var idx: usize = 0;
+            while (idx < top_count) : (idx += 1) {
+                const hotspot = items[idx];
+                try writer.print("  {d}. {s} ({s}:{d}) complexity {d}\n", .{
+                    idx + 1,
+                    hotspot.name,
+                    hotspot.path,
+                    hotspot.line,
+                    hotspot.complexity,
+                });
+            }
         }
+    }
 
-        // Show top 5
-        const top_count = @min(5, items.len);
-        if (top_count > 0) {
-            try writer.writeAll("\nTop complexity hotspots:\n");
+    // Sort cognitive hotspots by complexity descending
+    {
+        const items = cog_hotspots.items;
+        if (items.len > 0) {
+            var i: usize = 0;
+            while (i < items.len) : (i += 1) {
+                var j: usize = i + 1;
+                while (j < items.len) : (j += 1) {
+                    if (items[j].complexity > items[i].complexity) {
+                        const temp = items[i];
+                        items[i] = items[j];
+                        items[j] = temp;
+                    }
+                }
+            }
+            const top_count = @min(5, items.len);
+            try writer.writeAll("\nTop cognitive hotspots:\n");
             var idx: usize = 0;
             while (idx < top_count) : (idx += 1) {
                 const hotspot = items[idx];
@@ -484,7 +537,7 @@ test "formatSummary: shows top 5 hotspots when functions exist" {
     const output = buffer.items;
 
     // Check hotspots section exists
-    try std.testing.expect(std.mem.indexOf(u8, output, "Top complexity hotspots:") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "Top cyclomatic hotspots:") != null);
 
     // Check functions are listed in descending complexity order
     try std.testing.expect(std.mem.indexOf(u8, output, "func4") != null);
@@ -516,7 +569,7 @@ test "formatSummary: quiet mode shows only verdict" {
 
     // Should NOT include summary details
     try std.testing.expect(std.mem.indexOf(u8, output, "Analyzed") == null);
-    try std.testing.expect(std.mem.indexOf(u8, output, "Top complexity") == null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "Top cyclomatic hotspots:") == null);
 
     // Should include verdict
     try std.testing.expect(std.mem.indexOf(u8, output, "problems") != null);
@@ -565,4 +618,89 @@ test "formatVerdict: shows correct message for all clear" {
     const output = buffer.items;
 
     try std.testing.expect(std.mem.indexOf(u8, output, "All checks passed") != null);
+}
+
+test "formatFileResults: shows both cyclomatic and cognitive on same line" {
+    const allocator = std.testing.allocator;
+    var buffer = std.ArrayList(u8).empty;
+    defer buffer.deinit(allocator);
+
+    const results = [_]cyclomatic.ThresholdResult{
+        .{ .complexity = 12, .status = .warning, .function_name = "foo", .function_kind = "function", .start_line = 10, .start_col = 4, .cognitive_complexity = 8, .cognitive_status = .ok },
+    };
+
+    const config = OutputConfig{ .use_color = false, .verbosity = .default };
+    _ = try formatFileResults(
+        buffer.writer(allocator),
+        allocator,
+        "test.ts",
+        &results,
+        config,
+    );
+
+    const output = buffer.items;
+
+    // Both metrics should appear on same line
+    try std.testing.expect(std.mem.indexOf(u8, output, "cyclomatic 12") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "cognitive 8") != null);
+}
+
+test "formatFileResults: worst status shown when metrics differ" {
+    const allocator = std.testing.allocator;
+    var buffer = std.ArrayList(u8).empty;
+    defer buffer.deinit(allocator);
+
+    // Cyclomatic ok, cognitive warning — worst is warning
+    const results = [_]cyclomatic.ThresholdResult{
+        .{ .complexity = 3, .status = .ok, .function_name = "foo", .function_kind = "function", .start_line = 1, .start_col = 0, .cognitive_complexity = 18, .cognitive_status = .warning },
+    };
+
+    const config = OutputConfig{ .use_color = false, .verbosity = .default };
+    _ = try formatFileResults(
+        buffer.writer(allocator),
+        allocator,
+        "test.ts",
+        &results,
+        config,
+    );
+
+    const output = buffer.items;
+
+    // Should show warning (worst status) even though cyclomatic is ok
+    try std.testing.expect(std.mem.indexOf(u8, output, "warning") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "foo") != null);
+}
+
+test "formatSummary: shows separate cyclomatic and cognitive hotspot lists" {
+    const allocator = std.testing.allocator;
+    var buffer = std.ArrayList(u8).empty;
+    defer buffer.deinit(allocator);
+
+    const results = [_]cyclomatic.ThresholdResult{
+        .{ .complexity = 15, .status = .warning, .function_name = "func1", .function_kind = "function", .start_line = 1, .start_col = 0, .cognitive_complexity = 5, .cognitive_status = .ok },
+        .{ .complexity = 5, .status = .ok, .function_name = "func2", .function_kind = "function", .start_line = 10, .start_col = 0, .cognitive_complexity = 20, .cognitive_status = .warning },
+    };
+
+    const file_results = [_]FileThresholdResults{
+        .{ .path = "test.ts", .results = &results },
+    };
+
+    const config = OutputConfig{ .use_color = false, .verbosity = .default };
+
+    try formatSummary(
+        buffer.writer(allocator),
+        allocator,
+        1,
+        2,
+        2,
+        0,
+        &file_results,
+        config,
+    );
+
+    const output = buffer.items;
+
+    // Both hotspot sections should appear
+    try std.testing.expect(std.mem.indexOf(u8, output, "Top cyclomatic hotspots:") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "Top cognitive hotspots:") != null);
 }

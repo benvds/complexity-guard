@@ -30,7 +30,7 @@ pub const JsonOutput = struct {
         end_line: u32,
         start_col: u32,
         cyclomatic: ?u32,
-        cognitive: ?u32, // null - Phase 6
+        cognitive: ?u32, // Populated by Phase 6 pipeline
         halstead_volume: ?f64, // null - Phase 7
         halstead_difficulty: ?f64, // null - Phase 7
         halstead_effort: ?f64, // null - Phase 7
@@ -41,6 +41,13 @@ pub const JsonOutput = struct {
         status: []const u8, // "ok", "warning", "error"
     };
 };
+
+/// Return the worse of two threshold statuses (error > warning > ok)
+fn worstStatus(a: cyclomatic.ThresholdStatus, b: cyclomatic.ThresholdStatus) cyclomatic.ThresholdStatus {
+    if (a == .@"error" or b == .@"error") return .@"error";
+    if (a == .warning or b == .warning) return .warning;
+    return .ok;
+}
 
 /// Build JSON output envelope from analysis results
 pub fn buildJsonOutput(
@@ -82,7 +89,9 @@ pub fn buildJsonOutput(
         defer functions_list.deinit(allocator);
 
         for (fr.results) |result| {
-            const func_status = switch (result.status) {
+            // Status reflects worst of both metrics
+            const worst = worstStatus(result.status, result.cognitive_status);
+            const func_status = switch (worst) {
                 .ok => "ok",
                 .warning => "warning",
                 .@"error" => "error",
@@ -94,7 +103,7 @@ pub fn buildJsonOutput(
                 .end_line = 0, // Not available in ThresholdResult, set to 0
                 .start_col = result.start_col,
                 .cyclomatic = result.complexity,
-                .cognitive = null,
+                .cognitive = result.cognitive_complexity, // Populated by Phase 6 pipeline
                 .halstead_volume = null,
                 .halstead_difficulty = null,
                 .halstead_effort = null,
@@ -275,11 +284,67 @@ test "JSON includes null for uncomputed metrics" {
     defer allocator.free(json_str);
 
     // Verify null fields are present (with space after colon due to pretty-printing)
-    try std.testing.expect(std.mem.indexOf(u8, json_str, "\"cognitive\": null") != null);
+    // cognitive is now populated (not null) since Phase 6 pipeline sets it
+    try std.testing.expect(std.mem.indexOf(u8, json_str, "\"cognitive\": null") == null);
+    try std.testing.expect(std.mem.indexOf(u8, json_str, "\"cognitive\":") != null);
     try std.testing.expect(std.mem.indexOf(u8, json_str, "\"halstead_volume\": null") != null);
     try std.testing.expect(std.mem.indexOf(u8, json_str, "\"halstead_difficulty\": null") != null);
     try std.testing.expect(std.mem.indexOf(u8, json_str, "\"halstead_effort\": null") != null);
     try std.testing.expect(std.mem.indexOf(u8, json_str, "\"health_score\": null") != null);
+}
+
+test "buildJsonOutput: cognitive field is populated from cognitive_complexity" {
+    const allocator = std.testing.allocator;
+
+    const results = [_]cyclomatic.ThresholdResult{
+        .{ .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function", .start_line = 1, .start_col = 0, .cognitive_complexity = 8, .cognitive_status = .ok },
+        .{ .complexity = 12, .status = .warning, .function_name = "bar", .function_kind = "function", .start_line = 10, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok },
+    };
+
+    const file_results = [_]console.FileThresholdResults{
+        .{ .path = "test.ts", .results = &results },
+    };
+
+    const output = try buildJsonOutput(allocator, &file_results, 1, 0);
+    defer {
+        for (output.files) |file| {
+            allocator.free(file.functions);
+        }
+        allocator.free(output.files);
+    }
+
+    // Cognitive field should be populated from cognitive_complexity
+    try std.testing.expectEqual(@as(?u32, 8), output.files[0].functions[0].cognitive);
+    try std.testing.expectEqual(@as(?u32, 0), output.files[0].functions[1].cognitive);
+}
+
+test "buildJsonOutput: status reflects worst of cyclomatic and cognitive" {
+    const allocator = std.testing.allocator;
+
+    const results = [_]cyclomatic.ThresholdResult{
+        // Cyclomatic ok but cognitive error = function status should be error
+        .{ .complexity = 3, .status = .ok, .function_name = "foo", .function_kind = "function", .start_line = 1, .start_col = 0, .cognitive_complexity = 30, .cognitive_status = .@"error" },
+        // Cyclomatic warning, cognitive ok = function status should be warning
+        .{ .complexity = 12, .status = .warning, .function_name = "bar", .function_kind = "function", .start_line = 10, .start_col = 0, .cognitive_complexity = 5, .cognitive_status = .ok },
+        // Both ok
+        .{ .complexity = 2, .status = .ok, .function_name = "baz", .function_kind = "function", .start_line = 20, .start_col = 0, .cognitive_complexity = 1, .cognitive_status = .ok },
+    };
+
+    const file_results = [_]console.FileThresholdResults{
+        .{ .path = "test.ts", .results = &results },
+    };
+
+    const output = try buildJsonOutput(allocator, &file_results, 1, 1);
+    defer {
+        for (output.files) |file| {
+            allocator.free(file.functions);
+        }
+        allocator.free(output.files);
+    }
+
+    try std.testing.expectEqualStrings("error", output.files[0].functions[0].status);
+    try std.testing.expectEqualStrings("warning", output.files[0].functions[1].status);
+    try std.testing.expectEqualStrings("ok", output.files[0].functions[2].status);
 }
 
 test "empty results produce valid JSON with zero counts and pass status" {
