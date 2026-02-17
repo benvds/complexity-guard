@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 Phase: 8 of 12 (Composite Health Score)
 Plan: 4 of 5
 Status: In Progress - Phase 08-04 done (health score documentation, health-score.md, all docs and READMEs updated)
-Last activity: 2026-02-17 - Completed 08-04: health score documentation
+Last activity: 2026-02-17 - Completed quick task 16: remove the functionality which suggests adjusted weights scores, always init the config with default weights
 
 Progress: [████████░░] 58% (7/12 phases complete)
 
