@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** Phase 5.1 complete - CI/CD, release pipeline, and documentation operational. Ready for Phase 6
+**Current focus:** Phase 6 in progress - cognitive complexity algorithm implemented (Plan 01 complete)
 
 ## Current Position
 
 Phase: 6 of 12 (Cognitive Complexity)
-Plan: 0 of TBD
-Status: Ready - Phase 5.1 complete with all gap closures
-Last activity: 2026-02-16 - Completed quick-15: Add automatic CHANGELOG.md generation from conventional commits
+Plan: 1 of TBD
+Status: In Progress - Plan 01 complete (algorithm + fixture + ThresholdResult extension)
+Last activity: 2026-02-17 - Completed 06-01: Core cognitive complexity algorithm and test fixture
 
 Progress: [████████░░] 46% (6/13 phases)
 
@@ -53,6 +53,7 @@ Progress: [████████░░] 46% (6/13 phases)
 | Phase quick-13 P01 | 62 | 2 tasks | 6 files |
 | Phase quick-14 P01 | 24 | 1 tasks | 1 files |
 | Phase quick-15 P01 | 4 | 2 tasks | 2 files |
+| Phase 06 P01 | 7 | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -133,6 +134,9 @@ Recent decisions affecting current work:
 - [Phase quick-14]: Use package@version naming convention for GitHub releases (matches industry standard)
 - [Phase quick-15]: Temp file approach for CHANGELOG.md insertion (portable across macOS/Linux, avoids sed newline issues)
 - [Phase quick-15]: Combined feat/fix regex with explicit type capture group for reliable bash matching
+- [Phase 06-01]: Each &&, ||, ?? counts as +1 flat individually (ComplexityGuard deviation from SonarSource grouping)
+- [Phase 06-01]: Top-level arrow functions start at nesting 0; arrow function callbacks add structural increment
+- [Phase 06-01]: Scope isolation: inner function bodies don't inflate outer cognitive complexity
 
 ### Pending Todos
 
@@ -182,10 +186,11 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-02-16 (quick)
-Stopped at: Completed quick-15: Add automatic CHANGELOG.md generation from conventional commits
-Resume file: .planning/quick/15-add-automatic-changelog-md-generation-fr/15-SUMMARY.md
+Last session: 2026-02-17 (execute-phase)
+Stopped at: Completed 06-01-PLAN.md (cognitive complexity core algorithm)
+Resume file: .planning/phases/06-cognitive-complexity/06-01-SUMMARY.md
 
 ---
 *State initialized: 2026-02-14*
+*Last updated: 2026-02-17T09:23:00Z*
 *Last updated: 2026-02-16T20:10:00Z*
