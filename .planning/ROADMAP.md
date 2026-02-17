@@ -20,7 +20,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 5.1: CI/CD, Release Pipeline & Documentation** - Changelog, GitHub workflows, publishing, docs (INSERTED) -- gap closure in progress
 - [x] **Phase 6: Cognitive Complexity** - SonarSource metric with nesting tracking (completed 2026-02-17)
 - [x] **Phase 7: Halstead & Structural Metrics** - Information theory and structural metrics ✓ 2026-02-17
-- [ ] **Phase 8: Composite Health Score** - Weighted scoring, baseline ratchet, and enhanced --init
+- [x] **Phase 8: Composite Health Score** - Weighted scoring, baseline ratchet, and enhanced --init (completed 2026-02-17)
 - [ ] **Phase 9: SARIF Output** - GitHub Code Scanning integration
 - [ ] **Phase 10: HTML Reports** - Self-contained visual reports for stakeholders
 - [ ] **Phase 11: Duplication Detection** - Rabin-Karp cross-file clone analysis
@@ -169,7 +169,7 @@ Plans:
   2. Tool computes project-wide composite score aggregating all files
   3. Tool uses numeric 0-100 score only (no letter grades, per CONTEXT.md override of COMP-04)
   4. Tool uses default weights (cognitive 0.30, cyclomatic 0.20, duplication 0.20, Halstead 0.15, structural 0.15) unless overridden
-**Plans:** 5 plans
+**Plans:** 5/5 plans complete
 
 Plans:
 - [x] 08-01-PLAN.md -- Scoring module: sigmoid normalization, weight redistribution, function/file/project score computation (TDD)
@@ -247,7 +247,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 5.1 CI/CD, Release & Docs | 6/6 | ✓ Complete | 2026-02-15 |
 | 6. Cognitive Complexity | 3/3 | ✓ Complete | 2026-02-17 |
 | 7. Halstead & Structural Metrics | 5/5 | Complete    | 2026-02-17 |
-| 8. Composite Health Score | 4/5 | In Progress (gap closure) | - |
+| 8. Composite Health Score | 4/5 | Complete    | 2026-02-17 |
 | 9. SARIF Output | 0/TBD | Not started | - |
 | 10. HTML Reports | 0/TBD | Not started | - |
 | 11. Duplication Detection | 0/TBD | Not started | - |
