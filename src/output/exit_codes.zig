@@ -40,7 +40,16 @@ pub fn determineExitCode(
     return .success;
 }
 
-/// Count warnings and errors from threshold results
+/// Return the worse of two threshold statuses (error > warning > ok)
+fn worstStatus(a: cyclomatic.ThresholdStatus, b: cyclomatic.ThresholdStatus) cyclomatic.ThresholdStatus {
+    if (a == .@"error" or b == .@"error") return .@"error";
+    if (a == .warning or b == .warning) return .warning;
+    return .ok;
+}
+
+/// Count warnings and errors from threshold results.
+/// Considers both cyclomatic and cognitive status — a function counts as the
+/// worst of its two metric statuses for exit code purposes.
 pub fn countViolations(
     threshold_results: []const cyclomatic.ThresholdResult,
 ) struct { warnings: u32, errors: u32 } {
@@ -48,7 +57,8 @@ pub fn countViolations(
     var errors: u32 = 0;
 
     for (threshold_results) |result| {
-        switch (result.status) {
+        const worst = worstStatus(result.status, result.cognitive_status);
+        switch (worst) {
             .warning => warnings += 1,
             .@"error" => errors += 1,
             .ok => {},
@@ -119,6 +129,37 @@ test "countViolations: returns zeros for all-ok results" {
         .{ .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function", .start_line = 1, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok },
         .{ .complexity = 8, .status = .ok, .function_name = "bar", .function_kind = "function", .start_line = 10, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok },
         .{ .complexity = 3, .status = .ok, .function_name = "baz", .function_kind = "function", .start_line = 20, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok },
+    };
+
+    const counts = countViolations(&results);
+    try std.testing.expectEqual(@as(u32, 0), counts.warnings);
+    try std.testing.expectEqual(@as(u32, 0), counts.errors);
+}
+
+test "countViolations: cognitive warning upgrades ok cyclomatic to warning" {
+    const results = [_]cyclomatic.ThresholdResult{
+        .{ .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function", .start_line = 1, .start_col = 0, .cognitive_complexity = 16, .cognitive_status = .warning },
+        .{ .complexity = 3, .status = .ok, .function_name = "bar", .function_kind = "function", .start_line = 10, .start_col = 0, .cognitive_complexity = 3, .cognitive_status = .ok },
+    };
+
+    const counts = countViolations(&results);
+    try std.testing.expectEqual(@as(u32, 1), counts.warnings);
+    try std.testing.expectEqual(@as(u32, 0), counts.errors);
+}
+
+test "countViolations: cognitive error upgrades cyclomatic warning to error" {
+    const results = [_]cyclomatic.ThresholdResult{
+        .{ .complexity = 12, .status = .warning, .function_name = "foo", .function_kind = "function", .start_line = 1, .start_col = 0, .cognitive_complexity = 26, .cognitive_status = .@"error" },
+    };
+
+    const counts = countViolations(&results);
+    try std.testing.expectEqual(@as(u32, 0), counts.warnings);
+    try std.testing.expectEqual(@as(u32, 1), counts.errors);
+}
+
+test "countViolations: both ok means no violations" {
+    const results = [_]cyclomatic.ThresholdResult{
+        .{ .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function", .start_line = 1, .start_col = 0, .cognitive_complexity = 3, .cognitive_status = .ok },
     };
 
     const counts = countViolations(&results);

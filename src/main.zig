@@ -10,6 +10,7 @@ const walker = @import("discovery/walker.zig");
 const filter = @import("discovery/filter.zig");
 const parse = @import("parser/parse.zig");
 const cyclomatic = @import("metrics/cyclomatic.zig");
+const cognitive = @import("metrics/cognitive.zig");
 const console = @import("output/console.zig");
 const json_output = @import("output/json_output.zig");
 const exit_codes = @import("output/exit_codes.zig");
@@ -129,6 +130,23 @@ pub fn main() !void {
 
     // Step 1: Analyze all files once and store results
     const cycl_config = cyclomatic.CyclomaticConfig.default();
+
+    // Build cognitive config from loaded config (use defaults if not specified)
+    const default_cog = cognitive.CognitiveConfig.default();
+    const cog_config = if (cfg.analysis) |analysis|
+        if (analysis.thresholds) |thresholds|
+            if (thresholds.cognitive) |cog_thresh|
+                cognitive.CognitiveConfig{
+                    .warning_threshold = cog_thresh.warning orelse default_cog.warning_threshold,
+                    .error_threshold = cog_thresh.@"error" orelse default_cog.error_threshold,
+                }
+            else
+                default_cog
+        else
+            default_cog
+    else
+        default_cog;
+
     var file_results_list = std.ArrayList(console.FileThresholdResults).empty;
     defer file_results_list.deinit(arena_allocator);
 
@@ -137,21 +155,48 @@ pub fn main() !void {
     var total_functions: u32 = 0;
 
     for (parse_summary.results) |result| {
-        const threshold_results = try cyclomatic.analyzeFile(
+        // Run cyclomatic analysis
+        const cycl_results = try cyclomatic.analyzeFile(
             arena_allocator,
             result,
             cycl_config,
         );
 
-        total_functions += @intCast(threshold_results.len);
+        // Run cognitive analysis on the same file
+        var cog_results: []const cognitive.CognitiveFunctionResult = &[_]cognitive.CognitiveFunctionResult{};
+        if (result.tree) |tree| {
+            const root = tree.rootNode();
+            cog_results = try cognitive.analyzeFunctions(
+                arena_allocator,
+                root,
+                cog_config,
+                result.source,
+            );
+        }
 
-        const violations = exit_codes.countViolations(threshold_results);
+        // Merge cognitive results into cyclomatic ThresholdResults
+        // Both walks process the same tree in the same order, so indices align
+        for (cycl_results, 0..) |*tr, i| {
+            if (i < cog_results.len) {
+                const cog = cog_results[i];
+                tr.cognitive_complexity = cog.complexity;
+                tr.cognitive_status = cyclomatic.validateThreshold(
+                    cog.complexity,
+                    cog_config.warning_threshold,
+                    cog_config.error_threshold,
+                );
+            }
+        }
+
+        total_functions += @intCast(cycl_results.len);
+
+        const violations = exit_codes.countViolations(cycl_results);
         total_warnings += violations.warnings;
         total_errors += violations.errors;
 
         try file_results_list.append(arena_allocator, console.FileThresholdResults{
             .path = result.path,
-            .results = threshold_results,
+            .results = cycl_results,
         });
     }
 
