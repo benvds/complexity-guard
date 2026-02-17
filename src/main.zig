@@ -20,6 +20,27 @@ const exit_codes = @import("output/exit_codes.zig");
 
 const version = "0.3.0";
 
+/// Write a minimal config file with a baseline field.
+/// Used by --save-baseline when no existing config file is found.
+fn writeDefaultConfigWithBaseline(allocator: std.mem.Allocator, path: []const u8, baseline: f64) !void {
+    var content = std.ArrayList(u8).empty;
+    defer content.deinit(allocator);
+    const writer = content.writer(allocator);
+    try writer.writeAll("{\n");
+    try writer.writeAll("  \"output\": {\n");
+    try writer.writeAll("    \"format\": \"console\"\n");
+    try writer.writeAll("  },\n");
+    try writer.writeAll("  \"weights\": {\n");
+    try writer.writeAll("    \"cyclomatic\": 0.20,\n");
+    try writer.writeAll("    \"cognitive\": 0.30,\n");
+    try writer.writeAll("    \"halstead\": 0.15,\n");
+    try writer.writeAll("    \"structural\": 0.15\n");
+    try writer.writeAll("  },\n");
+    try writer.print("  \"baseline\": {d:.1}\n", .{baseline});
+    try writer.writeAll("}\n");
+    try std.fs.cwd().writeFile(.{ .sub_path = path, .data = content.items });
+}
+
 pub fn main() !void {
     // Set up arena allocator for CLI lifecycle
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
@@ -35,6 +56,7 @@ pub fn main() !void {
     var stderr_buffer: [4096]u8 = undefined;
     var stderr_writer = std.fs.File.stderr().writer(&stderr_buffer);
     const stderr = &stderr_writer.interface;
+    defer stderr.flush() catch {};
 
     // Parse CLI arguments
     const cli_args = args_mod.parseArgs(arena_allocator) catch |err| {
@@ -398,6 +420,64 @@ pub fn main() !void {
     // Compute project score from all file scores
     const project_score = scoring.computeProjectScore(file_scores_list.items, file_function_counts.items);
 
+    // Handle --save-baseline: write rounded score to config file, then exit
+    if (cli_args.save_baseline) {
+        const rounded_score = @round(project_score * 10.0) / 10.0;
+        // Determine config file path: use discovered config or default
+        const save_path = ".complexityguard.json";
+
+        // Try to read existing config to preserve its contents
+        const existing_content = std.fs.cwd().readFileAlloc(arena_allocator, save_path, 1024 * 1024) catch null;
+
+        if (existing_content) |content| {
+            // Parse existing JSON as dynamic value, update baseline, write back
+            const parsed = std.json.parseFromSlice(std.json.Value, arena_allocator, content, .{}) catch null;
+            if (parsed) |p| {
+                // Rebuild JSON with baseline field added/updated
+                var new_content = std.ArrayList(u8).empty;
+                defer new_content.deinit(arena_allocator);
+                const writer = new_content.writer(arena_allocator);
+
+                if (p.value == .object) {
+                    try writer.writeAll("{\n");
+                    var first = true;
+                    var iter = p.value.object.iterator();
+                    while (iter.next()) |entry| {
+                        if (!first) try writer.writeAll(",\n");
+                        first = false;
+                        if (std.mem.eql(u8, entry.key_ptr.*, "baseline")) {
+                            try writer.print("  \"baseline\": {d:.1}", .{rounded_score});
+                        } else {
+                            try writer.print("  \"{s}\": ", .{entry.key_ptr.*});
+                            const val_str = try std.json.Stringify.valueAlloc(arena_allocator, entry.value_ptr.*, .{ .whitespace = .indent_2 });
+                            defer arena_allocator.free(val_str);
+                            try writer.writeAll(val_str);
+                        }
+                    }
+                    // Add baseline if it wasn't already present
+                    if (p.value.object.get("baseline") == null) {
+                        if (!first) try writer.writeAll(",\n");
+                        try writer.print("  \"baseline\": {d:.1}", .{rounded_score});
+                    }
+                    try writer.writeAll("\n}\n");
+                    try std.fs.cwd().writeFile(.{ .sub_path = save_path, .data = new_content.items });
+                } else {
+                    // Not an object, write new config
+                    try writeDefaultConfigWithBaseline(arena_allocator, save_path, rounded_score);
+                }
+            } else {
+                // Parse failed, write new config
+                try writeDefaultConfigWithBaseline(arena_allocator, save_path, rounded_score);
+            }
+        } else {
+            // No existing config, create new one with baseline
+            try writeDefaultConfigWithBaseline(arena_allocator, save_path, rounded_score);
+        }
+
+        try stdout.print("Baseline saved: {d:.1}\n", .{rounded_score});
+        return;
+    }
+
     // Step 2: Determine output format
     const effective_format = cli_args.format orelse (if (cfg.output) |out| (out.format orelse "console") else "console");
 
@@ -476,20 +556,29 @@ pub fn main() !void {
 
     // Baseline ratchet check: compare project score against configured baseline
     var baseline_failed = false;
-    // Check config baseline
-    if (cfg.baseline) |baseline_val| {
-        if (project_score < baseline_val - 0.5) {
+    // CLI --fail-health-below overrides config baseline when present
+    if (cli_args.fail_health_below) |fhb_str| {
+        const fhb_val = std.fmt.parseFloat(f64, fhb_str) catch 0.0;
+        if (project_score < fhb_val - 0.5) {
             baseline_failed = true;
-            try stderr.print("Health score {d:.1} is below baseline {d:.1}\n", .{ project_score, baseline_val });
+            try stderr.print("Health score {d:.1} is below threshold {d:.1}\n", .{ project_score, fhb_val });
         }
-    }
-    // Check CLI --baseline flag
-    if (!baseline_failed) {
-        if (cli_args.baseline) |baseline_str| {
-            const baseline_val = std.fmt.parseFloat(f64, baseline_str) catch 0.0;
+    } else {
+        // Check config baseline (only when CLI --fail-health-below not provided)
+        if (cfg.baseline) |baseline_val| {
             if (project_score < baseline_val - 0.5) {
                 baseline_failed = true;
                 try stderr.print("Health score {d:.1} is below baseline {d:.1}\n", .{ project_score, baseline_val });
+            }
+        }
+        // Check legacy CLI --baseline flag
+        if (!baseline_failed) {
+            if (cli_args.baseline) |baseline_str| {
+                const baseline_val = std.fmt.parseFloat(f64, baseline_str) catch 0.0;
+                if (project_score < baseline_val - 0.5) {
+                    baseline_failed = true;
+                    try stderr.print("Health score {d:.1} is below baseline {d:.1}\n", .{ project_score, baseline_val });
+                }
             }
         }
     }
@@ -504,6 +593,7 @@ pub fn main() !void {
 
     if (exit_code != .success) {
         stdout.flush() catch {};
+        stderr.flush() catch {};
         std.process.exit(exit_code.toInt());
     }
 }

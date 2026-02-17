@@ -24,7 +24,7 @@ pub fn printHelp(writer: anytype) !void {
         \\      --metrics <LIST>       Comma-separated metrics to enable
         \\      --no-duplication       Skip duplication analysis
         \\      --threads <N>          Thread count (default: CPU count)
-        \\      --baseline <FILE>      Compare against baseline report
+        \\      --save-baseline        Save current health score as baseline in config
         \\
         \\FILES:
         \\      --include <GLOB>       Include files matching pattern (repeatable)

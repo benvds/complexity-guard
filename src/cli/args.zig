@@ -17,6 +17,7 @@ pub const CliArgs = struct {
     exclude: []const []const u8 = &[_][]const u8{},
     metrics: ?[]const u8 = null,
     no_duplication: bool = false,
+    save_baseline: bool = false,
     threads: ?[]const u8 = null,
     baseline: ?[]const u8 = null,
     verbose: bool = false,
@@ -71,6 +72,8 @@ pub fn parseArgsFromSlice(allocator: std.mem.Allocator, args: []const []const u8
                 cli_args.init = true;
             } else if (std.mem.eql(u8, flag, "no-duplication")) {
                 cli_args.no_duplication = true;
+            } else if (std.mem.eql(u8, flag, "save-baseline")) {
+                cli_args.save_baseline = true;
             } else if (std.mem.eql(u8, flag, "verbose")) {
                 cli_args.verbose = true;
             } else if (std.mem.eql(u8, flag, "quiet")) {
@@ -240,4 +243,15 @@ test "parse unknown flag returns error" {
     const args = [_][]const u8{"--foramt"};
     const result = parseArgsFromSlice(allocator, &args);
     try std.testing.expectError(error.UnknownFlag, result);
+}
+
+test "parse --save-baseline sets save_baseline flag" {
+    const allocator = std.testing.allocator;
+    const args = [_][]const u8{"--save-baseline"};
+    const cli_args = try parseArgsFromSlice(allocator, &args);
+    defer allocator.free(cli_args.include);
+    defer allocator.free(cli_args.exclude);
+    defer allocator.free(cli_args.positional_paths);
+
+    try std.testing.expectEqual(true, cli_args.save_baseline);
 }
