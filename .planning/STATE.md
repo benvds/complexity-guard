@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** Phase 8 in progress - plan 02 complete (pipeline wiring: health scores in console, JSON, exit codes)
+**Current focus:** Phase 8 in progress - plan 03 complete (--save-baseline, enhanced --init with weight optimization)
 
 ## Current Position
 
 Phase: 8 of 12 (Composite Health Score)
-Plan: 2 of 5
-Status: In Progress - Phase 08-02 done (pipeline wiring: health score in console/JSON/exit codes, baseline ratchet)
-Last activity: 2026-02-17 - Completed 08-02: Health score wired into full pipeline
+Plan: 3 of 5
+Status: In Progress - Phase 08-03 done (--save-baseline, --fail-health-below, enhanced --init with coordinate descent)
+Last activity: 2026-02-17 - Completed 08-03: save-baseline CLI and enhanced init workflow
 
 Progress: [████████░░] 58% (7/12 phases complete)
 
@@ -63,6 +63,7 @@ Progress: [████████░░] 58% (7/12 phases complete)
 | Phase 07 P05 | 2 | 1 tasks | 2 files |
 | Phase 08 P01 | 5 | 3 tasks | 2 files |
 | Phase 08 P02 | 4 | 2 tasks | 6 files |
+| Phase 08 P03 | 329 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -175,6 +176,9 @@ Recent decisions affecting current work:
 - [Phase 08-02]: determineExitCode baseline_failed param at priority 2 (after parse_error, before threshold errors_found)
 - [Phase 08-02]: Console Health: NN color thresholds: green>=80, yellow>=50, red<50
 - [Phase 08-02]: FunctionOutput.health_score changed from ?f64 to f64 (always populated post-Phase 8, matches halstead pattern)
+- [Phase 08-03]: --init moved post-analysis: handles full analysis first then calls runEnhancedInit with results; falls back to runInit when no files found
+- [Phase 08-03]: Coordinate descent weight optimization: step=0.10, 4 dimensions, max 20 iterations, improvement threshold 0.001 to avoid floating point drift
+- [Phase 08-03]: stderr flush added before process.exit: buffered writer needs explicit flush to ensure baseline failure messages appear
 
 ### Pending Todos
 
@@ -225,8 +229,8 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-17 (execute-phase)
-Stopped at: Completed 08-02-PLAN.md (pipeline wiring: scoring into console, JSON, exit codes)
+Stopped at: Completed 08-03-PLAN.md (--save-baseline, enhanced --init with weight optimization)
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-17T14:04:00Z*
+*Last updated: 2026-02-17T14:13:00Z*
