@@ -196,6 +196,10 @@ For new projects or teams committed to low complexity:
     "cyclomatic": {
       "warning": 5,
       "error": 10
+    },
+    "cognitive": {
+      "warning": 8,
+      "error": 15
     }
   }
 }
@@ -213,6 +217,10 @@ For existing codebases with high complexity:
     "cyclomatic": {
       "warning": 20,
       "error": 40
+    },
+    "cognitive": {
+      "warning": 25,
+      "error": 50
     }
   }
 }
@@ -354,10 +362,13 @@ complexity-guard --format json src/ | jq '.summary.warnings'
 ### Find High-Complexity Functions
 
 ```sh
-# Functions with complexity > 20
+# Functions with high cyclomatic complexity
 complexity-guard --format json src/ | jq '.files[].functions[] | select(.cyclomatic > 20)'
 
-# Get top 10 most complex functions
+# Functions with high cognitive complexity
+complexity-guard --format json src/ | jq '.files[].functions[] | select(.cognitive > 15)'
+
+# Get top 10 most complex functions (cyclomatic)
 complexity-guard --format json src/ | jq '.files[].functions[] | {name, file: .start_line, complexity: .cyclomatic} | sort_by(.complexity) | reverse | .[0:10]'
 ```
 
@@ -369,6 +380,16 @@ complexity-guard --format json src/ | jq '.files[].functions[] | select(.status 
 
 # Only warning-level functions
 complexity-guard --format json src/ | jq '.files[].functions[] | select(.status == "warning")'
+```
+
+### Comparing Metrics
+
+```sh
+# Find functions where cognitive is much higher than cyclomatic (deeply nested code)
+complexity-guard --format json src/ | jq '.files[].functions[] | select(.cognitive > .cyclomatic * 2) | {name, cyclomatic, cognitive}'
+
+# Find functions where cyclomatic is high but cognitive is low (many flat branches)
+complexity-guard --format json src/ | jq '.files[].functions[] | select(.cyclomatic > 10 and .cognitive < 10) | {name, cyclomatic, cognitive}'
 ```
 
 ### Per-File Analysis

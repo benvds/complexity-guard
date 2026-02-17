@@ -139,13 +139,15 @@ complexity-guard --quiet src/
 
 **`--metrics <LIST>`**
 
-Comma-separated list of metrics to enable. Currently only `cyclomatic` is supported.
+Comma-separated list of metrics to enable. Supported metrics: `cyclomatic`, `cognitive`.
 
 ```sh
+# Enable both metrics (default)
+complexity-guard --metrics cyclomatic,cognitive src/
+
+# Cyclomatic only
 complexity-guard --metrics cyclomatic src/
 ```
-
-This flag exists for future extensibility when additional metrics are added.
 
 **`--no-duplication`**
 
@@ -263,6 +265,10 @@ ComplexityGuard uses `.complexityguard.json` for configuration. Generate a defau
     "cyclomatic": {
       "warning": 10,
       "error": 20
+    },
+    "cognitive": {
+      "warning": 15,
+      "error": 25
     }
   },
   "counting_rules": {
@@ -294,6 +300,16 @@ Cyclomatic complexity threshold for warnings. Default: `10`.
 **`thresholds.cyclomatic.error`** (integer)
 
 Cyclomatic complexity threshold for errors. Default: `20`.
+
+**`thresholds.cognitive.warning`** (integer)
+
+Cognitive complexity threshold for warnings. Default: `15` (SonarSource recommendation).
+
+**`thresholds.cognitive.error`** (integer)
+
+Cognitive complexity threshold for errors. Default: `25` (SonarSource recommendation).
+
+See [Cognitive Complexity](cognitive-complexity.md) for details on how this metric is calculated.
 
 **`counting_rules.logical_operators`** (boolean)
 
@@ -390,7 +406,7 @@ When using `--format json`, ComplexityGuard produces structured JSON output.
           "end_line": 0,
           "start_col": 0,
           "cyclomatic": 3,
-          "cognitive": null,
+          "cognitive": 2,
           "halstead_volume": null,
           "halstead_difficulty": null,
           "halstead_effort": null,
@@ -406,7 +422,7 @@ When using `--format json`, ComplexityGuard produces structured JSON output.
           "end_line": 0,
           "start_col": 2,
           "cyclomatic": 25,
-          "cognitive": null,
+          "cognitive": 32,
           "halstead_volume": null,
           "halstead_difficulty": null,
           "halstead_effort": null,
@@ -447,7 +463,7 @@ When using `--format json`, ComplexityGuard produces structured JSON output.
 - `end_line` (integer) — Reserved for future use (currently 0)
 - `start_col` (integer) — Column where function starts (0-indexed)
 - `cyclomatic` (integer or null) — Cyclomatic complexity score
-- `cognitive` (integer or null) — Reserved for future use (currently null)
+- `cognitive` (integer or null) — Cognitive complexity score
 - `halstead_volume` (float or null) — Reserved for future use (currently null)
 - `halstead_difficulty` (float or null) — Reserved for future use (currently null)
 - `halstead_effort` (float or null) — Reserved for future use (currently null)

@@ -72,21 +72,26 @@ ComplexityGuard automatically finds all `.ts`, `.tsx`, `.js`, and `.jsx` files i
 
 ## Understanding the Output
 
+ComplexityGuard measures both **cyclomatic complexity** (testability — how many paths need testing) and **cognitive complexity** (readability — how hard the code is to understand). Both scores appear side by side in the output.
+
 When you run ComplexityGuard, you'll see output like this:
 
 ```
 src/auth/login.ts
-  42:0  ✓  ok  Function 'validateCredentials' has complexity 3 (threshold: 10)  cyclomatic
-  67:0  ⚠  warning  Function 'processLoginFlow' has complexity 12 (threshold: 10)  cyclomatic
-  89:2  ✗  error  Function 'handleComplexAuthFlow' has complexity 25 (threshold: 20)  cyclomatic
+  42:0  ✓  ok  Function 'validateCredentials' cyclomatic 3 cognitive 2
+  67:0  ⚠  warning  Function 'processLoginFlow' cyclomatic 12 cognitive 18
+  89:2  ✗  error  Method 'handleComplexAuthFlow' cyclomatic 25 cognitive 32
 
 Analyzed 12 files, 47 functions
 Found 3 warnings, 1 errors
 
-Top complexity hotspots:
+Top cyclomatic hotspots:
   1. handleComplexAuthFlow (src/auth/login.ts:89) complexity 25
   2. processPayment (src/checkout/payment.ts:156) complexity 18
-  3. validateFormData (src/forms/validator.ts:34) complexity 15
+
+Top cognitive hotspots:
+  1. handleComplexAuthFlow (src/auth/login.ts:89) complexity 32
+  2. processLoginFlow (src/auth/login.ts:67) complexity 18
 
 ✗ 4 problems (1 errors, 3 warnings)
 ```
@@ -96,21 +101,25 @@ Top complexity hotspots:
 Each line shows:
 - **Line:Column** — Location of the function (e.g., `42:0`)
 - **Indicator** — Visual status marker:
-  - `✓` (green) = OK, complexity below warning threshold
-  - `⚠` (yellow) = Warning, complexity between warning and error thresholds
-  - `✗` (red) = Error, complexity exceeds error threshold
+  - `✓` (green) = OK, both complexity scores below warning thresholds
+  - `⚠` (yellow) = Warning, at least one score between warning and error threshold
+  - `✗` (red) = Error, at least one score exceeds error threshold
 - **Severity** — `ok`, `warning`, or `error`
 - **Function Info** — Type and name (e.g., `Function 'validateCredentials'`)
-- **Complexity Value** — Cyclomatic complexity score
-- **Threshold** — The threshold that triggered the status
-- **Metric** — Currently always `cyclomatic`
+- **Cyclomatic** — Cyclomatic complexity score (measures testability)
+- **Cognitive** — Cognitive complexity score (measures readability)
 
 By default, ComplexityGuard shows only files with warnings or errors. Functions that pass all thresholds are hidden to reduce noise.
 
 ### Default Thresholds
 
-- **Warning**: Complexity 10 or higher (McCabe's original recommendation)
-- **Error**: Complexity 20 or higher (ESLint default)
+**Cyclomatic complexity:**
+- **Warning**: 10 (McCabe's original recommendation)
+- **Error**: 20 (ESLint default)
+
+**Cognitive complexity:**
+- **Warning**: 15 (SonarSource recommendation)
+- **Error**: 25 (SonarSource recommendation)
 
 These thresholds are based on industry standards and can be customized (see Configuration below).
 
@@ -153,6 +162,10 @@ This creates a `.complexityguard.json` file with sensible defaults:
     "cyclomatic": {
       "warning": 10,
       "error": 20
+    },
+    "cognitive": {
+      "warning": 15,
+      "error": 25
     }
   },
   "counting_rules": {
@@ -186,7 +199,7 @@ Control which files are analyzed using glob patterns:
 
 ### Threshold Customization
 
-Adjust warning and error thresholds to match your team's standards:
+Adjust warning and error thresholds for both metrics to match your team's standards:
 
 ```json
 {
@@ -194,6 +207,10 @@ Adjust warning and error thresholds to match your team's standards:
     "cyclomatic": {
       "warning": 5,
       "error": 10
+    },
+    "cognitive": {
+      "warning": 8,
+      "error": 15
     }
   }
 }
@@ -203,7 +220,8 @@ Adjust warning and error thresholds to match your team's standards:
 ```json
 {
   "thresholds": {
-    "cyclomatic": { "warning": 5, "error": 10 }
+    "cyclomatic": { "warning": 5, "error": 10 },
+    "cognitive": { "warning": 8, "error": 15 }
   }
 }
 ```
@@ -212,7 +230,8 @@ Adjust warning and error thresholds to match your team's standards:
 ```json
 {
   "thresholds": {
-    "cyclomatic": { "warning": 20, "error": 40 }
+    "cyclomatic": { "warning": 20, "error": 40 },
+    "cognitive": { "warning": 25, "error": 50 }
   }
 }
 ```
