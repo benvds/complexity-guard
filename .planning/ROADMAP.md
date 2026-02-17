@@ -19,7 +19,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 5: Console & JSON Output** - Primary developer and CI output formats ✓ 2026-02-15
 - [ ] **Phase 5.1: CI/CD, Release Pipeline & Documentation** - Changelog, GitHub workflows, publishing, docs (INSERTED) -- gap closure in progress
 - [x] **Phase 6: Cognitive Complexity** - SonarSource metric with nesting tracking (completed 2026-02-17)
-- [ ] **Phase 7: Halstead & Structural Metrics** - Information theory and structural metrics
+- [x] **Phase 7: Halstead & Structural Metrics** - Information theory and structural metrics (completed 2026-02-17)
 - [ ] **Phase 8: Composite Health Score** - Weighted scoring and letter grade assignment
 - [ ] **Phase 9: SARIF Output** - GitHub Code Scanning integration
 - [ ] **Phase 10: HTML Reports** - Self-contained visual reports for stakeholders
@@ -151,7 +151,7 @@ Plans:
   2. Tool handles edge cases without divide-by-zero errors
   3. Tool measures structural properties (function length, parameter count, nesting depth, file length, export count)
   4. Tool applies configurable thresholds for all Halstead and structural metrics
-**Plans:** 4 plans
+**Plans:** 4/4 plans complete
 
 Plans:
 - [ ] 07-01-PLAN.md -- Halstead metrics core: token classification, counting, and formula computation (TDD)
@@ -240,7 +240,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 5. Console & JSON Output | 2/2 | ✓ Complete | 2026-02-15 |
 | 5.1 CI/CD, Release & Docs | 6/6 | ✓ Complete | 2026-02-15 |
 | 6. Cognitive Complexity | 0/3 | Complete    | 2026-02-17 |
-| 7. Halstead & Structural Metrics | 0/4 | Not started | - |
+| 7. Halstead & Structural Metrics | 0/4 | Complete    | 2026-02-17 |
 | 8. Composite Health Score | 0/TBD | Not started | - |
 | 9. SARIF Output | 0/TBD | Not started | - |
 | 10. HTML Reports | 0/TBD | Not started | - |
