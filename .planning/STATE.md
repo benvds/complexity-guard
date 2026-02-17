@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** Phase 6 in progress - Plans 01 (algorithm), 02 (pipeline integration), and 03 (documentation) complete
+**Current focus:** Phase 7 in progress - Plan 01 (Halstead metrics core) complete
 
 ## Current Position
 
-Phase: 6 of 12 (Cognitive Complexity)
-Plan: 3 of TBD
-Status: In Progress - Plans 01-03 complete (algorithm + pipeline + docs)
-Last activity: 2026-02-17 - Completed 06-03: Documentation for cognitive/cyclomatic complexity metrics
+Phase: 7 of 12 (Halstead + Structural Metrics)
+Plan: 1 of 4
+Status: In Progress - Plan 01 complete (Halstead metrics core)
+Last activity: 2026-02-17 - Completed 07-01: Halstead metrics core (token classification, formula computation)
 
-Progress: [████████░░] 46% (6/13 phases)
+Progress: [████████░░] 54% (7/13 phases)
 
 ## Performance Metrics
 
@@ -56,6 +56,7 @@ Progress: [████████░░] 46% (6/13 phases)
 | Phase 06 P01 | 7 | 3 tasks | 7 files |
 | Phase 06 P03 | 3 | 2 tasks | 6 files |
 | Phase 06 P02 | 4 | 2 tasks | 4 files |
+| Phase 07 P01 | 4 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -144,6 +145,10 @@ Recent decisions affecting current work:
 - [Phase 06]: Worst-of-both-metrics for exit codes and display: cognitive violations treated at same severity as cyclomatic
 - [Phase 06]: Index alignment merge pattern: cyclomatic and cognitive walkers produce same-order results from same AST walk
 - [Phase 06]: Side-by-side console format: 'Function name cyclomatic N cognitive N' on single line for compact output
+- [Phase 07]: StringHashMap initialized in-place in HalsteadContext struct to prevent copy-on-assign memory leak (Zig structs copy by value; defer on original does not clean up the populated copy)
+- [Phase 07]: isOperatorToken uses node type string as key; isOperandToken uses source text as key — operators are syntax types, operands are values
+- [Phase 07]: ternary_expression handled as non-leaf operator: '?:' added before recursing; leaf ? and : tokens skipped as structural punctuation
+- [Phase 07]: TypeScript type exclusion: isTypeOnlyNode returns early on entire subtree for all type annotation nodes
 
 ### Pending Todos
 
@@ -194,9 +199,9 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-17 (execute-phase)
-Stopped at: Completed 06-03-PLAN.md (documentation: cognitive/cyclomatic complexity docs and user-facing updates)
-Resume file: .planning/phases/06-cognitive-complexity/06-03-SUMMARY.md
+Stopped at: Completed 07-01-PLAN.md (Halstead metrics core: token classification, formula computation, TDD coverage)
+Resume file: .planning/phases/07-halstead-structural-metrics/07-01-SUMMARY.md
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-17T08:09:00Z*
+*Last updated: 2026-02-17T09:59:28Z*
