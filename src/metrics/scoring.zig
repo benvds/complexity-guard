@@ -39,8 +39,8 @@ pub const ScoreBreakdown = struct {
     total: f64,
 };
 
-/// Core sigmoid normalization: returns 100.0 when x=0, 50.0 when x=x0, ~20 when x at error.
-/// Formula: 100 / (1 + exp(k * (x - x0)))
+/// Core sigmoid normalization: returns 50.0 at warning threshold (x=x0), ~20 at error threshold.
+/// Approaches 100 as x approaches -infinity. Formula: 100 / (1 + exp(k * (x - x0)))
 pub fn sigmoidScore(x: f64, x0: f64, k: f64) f64 {
     return 100.0 / (1.0 + @exp(k * (x - x0)));
 }
