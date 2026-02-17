@@ -267,6 +267,7 @@ test {
     _ = @import("parser/tree_sitter.zig");
     _ = @import("parser/parse.zig");
     _ = @import("metrics/cyclomatic.zig");
+    _ = @import("metrics/cognitive.zig");
     _ = @import("output/exit_codes.zig");
     _ = @import("output/console.zig");
     _ = @import("output/json_output.zig");
