@@ -56,6 +56,23 @@ pub const ThresholdResult = struct {
     cognitive_complexity: u32,
     /// Cognitive complexity threshold status (ok until Phase 6 populates it)
     cognitive_status: ThresholdStatus,
+    // Halstead (Phase 7)
+    halstead_volume: f64 = 0,
+    halstead_difficulty: f64 = 0,
+    halstead_effort: f64 = 0,
+    halstead_bugs: f64 = 0,
+    halstead_volume_status: ThresholdStatus = .ok,
+    halstead_difficulty_status: ThresholdStatus = .ok,
+    halstead_effort_status: ThresholdStatus = .ok,
+    halstead_bugs_status: ThresholdStatus = .ok,
+    // Structural (Phase 7)
+    function_length: u32 = 0,
+    params_count: u32 = 0,
+    nesting_depth: u32 = 0,
+    end_line: u32 = 0,
+    function_length_status: ThresholdStatus = .ok,
+    params_count_status: ThresholdStatus = .ok,
+    nesting_depth_status: ThresholdStatus = .ok,
 };
 
 /// Per-function complexity result
@@ -78,6 +95,13 @@ pub const FunctionComplexity = struct {
 pub fn validateThreshold(complexity: u32, warning: u32, err_level: u32) ThresholdStatus {
     if (complexity >= err_level) return .@"error";
     if (complexity >= warning) return .warning;
+    return .ok;
+}
+
+/// Validate floating-point metric against thresholds
+pub fn validateThresholdF64(value: f64, warning: f64, err_level: f64) ThresholdStatus {
+    if (value >= err_level) return .@"error";
+    if (value >= warning) return .warning;
     return .ok;
 }
 

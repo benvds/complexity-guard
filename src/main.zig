@@ -11,6 +11,8 @@ const filter = @import("discovery/filter.zig");
 const parse = @import("parser/parse.zig");
 const cyclomatic = @import("metrics/cyclomatic.zig");
 const cognitive = @import("metrics/cognitive.zig");
+const halstead = @import("metrics/halstead.zig");
+const structural = @import("metrics/structural.zig");
 const console = @import("output/console.zig");
 const json_output = @import("output/json_output.zig");
 const exit_codes = @import("output/exit_codes.zig");
@@ -128,6 +130,33 @@ pub fn main() !void {
     };
     defer parse_summary.deinit(arena_allocator);
 
+    // Helper: check if a metric family is enabled
+    // Returns true if metrics is null (all enabled) or if the name is in the list
+    const isMetricEnabled = struct {
+        fn check(metrics: ?[]const []const u8, metric: []const u8) bool {
+            const list = metrics orelse return true;
+            for (list) |m| {
+                if (std.mem.eql(u8, m, metric)) return true;
+            }
+            return false;
+        }
+    }.check;
+
+    // Parse --metrics flag (e.g. "cyclomatic,halstead") into a slice of names
+    var parsed_metrics: ?[]const []const u8 = null;
+    var metrics_storage = std.ArrayList([]const u8).empty;
+    defer metrics_storage.deinit(arena_allocator);
+    if (cli_args.metrics) |metrics_str| {
+        var iter = std.mem.splitScalar(u8, metrics_str, ',');
+        while (iter.next()) |part| {
+            const trimmed = std.mem.trim(u8, part, " \t");
+            if (trimmed.len > 0) {
+                try metrics_storage.append(arena_allocator, trimmed);
+            }
+        }
+        parsed_metrics = metrics_storage.items;
+    }
+
     // Step 1: Analyze all files once and store results
     const cycl_config = cyclomatic.CyclomaticConfig.default();
 
@@ -146,6 +175,46 @@ pub fn main() !void {
             default_cog
     else
         default_cog;
+
+    // Build halstead config from loaded config
+    const default_hal = halstead.HalsteadConfig.default();
+    const hal_config = if (cfg.analysis) |analysis|
+        if (analysis.thresholds) |thresholds|
+            halstead.HalsteadConfig{
+                .volume_warning = if (thresholds.halstead_volume) |t| @as(f64, @floatFromInt(t.warning orelse @as(u32, @intFromFloat(default_hal.volume_warning)))) else default_hal.volume_warning,
+                .volume_error = if (thresholds.halstead_volume) |t| @as(f64, @floatFromInt(t.@"error" orelse @as(u32, @intFromFloat(default_hal.volume_error)))) else default_hal.volume_error,
+                .difficulty_warning = default_hal.difficulty_warning,
+                .difficulty_error = default_hal.difficulty_error,
+                .effort_warning = default_hal.effort_warning,
+                .effort_error = default_hal.effort_error,
+                .bugs_warning = default_hal.bugs_warning,
+                .bugs_error = default_hal.bugs_error,
+            }
+        else
+            default_hal
+    else
+        default_hal;
+
+    // Build structural config from loaded config
+    const default_str = structural.StructuralConfig.default();
+    const str_config = if (cfg.analysis) |analysis|
+        if (analysis.thresholds) |thresholds|
+            structural.StructuralConfig{
+                .function_length_warning = if (thresholds.line_count) |t| t.warning orelse default_str.function_length_warning else default_str.function_length_warning,
+                .function_length_error = if (thresholds.line_count) |t| t.@"error" orelse default_str.function_length_error else default_str.function_length_error,
+                .params_count_warning = if (thresholds.params_count) |t| t.warning orelse default_str.params_count_warning else default_str.params_count_warning,
+                .params_count_error = if (thresholds.params_count) |t| t.@"error" orelse default_str.params_count_error else default_str.params_count_error,
+                .nesting_depth_warning = if (thresholds.nesting_depth) |t| t.warning orelse default_str.nesting_depth_warning else default_str.nesting_depth_warning,
+                .nesting_depth_error = if (thresholds.nesting_depth) |t| t.@"error" orelse default_str.nesting_depth_error else default_str.nesting_depth_error,
+                .file_length_warning = default_str.file_length_warning,
+                .file_length_error = default_str.file_length_error,
+                .export_count_warning = default_str.export_count_warning,
+                .export_count_error = default_str.export_count_error,
+            }
+        else
+            default_str
+    else
+        default_str;
 
     var file_results_list = std.ArrayList(console.FileThresholdResults).empty;
     defer file_results_list.deinit(arena_allocator);
@@ -188,6 +257,89 @@ pub fn main() !void {
             }
         }
 
+        // Run Halstead analysis if enabled
+        if (isMetricEnabled(parsed_metrics, "halstead")) {
+            if (result.tree) |tree| {
+                const root = tree.rootNode();
+                const hal_results = try halstead.analyzeFunctions(
+                    arena_allocator,
+                    root,
+                    hal_config,
+                    result.source,
+                );
+                // Merge by index (same AST walk order)
+                for (cycl_results, 0..) |*tr, i| {
+                    if (i < hal_results.len) {
+                        const hr = hal_results[i];
+                        tr.halstead_volume = hr.metrics.volume;
+                        tr.halstead_difficulty = hr.metrics.difficulty;
+                        tr.halstead_effort = hr.metrics.effort;
+                        tr.halstead_bugs = hr.metrics.bugs;
+                        tr.halstead_volume_status = cyclomatic.validateThresholdF64(
+                            hr.metrics.volume,
+                            hal_config.volume_warning,
+                            hal_config.volume_error,
+                        );
+                        tr.halstead_difficulty_status = cyclomatic.validateThresholdF64(
+                            hr.metrics.difficulty,
+                            hal_config.difficulty_warning,
+                            hal_config.difficulty_error,
+                        );
+                        tr.halstead_effort_status = cyclomatic.validateThresholdF64(
+                            hr.metrics.effort,
+                            hal_config.effort_warning,
+                            hal_config.effort_error,
+                        );
+                        tr.halstead_bugs_status = cyclomatic.validateThresholdF64(
+                            hr.metrics.bugs,
+                            hal_config.bugs_warning,
+                            hal_config.bugs_error,
+                        );
+                    }
+                }
+            }
+        }
+
+        // Run structural function analysis if enabled
+        var str_file_result: ?structural.FileStructuralResult = null;
+        if (isMetricEnabled(parsed_metrics, "structural")) {
+            if (result.tree) |tree| {
+                const root = tree.rootNode();
+                const str_results = try structural.analyzeFunctions(
+                    arena_allocator,
+                    root,
+                    result.source,
+                );
+                // Merge by index
+                for (cycl_results, 0..) |*tr, i| {
+                    if (i < str_results.len) {
+                        const sr = str_results[i];
+                        tr.function_length = sr.function_length;
+                        tr.params_count = sr.params_count;
+                        tr.nesting_depth = sr.nesting_depth;
+                        tr.end_line = sr.end_line;
+                        tr.function_length_status = cyclomatic.validateThreshold(
+                            sr.function_length,
+                            str_config.function_length_warning,
+                            str_config.function_length_error,
+                        );
+                        tr.params_count_status = cyclomatic.validateThreshold(
+                            sr.params_count,
+                            str_config.params_count_warning,
+                            str_config.params_count_error,
+                        );
+                        tr.nesting_depth_status = cyclomatic.validateThreshold(
+                            sr.nesting_depth,
+                            str_config.nesting_depth_warning,
+                            str_config.nesting_depth_error,
+                        );
+                    }
+                }
+                // Compute file-level structural metrics
+                str_file_result = structural.analyzeFile(result.source, root);
+            }
+        }
+
         total_functions += @intCast(cycl_results.len);
 
         const violations = exit_codes.countViolations(cycl_results);
@@ -197,6 +349,7 @@ pub fn main() !void {
         try file_results_list.append(arena_allocator, console.FileThresholdResults{
             .path = result.path,
             .results = cycl_results,
+            .structural = str_file_result,
         });
     }
 

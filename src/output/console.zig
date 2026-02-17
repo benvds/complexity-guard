@@ -1,5 +1,6 @@
 const std = @import("std");
 const cyclomatic = @import("../metrics/cyclomatic.zig");
+const structural = @import("../metrics/structural.zig");
 const help = @import("../cli/help.zig");
 const Allocator = std.mem.Allocator;
 
@@ -30,6 +31,8 @@ pub const OutputConfig = struct {
 pub const FileThresholdResults = struct {
     path: []const u8,
     results: []const cyclomatic.ThresholdResult,
+    /// File-level structural metrics (null when structural metrics not computed)
+    structural: ?structural.FileStructuralResult = null,
 };
 
 /// Return the worse of two threshold statuses (error > warning > ok)
