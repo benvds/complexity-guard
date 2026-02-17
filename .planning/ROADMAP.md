@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Cyclomatic Complexity** - McCabe metric with threshold validation (vertical slice) ✓ 2026-02-14
 - [x] **Phase 5: Console & JSON Output** - Primary developer and CI output formats ✓ 2026-02-15
 - [ ] **Phase 5.1: CI/CD, Release Pipeline & Documentation** - Changelog, GitHub workflows, publishing, docs (INSERTED) -- gap closure in progress
-- [ ] **Phase 6: Cognitive Complexity** - SonarSource metric with nesting tracking
+- [x] **Phase 6: Cognitive Complexity** - SonarSource metric with nesting tracking (completed 2026-02-17)
 - [ ] **Phase 7: Halstead & Structural Metrics** - Information theory and structural metrics
 - [ ] **Phase 8: Composite Health Score** - Weighted scoring and letter grade assignment
 - [ ] **Phase 9: SARIF Output** - GitHub Code Scanning integration
@@ -135,7 +135,7 @@ Plans:
   3. Tool handles logical operator sequences (same-operator vs mixed-operator counting)
   4. Tool increments for recursive function calls
   5. Tool applies configurable warning and error thresholds
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 
 Plans:
 - [ ] 06-01-PLAN.md -- Core cognitive complexity algorithm, test fixture, and ThresholdResult extension
@@ -235,7 +235,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 4. Cyclomatic Complexity | 2/2 | ✓ Complete | 2026-02-14 |
 | 5. Console & JSON Output | 2/2 | ✓ Complete | 2026-02-15 |
 | 5.1 CI/CD, Release & Docs | 6/6 | ✓ Complete | 2026-02-15 |
-| 6. Cognitive Complexity | 0/3 | Planned | - |
+| 6. Cognitive Complexity | 0/3 | Complete    | 2026-02-17 |
 | 7. Halstead & Structural Metrics | 0/TBD | Not started | - |
 | 8. Composite Health Score | 0/TBD | Not started | - |
 | 9. SARIF Output | 0/TBD | Not started | - |
