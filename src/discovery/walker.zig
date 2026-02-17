@@ -180,8 +180,8 @@ test "discoverFiles: TypeScript directory" {
     var result = try discoverFiles(allocator, &[_][]const u8{"tests/fixtures/typescript"}, config);
     defer result.deinit(allocator);
 
-    // 6 .ts files + 1 .tsx file + 1 syntax_error.ts = 8 files
-    try std.testing.expectEqual(@as(usize, 8), result.files.len);
+    // 8 .ts files + 1 .tsx file + 1 syntax_error.ts = 10 files
+    try std.testing.expectEqual(@as(usize, 10), result.files.len);
 
     // Verify all files are .ts or .tsx files
     for (result.files) |path| {
@@ -215,8 +215,8 @@ test "discoverFiles: all fixtures" {
     var result = try discoverFiles(allocator, &[_][]const u8{"tests/fixtures"}, config);
     defer result.deinit(allocator);
 
-    // Should find 7 .ts + 1 .tsx + 2 .js + 1 .jsx = 11 files
-    try std.testing.expectEqual(@as(usize, 11), result.files.len);
+    // Should find 9 .ts + 1 .tsx + 2 .js + 1 .jsx = 13 files
+    try std.testing.expectEqual(@as(usize, 13), result.files.len);
 }
 
 test "discoverFiles: single file path" {
@@ -260,8 +260,8 @@ test "discoverFiles: exclude pattern" {
     var result = try discoverFiles(allocator, &[_][]const u8{"tests/fixtures/typescript"}, config);
     defer result.deinit(allocator);
 
-    // Should find 7 files (8 total - 1 excluded)
-    try std.testing.expectEqual(@as(usize, 7), result.files.len);
+    // Should find 9 files (10 total - 1 excluded)
+    try std.testing.expectEqual(@as(usize, 9), result.files.len);
 
     // Verify simple_function.ts is not in results
     for (result.files) |path| {
