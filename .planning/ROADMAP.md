@@ -20,7 +20,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 5.1: CI/CD, Release Pipeline & Documentation** - Changelog, GitHub workflows, publishing, docs (INSERTED) -- gap closure in progress
 - [x] **Phase 6: Cognitive Complexity** - SonarSource metric with nesting tracking (completed 2026-02-17)
 - [x] **Phase 7: Halstead & Structural Metrics** - Information theory and structural metrics ✓ 2026-02-17
-- [ ] **Phase 8: Composite Health Score** - Weighted scoring and letter grade assignment
+- [ ] **Phase 8: Composite Health Score** - Weighted scoring, baseline ratchet, and enhanced --init
 - [ ] **Phase 9: SARIF Output** - GitHub Code Scanning integration
 - [ ] **Phase 10: HTML Reports** - Self-contained visual reports for stakeholders
 - [ ] **Phase 11: Duplication Detection** - Rabin-Karp cross-file clone analysis
@@ -161,17 +161,21 @@ Plans:
 - [x] 07-05-PLAN.md -- Gap closure: wire --metrics flag through to console output layer for hotspot/detail filtering
 
 ### Phase 8: Composite Health Score
-**Goal**: Tool computes weighted composite health score (0-100) per file and project with letter grades
+**Goal**: Tool computes weighted composite health score (0-100) per file and project with configurable weights, baseline ratchet, and enhanced --init workflow
 **Depends on**: Phase 7
 **Requirements**: COMP-01, COMP-02, COMP-03, COMP-04
 **Success Criteria** (what must be TRUE):
   1. Tool computes weighted composite score per file using configurable weights across all metric categories
   2. Tool computes project-wide composite score aggregating all files
-  3. Tool assigns letter grades (A-F) based on score thresholds
+  3. Tool uses numeric 0-100 score only (no letter grades, per CONTEXT.md override of COMP-04)
   4. Tool uses default weights (cognitive 0.30, cyclomatic 0.20, duplication 0.20, Halstead 0.15, structural 0.15) unless overridden
-**Plans**: TBD
+**Plans:** 4 plans
 
-Plans: (to be created during /gsd:plan-phase)
+Plans:
+- [ ] 08-01-PLAN.md -- Scoring module: sigmoid normalization, weight redistribution, function/file/project score computation (TDD)
+- [ ] 08-02-PLAN.md -- Pipeline + output wiring: config baseline, main.zig integration, console/JSON display, exit code
+- [ ] 08-03-PLAN.md -- Baseline ratchet: --save-baseline, --fail-health-below, enhanced --init with weight optimization
+- [ ] 08-04-PLAN.md -- Documentation: health-score.md page, README, docs updates, publication READMEs
 
 ### Phase 9: SARIF Output
 **Goal**: Tool outputs SARIF 2.1.0 format accepted by GitHub Code Scanning
@@ -242,7 +246,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 5.1 CI/CD, Release & Docs | 6/6 | ✓ Complete | 2026-02-15 |
 | 6. Cognitive Complexity | 3/3 | ✓ Complete | 2026-02-17 |
 | 7. Halstead & Structural Metrics | 5/5 | Complete    | 2026-02-17 |
-| 8. Composite Health Score | 0/TBD | Not started | - |
+| 8. Composite Health Score | 0/4 | Not started | - |
 | 9. SARIF Output | 0/TBD | Not started | - |
 | 10. HTML Reports | 0/TBD | Not started | - |
 | 11. Duplication Detection | 0/TBD | Not started | - |
@@ -250,4 +254,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 ---
 *Roadmap created: 2026-02-14*
-*Last updated: 2026-02-17 (Phase 7 gap closure plan created)*
+*Last updated: 2026-02-17 (Phase 8 plans created)*
