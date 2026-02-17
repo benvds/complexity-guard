@@ -122,8 +122,8 @@ Plans:
 - [x] 05.1-02-PLAN.md -- npm platform packages and Homebrew formula template
 - [x] 05.1-03-PLAN.md -- Documentation: README rewrite and docs/ pages (getting started, CLI reference, examples)
 - [x] 05.1-04-PLAN.md -- GitHub Actions release workflow (build, publish, distribute)
-- [ ] 05.1-05-PLAN.md -- Gap closure: move publication files to publication/ directory (structural refactor)
-- [ ] 05.1-06-PLAN.md -- Gap closure: release process documentation (docs/releasing.md) and Homebrew SHA256 docs
+- [x] 05.1-05-PLAN.md -- Gap closure: move publication files to publication/ directory (structural refactor)
+- [x] 05.1-06-PLAN.md -- Gap closure: release process documentation (docs/releasing.md) and Homebrew SHA256 docs
 
 ### Phase 6: Cognitive Complexity
 **Goal**: Tool calculates SonarSource cognitive complexity with nesting penalties
