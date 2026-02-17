@@ -214,9 +214,9 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-02-17 (execute-phase)
-Stopped at: Completed 07-05-PLAN.md (gap closure: wire --metrics flag to output layer, resolve UAT test 6)
-Resume file: .planning/phases/07-halstead-structural-metrics/07-05-SUMMARY.md
+Last session: 2026-02-17 (discuss-phase)
+Stopped at: Phase 8 context gathered
+Resume file: .planning/phases/08-composite-health-score/08-CONTEXT.md
 
 ---
 *State initialized: 2026-02-14*
