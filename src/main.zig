@@ -76,12 +76,6 @@ pub fn main() !void {
         return;
     }
 
-    // Handle --init
-    if (cli_args.init) {
-        try init.runInit(arena_allocator);
-        return;
-    }
-
     // Discover config path
     const config_path = discovery.discoverConfigPath(arena_allocator, cli_args.config_path) catch |err| {
         if (err == error.ConfigFileNotFound) {
@@ -419,6 +413,28 @@ pub fn main() !void {
 
     // Compute project score from all file scores
     const project_score = scoring.computeProjectScore(file_scores_list.items, file_function_counts.items);
+
+    // Handle --init: enhanced analysis-aware initialization
+    if (cli_args.init) {
+        if (total_functions > 0) {
+            // Collect all threshold results for weight optimization
+            var all_results_list = std.ArrayList([]const cyclomatic.ThresholdResult).empty;
+            defer all_results_list.deinit(arena_allocator);
+            for (file_results_list.items) |fr| {
+                try all_results_list.append(arena_allocator, fr.results);
+            }
+            try init.runEnhancedInit(
+                arena_allocator,
+                all_results_list.items,
+                project_score,
+                metric_thresholds,
+            );
+        } else {
+            // No files found: fall back to simple default config generation
+            try init.runInit(arena_allocator);
+        }
+        return;
+    }
 
     // Handle --save-baseline: write rounded score to config file, then exit
     if (cli_args.save_baseline) {
