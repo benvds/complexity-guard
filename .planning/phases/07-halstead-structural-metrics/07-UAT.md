@@ -1,9 +1,9 @@
 ---
-status: complete
+status: resolved
 phase: 07-halstead-structural-metrics
 source: 07-01-SUMMARY.md, 07-02-SUMMARY.md, 07-03-SUMMARY.md, 07-04-SUMMARY.md
 started: 2026-02-17T10:30:00Z
-updated: 2026-02-17T10:35:00Z
+updated: 2026-02-17T12:30:00Z
 ---
 
 ## Current Test
@@ -53,9 +53,19 @@ skipped: 0
 ## Gaps
 
 - truth: "When --metrics filters to specific families, summary hotspot sections for non-selected metrics should be hidden"
-  status: failed
+  status: resolved
   reason: "User reported: when the metrics are filtered also filter out the top hotspots for that metrics, if i filter for cyclomatic now i see top hotspots for other metrics as well while they also should be hidden"
   severity: minor
   test: 6
-  artifacts: []
-  missing: []
+  root_cause: "parsed_metrics is never passed to the output layer. OutputConfig in console.zig has no field for selected metrics. formatSummary unconditionally renders all hotspot sections (cyclomatic, cognitive, Halstead)."
+  artifacts:
+    - path: "src/output/console.zig"
+      issue: "OutputConfig lacks metrics filter field; formatSummary (lines 286-419) renders all hotspot sections unconditionally; formatFileResults renders all metric details unconditionally"
+    - path: "src/main.zig"
+      issue: "parsed_metrics never passed to formatSummary or formatFileResults call sites (lines 395-422)"
+  missing:
+    - "Add selected_metrics field to OutputConfig in console.zig"
+    - "Pass parsed_metrics to OutputConfig in main.zig"
+    - "Gate hotspot sections in formatSummary with isMetricEnabled check"
+    - "Gate per-function metric details in formatFileResults with metrics filter"
+  debug_session: ".planning/debug/metrics-flag-hotspot-filter.md"
