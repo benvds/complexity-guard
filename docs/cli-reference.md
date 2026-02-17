@@ -53,13 +53,19 @@ complexity-guard --version
 
 **`--init`**
 
-Generate a default `.complexityguard.json` configuration file in the current directory.
+Generate a `.complexityguard.json` configuration file. When a source path is provided, analyzes the codebase first and writes an optimized config with suggested weights and a baseline health score.
 
 ```sh
+# Analyze src/ and write optimized config (recommended)
+complexity-guard --init src/
+
+# Write a default config without analysis
 complexity-guard --init
 ```
 
-This creates a config file with sensible defaults that you can customize.
+The enhanced workflow (with a path) compares default vs. suggested weights, displays the before/after health score, and writes the config with the suggested weights and baseline. This sets your team up with a favorable starting point for CI enforcement.
+
+Without a path (or when no TypeScript/JavaScript files are found), a default config is written with standard thresholds and no baseline.
 
 ### Output
 
@@ -232,11 +238,37 @@ complexity-guard --fail-on never src/
 
 **`--fail-health-below <N>`**
 
-Exit non-zero if overall health score falls below the specified value (reserved for future use when composite health scoring is implemented).
+Exit non-zero if the overall project health score falls below the specified value. Takes precedence over the `baseline` field in the config file.
 
 ```sh
 complexity-guard --fail-health-below 70 src/
 ```
+
+When the health score is below the threshold, ComplexityGuard exits with code 1 and prints a message to stderr:
+
+```
+Health score 68.4 is below threshold 70.0 — exiting with error
+```
+
+See [Health Score](health-score.md) for the full baseline + ratchet workflow.
+
+**`--save-baseline`**
+
+Run the analysis, compute the project health score, and save it to `.complexityguard.json` as the `baseline` field. Future runs will enforce this score automatically.
+
+```sh
+complexity-guard --save-baseline src/
+```
+
+This reads the existing config (if any), updates the `baseline` field, and writes it back. If no config exists, a minimal config is created. The saved score is rounded to one decimal place:
+
+```json
+{
+  "baseline": 73.2
+}
+```
+
+After saving a baseline, subsequent runs of `complexity-guard src/` will exit 1 if the score drops below it. To change the baseline, re-run with `--save-baseline`.
 
 ### Configuration
 
@@ -321,6 +353,13 @@ ComplexityGuard uses `.complexityguard.json` for configuration. Generate a defau
     "optional_chaining": true,
     "switch_case_mode": "perCase"
   },
+  "weights": {
+    "cognitive": 0.30,
+    "cyclomatic": 0.20,
+    "halstead": 0.15,
+    "structural": 0.15
+  },
+  "baseline": 73.2,
   "output": {
     "format": "console"
   }
@@ -453,6 +492,28 @@ How to count switch statements:
 
 Default output format: `"console"` or `"json"`. Default: `"console"`.
 
+**`weights.cognitive`** (float)
+
+Weight for cognitive complexity in the composite health score. Default: `0.30`.
+
+**`weights.cyclomatic`** (float)
+
+Weight for cyclomatic complexity in the composite health score. Default: `0.20`.
+
+**`weights.halstead`** (float)
+
+Weight for Halstead volume in the composite health score. Default: `0.15`.
+
+**`weights.structural`** (float)
+
+Weight for structural metrics (function length, params, nesting depth) in the composite health score. Default: `0.15`.
+
+Weights are normalized to sum to 1.0 before use. Set a weight to `0.0` to exclude that metric from the health score (it is still analyzed and shown in output). See [Health Score](health-score.md) for the full formula and effective weight calculation.
+
+**`baseline`** (float)
+
+Health score threshold for CI enforcement. When set, `complexity-guard` exits with code 1 if the project health score falls below this value. Set automatically by `--save-baseline`. Default: none (no enforcement).
+
 ### CLI Flags Override Config
 
 When both a config file and CLI flags are provided, CLI flags take precedence:
@@ -469,7 +530,7 @@ ComplexityGuard uses exit codes to signal different outcomes, making it easy to 
 | Code | Name | Meaning |
 |------|------|---------|
 | 0 | Success | All checks passed, no violations found |
-| 1 | Errors Found | One or more functions exceeded error threshold |
+| 1 | Errors Found | One or more functions exceeded error threshold, or health score is below baseline/`--fail-health-below` |
 | 2 | Warnings Found | One or more functions exceeded warning threshold (only when `--fail-on warning`) |
 | 3 | Config Error | Configuration file is invalid or could not be loaded |
 | 4 | Parse Error | One or more files failed to parse |
@@ -479,9 +540,10 @@ ComplexityGuard uses exit codes to signal different outcomes, making it easy to 
 When multiple conditions are present, the highest priority exit code is used:
 
 1. **Parse Error (4)** — Takes precedence over everything
-2. **Errors Found (1)** — Takes precedence over warnings and success
-3. **Warnings Found (2)** — Only when `--fail-on warning` is set
-4. **Success (0)** — Default when no issues found
+2. **Baseline Failed (1)** — Health score below threshold (after parse errors)
+3. **Errors Found (1)** — One or more functions exceeded error threshold
+4. **Warnings Found (2)** — Only when `--fail-on warning` is set
+5. **Success (0)** — Default when no issues found
 
 Example:
 
@@ -514,6 +576,7 @@ When using `--format json`, ComplexityGuard produces structured JSON output.
     "total_functions": 47,
     "warnings": 3,
     "errors": 1,
+    "health_score": 73.2,
     "status": "error"
   },
   "files": [
@@ -536,7 +599,7 @@ When using `--format json`, ComplexityGuard produces structured JSON output.
           "nesting_depth": 2,
           "line_count": 8,
           "params_count": 2,
-          "health_score": null,
+          "health_score": 94.7,
           "status": "ok"
         },
         {
@@ -553,7 +616,7 @@ When using `--format json`, ComplexityGuard produces structured JSON output.
           "nesting_depth": 6,
           "line_count": 62,
           "params_count": 4,
-          "health_score": null,
+          "health_score": 8.3,
           "status": "error"
         }
       ]
@@ -575,6 +638,7 @@ When using `--format json`, ComplexityGuard produces structured JSON output.
 - `total_functions` (integer) — Total functions found across all files
 - `warnings` (integer) — Number of warning-level violations
 - `errors` (integer) — Number of error-level violations
+- `health_score` (float) — Project-level composite health score (0–100)
 - `status` (string) — Overall status: `"pass"`, `"warning"`, or `"error"`
 
 **File:**
@@ -597,7 +661,7 @@ When using `--format json`, ComplexityGuard produces structured JSON output.
 - `nesting_depth` (integer) — Maximum control flow nesting depth within the function
 - `line_count` (integer) — Logical lines in the function body (excludes blank and comment-only lines)
 - `params_count` (integer) — Number of parameters (runtime + generic type parameters)
-- `health_score` (float or null) — Reserved for future use (currently null)
+- `health_score` (float) — Per-function composite health score (0–100); see [Health Score](health-score.md)
 - `status` (string) — Function status: `"ok"`, `"warning"`, or `"error"`
 
 ### Using JSON Output

@@ -101,6 +101,111 @@ File-level structural metrics appear at the file level:
 }
 ```
 
+## Health Score
+
+### Console Output with Health Score
+
+Every analysis run prints a composite health score (0–100) after the summary line:
+
+```
+src/auth/login.ts
+  42:0  ✓  ok  Function 'validateCredentials' cyclomatic 3 cognitive 2
+  67:0  ⚠  warning  Function 'processLoginFlow' cyclomatic 12 cognitive 18
+  89:2  ✗  error  Method 'handleComplexAuthFlow' cyclomatic 25 cognitive 32
+
+Analyzed 12 files, 47 functions
+Found 3 warnings, 1 errors
+Health: 73
+
+Top cyclomatic hotspots:
+  1. handleComplexAuthFlow (src/auth/login.ts:89) complexity 25
+  2. processPayment (src/checkout/payment.ts:156) complexity 18
+
+✗ 4 problems (1 errors, 3 warnings)
+```
+
+The health score is color-coded: green (>=80), yellow (50-79), red (<50).
+
+### Health Score in JSON Output
+
+The JSON output includes `health_score` at both the summary and per-function level:
+
+```json
+{
+  "summary": {
+    "files_analyzed": 12,
+    "total_functions": 47,
+    "warnings": 3,
+    "errors": 1,
+    "health_score": 73.2,
+    "status": "error"
+  },
+  "files": [
+    {
+      "path": "src/auth/login.ts",
+      "functions": [
+        {
+          "name": "validateCredentials",
+          "cyclomatic": 3,
+          "cognitive": 2,
+          "health_score": 94.7,
+          "status": "ok"
+        },
+        {
+          "name": "handleComplexAuthFlow",
+          "cyclomatic": 25,
+          "cognitive": 32,
+          "health_score": 8.3,
+          "status": "error"
+        }
+      ]
+    }
+  ]
+}
+```
+
+### jq Recipes for Health Score
+
+```sh
+# Get the overall project health score
+complexity-guard --format json src/ | jq '.summary.health_score'
+
+# Find functions with critical health scores
+complexity-guard --format json src/ | jq '.files[].functions[] | select(.health_score < 50) | {name, health_score}'
+
+# Find functions that need attention (yellow zone)
+complexity-guard --format json src/ | jq '.files[].functions[] | select(.health_score >= 50 and .health_score < 80) | {name, health_score}'
+
+# Sort functions by health score (worst first)
+complexity-guard --format json src/ | jq '[.files[].functions[]] | sort_by(.health_score) | .[] | {name, health_score}'
+```
+
+### Baseline + Ratchet Workflow
+
+Set a baseline once, then enforce it in CI to prevent regression:
+
+```sh
+# Step 1: Analyze and set up with optimized weights + baseline
+complexity-guard --init src/
+
+# Step 2: Or just capture the current score as a baseline
+complexity-guard --save-baseline src/
+
+# Step 3: Enforce in CI (uses baseline from .complexityguard.json)
+complexity-guard src/
+
+# Or enforce a specific threshold from the command line
+complexity-guard --fail-health-below 70 src/
+```
+
+When the score drops below the threshold, ComplexityGuard exits 1:
+
+```
+Health score 68.4 is below threshold 70.0 — exiting with error
+```
+
+See [Health Score](health-score.md) for the complete formula, weight customization, and ratchet workflow guide.
+
 ## CI Integration
 
 ### GitHub Actions

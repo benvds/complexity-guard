@@ -81,6 +81,8 @@ ComplexityGuard measures four families of metrics:
 
 By default, all four families run on every analysis. Use `--metrics cyclomatic,cognitive` to compute a subset.
 
+ComplexityGuard also computes a **[Health Score](health-score.md)** — a single 0–100 number that combines all four metric families into one signal. It appears at the bottom of each run and is useful for CI enforcement via `--fail-health-below`.
+
 Cyclomatic and cognitive scores appear side by side on each function line. Halstead and structural violations appear as additional annotations when thresholds are exceeded. Run with `--verbose` to see all metric values for every function.
 
 When you run ComplexityGuard, you'll see output like this:
@@ -93,6 +95,7 @@ src/auth/login.ts
 
 Analyzed 12 files, 47 functions
 Found 3 warnings, 1 errors
+Health: 73
 
 Top cyclomatic hotspots:
   1. handleComplexAuthFlow (src/auth/login.ts:89) complexity 25
@@ -166,13 +169,19 @@ ComplexityGuard works great with zero configuration, but you can customize its b
 
 ### Creating a Config File
 
-Use the `--init` command to generate a default configuration:
+Use the `--init` command to generate a configuration. When you pass a source path, it analyzes your code first and writes an optimized config:
 
 ```sh
+# Analyze src/ and write a config with suggested weights and baseline
+complexity-guard --init src/
+
+# Or generate a default config without analysis
 complexity-guard --init
 ```
 
-This creates a `.complexityguard.json` file with sensible defaults:
+The enhanced `--init` workflow (with a path) shows a before/after comparison of the health score with default vs. suggested weights, then writes the optimized config including a baseline. This gives your CI enforcement a favorable starting point.
+
+This creates a `.complexityguard.json` file:
 
 ```json
 {
@@ -196,6 +205,13 @@ This creates a `.complexityguard.json` file with sensible defaults:
     "optional_chaining": true,
     "switch_case_mode": "perCase"
   },
+  "weights": {
+    "cognitive": 0.30,
+    "cyclomatic": 0.20,
+    "halstead": 0.15,
+    "structural": 0.15
+  },
+  "baseline": 73.2,
   "output": {
     "format": "console"
   }
@@ -303,12 +319,33 @@ ComplexityGuard follows ESLint-aligned counting rules by default, but you can cu
 - `"perCase"`: Each case adds +1 (ESLint behavior)
 - `"switchOnly"`: Only the switch itself adds +1 (classic McCabe)
 
+## Tracking Health Over Time
+
+Once you have a baseline analysis, use `--save-baseline` to capture it as a CI enforcement threshold:
+
+```sh
+# Run --init to get optimized weights + baseline written automatically
+complexity-guard --init src/
+
+# Or capture the current score as a baseline at any time
+complexity-guard --save-baseline src/
+
+# In CI: enforce the baseline (exits 1 if score drops below it)
+complexity-guard src/
+
+# Or override from the command line
+complexity-guard --fail-health-below 70 src/
+```
+
+See [Health Score](health-score.md) for the full baseline + ratchet workflow.
+
 ## Next Steps
 
 Now that you have ComplexityGuard installed and understand the basics, explore:
 
 - **[CLI Reference](cli-reference.md)** — Complete documentation of all flags, config options, and exit codes
 - **[Examples](examples.md)** — Real-world usage patterns, CI integration, and configuration recipes
+- **[Health Score](health-score.md)** — Composite 0–100 score, formula, weights, and baseline workflow
 - **[Halstead Metrics](halstead-metrics.md)** — Formulas, thresholds, and what the information-theoretic numbers mean
 - **[Structural Metrics](structural-metrics.md)** — Function length, parameters, nesting depth, and more
 - **[Cyclomatic Complexity](cyclomatic-complexity.md)** — How path counting works and when it matters
