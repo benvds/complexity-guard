@@ -19,7 +19,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 5: Console & JSON Output** - Primary developer and CI output formats ✓ 2026-02-15
 - [ ] **Phase 5.1: CI/CD, Release Pipeline & Documentation** - Changelog, GitHub workflows, publishing, docs (INSERTED) -- gap closure in progress
 - [x] **Phase 6: Cognitive Complexity** - SonarSource metric with nesting tracking (completed 2026-02-17)
-- [x] **Phase 7: Halstead & Structural Metrics** - Information theory and structural metrics (completed 2026-02-17)
+- [ ] **Phase 7: Halstead & Structural Metrics** - Information theory and structural metrics -- gap closure in progress
 - [ ] **Phase 8: Composite Health Score** - Weighted scoring and letter grade assignment
 - [ ] **Phase 9: SARIF Output** - GitHub Code Scanning integration
 - [ ] **Phase 10: HTML Reports** - Self-contained visual reports for stakeholders
@@ -151,13 +151,14 @@ Plans:
   2. Tool handles edge cases without divide-by-zero errors
   3. Tool measures structural properties (function length, parameter count, nesting depth, file length, export count)
   4. Tool applies configurable thresholds for all Halstead and structural metrics
-**Plans:** 4/4 plans complete
+**Plans:** 5 plans
 
 Plans:
-- [ ] 07-01-PLAN.md -- Halstead metrics core: token classification, counting, and formula computation (TDD)
-- [ ] 07-02-PLAN.md -- Structural metrics core: logical lines, params, nesting, file length, exports (TDD)
-- [ ] 07-03-PLAN.md -- Pipeline integration: ThresholdResult extension, main.zig wiring, console/JSON output, --metrics flag
-- [ ] 07-04-PLAN.md -- Documentation: Halstead/structural docs pages, README, CLI reference, examples
+- [x] 07-01-PLAN.md -- Halstead metrics core: token classification, counting, and formula computation (TDD)
+- [x] 07-02-PLAN.md -- Structural metrics core: logical lines, params, nesting, file length, exports (TDD)
+- [x] 07-03-PLAN.md -- Pipeline integration: ThresholdResult extension, main.zig wiring, console/JSON output, --metrics flag
+- [x] 07-04-PLAN.md -- Documentation: Halstead/structural docs pages, README, CLI reference, examples
+- [ ] 07-05-PLAN.md -- Gap closure: wire --metrics flag through to console output layer for hotspot/detail filtering
 
 ### Phase 8: Composite Health Score
 **Goal**: Tool computes weighted composite health score (0-100) per file and project with letter grades
@@ -239,8 +240,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 4. Cyclomatic Complexity | 2/2 | ✓ Complete | 2026-02-14 |
 | 5. Console & JSON Output | 2/2 | ✓ Complete | 2026-02-15 |
 | 5.1 CI/CD, Release & Docs | 6/6 | ✓ Complete | 2026-02-15 |
-| 6. Cognitive Complexity | 0/3 | Complete    | 2026-02-17 |
-| 7. Halstead & Structural Metrics | 0/4 | Complete    | 2026-02-17 |
+| 6. Cognitive Complexity | 3/3 | ✓ Complete | 2026-02-17 |
+| 7. Halstead & Structural Metrics | 4/5 | Gap closure | 2026-02-17 |
 | 8. Composite Health Score | 0/TBD | Not started | - |
 | 9. SARIF Output | 0/TBD | Not started | - |
 | 10. HTML Reports | 0/TBD | Not started | - |
@@ -249,4 +250,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 ---
 *Roadmap created: 2026-02-14*
-*Last updated: 2026-02-17 (Phase 6 plans created)*
+*Last updated: 2026-02-17 (Phase 7 gap closure plan created)*
