@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** Phase 7 in progress - Plan 03 (pipeline integration) complete
+**Current focus:** Phase 7 complete - all 5 plans executed (gap closure plan 05 resolves UAT test 6)
 
 ## Current Position
 
 Phase: 7 of 12 (Halstead + Structural Metrics)
-Plan: 4 of 4
-Status: Complete - Phase 07 done (all 4 metric families implemented and documented)
-Last activity: 2026-02-17 - Completed 07-04: Documentation (Halstead/structural docs pages, README/publication README updates)
+Plan: 5 of 5
+Status: Complete - Phase 07 done (all metric families implemented, --metrics filtering wired through output layer)
+Last activity: 2026-02-17 - Completed 07-05: Wire --metrics flag through to console output layer (gap closure)
 
 Progress: [████████░░] 58% (7/12 phases complete)
 
@@ -60,6 +60,7 @@ Progress: [████████░░] 58% (7/12 phases complete)
 | Phase 07 P02 | 7 | 1 tasks | 2 files |
 | Phase 07 P03 | 6 | 2 tasks | 5 files |
 | Phase 07 P04 | 4 | 2 tasks | 11 files |
+| Phase 07 P05 | 2 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -161,6 +162,9 @@ Recent decisions affecting current work:
 - [Phase 07-03]: isMetricEnabled helper: returns true when metrics is null (all enabled) or metric name is in list
 - [Phase 07-04]: Platform package READMEs got "What ComplexityGuard Measures" section (no existing feature list; adds context for npm discovery)
 - [Phase 07-04]: cli-reference.md JSON schema updated from null placeholders to real Halstead/structural values (Phase 7 always computes them)
+- [Phase 07-05]: OutputConfig.selected_metrics null means all metrics enabled (backward compatible); isMetricEnabled duplicated in console.zig to avoid circular imports
+- [Phase 07-05]: Per-function base line always shows status/kind/name; cyclomatic and cognitive values appended conditionally by selected_metrics
+- [Phase 07-05]: worstStatusAll considers ALL metrics for verbosity filtering — --metrics flag only controls display, not which functions appear
 
 ### Pending Todos
 
@@ -211,9 +215,9 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-17 (execute-phase)
-Stopped at: Completed 07-04-PLAN.md (documentation: Halstead/structural docs pages, README updates, phase 07 complete)
-Resume file: .planning/phases/07-halstead-structural-metrics/07-04-SUMMARY.md
+Stopped at: Completed 07-05-PLAN.md (gap closure: wire --metrics flag to output layer, resolve UAT test 6)
+Resume file: .planning/phases/07-halstead-structural-metrics/07-05-SUMMARY.md
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-17T10:16:17Z*
+*Last updated: 2026-02-17T12:01:16Z*
