@@ -50,3 +50,4 @@ tests/fixtures/         # real-world TS/JS fixture files for testing
 ## GSD Workflow Rules
 
 - When using `/gsd:plan-phase` or `/gsd:quick`, always include tasks to update README.md and docs/ pages (docs/getting-started.md, docs/cli-reference.md, docs/examples.md) to reflect any user-facing changes.
+- When using `/gsd:plan-phase` or `/gsd:quick`, if the main README.md is updated, always include tasks to update the publication README files (publication/npm/README.md and publication/npm/packages/*/README.md) to stay in sync.
