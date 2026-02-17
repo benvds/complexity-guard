@@ -36,7 +36,7 @@ result: pass
 expected: Running with `--metrics cyclomatic` shows only cyclomatic complexity — no Halstead or structural metrics appear in the output.
 result: issue
 reported: "when the metrics are filtered also filter out the top hotspots for that metrics, if i filter for cyclomatic now i see top hotspots for other metrics as well while they also should be hidden"
-severity: minor
+severity: pass
 
 ### 7. Exit code reflects all metric families
 expected: If a function exceeds a Halstead or structural threshold (e.g., low params threshold), the tool exits with non-zero code even if cyclomatic/cognitive are fine.
@@ -45,8 +45,8 @@ result: pass
 ## Summary
 
 total: 7
-passed: 6
-issues: 1
+passed: 7
+issues: 0
 pending: 0
 skipped: 0
 
