@@ -139,15 +139,23 @@ complexity-guard --quiet src/
 
 **`--metrics <LIST>`**
 
-Comma-separated list of metrics to enable. Supported metrics: `cyclomatic`, `cognitive`.
+Select which metric families to compute. Comma-separated list. Available: `cyclomatic`, `cognitive`, `halstead`, `structural`. Default: all families enabled.
 
 ```sh
-# Enable both metrics (default)
-complexity-guard --metrics cyclomatic,cognitive src/
+# Enable all metrics (default)
+complexity-guard src/
+
+# Cyclomatic and Halstead only
+complexity-guard --metrics cyclomatic,halstead src/
 
 # Cyclomatic only
 complexity-guard --metrics cyclomatic src/
+
+# Skip Halstead (compute everything else)
+complexity-guard --metrics cyclomatic,cognitive,structural src/
 ```
+
+When `--metrics` is specified, only the listed families are computed and displayed. Unspecified families are skipped entirely — both in analysis and in output.
 
 **`--no-duplication`**
 
@@ -269,6 +277,42 @@ ComplexityGuard uses `.complexityguard.json` for configuration. Generate a defau
     "cognitive": {
       "warning": 15,
       "error": 25
+    },
+    "halstead_volume": {
+      "warning": 500,
+      "error": 1000
+    },
+    "halstead_difficulty": {
+      "warning": 10,
+      "error": 20
+    },
+    "halstead_effort": {
+      "warning": 5000,
+      "error": 10000
+    },
+    "halstead_bugs": {
+      "warning": 0.5,
+      "error": 2.0
+    },
+    "function_length": {
+      "warning": 25,
+      "error": 50
+    },
+    "params": {
+      "warning": 3,
+      "error": 6
+    },
+    "nesting": {
+      "warning": 3,
+      "error": 5
+    },
+    "file_length": {
+      "warning": 300,
+      "error": 600
+    },
+    "exports": {
+      "warning": 15,
+      "error": 30
     }
   },
   "counting_rules": {
@@ -310,6 +354,82 @@ Cognitive complexity threshold for warnings. Default: `15` (SonarSource recommen
 Cognitive complexity threshold for errors. Default: `25` (SonarSource recommendation).
 
 See [Cognitive Complexity](cognitive-complexity.md) for details on how this metric is calculated.
+
+**`thresholds.halstead_volume.warning`** (float)
+
+Halstead volume threshold for warnings. Default: `500`.
+
+**`thresholds.halstead_volume.error`** (float)
+
+Halstead volume threshold for errors. Default: `1000`.
+
+**`thresholds.halstead_difficulty.warning`** (float)
+
+Halstead difficulty threshold for warnings. Default: `10`.
+
+**`thresholds.halstead_difficulty.error`** (float)
+
+Halstead difficulty threshold for errors. Default: `20`.
+
+**`thresholds.halstead_effort.warning`** (float)
+
+Halstead effort threshold for warnings. Default: `5000`.
+
+**`thresholds.halstead_effort.error`** (float)
+
+Halstead effort threshold for errors. Default: `10000`.
+
+**`thresholds.halstead_bugs.warning`** (float)
+
+Halstead estimated bugs threshold for warnings. Default: `0.5`.
+
+**`thresholds.halstead_bugs.error`** (float)
+
+Halstead estimated bugs threshold for errors. Default: `2.0`.
+
+See [Halstead Metrics](halstead-metrics.md) for details on how these are calculated.
+
+**`thresholds.function_length.warning`** (integer)
+
+Function length (logical lines) threshold for warnings. Default: `25`.
+
+**`thresholds.function_length.error`** (integer)
+
+Function length threshold for errors. Default: `50`.
+
+**`thresholds.params.warning`** (integer)
+
+Parameter count threshold for warnings. Default: `3`.
+
+**`thresholds.params.error`** (integer)
+
+Parameter count threshold for errors. Default: `6`.
+
+**`thresholds.nesting.warning`** (integer)
+
+Nesting depth threshold for warnings. Default: `3`.
+
+**`thresholds.nesting.error`** (integer)
+
+Nesting depth threshold for errors. Default: `5`.
+
+**`thresholds.file_length.warning`** (integer)
+
+File length (logical lines) threshold for warnings. Default: `300`.
+
+**`thresholds.file_length.error`** (integer)
+
+File length threshold for errors. Default: `600`.
+
+**`thresholds.exports.warning`** (integer)
+
+Export count threshold for warnings. Default: `15`.
+
+**`thresholds.exports.error`** (integer)
+
+Export count threshold for errors. Default: `30`.
+
+See [Structural Metrics](structural-metrics.md) for details on how these are calculated.
 
 **`counting_rules.logical_operators`** (boolean)
 
@@ -399,6 +519,8 @@ When using `--format json`, ComplexityGuard produces structured JSON output.
   "files": [
     {
       "path": "src/auth/login.ts",
+      "file_length": 112,
+      "export_count": 4,
       "functions": [
         {
           "name": "validateCredentials",
@@ -407,12 +529,13 @@ When using `--format json`, ComplexityGuard produces structured JSON output.
           "start_col": 0,
           "cyclomatic": 3,
           "cognitive": 2,
-          "halstead_volume": null,
-          "halstead_difficulty": null,
-          "halstead_effort": null,
-          "nesting_depth": 0,
-          "line_count": 0,
-          "params_count": 0,
+          "halstead_volume": 75.4,
+          "halstead_difficulty": 4.2,
+          "halstead_effort": 316.7,
+          "halstead_bugs": 0.025,
+          "nesting_depth": 2,
+          "line_count": 8,
+          "params_count": 2,
           "health_score": null,
           "status": "ok"
         },
@@ -423,12 +546,13 @@ When using `--format json`, ComplexityGuard produces structured JSON output.
           "start_col": 2,
           "cyclomatic": 25,
           "cognitive": 32,
-          "halstead_volume": null,
-          "halstead_difficulty": null,
-          "halstead_effort": null,
-          "nesting_depth": 0,
-          "line_count": 0,
-          "params_count": 0,
+          "halstead_volume": 1243.8,
+          "halstead_difficulty": 18.6,
+          "halstead_effort": 23134.7,
+          "halstead_bugs": 0.414,
+          "nesting_depth": 6,
+          "line_count": 62,
+          "params_count": 4,
           "health_score": null,
           "status": "error"
         }
@@ -455,6 +579,8 @@ When using `--format json`, ComplexityGuard produces structured JSON output.
 
 **File:**
 - `path` (string) — Relative path to the file
+- `file_length` (integer) — Logical lines in the file (excludes blank and comment-only lines)
+- `export_count` (integer) — Number of export statements in the file
 - `functions` (array) — Functions found in this file
 
 **Function:**
@@ -464,16 +590,15 @@ When using `--format json`, ComplexityGuard produces structured JSON output.
 - `start_col` (integer) — Column where function starts (0-indexed)
 - `cyclomatic` (integer or null) — Cyclomatic complexity score
 - `cognitive` (integer or null) — Cognitive complexity score
-- `halstead_volume` (float or null) — Reserved for future use (currently null)
-- `halstead_difficulty` (float or null) — Reserved for future use (currently null)
-- `halstead_effort` (float or null) — Reserved for future use (currently null)
-- `nesting_depth` (integer) — Reserved for future use (currently 0)
-- `line_count` (integer) — Reserved for future use (currently 0)
-- `params_count` (integer) — Reserved for future use (currently 0)
+- `halstead_volume` (float) — Information content of the function in bits
+- `halstead_difficulty` (float) — How error-prone and hard to write the function is
+- `halstead_effort` (float) — Total mental effort required to implement or understand the function
+- `halstead_bugs` (float) — Estimated number of bugs delivered (volume / 3000)
+- `nesting_depth` (integer) — Maximum control flow nesting depth within the function
+- `line_count` (integer) — Logical lines in the function body (excludes blank and comment-only lines)
+- `params_count` (integer) — Number of parameters (runtime + generic type parameters)
 - `health_score` (float or null) — Reserved for future use (currently null)
 - `status` (string) — Function status: `"ok"`, `"warning"`, or `"error"`
-
-Fields marked as null or 0 are placeholders for metrics that will be computed in future versions.
 
 ### Using JSON Output
 

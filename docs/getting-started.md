@@ -72,7 +72,16 @@ ComplexityGuard automatically finds all `.ts`, `.tsx`, `.js`, and `.jsx` files i
 
 ## Understanding the Output
 
-ComplexityGuard measures both **cyclomatic complexity** (testability — how many paths need testing) and **cognitive complexity** (readability — how hard the code is to understand). Both scores appear side by side in the output.
+ComplexityGuard measures four families of metrics:
+
+- **Cyclomatic complexity** — testability: how many paths need testing (McCabe, 1976)
+- **Cognitive complexity** — readability: how hard the code is to understand (SonarSource, 2016)
+- **Halstead metrics** — information theory: vocabulary density, volume, difficulty, and estimated bugs
+- **Structural metrics** — shape: function length, parameter count, nesting depth, file length, export count
+
+By default, all four families run on every analysis. Use `--metrics cyclomatic,cognitive` to compute a subset.
+
+Cyclomatic and cognitive scores appear side by side on each function line. Halstead and structural violations appear as additional annotations when thresholds are exceeded. Run with `--verbose` to see all metric values for every function.
 
 When you run ComplexityGuard, you'll see output like this:
 
@@ -120,6 +129,19 @@ By default, ComplexityGuard shows only files with warnings or errors. Functions 
 **Cognitive complexity:**
 - **Warning**: 15 (SonarSource recommendation)
 - **Error**: 25 (SonarSource recommendation)
+
+**Halstead metrics:**
+- **Volume**: warning 500, error 1000
+- **Difficulty**: warning 10, error 20
+- **Effort**: warning 5000, error 10000
+- **Bugs (estimated)**: warning 0.5, error 2.0
+
+**Structural metrics:**
+- **Function length**: warning 25 lines, error 50 lines
+- **Parameters**: warning 3, error 6
+- **Nesting depth**: warning 3, error 5
+- **File length**: warning 300 lines, error 600 lines
+- **Exports per file**: warning 15, error 30
 
 These thresholds are based on industry standards and can be customized (see Configuration below).
 
@@ -199,7 +221,7 @@ Control which files are analyzed using glob patterns:
 
 ### Threshold Customization
 
-Adjust warning and error thresholds for both metrics to match your team's standards:
+Adjust warning and error thresholds for any metric family to match your team's standards:
 
 ```json
 {
@@ -211,6 +233,18 @@ Adjust warning and error thresholds for both metrics to match your team's standa
     "cognitive": {
       "warning": 8,
       "error": 15
+    },
+    "halstead_volume": {
+      "warning": 400,
+      "error": 800
+    },
+    "function_length": {
+      "warning": 20,
+      "error": 40
+    },
+    "nesting": {
+      "warning": 2,
+      "error": 4
     }
   }
 }
@@ -221,7 +255,8 @@ Adjust warning and error thresholds for both metrics to match your team's standa
 {
   "thresholds": {
     "cyclomatic": { "warning": 5, "error": 10 },
-    "cognitive": { "warning": 8, "error": 15 }
+    "cognitive": { "warning": 8, "error": 15 },
+    "function_length": { "warning": 15, "error": 30 }
   }
 }
 ```
@@ -231,7 +266,8 @@ Adjust warning and error thresholds for both metrics to match your team's standa
 {
   "thresholds": {
     "cyclomatic": { "warning": 20, "error": 40 },
-    "cognitive": { "warning": 25, "error": 50 }
+    "cognitive": { "warning": 25, "error": 50 },
+    "function_length": { "warning": 50, "error": 100 }
   }
 }
 ```
@@ -273,3 +309,7 @@ Now that you have ComplexityGuard installed and understand the basics, explore:
 
 - **[CLI Reference](cli-reference.md)** — Complete documentation of all flags, config options, and exit codes
 - **[Examples](examples.md)** — Real-world usage patterns, CI integration, and configuration recipes
+- **[Halstead Metrics](halstead-metrics.md)** — Formulas, thresholds, and what the information-theoretic numbers mean
+- **[Structural Metrics](structural-metrics.md)** — Function length, parameters, nesting depth, and more
+- **[Cyclomatic Complexity](cyclomatic-complexity.md)** — How path counting works and when it matters
+- **[Cognitive Complexity](cognitive-complexity.md)** — How nesting penalties measure readability

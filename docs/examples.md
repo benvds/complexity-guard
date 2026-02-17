@@ -27,7 +27,36 @@ complexity-guard src/app.ts src/utils/helpers.ts lib/config.js
 complexity-guard --verbose src/
 ```
 
+Verbose mode shows all four metric families for every function:
+
+```
+src/auth/login.ts
+  42:0  ✓  ok  Function 'validateCredentials' cyclomatic 3 cognitive 2
+              [halstead vol 75 diff 4.2 effort 316] [length 8 params 2 depth 2]
+  67:0  ⚠  warning  Function 'processLoginFlow' cyclomatic 12 cognitive 18
+              [halstead vol 843 diff 14.1 effort 11886] [length 34 params 3 depth 4]
+  89:2  ✗  error  Method 'handleComplexAuthFlow' cyclomatic 25 cognitive 32
+              [halstead vol 1244 diff 18.6 effort 23135 bugs 0.41] [length 62 params 4 depth 6]
+```
+
 Useful for getting a complete complexity overview of your codebase.
+
+### Selective Metric Families
+
+Use `--metrics` to compute only specific metric families:
+
+```sh
+# Cyclomatic and Halstead only
+complexity-guard --metrics cyclomatic,halstead src/
+
+# All except Halstead (skip token counting for performance)
+complexity-guard --metrics cyclomatic,cognitive,structural src/
+
+# Structural metrics only (shape analysis)
+complexity-guard --metrics structural src/
+```
+
+This is useful in CI pipelines where you want fast feedback on specific metrics, or when profiling large codebases where you want to skip Halstead token counting.
 
 ### Save Results to File
 
@@ -37,6 +66,39 @@ complexity-guard src/ > report.txt
 
 # Generate JSON report
 complexity-guard --format json --output report.json src/
+```
+
+### JSON Output with All Metrics
+
+JSON output includes all metric families. Here is a condensed example of a function with Halstead and structural fields populated:
+
+```json
+{
+  "name": "processLoginFlow",
+  "start_line": 67,
+  "start_col": 0,
+  "cyclomatic": 12,
+  "cognitive": 18,
+  "halstead_volume": 843.2,
+  "halstead_difficulty": 14.1,
+  "halstead_effort": 11884.3,
+  "halstead_bugs": 0.281,
+  "nesting_depth": 4,
+  "line_count": 34,
+  "params_count": 3,
+  "status": "warning"
+}
+```
+
+File-level structural metrics appear at the file level:
+
+```json
+{
+  "path": "src/auth/login.ts",
+  "file_length": 112,
+  "export_count": 4,
+  "functions": [...]
+}
 ```
 
 ## CI Integration
@@ -184,6 +246,33 @@ pipeline {
 }
 ```
 
+## Working with Halstead Metrics
+
+### Identifying High-Density Functions
+
+Halstead volume captures information density. A function triggering a volume warning has a lot going on mentally, even if it has low cyclomatic complexity:
+
+```
+src/parsers/expression.ts
+  156:0  ⚠  warning  Function 'parseExpression' cyclomatic 8 cognitive 12
+              [halstead vol 743 diff 22.4 effort 16643] [length 28 params 2 depth 3]
+```
+
+This function has manageable cyclomatic and cognitive scores but high Halstead effort (16643 > 10000 threshold), flagging it as mentally expensive to understand or modify. This often happens with expression parsers, mathematical algorithms, or functions operating on many distinct values.
+
+### Filtering Halstead Results with jq
+
+```sh
+# Find functions with high Halstead effort
+complexity-guard --format json src/ | jq '.files[].functions[] | select(.halstead_effort > 5000) | {name, effort: .halstead_effort}'
+
+# Find functions with high estimated bug count
+complexity-guard --format json src/ | jq '.files[].functions[] | select(.halstead_bugs > 0.5) | {name, bugs: .halstead_bugs}'
+
+# Sort all functions by Halstead volume
+complexity-guard --format json src/ | jq '[.files[].functions[]] | sort_by(.halstead_volume) | reverse | .[0:10] | .[] | {name, volume: .halstead_volume}'
+```
+
 ## Configuration Recipes
 
 ### Strict Mode (Catch Complexity Early)
@@ -310,6 +399,49 @@ Run with package-specific config:
 ```sh
 cd packages/api
 complexity-guard src/
+```
+
+### Structural Metrics Configuration
+
+Tighten structural thresholds for clean architecture enforcement:
+
+```json
+{
+  "thresholds": {
+    "function_length": {
+      "warning": 20,
+      "error": 40
+    },
+    "params": {
+      "warning": 3,
+      "error": 5
+    },
+    "nesting": {
+      "warning": 2,
+      "error": 4
+    },
+    "file_length": {
+      "warning": 200,
+      "error": 400
+    }
+  }
+}
+```
+
+Filtering structural results from JSON:
+
+```sh
+# Find long functions
+complexity-guard --format json src/ | jq '.files[].functions[] | select(.line_count > 30) | {name, line_count}'
+
+# Find deeply nested functions
+complexity-guard --format json src/ | jq '.files[].functions[] | select(.nesting_depth > 4) | {name, nesting_depth}'
+
+# Find functions with too many parameters
+complexity-guard --format json src/ | jq '.files[].functions[] | select(.params_count > 5) | {name, params_count}'
+
+# Files exceeding length threshold
+complexity-guard --format json src/ | jq '.files[] | select(.file_length > 300) | {path, file_length}'
 ```
 
 ### Classic McCabe Counting
