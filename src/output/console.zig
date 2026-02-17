@@ -25,7 +25,20 @@ pub const Verbosity = enum {
 pub const OutputConfig = struct {
     use_color: bool,
     verbosity: Verbosity,
+    /// When non-null, only these metric families are shown in output and hotspot sections.
+    /// Null means all metrics are enabled (backward compatible).
+    selected_metrics: ?[]const []const u8,
 };
+
+/// Returns true if the given metric is enabled.
+/// When metrics is null (no --metrics flag), all metrics are enabled.
+fn isMetricEnabled(metrics: ?[]const []const u8, metric: []const u8) bool {
+    const list = metrics orelse return true;
+    for (list) |m| {
+        if (std.mem.eql(u8, m, metric)) return true;
+    }
+    return false;
+}
 
 /// File path with its threshold results
 pub const FileThresholdResults = struct {
@@ -83,16 +96,18 @@ pub fn formatFileResults(
         has_output = true;
     }
 
-    // Check file-level structural violations
+    // Check file-level structural violations (only when structural metric is enabled)
     var has_file_level_violations = false;
     if (file_results.structural) |str| {
-        if (str.file_length >= 300 or str.export_count >= 15) {
-            has_file_level_violations = true;
-            has_problems = true;
-            has_output = true;
-        }
-        if (config.verbosity == .verbose) {
-            has_output = true;
+        if (isMetricEnabled(config.selected_metrics, "structural")) {
+            if (str.file_length >= 300 or str.export_count >= 15) {
+                has_file_level_violations = true;
+                has_problems = true;
+                has_output = true;
+            }
+            if (config.verbosity == .verbose) {
+                has_output = true;
+            }
         }
     }
 
@@ -113,40 +128,42 @@ pub fn formatFileResults(
         try writer.print("{s}\n", .{file_path});
     }
 
-    // Write file-level structural metrics if present
+    // Write file-level structural metrics if present (gated by selected_metrics)
     if (file_results.structural) |str| {
-        const show_file_line = config.verbosity == .verbose or has_file_level_violations;
-        if (show_file_line) {
-            const file_worst: cyclomatic.ThresholdStatus = blk: {
-                var w: cyclomatic.ThresholdStatus = .ok;
-                if (str.file_length >= 600) w = .@"error" else if (str.file_length >= 300) w = .warning;
-                const ec: cyclomatic.ThresholdStatus = if (str.export_count >= 30) .@"error" else if (str.export_count >= 15) .warning else .ok;
-                break :blk worstStatus(w, ec);
-            };
-            const file_symbol: []const u8 = switch (file_worst) {
-                .ok => "✓",
-                .warning => "⚠",
-                .@"error" => "✗",
-            };
-            const file_color: []const u8 = if (config.use_color) switch (file_worst) {
-                .ok => AnsiCode.green,
-                .warning => AnsiCode.yellow,
-                .@"error" => AnsiCode.red,
-            } else "";
-            const file_reset = if (config.use_color) AnsiCode.reset else "";
-            const file_severity = switch (file_worst) {
-                .ok => "ok",
-                .warning => "warning",
-                .@"error" => "error",
-            };
-            try writer.print("  file  {s}{s}{s}  {s}  file length {d} logical lines, {d} exports\n", .{
-                file_color,
-                file_symbol,
-                file_reset,
-                file_severity,
-                str.file_length,
-                str.export_count,
-            });
+        if (isMetricEnabled(config.selected_metrics, "structural")) {
+            const show_file_line = config.verbosity == .verbose or has_file_level_violations;
+            if (show_file_line) {
+                const file_worst: cyclomatic.ThresholdStatus = blk: {
+                    var w: cyclomatic.ThresholdStatus = .ok;
+                    if (str.file_length >= 600) w = .@"error" else if (str.file_length >= 300) w = .warning;
+                    const ec: cyclomatic.ThresholdStatus = if (str.export_count >= 30) .@"error" else if (str.export_count >= 15) .warning else .ok;
+                    break :blk worstStatus(w, ec);
+                };
+                const file_symbol: []const u8 = switch (file_worst) {
+                    .ok => "✓",
+                    .warning => "⚠",
+                    .@"error" => "✗",
+                };
+                const file_color: []const u8 = if (config.use_color) switch (file_worst) {
+                    .ok => AnsiCode.green,
+                    .warning => AnsiCode.yellow,
+                    .@"error" => AnsiCode.red,
+                } else "";
+                const file_reset = if (config.use_color) AnsiCode.reset else "";
+                const file_severity = switch (file_worst) {
+                    .ok => "ok",
+                    .warning => "warning",
+                    .@"error" => "error",
+                };
+                try writer.print("  file  {s}{s}{s}  {s}  file length {d} logical lines, {d} exports\n", .{
+                    file_color,
+                    file_symbol,
+                    file_reset,
+                    file_severity,
+                    str.file_length,
+                    str.export_count,
+                });
+            }
         }
     }
 
@@ -192,8 +209,8 @@ pub fn formatFileResults(
         else
             "Function";
 
-        // Base line: cyclomatic and cognitive side-by-side
-        try writer.print("  {d}:{d}  {s}{s}{s}  {s}  {s} '{s}' cyclomatic {d} cognitive {d}", .{
+        // Base line: status symbol/severity/kind/name always shown
+        try writer.print("  {d}:{d}  {s}{s}{s}  {s}  {s} '{s}'", .{
             result.start_line,
             result.start_col,
             color,
@@ -202,33 +219,42 @@ pub fn formatFileResults(
             severity,
             kind_display,
             result.function_name,
-            result.complexity,
-            result.cognitive_complexity,
         });
 
-        // Add Halstead info if verbose OR if Halstead has non-ok status
-        if (config.verbosity == .verbose or
+        // Append cyclomatic score only if cyclomatic metric is selected
+        if (isMetricEnabled(config.selected_metrics, "cyclomatic")) {
+            try writer.print(" cyclomatic {d}", .{result.complexity});
+        }
+
+        // Append cognitive score only if cognitive metric is selected
+        if (isMetricEnabled(config.selected_metrics, "cognitive")) {
+            try writer.print(" cognitive {d}", .{result.cognitive_complexity});
+        }
+
+        // Add Halstead info if halstead enabled AND (verbose OR non-ok status)
+        if (isMetricEnabled(config.selected_metrics, "halstead") and
+            (config.verbosity == .verbose or
             result.halstead_volume_status != .ok or
             result.halstead_difficulty_status != .ok or
             result.halstead_effort_status != .ok or
-            result.halstead_bugs_status != .ok)
+            result.halstead_bugs_status != .ok))
         {
             try writer.print(" [halstead vol {d:.0}]", .{result.halstead_volume});
         }
 
-        // Add structural info if verbose OR if structural has non-ok status
-        if (config.verbosity == .verbose or
-            result.function_length_status != .ok)
+        // Add structural info if structural enabled AND (verbose OR non-ok status)
+        if (isMetricEnabled(config.selected_metrics, "structural") and
+            (config.verbosity == .verbose or result.function_length_status != .ok))
         {
             try writer.print(" [length {d}]", .{result.function_length});
         }
-        if (config.verbosity == .verbose or
-            result.params_count_status != .ok)
+        if (isMetricEnabled(config.selected_metrics, "structural") and
+            (config.verbosity == .verbose or result.params_count_status != .ok))
         {
             try writer.print(" [params {d}]", .{result.params_count});
         }
-        if (config.verbosity == .verbose or
-            result.nesting_depth_status != .ok)
+        if (isMetricEnabled(config.selected_metrics, "structural") and
+            (config.verbosity == .verbose or result.nesting_depth_status != .ok))
         {
             try writer.print(" [depth {d}]", .{result.nesting_depth});
         }
@@ -325,8 +351,8 @@ pub fn formatSummary(
         }
     }
 
-    // Sort cyclomatic hotspots by complexity descending
-    {
+    // Sort and display cyclomatic hotspots (gated by selected_metrics)
+    if (isMetricEnabled(config.selected_metrics, "cyclomatic")) {
         const items = cycl_hotspots.items;
         if (items.len > 0) {
             var i: usize = 0;
@@ -356,8 +382,8 @@ pub fn formatSummary(
         }
     }
 
-    // Sort cognitive hotspots by complexity descending
-    {
+    // Sort and display cognitive hotspots (gated by selected_metrics)
+    if (isMetricEnabled(config.selected_metrics, "cognitive")) {
         const items = cog_hotspots.items;
         if (items.len > 0) {
             var i: usize = 0;
@@ -387,8 +413,8 @@ pub fn formatSummary(
         }
     }
 
-    // Sort Halstead volume hotspots by volume descending
-    {
+    // Sort and display Halstead volume hotspots (gated by selected_metrics)
+    if (isMetricEnabled(config.selected_metrics, "halstead")) {
         const items = hal_hotspots.items;
         if (items.len > 0) {
             var i: usize = 0;
@@ -491,7 +517,7 @@ test "formatFileResults: all-ok results in default mode writes nothing" {
         .{ .complexity = 8, .status = .ok, .function_name = "bar", .function_kind = "function", .start_line = 10, .start_col = 4, .cognitive_complexity = 0, .cognitive_status = .ok },
     };
 
-    const config = OutputConfig{ .use_color = false, .verbosity = .default };
+    const config = OutputConfig{ .use_color = false, .verbosity = .default, .selected_metrics = null };
     const wrote_output = try formatFileResults(
         buffer.writer(allocator),
         allocator,
@@ -514,7 +540,7 @@ test "formatFileResults: warning/error results in default mode writes file heade
         .{ .complexity = 25, .status = .@"error", .function_name = "baz", .function_kind = "function", .start_line = 20, .start_col = 2, .cognitive_complexity = 0, .cognitive_status = .ok },
     };
 
-    const config = OutputConfig{ .use_color = false, .verbosity = .default };
+    const config = OutputConfig{ .use_color = false, .verbosity = .default, .selected_metrics = null };
     const wrote_output = try formatFileResults(
         buffer.writer(allocator),
         allocator,
@@ -550,7 +576,7 @@ test "formatFileResults: verbose mode writes all functions including ok" {
         .{ .complexity = 12, .status = .warning, .function_name = "bar", .function_kind = "function", .start_line = 10, .start_col = 4, .cognitive_complexity = 0, .cognitive_status = .ok },
     };
 
-    const config = OutputConfig{ .use_color = false, .verbosity = .verbose };
+    const config = OutputConfig{ .use_color = false, .verbosity = .verbose, .selected_metrics = null };
     const wrote_output = try formatFileResults(
         buffer.writer(allocator),
         allocator,
@@ -577,7 +603,7 @@ test "formatFileResults: quiet mode writes only error-level functions" {
         .{ .complexity = 25, .status = .@"error", .function_name = "baz", .function_kind = "function", .start_line = 20, .start_col = 2, .cognitive_complexity = 0, .cognitive_status = .ok },
     };
 
-    const config = OutputConfig{ .use_color = false, .verbosity = .quiet };
+    const config = OutputConfig{ .use_color = false, .verbosity = .quiet, .selected_metrics = null };
     const wrote_output = try formatFileResults(
         buffer.writer(allocator),
         allocator,
@@ -603,7 +629,7 @@ test "formatFileResults: no_color produces no ANSI codes" {
         .{ .complexity = 25, .status = .@"error", .function_name = "baz", .function_kind = "function", .start_line = 20, .start_col = 2, .cognitive_complexity = 0, .cognitive_status = .ok },
     };
 
-    const config = OutputConfig{ .use_color = false, .verbosity = .default };
+    const config = OutputConfig{ .use_color = false, .verbosity = .default, .selected_metrics = null };
     _ = try formatFileResults(
         buffer.writer(allocator),
         allocator,
@@ -623,7 +649,7 @@ test "formatSummary: includes file count, function count, verdict" {
     defer buffer.deinit(allocator);
 
     const file_results = [_]FileThresholdResults{};
-    const config = OutputConfig{ .use_color = false, .verbosity = .default };
+    const config = OutputConfig{ .use_color = false, .verbosity = .default, .selected_metrics = null };
 
     try formatSummary(
         buffer.writer(allocator),
@@ -663,7 +689,7 @@ test "formatSummary: shows top 5 hotspots when functions exist" {
         .{ .path = "test.ts", .results = &results },
     };
 
-    const config = OutputConfig{ .use_color = false, .verbosity = .default };
+    const config = OutputConfig{ .use_color = false, .verbosity = .default, .selected_metrics = null };
 
     try formatSummary(
         buffer.writer(allocator),
@@ -694,7 +720,7 @@ test "formatSummary: quiet mode shows only verdict" {
     defer buffer.deinit(allocator);
 
     const file_results = [_]FileThresholdResults{};
-    const config = OutputConfig{ .use_color = false, .verbosity = .quiet };
+    const config = OutputConfig{ .use_color = false, .verbosity = .quiet, .selected_metrics = null };
 
     try formatSummary(
         buffer.writer(allocator),
@@ -722,7 +748,7 @@ test "formatVerdict: shows correct message for errors" {
     var buffer = std.ArrayList(u8).empty;
     defer buffer.deinit(allocator);
 
-    const config = OutputConfig{ .use_color = false, .verbosity = .default };
+    const config = OutputConfig{ .use_color = false, .verbosity = .default, .selected_metrics = null };
 
     try formatVerdict(buffer.writer(allocator), 2, 3, config);
 
@@ -738,7 +764,7 @@ test "formatVerdict: shows correct message for warnings only" {
     var buffer = std.ArrayList(u8).empty;
     defer buffer.deinit(allocator);
 
-    const config = OutputConfig{ .use_color = false, .verbosity = .default };
+    const config = OutputConfig{ .use_color = false, .verbosity = .default, .selected_metrics = null };
 
     try formatVerdict(buffer.writer(allocator), 0, 4, config);
 
@@ -753,7 +779,7 @@ test "formatVerdict: shows correct message for all clear" {
     var buffer = std.ArrayList(u8).empty;
     defer buffer.deinit(allocator);
 
-    const config = OutputConfig{ .use_color = false, .verbosity = .default };
+    const config = OutputConfig{ .use_color = false, .verbosity = .default, .selected_metrics = null };
 
     try formatVerdict(buffer.writer(allocator), 0, 0, config);
 
@@ -771,7 +797,7 @@ test "formatFileResults: shows both cyclomatic and cognitive on same line" {
         .{ .complexity = 12, .status = .warning, .function_name = "foo", .function_kind = "function", .start_line = 10, .start_col = 4, .cognitive_complexity = 8, .cognitive_status = .ok },
     };
 
-    const config = OutputConfig{ .use_color = false, .verbosity = .default };
+    const config = OutputConfig{ .use_color = false, .verbosity = .default, .selected_metrics = null };
     _ = try formatFileResults(
         buffer.writer(allocator),
         allocator,
@@ -796,7 +822,7 @@ test "formatFileResults: worst status shown when metrics differ" {
         .{ .complexity = 3, .status = .ok, .function_name = "foo", .function_kind = "function", .start_line = 1, .start_col = 0, .cognitive_complexity = 18, .cognitive_status = .warning },
     };
 
-    const config = OutputConfig{ .use_color = false, .verbosity = .default };
+    const config = OutputConfig{ .use_color = false, .verbosity = .default, .selected_metrics = null };
     _ = try formatFileResults(
         buffer.writer(allocator),
         allocator,
@@ -822,7 +848,7 @@ test "formatFileResults: verbose mode shows Halstead volume" {
            .halstead_volume = 150.5 },
     };
 
-    const config = OutputConfig{ .use_color = false, .verbosity = .verbose };
+    const config = OutputConfig{ .use_color = false, .verbosity = .verbose, .selected_metrics = null };
     _ = try formatFileResults(
         buffer.writer(allocator),
         allocator,
@@ -846,7 +872,7 @@ test "formatFileResults: Halstead volume violation shown in default mode" {
            .halstead_volume = 600.0, .halstead_volume_status = .warning },
     };
 
-    const config = OutputConfig{ .use_color = false, .verbosity = .default };
+    const config = OutputConfig{ .use_color = false, .verbosity = .default, .selected_metrics = null };
     const wrote_output = try formatFileResults(
         buffer.writer(allocator),
         allocator,
@@ -869,7 +895,7 @@ test "formatFileResults: file-level structural shown in verbose mode" {
     const results = [_]cyclomatic.ThresholdResult{};
     const str_result = structural.FileStructuralResult{ .file_length = 50, .export_count = 3 };
 
-    const config = OutputConfig{ .use_color = false, .verbosity = .verbose };
+    const config = OutputConfig{ .use_color = false, .verbosity = .verbose, .selected_metrics = null };
     _ = try formatFileResults(
         buffer.writer(allocator),
         allocator,
@@ -896,7 +922,7 @@ test "formatSummary: shows separate cyclomatic and cognitive hotspot lists" {
         .{ .path = "test.ts", .results = &results },
     };
 
-    const config = OutputConfig{ .use_color = false, .verbosity = .default };
+    const config = OutputConfig{ .use_color = false, .verbosity = .default, .selected_metrics = null };
 
     try formatSummary(
         buffer.writer(allocator),
@@ -934,7 +960,7 @@ test "formatSummary: shows Halstead volume hotspot list" {
         .{ .path = "test.ts", .results = &results },
     };
 
-    const config = OutputConfig{ .use_color = false, .verbosity = .default };
+    const config = OutputConfig{ .use_color = false, .verbosity = .default, .selected_metrics = null };
 
     try formatSummary(
         buffer.writer(allocator),

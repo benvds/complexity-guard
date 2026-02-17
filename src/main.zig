@@ -397,6 +397,7 @@ pub fn main() !void {
         const output_config = console.OutputConfig{
             .use_color = use_color,
             .verbosity = verbosity,
+            .selected_metrics = parsed_metrics,
         };
 
         // Display per-file results
@@ -404,8 +405,7 @@ pub fn main() !void {
             _ = try console.formatFileResults(
                 stdout,
                 arena_allocator,
-                fr.path,
-                fr.results,
+                fr,
                 output_config,
             );
         }
