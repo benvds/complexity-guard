@@ -57,6 +57,7 @@ Progress: [████████░░] 54% (7/13 phases)
 | Phase 06 P03 | 3 | 2 tasks | 6 files |
 | Phase 06 P02 | 4 | 2 tasks | 4 files |
 | Phase 07 P01 | 4 | 2 tasks | 4 files |
+| Phase 07 P02 | 7 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -149,6 +150,9 @@ Recent decisions affecting current work:
 - [Phase 07]: isOperatorToken uses node type string as key; isOperandToken uses source text as key — operators are syntax types, operands are values
 - [Phase 07]: ternary_expression handled as non-leaf operator: '?:' added before recursing; leaf ? and : tokens skipped as structural punctuation
 - [Phase 07]: TypeScript type exclusion: isTypeOnlyNode returns early on entire subtree for all type annotation nodes
+- [Phase 07]: Standalone brace-only lines excluded from logical line count (structural delimiters, not code)
+- [Phase 07]: Function declarations used for scope isolation tests (TypeScript function expressions have different AST representation)
+- [Phase 07]: Single-expression arrow functions count as 1 logical line (locked decision: expression body != statement_block)
 
 ### Pending Todos
 
@@ -199,9 +203,9 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-17 (execute-phase)
-Stopped at: Completed 07-01-PLAN.md (Halstead metrics core: token classification, formula computation, TDD coverage)
-Resume file: .planning/phases/07-halstead-structural-metrics/07-01-SUMMARY.md
+Stopped at: Completed 07-02-PLAN.md (structural metrics: logical lines, params, nesting depth, exports)
+Resume file: .planning/phases/07-halstead-structural-metrics/07-02-SUMMARY.md
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-17T09:59:28Z*
+*Last updated: 2026-02-17T10:02:00Z*
