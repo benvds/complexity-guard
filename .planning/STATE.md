@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** Phase 6 in progress - cognitive complexity algorithm implemented (Plan 01 complete)
+**Current focus:** Phase 6 in progress - Plans 01 (algorithm), 02 (pipeline integration), and 03 (documentation) complete
 
 ## Current Position
 
 Phase: 6 of 12 (Cognitive Complexity)
-Plan: 1 of TBD
-Status: In Progress - Plan 01 complete (algorithm + fixture + ThresholdResult extension)
-Last activity: 2026-02-17 - Completed 06-01: Core cognitive complexity algorithm and test fixture
+Plan: 3 of TBD
+Status: In Progress - Plans 01-03 complete (algorithm + pipeline + docs)
+Last activity: 2026-02-17 - Completed 06-03: Documentation for cognitive/cyclomatic complexity metrics
 
 Progress: [████████░░] 46% (6/13 phases)
 
@@ -54,6 +54,7 @@ Progress: [████████░░] 46% (6/13 phases)
 | Phase quick-14 P01 | 24 | 1 tasks | 1 files |
 | Phase quick-15 P01 | 4 | 2 tasks | 2 files |
 | Phase 06 P01 | 7 | 3 tasks | 7 files |
+| Phase 06 P03 | 3 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -137,6 +138,8 @@ Recent decisions affecting current work:
 - [Phase 06-01]: Each &&, ||, ?? counts as +1 flat individually (ComplexityGuard deviation from SonarSource grouping)
 - [Phase 06-01]: Top-level arrow functions start at nesting 0; arrow function callbacks add structural increment
 - [Phase 06-01]: Scope isolation: inner function bodies don't inflate outer cognitive complexity
+- [Phase 06]: Cognitive complexity docs credit G. Ann Campbell/SonarSource per locked requirement
+- [Phase 06]: Example output format updated to show side-by-side cyclomatic/cognitive scores
 
 ### Pending Todos
 
@@ -187,10 +190,9 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-17 (execute-phase)
-Stopped at: Completed 06-01-PLAN.md (cognitive complexity core algorithm)
-Resume file: .planning/phases/06-cognitive-complexity/06-01-SUMMARY.md
+Stopped at: Completed 06-03-PLAN.md (documentation: cognitive/cyclomatic complexity docs and user-facing updates)
+Resume file: .planning/phases/06-cognitive-complexity/06-03-SUMMARY.md
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-17T09:23:00Z*
-*Last updated: 2026-02-16T20:10:00Z*
+*Last updated: 2026-02-17T08:09:00Z*
