@@ -24,7 +24,9 @@ complexity-guard src/
 src/auth/login.ts
   42:0  ✓  ok  Function 'validateCredentials' cyclomatic 3 cognitive 2
   67:0  ⚠  warning  Function 'processLoginFlow' cyclomatic 12 cognitive 18
+              [halstead vol 843 diff 14.1 effort 11886] [length 34 params 3 depth 4]
   89:2  ✗  error  Method 'handleComplexAuthFlow' cyclomatic 25 cognitive 32
+              [halstead vol 1244 diff 18.6 effort 23135 bugs 0.41] [length 62 params 4 depth 6]
 
 Analyzed 12 files, 47 functions
 Found 3 warnings, 1 errors
@@ -37,15 +39,22 @@ Top cognitive hotspots:
   1. handleComplexAuthFlow (src/auth/login.ts:89) complexity 32
   2. processLoginFlow (src/auth/login.ts:67) complexity 18
 
+Top Halstead volume hotspots:
+  1. handleComplexAuthFlow (src/auth/login.ts:89) volume 1244
+  2. processLoginFlow (src/auth/login.ts:67) volume 843
+
 ✗ 4 problems (1 errors, 3 warnings)
 ```
 
 ## Features
 
-- **Cognitive Complexity**: SonarSource-based metric measuring code *understandability* with nesting depth penalties
-- **Cyclomatic Complexity**: McCabe metric with ESLint-aligned counting rules, complementary to cognitive complexity
+- **Cyclomatic Complexity**: McCabe metric counting independent code paths — measures testability
+- **Cognitive Complexity**: SonarSource-based metric with nesting depth penalties — measures understandability
+- **Halstead Metrics**: Information-theoretic vocabulary density, volume, difficulty, effort, and estimated bugs
+- **Structural Metrics**: Function length, parameter count, nesting depth, file length, and export count
 - **Console + JSON Output**: Human-readable terminal display and machine-readable JSON for CI integration
-- **Configurable Thresholds**: Warning and error levels for both metrics, customizable per project via config file
+- **Configurable Thresholds**: Warning and error levels for all four metric families, customizable per project
+- **Selective Metrics**: Use `--metrics cyclomatic,halstead` to compute only specific families
 - **Zero Config**: Works out of the box with sensible defaults, optional `.complexityguard.json` for customization
 - **Single Binary**: No runtime dependencies, runs offline, fast startup
 - **Error-Tolerant Parsing**: Tree-sitter based parser handles syntax errors gracefully, continues analysis on remaining files
@@ -61,14 +70,13 @@ Create a `.complexityguard.json` file in your project root to customize behavior
     "exclude": ["**/*.test.ts", "**/*.spec.ts", "node_modules/**"]
   },
   "thresholds": {
-    "cyclomatic": {
-      "warning": 10,
-      "error": 20
-    },
-    "cognitive": {
-      "warning": 15,
-      "error": 25
-    }
+    "cyclomatic": { "warning": 10, "error": 20 },
+    "cognitive": { "warning": 15, "error": 25 },
+    "halstead_volume": { "warning": 500, "error": 1000 },
+    "halstead_effort": { "warning": 5000, "error": 10000 },
+    "function_length": { "warning": 25, "error": 50 },
+    "params": { "warning": 3, "error": 6 },
+    "nesting": { "warning": 3, "error": 5 }
   },
   "counting_rules": {
     "logical_operators": true,
