@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 ## Current Position
 
 Phase: 7 of 12 (Halstead + Structural Metrics)
-Plan: 3 of 4
-Status: In Progress - Plan 03 complete (pipeline integration, all 4 metric families wired)
-Last activity: 2026-02-17 - Completed 07-03: Pipeline integration (ThresholdResult extended, all 4 passes, console/JSON/exit codes updated)
+Plan: 4 of 4
+Status: Complete - Phase 07 done (all 4 metric families implemented and documented)
+Last activity: 2026-02-17 - Completed 07-04: Documentation (Halstead/structural docs pages, README/publication README updates)
 
-Progress: [████████░░] 54% (7/13 phases)
+Progress: [████████░░] 58% (7/12 phases complete)
 
 ## Performance Metrics
 
@@ -59,6 +59,7 @@ Progress: [████████░░] 54% (7/13 phases)
 | Phase 07 P01 | 4 | 2 tasks | 4 files |
 | Phase 07 P02 | 7 | 1 tasks | 2 files |
 | Phase 07 P03 | 6 | 2 tasks | 5 files |
+| Phase 07 P04 | 4 | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -158,6 +159,8 @@ Recent decisions affecting current work:
 - [Phase 07-03]: worstStatusAll duplicated in exit_codes.zig and console.zig independently (avoids circular import; json_output imports exit_codes)
 - [Phase 07-03]: Halstead fields in JSON changed from ?f64 to f64 (Phase 7 always computes them; 0.0 valid for empty functions)
 - [Phase 07-03]: isMetricEnabled helper: returns true when metrics is null (all enabled) or metric name is in list
+- [Phase 07-04]: Platform package READMEs got "What ComplexityGuard Measures" section (no existing feature list; adds context for npm discovery)
+- [Phase 07-04]: cli-reference.md JSON schema updated from null placeholders to real Halstead/structural values (Phase 7 always computes them)
 
 ### Pending Todos
 
@@ -208,9 +211,9 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-17 (execute-phase)
-Stopped at: Completed 07-03-PLAN.md (pipeline integration: all 4 metric families wired, output updated)
-Resume file: .planning/phases/07-halstead-structural-metrics/07-03-SUMMARY.md
+Stopped at: Completed 07-04-PLAN.md (documentation: Halstead/structural docs pages, README updates, phase 07 complete)
+Resume file: .planning/phases/07-halstead-structural-metrics/07-04-SUMMARY.md
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-17T10:10:00Z*
+*Last updated: 2026-02-17T10:16:17Z*
