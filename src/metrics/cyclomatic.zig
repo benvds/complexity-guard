@@ -73,6 +73,8 @@ pub const ThresholdResult = struct {
     function_length_status: ThresholdStatus = .ok,
     params_count_status: ThresholdStatus = .ok,
     nesting_depth_status: ThresholdStatus = .ok,
+    // Composite health score (Phase 8)
+    health_score: f64 = 0.0,
 };
 
 /// Per-function complexity result

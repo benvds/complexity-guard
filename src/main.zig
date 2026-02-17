@@ -434,6 +434,7 @@ pub fn main() !void {
         total_errors,
         total_warnings,
         fail_on_warnings,
+        false, // baseline_failed wired in Task 2
     );
 
     if (exit_code != .success) {

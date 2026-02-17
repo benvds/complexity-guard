@@ -18,22 +18,27 @@ pub const ExitCode = enum(u8) {
 /// Determine the appropriate exit code based on analysis results
 /// Priority order (highest to lowest):
 ///   1. parse_error (exit 4) - if has_parse_errors is true
-///   2. errors_found (exit 1) - if error_count > 0
-///   3. warnings_found (exit 2) - if warning_count > 0 AND fail_on_warnings
-///   4. success (exit 0) - otherwise
+///   2. errors_found (exit 1) - if baseline_failed is true
+///   3. errors_found (exit 1) - if error_count > 0
+///   4. warnings_found (exit 2) - if warning_count > 0 AND fail_on_warnings
+///   5. success (exit 0) - otherwise
 pub fn determineExitCode(
     has_parse_errors: bool,
     error_count: u32,
     warning_count: u32,
     fail_on_warnings: bool,
+    baseline_failed: bool,
 ) ExitCode {
     // Priority 1: Parse errors
     if (has_parse_errors) return .parse_error;
 
-    // Priority 2: Threshold errors
+    // Priority 2: Baseline failure
+    if (baseline_failed) return .errors_found;
+
+    // Priority 3: Threshold errors
     if (error_count > 0) return .errors_found;
 
-    // Priority 3: Threshold warnings (only if fail_on_warnings enabled)
+    // Priority 4: Threshold warnings (only if fail_on_warnings enabled)
     if (warning_count > 0 and fail_on_warnings) return .warnings_found;
 
     // Default: Success
@@ -84,42 +89,52 @@ pub fn countViolations(
 // TESTS
 
 test "determineExitCode: success when no violations" {
-    const exit_code = determineExitCode(false, 0, 0, false);
+    const exit_code = determineExitCode(false, 0, 0, false, false);
     try std.testing.expectEqual(ExitCode.success, exit_code);
 }
 
 test "determineExitCode: errors_found when error_count > 0" {
-    const exit_code = determineExitCode(false, 1, 0, false);
+    const exit_code = determineExitCode(false, 1, 0, false, false);
     try std.testing.expectEqual(ExitCode.errors_found, exit_code);
 }
 
 test "determineExitCode: warnings_found when warnings > 0 and fail_on_warnings true" {
-    const exit_code = determineExitCode(false, 0, 3, true);
+    const exit_code = determineExitCode(false, 0, 3, true, false);
     try std.testing.expectEqual(ExitCode.warnings_found, exit_code);
 }
 
 test "determineExitCode: success when warnings > 0 but fail_on_warnings false" {
-    const exit_code = determineExitCode(false, 0, 5, false);
+    const exit_code = determineExitCode(false, 0, 5, false, false);
     try std.testing.expectEqual(ExitCode.success, exit_code);
 }
 
 test "determineExitCode: parse_error when has_parse_errors true" {
-    const exit_code = determineExitCode(true, 0, 0, false);
+    const exit_code = determineExitCode(true, 0, 0, false, false);
     try std.testing.expectEqual(ExitCode.parse_error, exit_code);
 }
 
 test "determineExitCode: priority parse_error > errors_found > warnings_found" {
     // Parse error takes priority over everything
-    const exit_code1 = determineExitCode(true, 10, 20, true);
+    const exit_code1 = determineExitCode(true, 10, 20, true, false);
     try std.testing.expectEqual(ExitCode.parse_error, exit_code1);
 
     // Errors take priority over warnings
-    const exit_code2 = determineExitCode(false, 5, 10, true);
+    const exit_code2 = determineExitCode(false, 5, 10, true, false);
     try std.testing.expectEqual(ExitCode.errors_found, exit_code2);
 
     // Warnings take priority over success
-    const exit_code3 = determineExitCode(false, 0, 3, true);
+    const exit_code3 = determineExitCode(false, 0, 3, true, false);
     try std.testing.expectEqual(ExitCode.warnings_found, exit_code3);
+}
+
+test "determineExitCode: baseline_failed causes errors_found" {
+    const exit_code = determineExitCode(false, 0, 0, false, true);
+    try std.testing.expectEqual(ExitCode.errors_found, exit_code);
+}
+
+test "determineExitCode: parse_error takes priority over baseline_failed" {
+    const exit_code = determineExitCode(true, 0, 0, false, true);
+    try std.testing.expectEqual(ExitCode.parse_error, exit_code);
 }
 
 test "countViolations: counts correctly with mixed statuses" {

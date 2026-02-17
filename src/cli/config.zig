@@ -10,6 +10,9 @@ pub const Config = struct {
     files: ?FilesConfig = null,
     weights: ?WeightsConfig = null,
     overrides: ?[]OverrideConfig = null,
+    /// Baseline health score for ratchet enforcement. If set and project score
+    /// drops below baseline - 0.5, the tool exits with code 1.
+    baseline: ?f64 = null,
 };
 
 /// Output format and destination configuration.
