@@ -1,0 +1,12 @@
+{
+  "output": {
+    "format": "console"
+  },
+  "weights": {
+    "cyclomatic": 0.20,
+    "cognitive": 0.30,
+    "halstead": 0.15,
+    "structural": 0.15
+  },
+  "baseline": 77.5
+}
