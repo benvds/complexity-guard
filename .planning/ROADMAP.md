@@ -169,13 +169,14 @@ Plans:
   2. Tool computes project-wide composite score aggregating all files
   3. Tool uses numeric 0-100 score only (no letter grades, per CONTEXT.md override of COMP-04)
   4. Tool uses default weights (cognitive 0.30, cyclomatic 0.20, duplication 0.20, Halstead 0.15, structural 0.15) unless overridden
-**Plans:** 4 plans
+**Plans:** 5 plans
 
 Plans:
-- [ ] 08-01-PLAN.md -- Scoring module: sigmoid normalization, weight redistribution, function/file/project score computation (TDD)
-- [ ] 08-02-PLAN.md -- Pipeline + output wiring: config baseline, main.zig integration, console/JSON display, exit code
-- [ ] 08-03-PLAN.md -- Baseline ratchet: --save-baseline, --fail-health-below, enhanced --init with weight optimization
-- [ ] 08-04-PLAN.md -- Documentation: health-score.md page, README, docs updates, publication READMEs
+- [x] 08-01-PLAN.md -- Scoring module: sigmoid normalization, weight redistribution, function/file/project score computation (TDD)
+- [x] 08-02-PLAN.md -- Pipeline + output wiring: config baseline, main.zig integration, console/JSON display, exit code
+- [x] 08-03-PLAN.md -- Baseline ratchet: --save-baseline, --fail-health-below, enhanced --init with weight optimization
+- [x] 08-04-PLAN.md -- Documentation: health-score.md page, README, docs updates, publication READMEs
+- [ ] 08-05-PLAN.md -- Gap closure: fix deepCopyConfig to propagate baseline field from config file
 
 ### Phase 9: SARIF Output
 **Goal**: Tool outputs SARIF 2.1.0 format accepted by GitHub Code Scanning
@@ -246,7 +247,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 5.1 CI/CD, Release & Docs | 6/6 | ✓ Complete | 2026-02-15 |
 | 6. Cognitive Complexity | 3/3 | ✓ Complete | 2026-02-17 |
 | 7. Halstead & Structural Metrics | 5/5 | Complete    | 2026-02-17 |
-| 8. Composite Health Score | 0/4 | Not started | - |
+| 8. Composite Health Score | 4/5 | In Progress (gap closure) | - |
 | 9. SARIF Output | 0/TBD | Not started | - |
 | 10. HTML Reports | 0/TBD | Not started | - |
 | 11. Duplication Detection | 0/TBD | Not started | - |
@@ -254,4 +255,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 ---
 *Roadmap created: 2026-02-14*
-*Last updated: 2026-02-17 (Phase 8 plans created)*
+*Last updated: 2026-02-17 (Phase 8 gap closure plan 08-05 created)*
