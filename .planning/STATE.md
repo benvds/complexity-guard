@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** Phase 10 in progress - HTML report output (plan 1 of 3 complete)
+**Current focus:** Phase 10 in progress - HTML report output (plan 2 of 3 complete)
 
 ## Current Position
 
 Phase: 10 of 12 (HTML Reports)
-Plan: 1 of 3 (IN PROGRESS)
-Status: Phase 10-01 Complete - HTML report module (html_output.zig) with self-contained dashboard, hotspot cards, distribution bar, and dark mode; wired into main.zig --format html
-Last activity: 2026-02-18 - Completed 10-01: html_output.zig module and main.zig format dispatch
+Plan: 2 of 3 (IN PROGRESS)
+Status: Phase 10-02 Complete - File breakdown table with sortable columns, expandable function detail rows, metric bars, treemap SVG, and bar chart SVG
+Last activity: 2026-02-18 - Completed 10-02: file table, visualizations, interactive drill-down
 
 Progress: [█████████░] 75% (9/12 phases complete, phase 10 in progress)
 
@@ -69,6 +69,7 @@ Progress: [█████████░] 75% (9/12 phases complete, phase 10 i
 | Phase 09 P01 | 6 | 2 tasks | 2 files |
 | Phase 09 P02 | 4 | 2 tasks | 11 files |
 | Phase 10-html-reports P01 | 2 | 2 tasks | 2 files |
+| Phase 10-html-reports P02 | 5 | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -196,6 +197,8 @@ Recent decisions affecting current work:
 - [Phase 09]: All 10 SARIF rules documented in rule reference table with trigger conditions in sarif-output.md
 - [Phase 10-html-reports]: HTML report writes only to file (not also stdout) when --output is specified, unlike JSON/SARIF
 - [Phase 10-html-reports]: Hotspot ranking uses health_score ascending (lowest health = worst = first) for unified worst-first ordering
+- [Phase 10-html-reports]: Squarify handles zero-weight files by skipping silently (files with 0 functions produce no treemap tile)
+- [Phase 10-html-reports]: Treemap tile text only renders when tile is large enough (w>40 and h>20) to prevent overflow
 
 ### Pending Todos
 
@@ -247,8 +250,8 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-18 (execute-phase)
-Stopped at: Completed 10-01-PLAN.md (HTML report module: html_output.zig with dashboard, hotspots, distribution bar, dark mode; wired into main.zig format dispatch)
+Stopped at: Completed 10-02-PLAN.md (file table with sortable columns, expandable function detail rows, metric bars, treemap SVG, bar chart SVG)
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-18T06:40:00Z*
+*Last updated: 2026-02-18T21:53:00Z*
