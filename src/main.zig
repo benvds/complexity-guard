@@ -16,6 +16,7 @@ const structural = @import("metrics/structural.zig");
 const scoring = @import("metrics/scoring.zig");
 const console = @import("output/console.zig");
 const json_output = @import("output/json_output.zig");
+const sarif_output = @import("output/sarif_output.zig");
 const exit_codes = @import("output/exit_codes.zig");
 
 const version = "0.4.0";
@@ -492,7 +493,41 @@ pub fn main() !void {
     // Step 4: Determine color
     const use_color = help.shouldUseColor(cli_args.color, cli_args.no_color);
 
-    // Step 5: Output based on format
+    // Step 5: Baseline ratchet check — must run before format dispatch so SARIF output can include baseline results
+    const fail_on_warnings = if (cli_args.fail_on) |fo|
+        std.mem.eql(u8, fo, "warning")
+    else
+        false;
+
+    var baseline_failed = false;
+    // CLI --fail-health-below overrides config baseline when present
+    if (cli_args.fail_health_below) |fhb_str| {
+        const fhb_val = std.fmt.parseFloat(f64, fhb_str) catch 0.0;
+        if (project_score < fhb_val - 0.5) {
+            baseline_failed = true;
+            try stderr.print("Health score {d:.1} is below threshold {d:.1}\n", .{ project_score, fhb_val });
+        }
+    } else {
+        // Check config baseline (only when CLI --fail-health-below not provided)
+        if (cfg.baseline) |baseline_val| {
+            if (project_score < baseline_val - 0.5) {
+                baseline_failed = true;
+                try stderr.print("Health score {d:.1} is below baseline {d:.1}\n", .{ project_score, baseline_val });
+            }
+        }
+        // Check legacy CLI --baseline flag
+        if (!baseline_failed) {
+            if (cli_args.baseline) |baseline_str| {
+                const baseline_val = std.fmt.parseFloat(f64, baseline_str) catch 0.0;
+                if (project_score < baseline_val - 0.5) {
+                    baseline_failed = true;
+                    try stderr.print("Health score {d:.1} is below baseline {d:.1}\n", .{ project_score, baseline_val });
+                }
+            }
+        }
+    }
+
+    // Step 6: Output based on format
     if (std.mem.eql(u8, effective_format, "json")) {
         // JSON output
         const json_result = try json_output.buildJsonOutput(
@@ -514,6 +549,51 @@ pub fn main() !void {
             const file = try std.fs.cwd().createFile(output_path, .{});
             defer file.close();
             try file.writeAll(json_str);
+            try file.writeAll("\n");
+        }
+    } else if (std.mem.eql(u8, effective_format, "sarif")) {
+        // SARIF output
+        const sarif_thresholds = sarif_output.SarifThresholds{
+            .cyclomatic_warning = cycl_config.warning_threshold,
+            .cyclomatic_error = cycl_config.error_threshold,
+            .cognitive_warning = cog_config.warning_threshold,
+            .cognitive_error = cog_config.error_threshold,
+            .halstead_volume_warning = hal_config.volume_warning,
+            .halstead_volume_error = hal_config.volume_error,
+            .halstead_difficulty_warning = hal_config.difficulty_warning,
+            .halstead_difficulty_error = hal_config.difficulty_error,
+            .halstead_effort_warning = hal_config.effort_warning,
+            .halstead_effort_error = hal_config.effort_error,
+            .halstead_bugs_warning = hal_config.bugs_warning,
+            .halstead_bugs_error = hal_config.bugs_error,
+            .line_count_warning = str_config.function_length_warning,
+            .line_count_error = str_config.function_length_error,
+            .param_count_warning = str_config.params_count_warning,
+            .param_count_error = str_config.params_count_error,
+            .nesting_depth_warning = str_config.nesting_depth_warning,
+            .nesting_depth_error = str_config.nesting_depth_error,
+        };
+
+        const sarif_result = try sarif_output.buildSarifOutput(
+            arena_allocator,
+            file_results,
+            version,
+            baseline_failed,
+            cfg.baseline,
+            project_score,
+            parsed_metrics,
+            sarif_thresholds,
+        );
+        const sarif_str = try sarif_output.serializeSarifOutput(arena_allocator, sarif_result);
+
+        try stdout.writeAll(sarif_str);
+        try stdout.writeAll("\n");
+
+        // Also write to file if specified
+        if (cli_args.output_file) |output_path| {
+            const file = try std.fs.cwd().createFile(output_path, .{});
+            defer file.close();
+            try file.writeAll(sarif_str);
             try file.writeAll("\n");
         }
     } else {
@@ -548,41 +628,7 @@ pub fn main() !void {
         );
     }
 
-    // Step 6: Determine and apply exit code
-    const fail_on_warnings = if (cli_args.fail_on) |fo|
-        std.mem.eql(u8, fo, "warning")
-    else
-        false;
-
-    // Baseline ratchet check: compare project score against configured baseline
-    var baseline_failed = false;
-    // CLI --fail-health-below overrides config baseline when present
-    if (cli_args.fail_health_below) |fhb_str| {
-        const fhb_val = std.fmt.parseFloat(f64, fhb_str) catch 0.0;
-        if (project_score < fhb_val - 0.5) {
-            baseline_failed = true;
-            try stderr.print("Health score {d:.1} is below threshold {d:.1}\n", .{ project_score, fhb_val });
-        }
-    } else {
-        // Check config baseline (only when CLI --fail-health-below not provided)
-        if (cfg.baseline) |baseline_val| {
-            if (project_score < baseline_val - 0.5) {
-                baseline_failed = true;
-                try stderr.print("Health score {d:.1} is below baseline {d:.1}\n", .{ project_score, baseline_val });
-            }
-        }
-        // Check legacy CLI --baseline flag
-        if (!baseline_failed) {
-            if (cli_args.baseline) |baseline_str| {
-                const baseline_val = std.fmt.parseFloat(f64, baseline_str) catch 0.0;
-                if (project_score < baseline_val - 0.5) {
-                    baseline_failed = true;
-                    try stderr.print("Health score {d:.1} is below baseline {d:.1}\n", .{ project_score, baseline_val });
-                }
-            }
-        }
-    }
-
+    // Step 7: Determine and apply exit code
     const exit_code = exit_codes.determineExitCode(
         parse_summary.failed_parses > 0,
         total_errors,
@@ -627,5 +673,6 @@ test {
     _ = @import("output/exit_codes.zig");
     _ = @import("output/console.zig");
     _ = @import("output/json_output.zig");
+    _ = @import("output/sarif_output.zig");
     _ = @import("metrics/scoring.zig");
 }

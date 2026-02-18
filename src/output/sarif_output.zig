@@ -653,12 +653,13 @@ test "buildSarifOutput: produces valid SARIF envelope" {
         null,
         thresholds,
     );
-    // Free all allocated memory
-    for (output.runs) |run| {
-        allocator.free(run.tool.driver.rules);
-        allocator.free(run.results);
+    defer {
+        for (output.runs) |run| {
+            allocator.free(run.tool.driver.rules);
+            allocator.free(run.results);
+        }
+        allocator.free(output.runs);
     }
-    allocator.free(output.runs);
 
     try std.testing.expectEqualStrings("https://json.schemastore.org/sarif-2.1.0.json", output.@"$schema");
     try std.testing.expectEqualStrings("2.1.0", output.version);
@@ -763,6 +764,7 @@ test "buildSarifOutput: cyclomatic violation produces result" {
         for (output.runs) |run| {
             allocator.free(run.tool.driver.rules);
             for (run.results) |r| {
+                allocator.free(r.message.text);
                 allocator.free(r.locations);
             }
             allocator.free(run.results);
@@ -828,6 +830,7 @@ test "buildSarifOutput: column is 1-indexed" {
         for (output.runs) |run| {
             allocator.free(run.tool.driver.rules);
             for (run.results) |r| {
+                allocator.free(r.message.text);
                 allocator.free(r.locations);
             }
             allocator.free(run.results);
@@ -887,6 +890,7 @@ test "buildSarifOutput: multiple metrics produce multiple results" {
         for (output.runs) |run| {
             allocator.free(run.tool.driver.rules);
             for (run.results) |r| {
+                allocator.free(r.message.text);
                 allocator.free(r.locations);
             }
             allocator.free(run.results);
@@ -945,6 +949,7 @@ test "buildSarifOutput: baseline failure produces file-level result" {
         for (output.runs) |run| {
             allocator.free(run.tool.driver.rules);
             for (run.results) |r| {
+                allocator.free(r.message.text);
                 allocator.free(r.locations);
             }
             allocator.free(run.results);
@@ -1017,6 +1022,7 @@ test "buildSarifOutput: metrics filtering limits results" {
         for (output.runs) |run| {
             allocator.free(run.tool.driver.rules);
             for (run.results) |r| {
+                allocator.free(r.message.text);
                 allocator.free(r.locations);
             }
             allocator.free(run.results);
