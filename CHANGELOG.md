@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-02-18
+
+### Added
+
+- Update docs and READMEs for SARIF output support
+- Create SARIF output documentation page
+- Wire SARIF output into main.zig format dispatch
+- Implement SARIF 2.1.0 output module
+
+### Fixed
+
+- Correct repository URLs from AstroTechDev to benvds
+
 ## [0.4.0] - 2026-02-17
 
 ### Added
@@ -135,7 +148,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tree-sitter based parsing with error-tolerant syntax handling
 - CLI with --help, --version, --verbose, --quiet, --format, --output, --config, --init flags
 
-[Unreleased]: https://github.com/benvds/complexity-guard/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/benvds/complexity-guard/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/benvds/complexity-guard/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/benvds/complexity-guard/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/benvds/complexity-guard/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/benvds/complexity-guard/compare/v0.2.0...v0.2.1

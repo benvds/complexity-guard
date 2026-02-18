@@ -4,7 +4,7 @@
         "name": "Ben van de Sande",
         "email": "info@getlean.digital"
     },
-    "version": "0.4.0",
+    "version": "0.5.0",
     "description": "Fast complexity analysis for TypeScript/JavaScript — single static binary",
     "bin": {
         "complexity-guard": "bin/complexity-guard.js"
@@ -13,11 +13,11 @@
         "bin/"
     ],
     "optionalDependencies": {
-        "@complexity-guard/darwin-arm64": "0.4.0",
-        "@complexity-guard/darwin-x64": "0.4.0",
-        "@complexity-guard/linux-arm64": "0.4.0",
-        "@complexity-guard/linux-x64": "0.4.0",
-        "@complexity-guard/windows-x64": "0.4.0"
+        "@complexity-guard/darwin-arm64": "0.5.0",
+        "@complexity-guard/darwin-x64": "0.5.0",
+        "@complexity-guard/linux-arm64": "0.5.0",
+        "@complexity-guard/linux-x64": "0.5.0",
+        "@complexity-guard/windows-x64": "0.5.0"
     },
     "license": "MIT",
     "repository": {
