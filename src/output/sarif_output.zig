@@ -136,7 +136,7 @@ fn buildRules(allocator: Allocator) ![]SarifRule {
         .shortDescription = .{ .text = "Cyclomatic complexity exceeded threshold" },
         .fullDescription = .{ .text = "Cyclomatic complexity measures the number of linearly independent paths through a function. It counts decision points like if statements, loops, logical operators, and ternary expressions plus 1 (McCabe's base). High values indicate functions that are hard to test and maintain." },
         .defaultConfiguration = .{ .level = "warning" },
-        .helpUri = "https://github.com/AstroTechDev/complexity-guard/blob/main/docs/cyclomatic-complexity.md",
+        .helpUri = "https://github.com/benvds/complexity-guard/blob/main/docs/cyclomatic-complexity.md",
         .help = .{ .text = "Reduce cyclomatic complexity by extracting complex conditional logic into smaller functions, simplifying boolean expressions, or replacing switch statements with lookup tables." },
     });
 
@@ -147,7 +147,7 @@ fn buildRules(allocator: Allocator) ![]SarifRule {
         .shortDescription = .{ .text = "Cognitive complexity exceeded threshold" },
         .fullDescription = .{ .text = "Cognitive complexity measures how difficult a function is to understand, weighted by nesting depth and structural increments. Defined by G. Ann Campbell/SonarSource. Higher nesting adds more weight to each control flow element." },
         .defaultConfiguration = .{ .level = "warning" },
-        .helpUri = "https://github.com/AstroTechDev/complexity-guard/blob/main/docs/cognitive-complexity.md",
+        .helpUri = "https://github.com/benvds/complexity-guard/blob/main/docs/cognitive-complexity.md",
         .help = .{ .text = "Reduce cognitive complexity by flattening nested conditions using early returns, extracting nested loops into separate functions, and simplifying deeply nested logic." },
     });
 
@@ -158,7 +158,7 @@ fn buildRules(allocator: Allocator) ![]SarifRule {
         .shortDescription = .{ .text = "Halstead volume exceeded threshold" },
         .fullDescription = .{ .text = "Halstead volume measures the information content of a program, calculated as N * log2(n) where N is total operators+operands and n is distinct operators+operands. High volume indicates functions with excessive vocabulary or repetition." },
         .defaultConfiguration = .{ .level = "warning" },
-        .helpUri = "https://github.com/AstroTechDev/complexity-guard/blob/main/docs/halstead-complexity.md",
+        .helpUri = "https://github.com/benvds/complexity-guard/blob/main/docs/halstead-complexity.md",
         .help = .{ .text = "Reduce Halstead volume by splitting large functions, eliminating redundant expressions, and extracting repeated patterns into helper functions." },
     });
 
@@ -169,7 +169,7 @@ fn buildRules(allocator: Allocator) ![]SarifRule {
         .shortDescription = .{ .text = "Halstead difficulty exceeded threshold" },
         .fullDescription = .{ .text = "Halstead difficulty measures implementation error-proneness, calculated as (n1/2) * (N2/n2) where n1 is distinct operators, N2 is total operands, and n2 is distinct operands. High difficulty indicates repeated operands with many unique operators." },
         .defaultConfiguration = .{ .level = "warning" },
-        .helpUri = "https://github.com/AstroTechDev/complexity-guard/blob/main/docs/halstead-complexity.md",
+        .helpUri = "https://github.com/benvds/complexity-guard/blob/main/docs/halstead-complexity.md",
         .help = .{ .text = "Reduce Halstead difficulty by introducing named constants for repeated values, reducing operator diversity, and clarifying variable naming to reduce operand reuse." },
     });
 
@@ -180,7 +180,7 @@ fn buildRules(allocator: Allocator) ![]SarifRule {
         .shortDescription = .{ .text = "Halstead effort exceeded threshold" },
         .fullDescription = .{ .text = "Halstead effort estimates the mental effort required to implement or understand a function, calculated as Volume * Difficulty. It combines both the information content and the error-proneness into a single measure." },
         .defaultConfiguration = .{ .level = "warning" },
-        .helpUri = "https://github.com/AstroTechDev/complexity-guard/blob/main/docs/halstead-complexity.md",
+        .helpUri = "https://github.com/benvds/complexity-guard/blob/main/docs/halstead-complexity.md",
         .help = .{ .text = "Reduce Halstead effort by addressing both volume (split large functions) and difficulty (reduce operator/operand repetition) simultaneously." },
     });
 
@@ -191,7 +191,7 @@ fn buildRules(allocator: Allocator) ![]SarifRule {
         .shortDescription = .{ .text = "Halstead bug estimate exceeded threshold" },
         .fullDescription = .{ .text = "Halstead bug estimate predicts the number of errors in the implementation, calculated as Volume / 3000. Higher values correlate with increased defect density and maintenance burden." },
         .defaultConfiguration = .{ .level = "warning" },
-        .helpUri = "https://github.com/AstroTechDev/complexity-guard/blob/main/docs/halstead-complexity.md",
+        .helpUri = "https://github.com/benvds/complexity-guard/blob/main/docs/halstead-complexity.md",
         .help = .{ .text = "Reduce the bug estimate by splitting complex functions into smaller, well-tested units. Each unit should have a single, clear responsibility." },
     });
 
@@ -202,7 +202,7 @@ fn buildRules(allocator: Allocator) ![]SarifRule {
         .shortDescription = .{ .text = "Function line count exceeded threshold" },
         .fullDescription = .{ .text = "Measures the logical line count of a function body, excluding blank lines and brace-only lines. Long functions are harder to read, test, and maintain. The Single Responsibility Principle suggests functions should do one thing." },
         .defaultConfiguration = .{ .level = "warning" },
-        .helpUri = "https://github.com/AstroTechDev/complexity-guard/blob/main/docs/structural-complexity.md",
+        .helpUri = "https://github.com/benvds/complexity-guard/blob/main/docs/structural-complexity.md",
         .help = .{ .text = "Reduce function length by extracting logical sections into well-named helper functions. Aim for functions that fit on a single screen without scrolling." },
     });
 
@@ -213,7 +213,7 @@ fn buildRules(allocator: Allocator) ![]SarifRule {
         .shortDescription = .{ .text = "Function parameter count exceeded threshold" },
         .fullDescription = .{ .text = "Measures the number of parameters a function accepts. Functions with many parameters are harder to call correctly, test, and remember. High parameter counts often indicate missing abstraction or violated cohesion." },
         .defaultConfiguration = .{ .level = "warning" },
-        .helpUri = "https://github.com/AstroTechDev/complexity-guard/blob/main/docs/structural-complexity.md",
+        .helpUri = "https://github.com/benvds/complexity-guard/blob/main/docs/structural-complexity.md",
         .help = .{ .text = "Reduce parameter count by grouping related parameters into an options object, using builder patterns, or splitting the function into smaller focused functions." },
     });
 
@@ -224,7 +224,7 @@ fn buildRules(allocator: Allocator) ![]SarifRule {
         .shortDescription = .{ .text = "Function nesting depth exceeded threshold" },
         .fullDescription = .{ .text = "Measures the maximum nesting depth within a function body. Deeply nested code is harder to read and reason about. Each level of nesting increases the cognitive load required to understand the surrounding context." },
         .defaultConfiguration = .{ .level = "warning" },
-        .helpUri = "https://github.com/AstroTechDev/complexity-guard/blob/main/docs/structural-complexity.md",
+        .helpUri = "https://github.com/benvds/complexity-guard/blob/main/docs/structural-complexity.md",
         .help = .{ .text = "Reduce nesting depth by using early returns to handle edge cases first, extracting nested blocks into helper functions, and inverting conditions to eliminate else clauses." },
     });
 
@@ -235,7 +235,7 @@ fn buildRules(allocator: Allocator) ![]SarifRule {
         .shortDescription = .{ .text = "File health score below baseline" },
         .fullDescription = .{ .text = "The composite health score aggregates all metric families using configurable weights into a single 0-100 score. A score below the configured baseline indicates the file's complexity has regressed since the baseline was recorded." },
         .defaultConfiguration = .{ .level = "warning" },
-        .helpUri = "https://github.com/AstroTechDev/complexity-guard/blob/main/docs/health-score.md",
+        .helpUri = "https://github.com/benvds/complexity-guard/blob/main/docs/health-score.md",
         .help = .{ .text = "Improve the health score by addressing the metric violations shown in other results. The health score weights cyclomatic, cognitive, Halstead, and structural metrics. Run without a baseline to see individual violations." },
     });
 
@@ -601,7 +601,7 @@ pub fn buildSarifOutput(
             .driver = SarifDriver{
                 .name = "ComplexityGuard",
                 .version = tool_version,
-                .informationUri = "https://github.com/AstroTechDev/complexity-guard",
+                .informationUri = "https://github.com/benvds/complexity-guard",
                 .rules = rules,
             },
         },
