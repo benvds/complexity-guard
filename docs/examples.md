@@ -247,6 +247,56 @@ complexity-guard --format sarif . | jq '.runs[0].results | group_by(.level) | ma
 
 See [SARIF Output](sarif-output.md) for a complete GitHub Actions workflow and full rule reference.
 
+## HTML Reports
+
+Generate a self-contained HTML report for sharing with stakeholders or reviewing in a browser. The report includes an interactive project health dashboard, sortable file breakdown table, treemap visualization, and a bar chart of top hotspots.
+
+### Basic HTML Report
+
+```sh
+complexity-guard --format html --output report.html src/
+```
+
+Open in your browser:
+
+```sh
+open report.html       # macOS
+xdg-open report.html   # Linux
+start report.html      # Windows
+```
+
+### HTML Report with Custom Thresholds
+
+```sh
+complexity-guard --format html --output report.html --error 25 src/
+```
+
+### HTML Report in CI (Artifact Upload)
+
+```yaml
+      - name: Generate HTML complexity report
+        run: |
+          complexity-guard --format html --output complexity-report.html src/ || true
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v3
+        with:
+          name: complexity-report
+          path: complexity-report.html
+```
+
+The `|| true` ensures the step doesn't fail immediately, allowing the artifact to be uploaded even when violations are found. Team members can then download the report from the GitHub Actions run and open it locally.
+
+### What the HTML Report Contains
+
+- **Project health dashboard** — overall health score (0–100), total files/functions, warning/error counts
+- **Interactive file table** — sortable by complexity, health score, function count; click any row to expand and see per-function metrics
+- **Metric bars** — visual bar representations of cyclomatic, cognitive, and health score per function
+- **Treemap visualization** — proportional view showing which files dominate complexity
+- **Bar chart** — top hotspot functions ranked by cyclomatic complexity
+
+The report is fully self-contained — all CSS and JavaScript is inlined. No server or internet connection needed to view it.
+
 ## CI Integration
 
 ### GitHub Actions

@@ -315,6 +315,24 @@ ComplexityGuard follows ESLint-aligned counting rules by default, but you can cu
 - `"perCase"`: Each case adds +1 (ESLint behavior)
 - `"switchOnly"`: Only the switch itself adds +1 (classic McCabe)
 
+## HTML Reports
+
+Generate a self-contained HTML report for sharing with stakeholders or reviewing in a browser:
+
+```sh
+complexity-guard --format html --output report.html src/
+open report.html        # macOS
+xdg-open report.html   # Linux
+```
+
+The report is fully self-contained (no external CSS/JS dependencies) and includes:
+- **Project health dashboard** — overall score, summary metrics, and health status
+- **File breakdown table** — sortable by any metric, with expandable function detail rows
+- **Treemap visualization** — proportional view of function complexity across the codebase
+- **Bar chart** — top complexity hotspots at a glance
+
+Use `--output` when generating HTML — the report is large and piping to stdout is impractical.
+
 ## GitHub Code Scanning Integration
 
 Use `--format sarif` to generate SARIF reports for GitHub Code Scanning. This gives you inline complexity annotations directly on pull request diffs:
@@ -352,6 +370,7 @@ Now that you have ComplexityGuard installed and understand the basics, explore:
 - **[CLI Reference](cli-reference.md)** — Complete documentation of all flags, config options, and exit codes
 - **[Examples](examples.md)** — Real-world usage patterns, CI integration, and configuration recipes
 - **[SARIF Output](sarif-output.md)** — GitHub Code Scanning integration with inline PR annotations
+- **[HTML Reports](examples.md#html-reports)** — Self-contained interactive reports with dashboard and visualizations
 - **[Health Score](health-score.md)** — Composite 0–100 score, formula, weights, and baseline workflow
 - **[Halstead Metrics](halstead-metrics.md)** — Formulas, thresholds, and what the information-theoretic numbers mean
 - **[Structural Metrics](structural-metrics.md)** — Function length, parameters, nesting depth, and more

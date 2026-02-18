@@ -66,7 +66,7 @@ Top Halstead volume hotspots:
 - **Halstead Metrics**: Information-theoretic vocabulary density, volume, difficulty, effort, and estimated bugs
 - **Structural Metrics**: Function length, parameter count, nesting depth, file length, and export count
 - **Composite Health Score**: Single 0–100 score combining all metric families with configurable weights — enforce in CI with `--fail-health-below`
-- **Console + JSON + SARIF Output**: Human-readable terminal display, machine-readable JSON, and SARIF 2.1.0 for GitHub Code Scanning — inline complexity annotations on PR diffs
+- **Console + JSON + SARIF + HTML Output**: Human-readable terminal display, machine-readable JSON, SARIF 2.1.0 for GitHub Code Scanning, and self-contained HTML reports with interactive dashboard, treemap visualization, and sortable metric tables
 - **Configurable Thresholds**: Warning and error levels for all four metric families, customizable per project
 - **Selective Metrics**: Use `--metrics cyclomatic,halstead` to compute only specific families
 - **Zero Config**: Works out of the box with sensible defaults, optional `.complexityguard.json` for customization
@@ -79,6 +79,7 @@ Top Halstead volume hotspots:
 - **[CLI Reference](docs/cli-reference.md)** — All flags, config options, exit codes
 - **[Examples](docs/examples.md)** — Real-world usage patterns, CI integration recipes
 - **[SARIF Output](docs/sarif-output.md)** — GitHub Code Scanning integration with inline PR annotations
+- **[HTML Reports](docs/examples.md#html-reports)** — Self-contained interactive reports for sharing with stakeholders
 - **[Releasing](docs/releasing.md)** — Release process, publishing, version management
 
 ### Metrics

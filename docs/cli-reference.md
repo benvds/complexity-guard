@@ -69,6 +69,7 @@ Set output format. Available formats:
 - `console` (default) — Human-readable terminal output with colors
 - `json` — Machine-readable JSON for CI/tooling integration
 - `sarif` — SARIF 2.1.0 output for GitHub Code Scanning integration (see [SARIF Output](sarif-output.md))
+- `html` — Self-contained HTML report with interactive dashboard, file breakdown table, treemap visualization, and bar chart. No external CSS/JS dependencies. Use `--output` to save to disk.
 
 ```sh
 # Console output (default)
@@ -79,6 +80,9 @@ complexity-guard --format json src/
 
 # SARIF output for GitHub Code Scanning
 complexity-guard --format sarif . > results.sarif
+
+# HTML report (use --output — output is large)
+complexity-guard --format html --output report.html src/
 
 # Short form
 complexity-guard -f json src/
@@ -488,7 +492,7 @@ How to count switch statements:
 
 **`output.format`** (string)
 
-Default output format: `"console"`, `"json"`, or `"sarif"`. Default: `"console"`.
+Default output format: `"console"`, `"json"`, `"sarif"`, or `"html"`. Default: `"console"`.
 
 **`weights.cognitive`** (float)
 
