@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: File Discovery & Parsing** - Tree-sitter integration, recursive file scanning, error handling ✓ 2026-02-14
 - [x] **Phase 4: Cyclomatic Complexity** - McCabe metric with threshold validation (vertical slice) ✓ 2026-02-14
 - [x] **Phase 5: Console & JSON Output** - Primary developer and CI output formats ✓ 2026-02-15
-- [ ] **Phase 5.1: CI/CD, Release Pipeline & Documentation** - Changelog, GitHub workflows, publishing, docs (INSERTED) -- gap closure in progress
+- [x] **Phase 5.1: CI/CD, Release Pipeline & Documentation** - Changelog, GitHub workflows, publishing, docs (INSERTED) -- gap closure in progress
 - [x] **Phase 6: Cognitive Complexity** - SonarSource metric with nesting tracking (completed 2026-02-17)
 - [x] **Phase 7: Halstead & Structural Metrics** - Information theory and structural metrics ✓ 2026-02-17
 - [x] **Phase 8: Composite Health Score** - Weighted scoring, baseline ratchet, and enhanced --init (completed 2026-02-17)
