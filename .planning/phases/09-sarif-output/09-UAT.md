@@ -3,7 +3,7 @@ status: complete
 phase: 09-sarif-output
 source: 09-01-SUMMARY.md, 09-02-SUMMARY.md
 started: 2026-02-18T07:00:00Z
-updated: 2026-02-18T07:03:00Z
+updated: 2026-02-18T07:05:00Z
 ---
 
 ## Current Test
@@ -49,9 +49,14 @@ skipped: 0
 ## Gaps
 
 - truth: "SARIF informationUri should point to the correct repository URL"
-  status: failed
+  status: fixed
   reason: "User reported: pass, but the informationUri points to https://github.com/AstroTechDev/complexity-guard, should this point to a spec? it should at least point to the correct repo: github.com/benvds/complexity-guard"
   severity: minor
   test: 1
-  artifacts: []
-  missing: []
+  root_cause: "11 hardcoded URLs in src/output/sarif_output.zig use AstroTechDev org instead of benvds — affects informationUri (line 604) and all 10 rule helpUri fields"
+  artifacts:
+    - path: "src/output/sarif_output.zig"
+      issue: "informationUri and all 10 helpUri fields point to AstroTechDev/complexity-guard instead of benvds/complexity-guard"
+  missing:
+    - "Replace all AstroTechDev/complexity-guard with benvds/complexity-guard in sarif_output.zig"
+  debug_session: ".planning/debug/sarif-wrong-repo-url.md"
