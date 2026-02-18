@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** Phase 9 in progress - SARIF output module complete (plan 1 of 2)
+**Current focus:** Phase 9 complete - SARIF output with full documentation
 
 ## Current Position
 
 Phase: 9 of 12 (SARIF Output)
-Plan: 1 of 2 (COMPLETE)
-Status: Phase 09 Plan 01 Complete - SARIF 2.1.0 output module implemented with 10 rules, violation mapping, baseline integration
-Last activity: 2026-02-18 - Completed 09-01: SARIF output module and main.zig dispatch wiring
+Plan: 2 of 2 (COMPLETE)
+Status: Phase 09 Complete - SARIF 2.1.0 output module, GitHub Actions workflow docs, rule reference, all README and docs pages updated
+Last activity: 2026-02-18 - Completed 09-02: SARIF documentation (sarif-output.md, cli-reference, getting-started, examples, READMEs)
 
 Progress: [█████████░] 67% (8/12 phases complete, phase 9 in progress)
 
@@ -67,6 +67,7 @@ Progress: [█████████░] 67% (8/12 phases complete, phase 9 in
 | Phase 08 P04 | 318 | 2 tasks | 11 files |
 | Phase quick-16 P01 | 2 | 2 tasks | 6 files |
 | Phase 09 P01 | 6 | 2 tasks | 2 files |
+| Phase 09 P02 | 4 | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -190,6 +191,8 @@ Recent decisions affecting current work:
 - [Phase 09-01]: Baseline ratchet check moved before format dispatch: enables buildSarifOutput to receive baseline_failed and include health-score results in SARIF output
 - [Phase 09-01]: All 10 rules always in driver.rules regardless of --metrics filtering (rules describe detection capability; only results array is filtered)
 - [Phase 09-01]: allocPrint message strings in SARIF results require explicit free: tests must free r.message.text alongside r.locations
+- [Phase 09]: docs/sarif-output.md follows TanStack-style progressive disclosure: Quick Start first, complete reference below
+- [Phase 09]: All 10 SARIF rules documented in rule reference table with trigger conditions in sarif-output.md
 
 ### Pending Todos
 
@@ -241,7 +244,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-18 (execute-phase)
-Stopped at: Completed 09-01-PLAN.md (SARIF 2.1.0 output module with 10 rules, violation mapping, baseline integration, --metrics filtering)
+Stopped at: Completed 09-02-PLAN.md (SARIF documentation: sarif-output.md page, cli-reference, getting-started, examples, README, all publication READMEs)
 
 ---
 *State initialized: 2026-02-14*
