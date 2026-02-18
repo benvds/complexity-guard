@@ -202,9 +202,12 @@ Plans:
   2. Tool includes project summary dashboard with health score and grade
   3. Tool includes per-file breakdown with expandable function details
   4. Tool provides sortable tables by any metric column
-**Plans**: TBD
+**Plans:** 3 plans
 
-Plans: (to be created during /gsd:plan-phase)
+Plans:
+- [ ] 10-01-PLAN.md -- Core HTML module (html_output.zig), dashboard, hotspots, distribution bar, main.zig wiring
+- [ ] 10-02-PLAN.md -- File table with expandable function details, sortable columns, treemap SVG, bar chart SVG
+- [ ] 10-03-PLAN.md -- Documentation: README, docs pages, publication READMEs
 
 ### Phase 11: Duplication Detection
 **Goal**: Tool detects code clones across files using Rabin-Karp rolling hash
