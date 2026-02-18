@@ -68,6 +68,7 @@ Creates a config file with standard thresholds, default metric weights, and comm
 Set output format. Available formats:
 - `console` (default) — Human-readable terminal output with colors
 - `json` — Machine-readable JSON for CI/tooling integration
+- `sarif` — SARIF 2.1.0 output for GitHub Code Scanning integration (see [SARIF Output](sarif-output.md))
 
 ```sh
 # Console output (default)
@@ -75,6 +76,9 @@ complexity-guard src/
 
 # JSON output
 complexity-guard --format json src/
+
+# SARIF output for GitHub Code Scanning
+complexity-guard --format sarif . > results.sarif
 
 # Short form
 complexity-guard -f json src/
@@ -484,7 +488,7 @@ How to count switch statements:
 
 **`output.format`** (string)
 
-Default output format: `"console"` or `"json"`. Default: `"console"`.
+Default output format: `"console"`, `"json"`, or `"sarif"`. Default: `"console"`.
 
 **`weights.cognitive`** (float)
 

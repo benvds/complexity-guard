@@ -315,6 +315,16 @@ ComplexityGuard follows ESLint-aligned counting rules by default, but you can cu
 - `"perCase"`: Each case adds +1 (ESLint behavior)
 - `"switchOnly"`: Only the switch itself adds +1 (classic McCabe)
 
+## GitHub Code Scanning Integration
+
+Use `--format sarif` to generate SARIF reports for GitHub Code Scanning. This gives you inline complexity annotations directly on pull request diffs:
+
+```sh
+complexity-guard --format sarif . > results.sarif
+```
+
+See [SARIF Output](sarif-output.md) for a complete GitHub Actions workflow that uploads results automatically on every PR.
+
 ## Tracking Health Over Time
 
 Once you have a baseline analysis, use `--save-baseline` to capture it as a CI enforcement threshold:
@@ -341,6 +351,7 @@ Now that you have ComplexityGuard installed and understand the basics, explore:
 
 - **[CLI Reference](cli-reference.md)** — Complete documentation of all flags, config options, and exit codes
 - **[Examples](examples.md)** — Real-world usage patterns, CI integration, and configuration recipes
+- **[SARIF Output](sarif-output.md)** — GitHub Code Scanning integration with inline PR annotations
 - **[Health Score](health-score.md)** — Composite 0–100 score, formula, weights, and baseline workflow
 - **[Halstead Metrics](halstead-metrics.md)** — Formulas, thresholds, and what the information-theoretic numbers mean
 - **[Structural Metrics](structural-metrics.md)** — Function length, parameters, nesting depth, and more

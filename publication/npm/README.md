@@ -54,7 +54,7 @@ Top Halstead volume hotspots:
 - **Halstead Metrics**: Information-theoretic vocabulary density, volume, difficulty, effort, and estimated bugs
 - **Structural Metrics**: Function length, parameter count, nesting depth, file length, and export count
 - **Composite Health Score**: Single 0–100 score combining all metric families with configurable weights — enforce in CI with `--fail-health-below`
-- **Console + JSON Output**: Human-readable terminal display and machine-readable JSON for CI integration
+- **Console + JSON + SARIF Output**: Human-readable terminal display, machine-readable JSON, and SARIF 2.1.0 for GitHub Code Scanning — inline complexity annotations on PR diffs
 - **Configurable Thresholds**: Warning and error levels for all four metric families, customizable per project
 - **Selective Metrics**: Use `--metrics cyclomatic,halstead` to compute only specific families
 - **Zero Config**: Works out of the box with sensible defaults, optional `.complexityguard.json` for customization
@@ -93,6 +93,7 @@ Create a `.complexityguard.json` file in your project root to customize behavior
 
 - [GitHub](https://github.com/benvds/complexity-guard)
 - [Documentation](https://github.com/benvds/complexity-guard#documentation)
+- [SARIF Output / GitHub Code Scanning](https://github.com/benvds/complexity-guard/blob/main/docs/sarif-output.md)
 
 ## License
 

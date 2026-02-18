@@ -206,6 +206,47 @@ Health score 68.4 is below threshold 70.0 — exiting with error
 
 See [Health Score](health-score.md) for the complete formula, weight customization, and ratchet workflow guide.
 
+## SARIF Output
+
+Generate SARIF 2.1.0 output for GitHub Code Scanning integration. Violations appear as inline annotations on pull request diffs.
+
+### Basic SARIF Generation
+
+```sh
+# Generate SARIF output and redirect to file
+complexity-guard --format sarif . > results.sarif
+
+# Use --output flag instead of redirect
+complexity-guard --format sarif --output results.sarif .
+```
+
+### Filtered SARIF (Phased Rollout)
+
+Use `--metrics` to limit which metric families produce SARIF results. Useful for introducing compliance incrementally:
+
+```sh
+# Start with just cyclomatic complexity
+complexity-guard --format sarif --metrics cyclomatic . > results.sarif
+
+# Add cognitive complexity
+complexity-guard --format sarif --metrics cyclomatic,cognitive . > results.sarif
+```
+
+### Inspect SARIF with jq
+
+```sh
+# Count total results
+complexity-guard --format sarif . | jq '.runs[0].results | length'
+
+# List all triggered rule IDs
+complexity-guard --format sarif . | jq '[.runs[0].results[].ruleId] | unique'
+
+# Count warnings vs errors
+complexity-guard --format sarif . | jq '.runs[0].results | group_by(.level) | map({level: .[0].level, count: length})'
+```
+
+See [SARIF Output](sarif-output.md) for a complete GitHub Actions workflow and full rule reference.
+
 ## CI Integration
 
 ### GitHub Actions

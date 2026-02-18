@@ -17,6 +17,7 @@ npm install -g complexity-guard
 - **Halstead Metrics** — vocabulary density, volume, difficulty, effort, estimated bugs
 - **Structural Metrics** — function length, parameters, nesting depth, file length, exports
 - **Health Score** — composite 0–100 score combining all metrics; enforce in CI with `--fail-health-below`
+- **SARIF Output** — `--format sarif` generates SARIF 2.1.0 for GitHub Code Scanning inline PR annotations
 
 ## Links
 
