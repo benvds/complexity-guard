@@ -17,6 +17,7 @@ const scoring = @import("metrics/scoring.zig");
 const console = @import("output/console.zig");
 const json_output = @import("output/json_output.zig");
 const sarif_output = @import("output/sarif_output.zig");
+const html_output = @import("output/html_output.zig");
 const exit_codes = @import("output/exit_codes.zig");
 
 const version = "0.5.0";
@@ -596,6 +597,24 @@ pub fn main() !void {
             try file.writeAll(sarif_str);
             try file.writeAll("\n");
         }
+    } else if (std.mem.eql(u8, effective_format, "html")) {
+        // HTML report output
+        const html_str = try html_output.buildHtmlReport(
+            arena_allocator,
+            file_results,
+            total_warnings,
+            total_errors,
+            project_score,
+            version,
+        );
+
+        if (cli_args.output_file) |output_path| {
+            const file = try std.fs.cwd().createFile(output_path, .{});
+            defer file.close();
+            try file.writeAll(html_str);
+        } else {
+            try stdout.writeAll(html_str);
+        }
     } else {
         // Console output (default)
         const output_config = console.OutputConfig{
@@ -674,5 +693,6 @@ test {
     _ = @import("output/console.zig");
     _ = @import("output/json_output.zig");
     _ = @import("output/sarif_output.zig");
+    _ = @import("output/html_output.zig");
     _ = @import("metrics/scoring.zig");
 }
