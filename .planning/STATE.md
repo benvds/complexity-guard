@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** Phase 8 complete - all 5 plans done (composite health score, baseline ratchet, --save-baseline, docs, deepCopyConfig bug fix)
+**Current focus:** Phase 9 in progress - SARIF output module complete (plan 1 of 2)
 
 ## Current Position
 
-Phase: 8 of 12 (Composite Health Score)
-Plan: 5 of 5 (COMPLETE)
-Status: Phase 08 Complete - deepCopyConfig baseline bug fixed, human-verified end-to-end baseline ratchet enforcement
-Last activity: 2026-02-17 - Completed 08-05: fix deepCopyConfig to copy baseline field, enabling config-file baseline ratchet enforcement
+Phase: 9 of 12 (SARIF Output)
+Plan: 1 of 2 (COMPLETE)
+Status: Phase 09 Plan 01 Complete - SARIF 2.1.0 output module implemented with 10 rules, violation mapping, baseline integration
+Last activity: 2026-02-18 - Completed 09-01: SARIF output module and main.zig dispatch wiring
 
-Progress: [█████████░] 67% (8/12 phases complete)
+Progress: [█████████░] 67% (8/12 phases complete, phase 9 in progress)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 22
+- Total plans completed: 23
 - Average duration: 4 min
-- Total execution time: 2.1 hours
+- Total execution time: 2.2 hours
 
 **By Phase:**
 
@@ -66,6 +66,7 @@ Progress: [█████████░] 67% (8/12 phases complete)
 | Phase 08 P03 | 329 | 2 tasks | 4 files |
 | Phase 08 P04 | 318 | 2 tasks | 11 files |
 | Phase quick-16 P01 | 2 | 2 tasks | 6 files |
+| Phase 09 P01 | 6 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -185,6 +186,10 @@ Recent decisions affecting current work:
 - [Phase 08-04]: health_score updated from null/reserved to real f64 values in all JSON schema documentation examples
 - [Phase 08-04]: Exit code table updated to document baseline-failed as priority 2 (after parse error, before threshold errors)
 - [Phase 08-05]: deepCopyConfig missing one-liner bug: result.baseline = config.baseline; was never copied, silently dropping config-file baselines to null on every load path
+- [Phase 09-01]: SARIF startColumn is 1-indexed: internal 0-indexed start_col + 1 in every emitted SARIF result (SARIF spec requirement)
+- [Phase 09-01]: Baseline ratchet check moved before format dispatch: enables buildSarifOutput to receive baseline_failed and include health-score results in SARIF output
+- [Phase 09-01]: All 10 rules always in driver.rules regardless of --metrics filtering (rules describe detection capability; only results array is filtered)
+- [Phase 09-01]: allocPrint message strings in SARIF results require explicit free: tests must free r.message.text alongside r.locations
 
 ### Pending Todos
 
@@ -235,9 +240,9 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-02-17 (execute-phase)
-Stopped at: Completed 08-05-PLAN.md (fixed deepCopyConfig baseline bug; human-verified baseline ratchet enforcement end-to-end)
+Last session: 2026-02-18 (execute-phase)
+Stopped at: Completed 09-01-PLAN.md (SARIF 2.1.0 output module with 10 rules, violation mapping, baseline integration, --metrics filtering)
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-17T16:13:00Z*
+*Last updated: 2026-02-18T06:40:00Z*

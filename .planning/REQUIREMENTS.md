@@ -114,10 +114,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Output: SARIF
 
-- [ ] **OUT-SARIF-01**: Tool outputs valid SARIF 2.1.0 with $schema, version, and runs array
-- [ ] **OUT-SARIF-02**: Tool maps each metric violation to a SARIF result with ruleId, level, and physicalLocation
-- [ ] **OUT-SARIF-03**: Tool uses 1-indexed line/column numbers in SARIF locations
-- [ ] **OUT-SARIF-04**: Tool output is accepted by GitHub Code Scanning upload
+- [x] **OUT-SARIF-01**: Tool outputs valid SARIF 2.1.0 with $schema, version, and runs array
+- [x] **OUT-SARIF-02**: Tool maps each metric violation to a SARIF result with ruleId, level, and physicalLocation
+- [x] **OUT-SARIF-03**: Tool uses 1-indexed line/column numbers in SARIF locations
+- [x] **OUT-SARIF-04**: Tool output is accepted by GitHub Code Scanning upload
 
 ### Output: HTML
 
@@ -254,10 +254,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CI-03 | Phase 8 | Pending |
 | CI-04 | Phase 8 | Pending |
 | CI-05 | Phase 8 | Pending |
-| OUT-SARIF-01 | Phase 9 | Pending |
-| OUT-SARIF-02 | Phase 9 | Pending |
-| OUT-SARIF-03 | Phase 9 | Pending |
-| OUT-SARIF-04 | Phase 9 | Pending |
+| OUT-SARIF-01 | Phase 9 | Complete |
+| OUT-SARIF-02 | Phase 9 | Complete |
+| OUT-SARIF-03 | Phase 9 | Complete |
+| OUT-SARIF-04 | Phase 9 | Complete |
 | OUT-HTML-01 | Phase 10 | Pending |
 | OUT-HTML-02 | Phase 10 | Pending |
 | OUT-HTML-03 | Phase 10 | Pending |
