@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** Phase 9 complete - SARIF output with full documentation
+**Current focus:** Phase 10 in progress - HTML report output (plan 1 of 3 complete)
 
 ## Current Position
 
-Phase: 9 of 12 (SARIF Output)
-Plan: 2 of 2 (COMPLETE)
-Status: Phase 09 Complete - SARIF 2.1.0 output module, GitHub Actions workflow docs, rule reference, all README and docs pages updated
-Last activity: 2026-02-18 - Completed 09-02: SARIF documentation (sarif-output.md, cli-reference, getting-started, examples, READMEs)
+Phase: 10 of 12 (HTML Reports)
+Plan: 1 of 3 (IN PROGRESS)
+Status: Phase 10-01 Complete - HTML report module (html_output.zig) with self-contained dashboard, hotspot cards, distribution bar, and dark mode; wired into main.zig --format html
+Last activity: 2026-02-18 - Completed 10-01: html_output.zig module and main.zig format dispatch
 
-Progress: [█████████░] 67% (8/12 phases complete, phase 9 in progress)
+Progress: [█████████░] 75% (9/12 phases complete, phase 10 in progress)
 
 ## Performance Metrics
 
@@ -68,6 +68,7 @@ Progress: [█████████░] 67% (8/12 phases complete, phase 9 in
 | Phase quick-16 P01 | 2 | 2 tasks | 6 files |
 | Phase 09 P01 | 6 | 2 tasks | 2 files |
 | Phase 09 P02 | 4 | 2 tasks | 11 files |
+| Phase 10-html-reports P01 | 2 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -193,6 +194,8 @@ Recent decisions affecting current work:
 - [Phase 09-01]: allocPrint message strings in SARIF results require explicit free: tests must free r.message.text alongside r.locations
 - [Phase 09]: docs/sarif-output.md follows TanStack-style progressive disclosure: Quick Start first, complete reference below
 - [Phase 09]: All 10 SARIF rules documented in rule reference table with trigger conditions in sarif-output.md
+- [Phase 10-html-reports]: HTML report writes only to file (not also stdout) when --output is specified, unlike JSON/SARIF
+- [Phase 10-html-reports]: Hotspot ranking uses health_score ascending (lowest health = worst = first) for unified worst-first ordering
 
 ### Pending Todos
 
@@ -244,7 +247,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-18 (execute-phase)
-Stopped at: Completed 09-02-PLAN.md (SARIF documentation: sarif-output.md page, cli-reference, getting-started, examples, README, all publication READMEs)
+Stopped at: Completed 10-01-PLAN.md (HTML report module: html_output.zig with dashboard, hotspots, distribution bar, dark mode; wired into main.zig format dispatch)
 
 ---
 *State initialized: 2026-02-14*

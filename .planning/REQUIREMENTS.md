@@ -121,8 +121,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Output: HTML
 
-- [ ] **OUT-HTML-01**: Tool generates self-contained single-file HTML report (inline CSS/JS)
-- [ ] **OUT-HTML-02**: Tool includes project summary dashboard with health score and grade
+- [x] **OUT-HTML-01**: Tool generates self-contained single-file HTML report (inline CSS/JS)
+- [x] **OUT-HTML-02**: Tool includes project summary dashboard with health score and grade
 - [ ] **OUT-HTML-03**: Tool includes per-file breakdown with expandable function details
 - [ ] **OUT-HTML-04**: Tool includes sortable tables by any metric
 
@@ -258,8 +258,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | OUT-SARIF-02 | Phase 9 | Complete |
 | OUT-SARIF-03 | Phase 9 | Complete |
 | OUT-SARIF-04 | Phase 9 | Complete |
-| OUT-HTML-01 | Phase 10 | Pending |
-| OUT-HTML-02 | Phase 10 | Pending |
+| OUT-HTML-01 | Phase 10 | Complete |
+| OUT-HTML-02 | Phase 10 | Complete |
 | OUT-HTML-03 | Phase 10 | Pending |
 | OUT-HTML-04 | Phase 10 | Pending |
 | DUP-01 | Phase 11 | Pending |
