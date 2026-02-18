@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** Phase 10 in progress - HTML report output (plan 2 of 3 complete)
+**Current focus:** Phase 10 complete - HTML report output (all 3 plans done), Phase 11 next
 
 ## Current Position
 
 Phase: 10 of 12 (HTML Reports)
-Plan: 2 of 3 (IN PROGRESS)
-Status: Phase 10-02 Complete - File breakdown table with sortable columns, expandable function detail rows, metric bars, treemap SVG, and bar chart SVG
-Last activity: 2026-02-18 - Completed 10-02: file table, visualizations, interactive drill-down
+Plan: 3 of 3 (COMPLETE)
+Status: Phase 10-03 Complete - HTML report documentation added to all user-facing locations: README, getting-started, cli-reference, examples, and all 6 publication READMEs
+Last activity: 2026-02-18 - Completed 10-03: documentation updates for HTML report format
 
-Progress: [█████████░] 75% (9/12 phases complete, phase 10 in progress)
+Progress: [██████████] 83% (10/12 phases complete)
 
 ## Performance Metrics
 
@@ -70,6 +70,7 @@ Progress: [█████████░] 75% (9/12 phases complete, phase 10 i
 | Phase 09 P02 | 4 | 2 tasks | 11 files |
 | Phase 10-html-reports P01 | 2 | 2 tasks | 2 files |
 | Phase 10-html-reports P02 | 5 | 2 tasks | 1 files |
+| Phase 10-html-reports P03 | 4 | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -199,6 +200,7 @@ Recent decisions affecting current work:
 - [Phase 10-html-reports]: Hotspot ranking uses health_score ascending (lowest health = worst = first) for unified worst-first ordering
 - [Phase 10-html-reports]: Squarify handles zero-weight files by skipping silently (files with 0 functions produce no treemap tile)
 - [Phase 10-html-reports]: Treemap tile text only renders when tile is large enough (w>40 and h>20) to prevent overflow
+- [Phase 10-html-reports]: Use --output (not --output-file) in all HTML report examples to match actual CLI flag implementation
 
 ### Pending Todos
 
@@ -250,8 +252,8 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-18 (execute-phase)
-Stopped at: Completed 10-02-PLAN.md (file table with sortable columns, expandable function detail rows, metric bars, treemap SVG, bar chart SVG)
+Stopped at: Completed 10-03-PLAN.md (HTML report documentation: README, getting-started, cli-reference, examples, all 6 publication READMEs)
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-18T21:53:00Z*
+*Last updated: 2026-02-18T22:01:00Z*
