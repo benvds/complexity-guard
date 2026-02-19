@@ -137,10 +137,13 @@ fn walkDirectory(
         }
 
         // Build full path relative to cwd
-        const full_path = if (std.mem.eql(u8, base_path, "."))
+        // Strip any trailing slash from base_path to avoid double slashes
+        // when users provide paths like "src/" instead of "src"
+        const trimmed_base = std.mem.trimRight(u8, base_path, "/");
+        const full_path = if (std.mem.eql(u8, trimmed_base, "."))
             try allocator.dupe(u8, entry.path)
         else
-            try std.fmt.allocPrint(allocator, "{s}/{s}", .{ base_path, entry.path });
+            try std.fmt.allocPrint(allocator, "{s}/{s}", .{ trimmed_base, entry.path });
 
         // Check if file should be included
         if (filter.shouldIncludeFile(full_path, filter_config)) {
