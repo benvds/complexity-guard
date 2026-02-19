@@ -1,9 +1,9 @@
 ---
-status: complete
+status: diagnosed
 phase: 10-html-reports
 source: 10-01-SUMMARY.md, 10-02-SUMMARY.md, 10-03-SUMMARY.md
 started: 2026-02-19T10:00:00Z
-updated: 2026-02-19T10:38:00Z
+updated: 2026-02-19T10:42:00Z
 ---
 
 ## Current Test
@@ -67,13 +67,29 @@ skipped: 0
   reason: "User reported: pass for the health score, remove the letter grade completely"
   severity: major
   test: 2
-  artifacts: []
-  missing: []
+  root_cause: "writeDashboard() calls scoreToGrade() and renders <span class='grade'> with letter grade in health score div"
+  artifacts:
+    - path: "src/output/html_output.zig"
+      issue: "scoreToGrade() at line 239, called at line 443, rendered at lines 457-461; .grade CSS at line 64; test at lines 673-683"
+  missing:
+    - "Delete scoreToGrade() function (lines 238-245)"
+    - "Remove grade variable at line 443"
+    - "Remove <span class='grade'> from print at lines 457-461"
+    - "Remove .grade CSS rule at line 64"
+    - "Delete scoreToGrade test block (lines 673-683)"
+  debug_session: ".planning/debug/html-report-letter-grade.md"
 
 - truth: "File table fits mobile viewports with truncated file paths showing ellipsis"
   status: failed
   reason: "User reported: the table is too wide on mobile viewports. hide the start of the file path, show ellipsis when hiding part of the path, e.g. directory-a/directory-b/file.js -> …ctory-b/file.js"
   severity: minor
   test: 5
-  artifacts: []
-  missing: []
+  root_cause: "CSS .file-row td:first-child uses LTR direction with max-width: 400px — ellipsis clips filename (end) instead of directory prefix (start), and 400px exceeds mobile widths"
+  artifacts:
+    - path: "src/output/html_output.zig"
+      issue: "Line 136: CSS rule needs direction: rtl and unicode-bidi: plaintext; needs mobile breakpoint for max-width"
+  missing:
+    - "Add direction: rtl; unicode-bidi: plaintext to .file-row td:first-child CSS"
+    - "Reduce max-width from 400px to 300px"
+    - "Add @media (max-width: 600px) { .file-row td:first-child { max-width: 160px; } } breakpoint"
+  debug_session: ".planning/debug/html-file-path-mobile-overflow.md"
