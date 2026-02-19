@@ -199,15 +199,16 @@ Plans:
 **Requirements**: OUT-HTML-01, OUT-HTML-02, OUT-HTML-03, OUT-HTML-04
 **Success Criteria** (what must be TRUE):
   1. Tool generates single-file HTML report with inline CSS and JavaScript
-  2. Tool includes project summary dashboard with health score and grade
+  2. Tool includes project summary dashboard with health score (numeric only, no letter grade)
   3. Tool includes per-file breakdown with expandable function details
   4. Tool provides sortable tables by any metric column
-**Plans:** 3/3 plans complete
+**Plans:** 4 plans
 
 Plans:
-- [ ] 10-01-PLAN.md -- Core HTML module (html_output.zig), dashboard, hotspots, distribution bar, main.zig wiring
-- [ ] 10-02-PLAN.md -- File table with expandable function details, sortable columns, treemap SVG, bar chart SVG
-- [ ] 10-03-PLAN.md -- Documentation: README, docs pages, publication READMEs
+- [x] 10-01-PLAN.md -- Core HTML module (html_output.zig), dashboard, hotspots, distribution bar, main.zig wiring
+- [x] 10-02-PLAN.md -- File table with expandable function details, sortable columns, treemap SVG, bar chart SVG
+- [x] 10-03-PLAN.md -- Documentation: README, docs pages, publication READMEs
+- [ ] 10-04-PLAN.md -- Gap closure: remove letter grade from dashboard, fix mobile file path truncation
 
 ### Phase 11: Duplication Detection
 **Goal**: Tool detects code clones across files using Rabin-Karp rolling hash
@@ -254,10 +255,10 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 7. Halstead & Structural Metrics | 5/5 | Complete    | 2026-02-17 |
 | 8. Composite Health Score | 4/5 | Complete    | 2026-02-17 |
 | 9. SARIF Output | 2/2 | Complete    | 2026-02-18 |
-| 10. HTML Reports | 3/3 | Complete    | 2026-02-18 |
+| 10. HTML Reports | 3/4 | Complete    | 2026-02-18 |
 | 11. Duplication Detection | 0/TBD | Not started | - |
 | 12. Parallelization & Distribution | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-02-14*
-*Last updated: 2026-02-17 (Phase 8 gap closure plan 08-05 created)*
+*Last updated: 2026-02-19 (Phase 10 gap closure plan 10-04 created)*
