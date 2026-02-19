@@ -132,7 +132,7 @@ const CSS = \\ :root {
 \\ .file-table tr:last-child td { border-bottom: none; }
 \\ .file-row { cursor: pointer; }
 \\ .file-row:hover td { background: color-mix(in srgb, var(--border) 30%, transparent); }
-\\ .file-row td:first-child { font-family: monospace; font-size: 0.8rem; max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+\\ .file-row td:first-child { font-family: monospace; font-size: 0.8rem; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; direction: rtl; unicode-bidi: plaintext; }
 \\ .detail-row { display: none; }
 \\ .detail-row.expanded { display: table-row; }
 \\ .detail-row td { padding: 0; background: color-mix(in srgb, var(--border) 15%, transparent); }
@@ -144,6 +144,7 @@ const CSS = \\ :root {
 \\ .fn-table td { padding: 0.3rem 0.5rem; border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent); white-space: nowrap; }
 \\ .fn-table tr:last-child td { border-bottom: none; }
 \\ .fn-table td:first-child { font-family: monospace; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+\\ @media (max-width: 600px) { .file-row td:first-child { max-width: 160px; } }
 \\
 \\ /* Metric bars */
 \\ .metric-bar { display: inline-block; width: 60px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; vertical-align: middle; margin-left: 0.25rem; }
