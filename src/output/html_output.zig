@@ -9,168 +9,169 @@ const FileThresholdResults = console.FileThresholdResults;
 
 // ── Embedded CSS ──────────────────────────────────────────────────────────────
 
-const CSS = \\ :root {
-\\   --color-ok: #4caf50;
-\\   --color-warning: #f9a825;
-\\   --color-error: #e53935;
-\\   --color-ok-bg: #4caf50;
-\\   --color-warning-bg: #f9a825;
-\\   --color-error-bg: #e53935;
-\\   --bg: #f5f5f5;
-\\   --text: #212121;
-\\   --surface: #ffffff;
-\\   --border: #e0e0e0;
-\\   --muted: #757575;
-\\   --radius: 6px;
-\\ }
-\\ @media (prefers-color-scheme: dark) {
-\\   :root {
-\\     --bg: #121212;
-\\     --text: #e0e0e0;
-\\     --surface: #1e1e1e;
-\\     --border: #333333;
-\\     --muted: #9e9e9e;
-\\   }
-\\ }
-\\ *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-\\ body {
-\\   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-\\   background: var(--bg);
-\\   color: var(--text);
-\\   line-height: 1.5;
-\\   font-size: 14px;
-\\ }
-\\ .container { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
-\\ header { padding: 1.5rem 0 1rem; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
-\\ header h1 { font-size: 1.4rem; font-weight: 600; }
-\\ header p { color: var(--muted); font-size: 0.85rem; margin-top: 0.25rem; }
-\\ .dashboard { display: grid; grid-template-columns: 280px 1fr; gap: 1.5rem; margin-bottom: 2rem; }
-\\ @media (max-width: 700px) { .dashboard { grid-template-columns: 1fr; } }
-\\ .score-panel {
-\\   background: var(--surface);
-\\   border: 1px solid var(--border);
-\\   border-radius: var(--radius);
-\\   padding: 1.25rem;
-\\   display: flex;
-\\   flex-direction: column;
-\\   gap: 1rem;
-\\ }
-\\ .health-score {
-\\   font-size: 3rem;
-\\   font-weight: 700;
-\\   text-align: center;
-\\   line-height: 1.1;
-\\ }
-\\ .score-ok { color: var(--color-ok); }
-\\ .score-warning { color: var(--color-warning); }
-\\ .score-error { color: var(--color-error); }
-\\ .dist-bar {
-\\   display: flex;
-\\   height: 8px;
-\\   border-radius: 4px;
-\\   overflow: hidden;
-\\   background: var(--border);
-\\ }
-\\ .dist-ok { background: var(--color-ok); }
-\\ .dist-warning { background: var(--color-warning); }
-\\ .dist-error { background: var(--color-error); }
-\\ .dist-label { font-size: 0.75rem; color: var(--muted); display: flex; justify-content: space-between; margin-top: 0.25rem; }
-\\ .summary-stats { font-size: 0.8rem; color: var(--muted); text-align: center; }
-\\ .summary-stats strong { color: var(--text); }
-\\ .hotspots-panel { display: flex; flex-direction: column; gap: 0.75rem; }
-\\ .hotspots-panel h2 { font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; }
-\\ .hotspot-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.75rem; }
-\\ .hotspot-card {
-\\   background: var(--surface);
-\\   border: 1px solid var(--border);
-\\   border-left-width: 3px;
-\\   border-radius: var(--radius);
-\\   padding: 0.75rem 1rem;
-\\ }
-\\ .hotspot-card.ok { border-left-color: var(--color-ok); }
-\\ .hotspot-card.warning { border-left-color: var(--color-warning); }
-\\ .hotspot-card.error { border-left-color: var(--color-error); }
-\\ .hotspot-card h3 { font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-\\ .hotspot-file { font-size: 0.75rem; color: var(--muted); margin: 0.1rem 0 0.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-\\ .hotspot-metrics { font-size: 0.75rem; color: var(--text); }
-\\ .hotspot-violations { font-size: 0.7rem; margin-top: 0.35rem; display: flex; flex-wrap: wrap; gap: 0.25rem; }
-\\ .violation-tag {
-\\   background: color-mix(in srgb, var(--color-error) 12%, transparent);
-\\   color: var(--color-error);
-\\   border: 1px solid color-mix(in srgb, var(--color-error) 25%, transparent);
-\\   border-radius: 3px;
-\\   padding: 0.1rem 0.4rem;
-\\ }
-\\ .violation-tag.warning {
-\\   background: color-mix(in srgb, var(--color-warning) 12%, transparent);
-\\   color: var(--color-warning);
-\\   border-color: color-mix(in srgb, var(--color-warning) 25%, transparent);
-\\ }
-\\ .empty-hotspots { color: var(--muted); font-size: 0.875rem; padding: 1rem; text-align: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
-\\
-\\ /* File table */
-\\ .file-table-section { margin-bottom: 2rem; }
-\\ .file-table-section h2 { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; }
-\\ .file-table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-\\ .file-table th {
-\\   text-align: left;
-\\   padding: 0.6rem 0.75rem;
-\\   font-size: 0.8rem;
-\\   font-weight: 600;
-\\   color: var(--muted);
-\\   border-bottom: 1px solid var(--border);
-\\   background: var(--bg);
-\\   cursor: pointer;
-\\   user-select: none;
-\\   white-space: nowrap;
-\\ }
-\\ .file-table th:hover { color: var(--text); }
-\\ .file-table th::after { content: ''; margin-left: 0.3em; }
-\\ .file-table th.sort-asc::after { content: '↑'; }
-\\ .file-table th.sort-desc::after { content: '↓'; }
-\\ .file-table td { padding: 0.5rem 0.75rem; font-size: 0.85rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
-\\ .file-table tr:last-child td { border-bottom: none; }
-\\ .file-row { cursor: pointer; }
-\\ .file-row:hover td { background: color-mix(in srgb, var(--border) 30%, transparent); }
-\\ .file-row td:first-child { font-family: monospace; font-size: 0.8rem; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; direction: rtl; unicode-bidi: plaintext; }
-\\ .detail-row { display: none; }
-\\ .detail-row.expanded { display: table-row; }
-\\ .detail-row td { padding: 0; background: color-mix(in srgb, var(--border) 15%, transparent); }
-\\ .detail-inner { padding: 0.75rem; }
-\\
-\\ /* Nested function table */
-\\ .fn-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
-\\ .fn-table th { text-align: left; padding: 0.35rem 0.5rem; font-weight: 600; color: var(--muted); border-bottom: 1px solid var(--border); white-space: nowrap; }
-\\ .fn-table td { padding: 0.3rem 0.5rem; border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent); white-space: nowrap; }
-\\ .fn-table tr:last-child td { border-bottom: none; }
-\\ .fn-table td:first-child { font-family: monospace; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
-\\ @media (max-width: 600px) { .file-row td:first-child { max-width: 160px; } }
-\\
-\\ /* Metric bars */
-\\ .metric-bar { display: inline-block; width: 60px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; vertical-align: middle; margin-left: 0.25rem; }
-\\ .metric-bar__fill { height: 100%; border-radius: 3px; }
-\\ .metric-bar__fill.ok { background: var(--color-ok); }
-\\ .metric-bar__fill.warning { background: var(--color-warning); }
-\\ .metric-bar__fill.error { background: var(--color-error); }
-\\
-\\ /* Score badges in file table */
-\\ .score-badge { display: inline-block; min-width: 2.5em; text-align: center; font-weight: 600; padding: 0.1em 0.4em; border-radius: 3px; font-size: 0.82rem; }
-\\ .score-badge.ok { background: color-mix(in srgb, var(--color-ok) 15%, transparent); color: var(--color-ok); }
-\\ .score-badge.warning { background: color-mix(in srgb, var(--color-warning) 15%, transparent); color: var(--color-warning); }
-\\ .score-badge.error { background: color-mix(in srgb, var(--color-error) 15%, transparent); color: var(--color-error); }
-\\
-\\ /* Visualizations */
-\\ .visualizations { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
-\\ @media (max-width: 800px) { .visualizations { grid-template-columns: 1fr; } }
-\\ .viz-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; }
-\\ .viz-panel h2 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.75rem; }
-\\ .treemap { width: 100%; display: block; }
-\\ .treemap rect { stroke: var(--bg); stroke-width: 2; transition: opacity 0.15s; }
-\\ .treemap rect:hover { opacity: 0.8; }
-\\ .treemap text { fill: var(--surface); font-size: 10px; pointer-events: none; }
-\\ .bar-chart { width: 100%; display: block; }
-\\
-\\ footer { border-top: 1px solid var(--border); padding: 1rem 0; margin-top: 2rem; text-align: center; color: var(--muted); font-size: 0.75rem; }
+const CSS =
+    \\ :root {
+    \\   --color-ok: #4caf50;
+    \\   --color-warning: #f9a825;
+    \\   --color-error: #e53935;
+    \\   --color-ok-bg: #4caf50;
+    \\   --color-warning-bg: #f9a825;
+    \\   --color-error-bg: #e53935;
+    \\   --bg: #f5f5f5;
+    \\   --text: #212121;
+    \\   --surface: #ffffff;
+    \\   --border: #e0e0e0;
+    \\   --muted: #757575;
+    \\   --radius: 6px;
+    \\ }
+    \\ @media (prefers-color-scheme: dark) {
+    \\   :root {
+    \\     --bg: #121212;
+    \\     --text: #e0e0e0;
+    \\     --surface: #1e1e1e;
+    \\     --border: #333333;
+    \\     --muted: #9e9e9e;
+    \\   }
+    \\ }
+    \\ *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    \\ body {
+    \\   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    \\   background: var(--bg);
+    \\   color: var(--text);
+    \\   line-height: 1.5;
+    \\   font-size: 14px;
+    \\ }
+    \\ .container { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+    \\ header { padding: 1.5rem 0 1rem; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
+    \\ header h1 { font-size: 1.4rem; font-weight: 600; }
+    \\ header p { color: var(--muted); font-size: 0.85rem; margin-top: 0.25rem; }
+    \\ .dashboard { display: grid; grid-template-columns: 280px 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+    \\ @media (max-width: 700px) { .dashboard { grid-template-columns: 1fr; } }
+    \\ .score-panel {
+    \\   background: var(--surface);
+    \\   border: 1px solid var(--border);
+    \\   border-radius: var(--radius);
+    \\   padding: 1.25rem;
+    \\   display: flex;
+    \\   flex-direction: column;
+    \\   gap: 1rem;
+    \\ }
+    \\ .health-score {
+    \\   font-size: 3rem;
+    \\   font-weight: 700;
+    \\   text-align: center;
+    \\   line-height: 1.1;
+    \\ }
+    \\ .score-ok { color: var(--color-ok); }
+    \\ .score-warning { color: var(--color-warning); }
+    \\ .score-error { color: var(--color-error); }
+    \\ .dist-bar {
+    \\   display: flex;
+    \\   height: 8px;
+    \\   border-radius: 4px;
+    \\   overflow: hidden;
+    \\   background: var(--border);
+    \\ }
+    \\ .dist-ok { background: var(--color-ok); }
+    \\ .dist-warning { background: var(--color-warning); }
+    \\ .dist-error { background: var(--color-error); }
+    \\ .dist-label { font-size: 0.75rem; color: var(--muted); display: flex; justify-content: space-between; margin-top: 0.25rem; }
+    \\ .summary-stats { font-size: 0.8rem; color: var(--muted); text-align: center; }
+    \\ .summary-stats strong { color: var(--text); }
+    \\ .hotspots-panel { display: flex; flex-direction: column; gap: 0.75rem; }
+    \\ .hotspots-panel h2 { font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; }
+    \\ .hotspot-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.75rem; }
+    \\ .hotspot-card {
+    \\   background: var(--surface);
+    \\   border: 1px solid var(--border);
+    \\   border-left-width: 3px;
+    \\   border-radius: var(--radius);
+    \\   padding: 0.75rem 1rem;
+    \\ }
+    \\ .hotspot-card.ok { border-left-color: var(--color-ok); }
+    \\ .hotspot-card.warning { border-left-color: var(--color-warning); }
+    \\ .hotspot-card.error { border-left-color: var(--color-error); }
+    \\ .hotspot-card h3 { font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    \\ .hotspot-file { font-size: 0.75rem; color: var(--muted); margin: 0.1rem 0 0.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    \\ .hotspot-metrics { font-size: 0.75rem; color: var(--text); }
+    \\ .hotspot-violations { font-size: 0.7rem; margin-top: 0.35rem; display: flex; flex-wrap: wrap; gap: 0.25rem; }
+    \\ .violation-tag {
+    \\   background: color-mix(in srgb, var(--color-error) 12%, transparent);
+    \\   color: var(--color-error);
+    \\   border: 1px solid color-mix(in srgb, var(--color-error) 25%, transparent);
+    \\   border-radius: 3px;
+    \\   padding: 0.1rem 0.4rem;
+    \\ }
+    \\ .violation-tag.warning {
+    \\   background: color-mix(in srgb, var(--color-warning) 12%, transparent);
+    \\   color: var(--color-warning);
+    \\   border-color: color-mix(in srgb, var(--color-warning) 25%, transparent);
+    \\ }
+    \\ .empty-hotspots { color: var(--muted); font-size: 0.875rem; padding: 1rem; text-align: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+    \\
+    \\ /* File table */
+    \\ .file-table-section { margin-bottom: 2rem; }
+    \\ .file-table-section h2 { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; }
+    \\ .file-table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    \\ .file-table th {
+    \\   text-align: left;
+    \\   padding: 0.6rem 0.75rem;
+    \\   font-size: 0.8rem;
+    \\   font-weight: 600;
+    \\   color: var(--muted);
+    \\   border-bottom: 1px solid var(--border);
+    \\   background: var(--bg);
+    \\   cursor: pointer;
+    \\   user-select: none;
+    \\   white-space: nowrap;
+    \\ }
+    \\ .file-table th:hover { color: var(--text); }
+    \\ .file-table th::after { content: ''; margin-left: 0.3em; }
+    \\ .file-table th.sort-asc::after { content: '↑'; }
+    \\ .file-table th.sort-desc::after { content: '↓'; }
+    \\ .file-table td { padding: 0.5rem 0.75rem; font-size: 0.85rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    \\ .file-table tr:last-child td { border-bottom: none; }
+    \\ .file-row { cursor: pointer; }
+    \\ .file-row:hover td { background: color-mix(in srgb, var(--border) 30%, transparent); }
+    \\ .file-row td:first-child { font-family: monospace; font-size: 0.8rem; direction: rtl; }
+    \\ .truncate { display: block; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; unicode-bidi: plaintext; }
+    \\ .detail-row { display: none; }
+    \\ .detail-row.expanded { display: table-row; }
+    \\ .detail-row td { padding: 0; background: color-mix(in srgb, var(--border) 15%, transparent); }
+    \\ .detail-inner { padding: 0.75rem; }
+    \\
+    \\ /* Nested function table */
+    \\ .fn-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+    \\ .fn-table th { text-align: left; padding: 0.35rem 0.5rem; font-weight: 600; color: var(--muted); border-bottom: 1px solid var(--border); white-space: nowrap; }
+    \\ .fn-table td { padding: 0.3rem 0.5rem; border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent); white-space: nowrap; }
+    \\ .fn-table tr:last-child td { border-bottom: none; }
+    \\ .fn-table td:first-child { font-family: monospace; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+    \\
+    \\ /* Metric bars */
+    \\ .metric-bar { display: inline-block; width: 60px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; vertical-align: middle; margin-left: 0.25rem; }
+    \\ .metric-bar__fill { height: 100%; border-radius: 3px; }
+    \\ .metric-bar__fill.ok { background: var(--color-ok); }
+    \\ .metric-bar__fill.warning { background: var(--color-warning); }
+    \\ .metric-bar__fill.error { background: var(--color-error); }
+    \\
+    \\ /* Score badges in file table */
+    \\ .score-badge { display: inline-block; min-width: 2.5em; text-align: center; font-weight: 600; padding: 0.1em 0.4em; border-radius: 3px; font-size: 0.82rem; }
+    \\ .score-badge.ok { background: color-mix(in srgb, var(--color-ok) 15%, transparent); color: var(--color-ok); }
+    \\ .score-badge.warning { background: color-mix(in srgb, var(--color-warning) 15%, transparent); color: var(--color-warning); }
+    \\ .score-badge.error { background: color-mix(in srgb, var(--color-error) 15%, transparent); color: var(--color-error); }
+    \\
+    \\ /* Visualizations */
+    \\ .visualizations { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+    \\ @media (max-width: 800px) { .visualizations { grid-template-columns: 1fr; } }
+    \\ .viz-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; }
+    \\ .viz-panel h2 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.75rem; }
+    \\ .treemap { width: 100%; display: block; }
+    \\ .treemap rect { stroke: var(--bg); stroke-width: 2; transition: opacity 0.15s; }
+    \\ .treemap rect:hover { opacity: 0.8; }
+    \\ .treemap text { fill: var(--surface); font-size: 10px; pointer-events: none; }
+    \\ .bar-chart { width: 100%; display: block; }
+    \\
+    \\ footer { border-top: 1px solid var(--border); padding: 1rem 0; margin-top: 2rem; text-align: center; color: var(--muted); font-size: 0.75rem; }
 ;
 
 // ── Embedded JS ───────────────────────────────────────────────────────────────
@@ -611,12 +612,12 @@ fn writeFileRow(w: anytype, file_result: FileThresholdResults, file_index: usize
     };
 
     try w.print("      <tr class=\"file-row\" data-file-id=\"{d}\" aria-expanded=\"false\">\n", .{file_index});
-    // File path cell
+    // File path cell — full path in text, truncated visually via CSS with RTL ellipsis
     try w.writeAll("        <td data-value=\"");
     try writeHtmlEscaped(w, file_result.path);
-    try w.writeAll("\">");
+    try w.writeAll("\"><span class=\"truncate\">");
     try writeHtmlEscaped(w, file_result.path);
-    try w.writeAll("</td>\n");
+    try w.writeAll("</span></td>\n");
     // Health score cell
     try w.print("        <td data-value=\"{d:.1}\"><span class=\"score-badge {s}\">{d:.0}</span></td>\n", .{
         score, score_class, score,
