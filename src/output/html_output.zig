@@ -109,36 +109,49 @@ const CSS =
     \\ }
     \\ .empty-hotspots { color: var(--muted); font-size: 0.875rem; padding: 1rem; text-align: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
     \\
-    \\ /* File table */
+    \\ /* File grid */
     \\ .file-table-section { margin-bottom: 2rem; }
     \\ .file-table-section h2 { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; }
-    \\ .file-table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-    \\ .file-table th {
-    \\   text-align: left;
+    \\ .file-grid { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    \\ .file-grid-header {
+    \\   display: grid;
+    \\   grid-template-columns: 1fr auto auto auto;
+    \\   gap: 0 0.75rem;
     \\   padding: 0.6rem 0.75rem;
     \\   font-size: 0.8rem;
     \\   font-weight: 600;
     \\   color: var(--muted);
     \\   border-bottom: 1px solid var(--border);
     \\   background: var(--bg);
+    \\ }
+    \\ .file-grid-header span {
     \\   cursor: pointer;
     \\   user-select: none;
     \\   white-space: nowrap;
     \\ }
-    \\ .file-table th:hover { color: var(--text); }
-    \\ .file-table th::after { content: ''; margin-left: 0.3em; }
-    \\ .file-table th.sort-asc::after { content: '↑'; }
-    \\ .file-table th.sort-desc::after { content: '↓'; }
-    \\ .file-table td { padding: 0.5rem 0.75rem; font-size: 0.85rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
-    \\ .file-table tr:last-child td { border-bottom: none; }
-    \\ .file-row { cursor: pointer; }
-    \\ .file-row:hover td { background: color-mix(in srgb, var(--border) 30%, transparent); }
-    \\ .file-row td:first-child { font-family: monospace; font-size: 0.8rem; direction: rtl; }
+    \\ .file-grid-header span:hover { color: var(--text); }
+    \\ .file-grid-header span::after { content: ''; margin-left: 0.3em; }
+    \\ .file-grid-header span.sort-asc::after { content: '↑'; }
+    \\ .file-grid-header span.sort-desc::after { content: '↓'; }
+    \\ .file-row { display: block; border-bottom: 1px solid var(--border); }
+    \\ .file-row:last-child { border-bottom: none; }
+    \\ .file-row > summary {
+    \\   display: grid;
+    \\   grid-template-columns: 1fr auto auto auto;
+    \\   gap: 0 0.75rem;
+    \\   padding: 0.5rem 0.75rem;
+    \\   font-size: 0.85rem;
+    \\   cursor: pointer;
+    \\   list-style: none;
+    \\   align-items: center;
+    \\ }
+    \\ .file-row > summary::-webkit-details-marker { display: none; }
+    \\ .file-row > summary::marker { content: ""; }
+    \\ .file-row > summary:hover { background: color-mix(in srgb, var(--border) 30%, transparent); }
+    \\ .file-path { font-family: monospace; font-size: 0.8rem; direction: rtl; }
     \\ .truncate { display: block; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; unicode-bidi: plaintext; }
-    \\ .detail-row { display: none; }
-    \\ .detail-row.expanded { display: table-row; }
-    \\ .detail-row td { padding: 0; background: color-mix(in srgb, var(--border) 15%, transparent); }
-    \\ .detail-inner { padding: 0.75rem; }
+    \\ @media (max-width: 600px) { .truncate { max-width: 160px; } }
+    \\ .detail-inner { padding: 0.75rem; background: color-mix(in srgb, var(--border) 15%, transparent); }
     \\
     \\ /* Nested function table */
     \\ .fn-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
@@ -178,21 +191,19 @@ const CSS =
 
 const JS =
     \\(function() {
-    \\  // Sort a table by column index. type: 'str' or 'num'
-    \\  window.sortTable = function(tableId, colIndex, type) {
-    \\    var table = document.getElementById(tableId);
-    \\    if (!table) return;
-    \\    var tbody = table.querySelector('tbody');
-    \\    if (!tbody) return;
-    \\    var rows = Array.from(tbody.querySelectorAll('tr.file-row'));
-    \\    var prevCol = parseInt(table.dataset.sortCol, 10);
-    \\    var prevDir = table.dataset.sortDir || 'asc';
+    \\  // Sort a grid by column index. type: 'str' or 'num'
+    \\  window.sortTable = function(gridId, colIndex, type) {
+    \\    var grid = document.getElementById(gridId);
+    \\    if (!grid) return;
+    \\    var rows = Array.from(grid.querySelectorAll('details.file-row'));
+    \\    var prevCol = parseInt(grid.dataset.sortCol, 10);
+    \\    var prevDir = grid.dataset.sortDir || 'asc';
     \\    var dir = (prevCol === colIndex && prevDir === 'asc') ? 'desc' : 'asc';
-    \\    table.dataset.sortCol = colIndex;
-    \\    table.dataset.sortDir = dir;
+    \\    grid.dataset.sortCol = colIndex;
+    \\    grid.dataset.sortDir = dir;
     \\    rows.sort(function(a, b) {
-    \\      var aCells = a.querySelectorAll('td');
-    \\      var bCells = b.querySelectorAll('td');
+    \\      var aCells = Array.from(a.querySelector('summary').children);
+    \\      var bCells = Array.from(b.querySelector('summary').children);
     \\      var aVal = aCells[colIndex] ? (aCells[colIndex].dataset.value || '') : '';
     \\      var bVal = bCells[colIndex] ? (bCells[colIndex].dataset.value || '') : '';
     \\      var cmp = 0;
@@ -203,34 +214,17 @@ const JS =
     \\      }
     \\      return dir === 'asc' ? cmp : -cmp;
     \\    });
-    \\    // Update sort indicator classes on headers
-    \\    var ths = table.querySelectorAll('thead th');
-    \\    ths.forEach(function(th, i) {
-    \\      th.classList.remove('sort-asc', 'sort-desc');
-    \\      if (i === colIndex) th.classList.add(dir === 'asc' ? 'sort-asc' : 'sort-desc');
+    \\    // Update sort indicator classes on header spans
+    \\    var spans = grid.querySelectorAll('.file-grid-header span');
+    \\    spans.forEach(function(span, i) {
+    \\      span.classList.remove('sort-asc', 'sort-desc');
+    \\      if (i === colIndex) span.classList.add(dir === 'asc' ? 'sort-asc' : 'sort-desc');
     \\    });
-    \\    // Re-append sorted file rows and their corresponding detail rows together
+    \\    // Re-append sorted details rows after the header
     \\    rows.forEach(function(row) {
-    \\      var fileId = row.dataset.fileId;
-    \\      var detail = document.getElementById('detail-' + fileId);
-    \\      tbody.appendChild(row);
-    \\      if (detail) tbody.appendChild(detail);
+    \\      grid.appendChild(row);
     \\    });
     \\  };
-    \\
-    \\  // Expand/collapse file detail rows via event delegation
-    \\  var fileTable = document.getElementById('file-table');
-    \\  if (fileTable) {
-    \\    fileTable.addEventListener('click', function(e) {
-    \\      var row = e.target.closest('tr.file-row');
-    \\      if (!row) return;
-    \\      var fileId = row.dataset.fileId;
-    \\      var detail = document.getElementById('detail-' + fileId);
-    \\      if (!detail) return;
-    \\      var expanded = detail.classList.toggle('expanded');
-    \\      row.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-    \\    });
-    \\  }
     \\})();
 ;
 
@@ -551,40 +545,36 @@ fn writeFunctionRow(w: anytype, r: ThresholdResult) !void {
     try w.writeAll("              </tr>\n");
 }
 
-/// Write the expandable detail row for a file (hidden by default)
-fn writeDetailRow(w: anytype, file_result: FileThresholdResults, file_index: usize) !void {
-    try w.print("      <tr class=\"detail-row\" id=\"detail-{d}\">\n", .{file_index});
-    try w.writeAll("        <td colspan=\"4\">\n");
-    try w.writeAll("          <div class=\"detail-inner\">\n");
+/// Write the expandable detail content for a file (inside a <details> element after </summary>)
+fn writeDetailContent(w: anytype, file_result: FileThresholdResults) !void {
+    try w.writeAll("      <div class=\"detail-inner\">\n");
     if (file_result.results.len == 0) {
-        try w.writeAll("            <p style=\"color:var(--muted);font-size:0.8rem\">No functions found in this file.</p>\n");
+        try w.writeAll("        <p style=\"color:var(--muted);font-size:0.8rem\">No functions found in this file.</p>\n");
     } else {
-        try w.writeAll("            <table class=\"fn-table\">\n");
-        try w.writeAll("              <thead><tr>\n");
-        try w.writeAll("                <th>Function</th>\n");
-        try w.writeAll("                <th>Kind</th>\n");
-        try w.writeAll("                <th>Health</th>\n");
-        try w.writeAll("                <th>Cyclomatic</th>\n");
-        try w.writeAll("                <th>Cognitive</th>\n");
-        try w.writeAll("                <th>Halstead Vol</th>\n");
-        try w.writeAll("                <th>Halstead Diff</th>\n");
-        try w.writeAll("                <th>Lines</th>\n");
-        try w.writeAll("                <th>Params</th>\n");
-        try w.writeAll("                <th>Nesting</th>\n");
-        try w.writeAll("              </tr></thead>\n");
-        try w.writeAll("              <tbody>\n");
+        try w.writeAll("        <table class=\"fn-table\">\n");
+        try w.writeAll("          <thead><tr>\n");
+        try w.writeAll("            <th>Function</th>\n");
+        try w.writeAll("            <th>Kind</th>\n");
+        try w.writeAll("            <th>Health</th>\n");
+        try w.writeAll("            <th>Cyclomatic</th>\n");
+        try w.writeAll("            <th>Cognitive</th>\n");
+        try w.writeAll("            <th>Halstead Vol</th>\n");
+        try w.writeAll("            <th>Halstead Diff</th>\n");
+        try w.writeAll("            <th>Lines</th>\n");
+        try w.writeAll("            <th>Params</th>\n");
+        try w.writeAll("            <th>Nesting</th>\n");
+        try w.writeAll("          </tr></thead>\n");
+        try w.writeAll("          <tbody>\n");
         for (file_result.results) |r| {
             try writeFunctionRow(w, r);
         }
-        try w.writeAll("              </tbody>\n");
-        try w.writeAll("            </table>\n");
+        try w.writeAll("          </tbody>\n");
+        try w.writeAll("        </table>\n");
     }
-    try w.writeAll("          </div>\n");
-    try w.writeAll("        </td>\n");
-    try w.writeAll("      </tr>\n");
+    try w.writeAll("      </div>\n");
 }
 
-/// Write a collapsed file summary row
+/// Write a file entry as a <details class="file-row"> element with summary + detail content
 fn writeFileRow(w: anytype, file_result: FileThresholdResults, file_index: usize) !void {
     const score = computeFileHealthScore(file_result.results);
     const score_class = scoreToColorClass(score);
@@ -611,50 +601,48 @@ fn writeFileRow(w: anytype, file_result: FileThresholdResults, file_index: usize
         .@"error" => "error",
     };
 
-    try w.print("      <tr class=\"file-row\" data-file-id=\"{d}\" aria-expanded=\"false\">\n", .{file_index});
-    // File path cell — full path in text, truncated visually via CSS with RTL ellipsis
-    try w.writeAll("        <td data-value=\"");
+    try w.print("    <details class=\"file-row\" data-file-id=\"{d}\">\n", .{file_index});
+    try w.writeAll("      <summary>\n");
+    // File path span — full path in text, truncated visually via CSS with RTL ellipsis
+    try w.writeAll("        <span class=\"file-path\" data-value=\"");
     try writeHtmlEscaped(w, file_result.path);
     try w.writeAll("\"><span class=\"truncate\">");
     try writeHtmlEscaped(w, file_result.path);
-    try w.writeAll("</span></td>\n");
-    // Health score cell
-    try w.print("        <td data-value=\"{d:.1}\"><span class=\"score-badge {s}\">{d:.0}</span></td>\n", .{
+    try w.writeAll("</span></span>\n");
+    // Health score span
+    try w.print("        <span data-value=\"{d:.1}\"><span class=\"score-badge {s}\">{d:.0}</span></span>\n", .{
         score, score_class, score,
     });
-    // Function count
-    try w.print("        <td data-value=\"{d}\">{d}</td>\n", .{ file_result.results.len, file_result.results.len });
-    // Worst violation
-    try w.print("        <td data-value=\"{s}\"><span class=\"score-badge {s}\">{s}</span></td>\n", .{
+    // Function count span
+    try w.print("        <span data-value=\"{d}\">{d}</span>\n", .{ file_result.results.len, file_result.results.len });
+    // Worst violation span
+    try w.print("        <span data-value=\"{s}\"><span class=\"score-badge {s}\">{s}</span></span>\n", .{
         worst_label, worst_label, worst_label,
     });
-    try w.writeAll("      </tr>\n");
+    try w.writeAll("      </summary>\n");
+    try writeDetailContent(w, file_result);
+    try w.writeAll("    </details>\n");
 }
 
-/// Write the full file breakdown table with sortable headers and expandable rows
+/// Write the full file breakdown grid with sortable headers and expandable rows
 fn writeFileTable(w: anytype, file_results: []const FileThresholdResults) !void {
     if (file_results.len == 0) return;
 
     try w.writeAll("    <section class=\"file-table-section\">\n");
     try w.writeAll("      <h2>File Breakdown</h2>\n");
-    try w.writeAll("      <table class=\"file-table\" id=\"file-table\">\n");
-    try w.writeAll("        <thead>\n");
-    try w.writeAll("          <tr>\n");
-    try w.writeAll("            <th onclick=\"sortTable('file-table', 0, 'str')\">File Path</th>\n");
-    try w.writeAll("            <th onclick=\"sortTable('file-table', 1, 'num')\">Health Score</th>\n");
-    try w.writeAll("            <th onclick=\"sortTable('file-table', 2, 'num')\">Functions</th>\n");
-    try w.writeAll("            <th onclick=\"sortTable('file-table', 3, 'str')\">Worst Violation</th>\n");
-    try w.writeAll("          </tr>\n");
-    try w.writeAll("        </thead>\n");
-    try w.writeAll("        <tbody>\n");
+    try w.writeAll("      <div class=\"file-grid\" id=\"file-grid\">\n");
+    try w.writeAll("        <div class=\"file-grid-header\">\n");
+    try w.writeAll("          <span onclick=\"sortTable('file-grid', 0, 'str')\">File Path</span>\n");
+    try w.writeAll("          <span onclick=\"sortTable('file-grid', 1, 'num')\">Health Score</span>\n");
+    try w.writeAll("          <span onclick=\"sortTable('file-grid', 2, 'num')\">Functions</span>\n");
+    try w.writeAll("          <span onclick=\"sortTable('file-grid', 3, 'str')\">Worst Violation</span>\n");
+    try w.writeAll("        </div>\n");
 
     for (file_results, 0..) |fr, idx| {
         try writeFileRow(w, fr, idx);
-        try writeDetailRow(w, fr, idx);
     }
 
-    try w.writeAll("        </tbody>\n");
-    try w.writeAll("      </table>\n");
+    try w.writeAll("      </div>\n");
     try w.writeAll("    </section>\n");
 }
 
@@ -777,7 +765,7 @@ test "file table row count" {
     );
     defer allocator.free(html);
 
-    // Should have 2 file-row elements and 2 detail-row elements
+    // Should have 2 file-row elements (details elements) and 2 detail-inner elements
     var count_file_row: usize = 0;
     var search_pos: usize = 0;
     while (std.mem.indexOfPos(u8, html, search_pos, "class=\"file-row\"")) |pos| {
@@ -786,13 +774,13 @@ test "file table row count" {
     }
     try std.testing.expectEqual(@as(usize, 2), count_file_row);
 
-    var count_detail_row: usize = 0;
+    var count_detail_inner: usize = 0;
     search_pos = 0;
-    while (std.mem.indexOfPos(u8, html, search_pos, "class=\"detail-row\"")) |pos| {
-        count_detail_row += 1;
+    while (std.mem.indexOfPos(u8, html, search_pos, "class=\"detail-inner\"")) |pos| {
+        count_detail_inner += 1;
         search_pos = pos + 1;
     }
-    try std.testing.expectEqual(@as(usize, 2), count_detail_row);
+    try std.testing.expectEqual(@as(usize, 2), count_detail_inner);
 }
 
 test "buildHtmlReport basic" {
@@ -845,10 +833,10 @@ test "buildHtmlReport basic" {
     // Must contain prefers-color-scheme
     try std.testing.expect(std.mem.indexOf(u8, html, "prefers-color-scheme") != null);
 
-    // Must contain file table
-    try std.testing.expect(std.mem.indexOf(u8, html, "file-table") != null);
+    // Must contain file grid
+    try std.testing.expect(std.mem.indexOf(u8, html, "file-grid") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "file-row") != null);
-    try std.testing.expect(std.mem.indexOf(u8, html, "detail-row") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "detail-inner") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "sortTable") != null);
 }
 
