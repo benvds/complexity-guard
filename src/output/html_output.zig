@@ -61,7 +61,6 @@ const CSS = \\ :root {
 \\   text-align: center;
 \\   line-height: 1.1;
 \\ }
-\\ .grade { font-size: 2rem; color: var(--muted); margin-left: 0.25rem; }
 \\ .score-ok { color: var(--color-ok); }
 \\ .score-warning { color: var(--color-warning); }
 \\ .score-error { color: var(--color-error); }
@@ -234,15 +233,6 @@ const JS =
 ;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-/// Map score to letter grade: >=90=A, >=80=B, >=65=C, >=50=D, else=F
-fn scoreToGrade(score: f64) []const u8 {
-    if (score >= 90.0) return "A";
-    if (score >= 80.0) return "B";
-    if (score >= 65.0) return "C";
-    if (score >= 50.0) return "D";
-    return "F";
-}
 
 /// Map score to CSS color class: ok (>=80), warning (>=50), error (<50)
 fn scoreToColorClass(score: f64) []const u8 {
@@ -440,7 +430,6 @@ fn writeDashboard(
     error_count: u32,
     allocator: Allocator,
 ) !void {
-    const grade = scoreToGrade(project_score);
     const color_class = scoreToColorClass(project_score);
 
     // Count total functions
@@ -454,10 +443,9 @@ fn writeDashboard(
 
     // Score panel
     try w.writeAll("      <div class=\"score-panel\">\n");
-    try w.print("        <div class=\"health-score score-{s}\">{d:.0}<span class=\"grade\">{s}</span></div>\n", .{
+    try w.print("        <div class=\"health-score score-{s}\">{d:.0}</div>\n", .{
         color_class,
         project_score,
-        grade,
     });
     try writeDistributionBar(w, file_results);
     try w.print("        <div class=\"summary-stats\">Files: <strong>{d}</strong> | Functions: <strong>{d}</strong> | Errors: <strong>{d}</strong> | Warnings: <strong>{d}</strong></div>\n", .{
@@ -669,19 +657,6 @@ fn writeFileTable(w: anytype, file_results: []const FileThresholdResults) !void 
 }
 
 // ── TESTS ─────────────────────────────────────────────────────────────────────
-
-test "scoreToGrade" {
-    try std.testing.expectEqualStrings("A", scoreToGrade(90.0));
-    try std.testing.expectEqualStrings("A", scoreToGrade(95.0));
-    try std.testing.expectEqualStrings("B", scoreToGrade(80.0));
-    try std.testing.expectEqualStrings("B", scoreToGrade(89.9));
-    try std.testing.expectEqualStrings("C", scoreToGrade(65.0));
-    try std.testing.expectEqualStrings("C", scoreToGrade(79.9));
-    try std.testing.expectEqualStrings("D", scoreToGrade(50.0));
-    try std.testing.expectEqualStrings("D", scoreToGrade(64.9));
-    try std.testing.expectEqualStrings("F", scoreToGrade(49.0));
-    try std.testing.expectEqualStrings("F", scoreToGrade(0.0));
-}
 
 test "scoreToColorClass" {
     try std.testing.expectEqualStrings("ok", scoreToColorClass(80.0));
