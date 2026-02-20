@@ -114,6 +114,7 @@ const CSS =
     \\ .file-table-section h2 { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; }
     \\ .file-grid {
     \\   --file-cols: 1fr 7.5rem 6rem 9rem;
+    \\   container-type: inline-size;
     \\   background: var(--surface);
     \\   border: 1px solid var(--border);
     \\   border-radius: var(--radius);
@@ -162,6 +163,16 @@ const CSS =
     \\   padding: 0.75rem;
     \\   overflow-x: auto;
     \\   background: color-mix(in srgb, var(--border) 15%, transparent);
+    \\ }
+    \\ @container (max-width: 50em) {
+    \\   .file-row > summary {
+    \\     grid-template-columns: 1fr 1fr 1fr;
+    \\     row-gap: 0.25rem;
+    \\   }
+    \\   .file-row > summary > :first-child { grid-column: 1 / -1; }
+    \\   .file-row > summary > :nth-child(2) { grid-column: 2 / 3; }
+    \\   .file-row > summary > :nth-child(3) { grid-column: 3 / 4; }
+    \\   .file-row > summary > :nth-child(4) { grid-column: 4 / 5; }
     \\ }
     \\
     \\ /* Nested function table */
