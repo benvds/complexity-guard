@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-02-20
+
+### Added
+
+- Replace HTML table with CSS grid and details elements in file breakdown
+- Add file table, visualizations, and interactive drill-down
+- Wire html_output into main.zig format dispatch
+- Create html_output.zig with self-contained HTML report builder
+
+### Fixed
+
+- Use CSS-only middle truncation for text in HTML report
+- Cleanup html output for file row
+- Fix file path truncation for mobile viewports
+- Remove letter grade from HTML report dashboard
+- Strip trailing slashes from directory paths to prevent double slashes
+
 ## [0.5.0] - 2026-02-18
 
 ### Added
@@ -148,7 +165,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tree-sitter based parsing with error-tolerant syntax handling
 - CLI with --help, --version, --verbose, --quiet, --format, --output, --config, --init flags
 
-[Unreleased]: https://github.com/benvds/complexity-guard/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/benvds/complexity-guard/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/benvds/complexity-guard/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/benvds/complexity-guard/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/benvds/complexity-guard/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/benvds/complexity-guard/compare/v0.2.1...v0.3.0

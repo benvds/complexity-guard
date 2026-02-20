@@ -20,7 +20,7 @@ const sarif_output = @import("output/sarif_output.zig");
 const html_output = @import("output/html_output.zig");
 const exit_codes = @import("output/exit_codes.zig");
 
-const version = "0.5.0";
+const version = "0.6.0";
 
 /// Write a minimal config file with a baseline field.
 /// Used by --save-baseline when no existing config file is found.
