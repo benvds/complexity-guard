@@ -113,19 +113,16 @@ const CSS =
     \\ .file-table-section { margin-bottom: 2rem; }
     \\ .file-table-section h2 { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; }
     \\ .file-grid {
+    \\   --file-cols: 1fr 7.5rem 6rem 9rem;
     \\   background: var(--surface);
     \\   border: 1px solid var(--border);
     \\   border-radius: var(--radius);
     \\   overflow: hidden;
-    \\   display: grid;
-    \\   grid-template-columns: 1fr auto auto auto;
-    \\   gap: 0 0.75rem;
     \\ }
     \\ .file-grid-header {
     \\   display: grid;
-    \\   grid-template-columns: subgrid;
-    \\   grid-column-start: 1;
-    \\   grid-column-end: 5;
+    \\   grid-template-columns: var(--file-cols);
+    \\   gap: 0 0.75rem;
     \\   padding: 0.6rem 0.75rem;
     \\   font-size: 0.8rem;
     \\   font-weight: 600;
@@ -143,18 +140,12 @@ const CSS =
     \\ .file-grid-header span.sort-asc::after { content: '↑'; }
     \\ .file-grid-header span.sort-desc::after { content: '↓'; }
     \\ .file-row {
-    \\   display: grid;
-    \\   grid-template-columns: subgrid;
-    \\   grid-column-start: 1;
-    \\   grid-column-end: 5;
     \\   border-bottom: 1px solid var(--border);
     \\ }
     \\ .file-row:last-child { border-bottom: none; }
     \\ .file-row > summary {
     \\   display: grid;
-    \\   grid-template-columns: subgrid;
-    \\   grid-column-start: 1;
-    \\   grid-column-end: 5;
+    \\   grid-template-columns: var(--file-cols);
     \\   gap: 0 0.75rem;
     \\   padding: 0.5rem 0.75rem;
     \\   font-size: 0.85rem;
@@ -168,9 +159,8 @@ const CSS =
     \\ .file-path { font-family: monospace; font-size: 0.8rem; direction: rtl; }
     \\ .truncate { display: block; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; unicode-bidi: plaintext; }
     \\ .detail-inner {
-    \\   grid-column-start: 1;
-    \\   grid-column-end: 5;
     \\   padding: 0.75rem;
+    \\   overflow-x: auto;
     \\   background: color-mix(in srgb, var(--border) 15%, transparent);
     \\ }
     \\
