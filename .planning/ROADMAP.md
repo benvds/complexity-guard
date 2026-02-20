@@ -176,7 +176,7 @@ Plans:
 - [x] 08-02-PLAN.md -- Pipeline + output wiring: config baseline, main.zig integration, console/JSON display, exit code
 - [x] 08-03-PLAN.md -- Baseline ratchet: --save-baseline, --fail-health-below, enhanced --init with weight optimization
 - [x] 08-04-PLAN.md -- Documentation: health-score.md page, README, docs updates, publication READMEs
-- [ ] 08-05-PLAN.md -- Gap closure: fix deepCopyConfig to propagate baseline field from config file
+- [x] 08-05-PLAN.md -- Gap closure: fix deepCopyConfig to propagate baseline field from config file
 
 ### Phase 9: SARIF Output
 **Goal**: Tool outputs SARIF 2.1.0 format accepted by GitHub Code Scanning
@@ -190,8 +190,8 @@ Plans:
 **Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 09-01-PLAN.md -- SARIF output module (structs, rules, build/serialize) and main.zig pipeline integration (TDD)
-- [ ] 09-02-PLAN.md -- Documentation: sarif-output.md page, README, cli-reference, examples, getting-started, publication READMEs
+- [x] 09-01-PLAN.md -- SARIF output module (structs, rules, build/serialize) and main.zig pipeline integration (TDD)
+- [x] 09-02-PLAN.md -- Documentation: sarif-output.md page, README, cli-reference, examples, getting-started, publication READMEs
 
 ### Phase 10: HTML Reports
 **Goal**: Tool generates self-contained HTML reports with interactive visualizations
@@ -208,7 +208,7 @@ Plans:
 - [x] 10-01-PLAN.md -- Core HTML module (html_output.zig), dashboard, hotspots, distribution bar, main.zig wiring
 - [x] 10-02-PLAN.md -- File table with expandable function details, sortable columns, treemap SVG, bar chart SVG
 - [x] 10-03-PLAN.md -- Documentation: README, docs pages, publication READMEs
-- [ ] 10-04-PLAN.md -- Gap closure: remove letter grade from dashboard, fix mobile file path truncation
+- [x] 10-04-PLAN.md -- Gap closure: remove letter grade from dashboard, fix mobile file path truncation
 
 ### Phase 11: Duplication Detection
 **Goal**: Tool detects code clones across files using Rabin-Karp rolling hash
