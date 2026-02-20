@@ -91,8 +91,8 @@ const CSS =
     \\ .hotspot-card.ok { border-left-color: var(--color-ok); }
     \\ .hotspot-card.warning { border-left-color: var(--color-warning); }
     \\ .hotspot-card.error { border-left-color: var(--color-error); }
-    \\ .hotspot-card h3 { font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    \\ .hotspot-file { font-size: 0.75rem; color: var(--muted); margin: 0.1rem 0 0.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    \\ .hotspot-card h3 { font-size: 0.9rem; font-weight: 600; }
+    \\ .hotspot-file { font-size: 0.75rem; color: var(--muted); margin: 0.1rem 0 0.5rem; }
     \\ .hotspot-metrics { font-size: 0.75rem; color: var(--text); }
     \\ .hotspot-violations { font-size: 0.7rem; margin-top: 0.35rem; display: flex; flex-wrap: wrap; gap: 0.25rem; }
     \\ .violation-tag {
@@ -157,8 +157,10 @@ const CSS =
     \\ .file-row > summary::-webkit-details-marker { display: none; }
     \\ .file-row > summary::marker { content: ""; }
     \\ .file-row > summary:hover { background: color-mix(in srgb, var(--border) 30%, transparent); }
-    \\ .file-path { font-family: monospace; font-size: 0.8rem; direction: rtl; }
-    \\ .truncate { display: block; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; unicode-bidi: plaintext; }
+    \\ .file-path { font-family: monospace; font-size: 0.8rem; }
+    \\ .mid-trunc { display: flex; white-space: nowrap; overflow: hidden; }
+    \\ .mid-trunc-start { overflow: hidden; text-overflow: ellipsis; flex-shrink: 1; }
+    \\ .mid-trunc-end { flex-shrink: 0; }
     \\ .detail-inner {
     \\   padding: 0.75rem;
     \\   overflow-x: auto;
@@ -180,7 +182,7 @@ const CSS =
     \\ .fn-table th { text-align: left; padding: 0.35rem 0.5rem; font-weight: 600; color: var(--muted); border-bottom: 1px solid var(--border); white-space: nowrap; }
     \\ .fn-table td { padding: 0.3rem 0.5rem; border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent); white-space: nowrap; }
     \\ .fn-table tr:last-child td { border-bottom: none; }
-    \\ .fn-table td:first-child { font-family: monospace; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+    \\ .fn-table td:first-child { font-family: monospace; max-width: 220px; }
     \\
     \\ /* Metric bars */
     \\ .metric-bar { display: inline-block; width: 60px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; vertical-align: middle; margin-left: 0.25rem; }
@@ -291,6 +293,22 @@ fn writeHtmlEscaped(w: anytype, s: []const u8) !void {
     }
 }
 
+/// Write text with middle-truncation markup, splitting the last `tail_len` characters into a separate span.
+/// When the container is too narrow, an ellipsis appears in the middle, preserving both the start and end of the text.
+fn writeMidTruncated(w: anytype, s: []const u8, tail_len: usize) !void {
+    if (s.len <= tail_len) {
+        // Short enough — no split needed, just render inline
+        try writeHtmlEscaped(w, s);
+        return;
+    }
+    const split = s.len - tail_len;
+    try w.writeAll("<span class=\"mid-trunc\"><span class=\"mid-trunc-start\">");
+    try writeHtmlEscaped(w, s[0..split]);
+    try w.writeAll("</span><span class=\"mid-trunc-end\">");
+    try writeHtmlEscaped(w, s[split..]);
+    try w.writeAll("</span></span>");
+}
+
 /// Write the <head> element with inline CSS
 fn writeHead(w: anytype, tool_version: []const u8) !void {
     try w.writeAll("<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n");
@@ -390,10 +408,10 @@ fn writeHotspots(w: anytype, file_results: []const FileThresholdResults, allocat
 
         try w.print("        <div class=\"hotspot-card {s}\">\n", .{color_class});
         try w.writeAll("          <h3>");
-        try writeHtmlEscaped(w, r.function_name);
+        try writeMidTruncated(w, r.function_name, 12);
         try w.writeAll("</h3>\n");
         try w.writeAll("          <p class=\"hotspot-file\">");
-        try writeHtmlEscaped(w, item.file_path);
+        try writeMidTruncated(w, item.file_path, 12);
         try w.print(":{d}</p>\n", .{r.start_line});
         try w.writeAll("          <div class=\"hotspot-metrics\">");
         try w.print("Cyclomatic: {d} | Cognitive: {d} | Halstead Vol: {d:.0}", .{
@@ -507,7 +525,7 @@ fn writeFunctionRow(w: anytype, r: ThresholdResult) !void {
     try w.writeAll("                <td data-value=\"");
     try writeHtmlEscaped(w, r.function_name);
     try w.writeAll("\">");
-    try writeHtmlEscaped(w, r.function_name);
+    try writeMidTruncated(w, r.function_name, 12);
     try w.writeAll("</td>\n");
     // Kind
     try w.print("                <td data-value=\"{s}\">{s}</td>\n", .{ r.function_kind, r.function_kind });
@@ -625,12 +643,12 @@ fn writeFileRow(w: anytype, file_result: FileThresholdResults, file_index: usize
 
     try w.print("    <details class=\"file-row\" data-file-id=\"{d}\">\n", .{file_index});
     try w.writeAll("      <summary>\n");
-    // File path span — full path in text, truncated visually via CSS with RTL ellipsis
+    // File path span — middle-truncated to preserve the filename at the end
     try w.writeAll("        <span class=\"file-path\" data-value=\"");
     try writeHtmlEscaped(w, file_result.path);
-    try w.writeAll("\"><span class=\"truncate\">");
-    try writeHtmlEscaped(w, file_result.path);
-    try w.writeAll("</span></span>\n");
+    try w.writeAll("\">");
+    try writeMidTruncated(w, file_result.path, 12);
+    try w.writeAll("</span>\n");
     // Health score span
     try w.print("        <span data-value=\"{d:.1}\"><span class=\"score-badge {s}\">{d:.0}</span></span>\n", .{
         score, score_class, score,
