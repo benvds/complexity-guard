@@ -168,7 +168,7 @@ bash benchmarks/scripts/bench-quick.sh
 bash benchmarks/scripts/compare-metrics.sh --suite quick
 
 # 5. View results
-python3 benchmarks/scripts/summarize_results.py benchmarks/results/baseline-$(date +%Y-%m-%d)/
+node benchmarks/scripts/summarize-results.mjs benchmarks/results/baseline-$(date +%Y-%m-%d)/
 ```
 
 Results will differ based on hardware but relative ratios should be consistent.
@@ -183,7 +183,7 @@ See the table in [Key Findings: Speed](#speed) above. Raw data is available in
 `benchmarks/results/baseline-2026-02-21/`:
 
 - Per-project timing: `*-quick.json` (hyperfine JSON format)
-- Aggregate summary: run `python3 benchmarks/scripts/summarize_results.py benchmarks/results/baseline-2026-02-21/`
+- Aggregate summary: run `node benchmarks/scripts/summarize-results.mjs benchmarks/results/baseline-2026-02-21/`
 
 ### Metric Accuracy
 
@@ -209,7 +209,7 @@ parser-independent — both tools count newlines in the same files.
 ### Subsystem Breakdown
 
 [RESULTS: Run `bash benchmarks/scripts/bench-subsystems.sh` then
-`python3 benchmarks/scripts/summarize_results.py benchmarks/results/baseline-$(date +%Y-%m-%d)/`
+`node benchmarks/scripts/summarize-results.mjs benchmarks/results/baseline-$(date +%Y-%m-%d)/`
 to populate this section with actual subsystem timing data]
 
 The subsystem benchmark profiles each CG pipeline stage independently:
@@ -241,7 +241,7 @@ The schema consists of:
 - hyperfine JSON format (from `hyperfine --export-json`)
 - CG JSON output (`--format json`)
 - FTA JSON output (`--json`)
-- `metric-accuracy.json` (produced by `compare_metrics.py`)
+- `metric-accuracy.json` (produced by `compare-metrics.mjs`)
 
 ### Running a New Baseline
 
@@ -257,8 +257,8 @@ The results directory will be timestamped automatically (`baseline-YYYY-MM-DD`).
 Compare old and new summaries to measure phase impact:
 
 ```sh
-python3 benchmarks/scripts/summarize_results.py benchmarks/results/baseline-2026-02-21/ > before.md
-python3 benchmarks/scripts/summarize_results.py benchmarks/results/baseline-<new-date>/ > after.md
+node benchmarks/scripts/summarize-results.mjs benchmarks/results/baseline-2026-02-21/ > before.md
+node benchmarks/scripts/summarize-results.mjs benchmarks/results/baseline-<new-date>/ > after.md
 diff before.md after.md
 ```
 

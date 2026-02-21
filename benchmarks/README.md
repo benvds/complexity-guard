@@ -13,7 +13,11 @@ TypeScript and JavaScript projects.
   cargo install hyperfine
   # or on macOS: brew install hyperfine
   ```
-- **python3** — for JSON parsing and result aggregation
+- **jq** — for JSON extraction in shell scripts
+  ```sh
+  sudo apt install jq   # Linux
+  brew install jq       # macOS
+  ```
 
 ## Quick Start
 
@@ -37,7 +41,7 @@ bash benchmarks/scripts/compare-metrics.sh --suite quick
 Then summarize results:
 
 ```sh
-python3 benchmarks/scripts/summarize_results.py benchmarks/results/baseline-$(date +%Y-%m-%d)/
+node benchmarks/scripts/summarize-results.mjs benchmarks/results/baseline-$(date +%Y-%m-%d)/
 ```
 
 ## Script Reference
@@ -50,8 +54,8 @@ python3 benchmarks/scripts/summarize_results.py benchmarks/results/baseline-$(da
 | `bench-stress.sh` | Hyperfine benchmark, massive repos (vscode, typescript) | `results/*/`*`-stress.json`* |
 | `bench-subsystems.sh` | Zig subsystem timing: parse, cyclomatic, cognitive, halstead, structural | `results/*/`*`-subsystems.json`* |
 | `compare-metrics.sh [--suite ...]` | Run both tools, compare per-file metrics with tolerance bands | `results/*/metric-accuracy.json` |
-| `compare_metrics.py <cg> <fta> <proj>` | Per-project metric comparison (called by compare-metrics.sh) | JSON to stdout |
-| `summarize_results.py <results-dir>` | Aggregate hyperfine + accuracy results into markdown tables | Markdown to stdout |
+| `compare-metrics.mjs <cg> <fta> <proj>` | Per-project metric comparison (called by compare-metrics.sh) | JSON to stdout |
+| `summarize-results.mjs <results-dir>` | Aggregate hyperfine + accuracy results into markdown tables | Markdown to stdout |
 
 ## Suite Tiers
 
@@ -144,7 +148,7 @@ Each `*-quick.json` / `*-full.json` / `*-stress.json` file follows the
 
 ### Speed (Speedup Ratio)
 
-`summarize_results.py` reports speedup as `CG time / FTA time`:
+`summarize-results.mjs` reports speedup as `CG time / FTA time`:
 
 - **> 1.0**: FTA is faster than CG (e.g., 1.4x = FTA takes 71% of CG's time)
 - **< 1.0**: CG is faster than FTA
@@ -200,15 +204,15 @@ run the benchmarks again using a new timestamped directory:
 bash benchmarks/scripts/setup.sh --suite quick
 bash benchmarks/scripts/bench-quick.sh
 bash benchmarks/scripts/compare-metrics.sh --suite quick
-python3 benchmarks/scripts/summarize_results.py benchmarks/results/baseline-$(date +%Y-%m-%d)/
+node benchmarks/scripts/summarize-results.mjs benchmarks/results/baseline-$(date +%Y-%m-%d)/
 ```
 
 Compare the new `baseline-<date>` directory against the previous baseline to
 measure the impact of each phase's changes:
 
 ```sh
-python3 benchmarks/scripts/summarize_results.py benchmarks/results/baseline-2026-02-21/ > before.md
-python3 benchmarks/scripts/summarize_results.py benchmarks/results/baseline-$(date +%Y-%m-%d)/ > after.md
+node benchmarks/scripts/summarize-results.mjs benchmarks/results/baseline-2026-02-21/ > before.md
+node benchmarks/scripts/summarize-results.mjs benchmarks/results/baseline-$(date +%Y-%m-%d)/ > after.md
 diff before.md after.md
 ```
 
