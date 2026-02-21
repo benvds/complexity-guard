@@ -245,9 +245,11 @@ Plans: (to be created during /gsd:plan-phase)
   2. Tool analyzes 10,000 TypeScript files in under 2 seconds on modern hardware
   3. Tool compiles to single static binary under 5 MB for x86_64-linux, aarch64-linux, x86_64-macos, aarch64-macos, x86_64-windows
   4. Tool runs successfully on all target platforms without runtime dependencies
-**Plans**: TBD
+**Plans:** 2 plans
 
-Plans: (to be created during /gsd:plan-phase)
+Plans:
+- [ ] 12-01-PLAN.md -- Parallel analysis pipeline (thread pool, per-file workers, JSON metadata, verbose timing)
+- [ ] 12-02-PLAN.md -- Cross-compilation verification and documentation updates
 
 ## Progress
 
