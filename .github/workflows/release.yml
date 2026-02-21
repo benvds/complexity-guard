@@ -93,7 +93,7 @@ jobs:
 
             - name: Build binary for ${{ matrix.target }}
               run: |
-                  zig build -Dtarget=${{ matrix.target }} -Doptimize=ReleaseSafe
+                  zig build -Dtarget=${{ matrix.target }} -Doptimize=ReleaseSmall
 
                   # Verify binary was created
                   if [ ! -f "zig-out/bin/complexity-guard${{ matrix.ext }}" ]; then
