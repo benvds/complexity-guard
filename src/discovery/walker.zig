@@ -3,6 +3,9 @@ const filter = @import("filter.zig");
 
 const Allocator = std.mem.Allocator;
 
+/// Re-export FilterConfig for callers that import walker as a named module.
+pub const FilterConfig = filter.FilterConfig;
+
 /// Result of file discovery operation.
 pub const DiscoveryResult = struct {
     files: [][]const u8, // owned paths (caller must free each + slice)
