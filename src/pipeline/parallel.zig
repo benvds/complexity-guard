@@ -36,8 +36,8 @@ pub const ParallelSummary = struct {
 const WorkerContext = struct {
     mutex: std.Thread.Mutex,
     results: std.ArrayList(FileAnalysisResult),
-    parse_errors: std.ArrayList(ParseErrorEntry),
-    // Main allocator for durable allocations (paths, slices that outlive workers)
+    // Main allocator for durable allocations (paths, slices that outlive workers).
+    // NOT thread-safe — all operations on this allocator MUST be inside mutex lock.
     allocator: Allocator,
     // Metric configs (read-only, shared safely)
     cycl_config: cyclomatic.CyclomaticConfig,
@@ -53,11 +53,6 @@ const WorkerContext = struct {
     with_errors: std.atomic.Value(u32),
 };
 
-const ParseErrorEntry = struct {
-    path: []const u8,
-    message: []const u8,
-};
-
 /// Check if a metric is enabled (same logic as main.zig isMetricEnabled).
 fn isMetricEnabled(metrics: ?[]const []const u8, metric: []const u8) bool {
     const list = metrics orelse return true;
@@ -69,6 +64,8 @@ fn isMetricEnabled(metrics: ?[]const []const u8, metric: []const u8) bool {
 
 /// Worker function invoked by std.Thread.Pool for each file.
 /// Creates per-invocation arena and per-invocation parser (TSParser is not thread-safe).
+/// All computation uses the per-worker arena. The shared allocator (ctx.allocator) is only
+/// touched inside the mutex lock, since ArenaAllocator is NOT thread-safe.
 fn analyzeFileWorker(ctx: *WorkerContext, path: []const u8) void {
     // Per-worker arena for all temporary allocations within this invocation
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
@@ -83,29 +80,15 @@ fn analyzeFileWorker(ctx: *WorkerContext, path: []const u8) void {
     defer parser.deinit();
 
     // Read file source
-    const source = std.fs.cwd().readFileAlloc(arena_alloc, path, 10 * 1024 * 1024) catch |err| {
+    const source = std.fs.cwd().readFileAlloc(arena_alloc, path, 10 * 1024 * 1024) catch {
         _ = ctx.failed.fetchAdd(1, .monotonic);
-        const msg = std.fmt.allocPrint(ctx.allocator, "{s}", .{@errorName(err)}) catch return;
-        ctx.mutex.lock();
-        ctx.parse_errors.append(ctx.allocator, ParseErrorEntry{
-            .path = path,
-            .message = msg,
-        }) catch {};
-        ctx.mutex.unlock();
         return;
     };
     // source is in arena — freed at scope exit
 
     // Select language from file extension
-    const language = parse.selectLanguage(path) catch |err| {
+    const language = parse.selectLanguage(path) catch {
         _ = ctx.failed.fetchAdd(1, .monotonic);
-        const msg = std.fmt.allocPrint(ctx.allocator, "{s}", .{@errorName(err)}) catch return;
-        ctx.mutex.lock();
-        ctx.parse_errors.append(ctx.allocator, ParseErrorEntry{
-            .path = path,
-            .message = msg,
-        }) catch {};
-        ctx.mutex.unlock();
         return;
     };
 
@@ -138,40 +121,14 @@ fn analyzeFileWorker(ctx: *WorkerContext, path: []const u8) void {
         .source = source,
     };
 
-    // Run cyclomatic analysis
-    const cycl_results_arena = cyclomatic.analyzeFile(
+    // Run cyclomatic analysis — results are allocated in the worker arena
+    const cycl_results = cyclomatic.analyzeFile(
         arena_alloc,
         parse_result,
         ctx.cycl_config,
     ) catch return;
 
-    // Deep-copy threshold results to main allocator so string fields outlive the arena.
-    // ThresholdResult contains function_name and function_kind as []const u8 slices that
-    // point into the arena — they must be duped before the arena is freed at scope exit.
-    const threshold_results = ctx.allocator.alloc(cyclomatic.ThresholdResult, cycl_results_arena.len) catch return;
-    for (cycl_results_arena, 0..) |tr_src, i| {
-        threshold_results[i] = tr_src;
-        threshold_results[i].function_name = ctx.allocator.dupe(u8, tr_src.function_name) catch {
-            // Free already-duped entries before returning
-            for (threshold_results[0..i]) |*tr| {
-                ctx.allocator.free(tr.function_name);
-                ctx.allocator.free(tr.function_kind);
-            }
-            ctx.allocator.free(threshold_results);
-            return;
-        };
-        threshold_results[i].function_kind = ctx.allocator.dupe(u8, tr_src.function_kind) catch {
-            ctx.allocator.free(threshold_results[i].function_name);
-            for (threshold_results[0..i]) |*tr| {
-                ctx.allocator.free(tr.function_name);
-                ctx.allocator.free(tr.function_kind);
-            }
-            ctx.allocator.free(threshold_results);
-            return;
-        };
-    }
-
-    // Run cognitive analysis
+    // Run cognitive analysis and merge into cycl_results
     var cog_results: []const cognitive.CognitiveFunctionResult = &[_]cognitive.CognitiveFunctionResult{};
     cog_results = cognitive.analyzeFunctions(
         arena_alloc,
@@ -180,8 +137,7 @@ fn analyzeFileWorker(ctx: *WorkerContext, path: []const u8) void {
         source,
     ) catch &[_]cognitive.CognitiveFunctionResult{};
 
-    // Merge cognitive into threshold results
-    for (threshold_results, 0..) |*tr, i| {
+    for (cycl_results, 0..) |*tr, i| {
         if (i < cog_results.len) {
             const cog = cog_results[i];
             tr.cognitive_complexity = cog.complexity;
@@ -202,7 +158,7 @@ fn analyzeFileWorker(ctx: *WorkerContext, path: []const u8) void {
             source,
         ) catch null;
         if (hal_results) |hr_slice| {
-            for (threshold_results, 0..) |*tr, i| {
+            for (cycl_results, 0..) |*tr, i| {
                 if (i < hr_slice.len) {
                     const hr = hr_slice[i];
                     tr.halstead_volume = hr.metrics.volume;
@@ -243,7 +199,7 @@ fn analyzeFileWorker(ctx: *WorkerContext, path: []const u8) void {
             source,
         ) catch null;
         if (str_results) |sr_slice| {
-            for (threshold_results, 0..) |*tr, i| {
+            for (cycl_results, 0..) |*tr, i| {
                 if (i < sr_slice.len) {
                     const sr = sr_slice[i];
                     tr.function_length = sr.function_length;
@@ -271,23 +227,58 @@ fn analyzeFileWorker(ctx: *WorkerContext, path: []const u8) void {
         str_file_result = structural.analyzeFile(source, root);
     }
 
-    // Compute health scores — allocate func_scores in arena (temp)
+    // Compute health scores — func_scores in arena (temp)
     var func_scores = std.ArrayList(f64).empty;
     defer func_scores.deinit(arena_alloc);
-    for (threshold_results) |*tr| {
+    for (cycl_results) |*tr| {
         const breakdown = scoring.computeFunctionScore(tr.*, ctx.effective_weights, ctx.metric_thresholds);
         tr.health_score = breakdown.total;
         func_scores.append(arena_alloc, breakdown.total) catch {};
     }
 
     const file_score = scoring.computeFileScore(func_scores.items);
+    const violations = exit_codes.countViolations(cycl_results);
 
-    // Count violations
-    const violations = exit_codes.countViolations(threshold_results);
+    // === CRITICAL: Lock mutex for ALL shared allocator operations ===
+    // ArenaAllocator is NOT thread-safe — every alloc/dupe/append must be serialized.
+    ctx.mutex.lock();
 
-    // Dupe the path to main allocator for durable ownership
+    // Deep-copy threshold results to shared allocator so they outlive the worker arena
+    const threshold_results = ctx.allocator.alloc(cyclomatic.ThresholdResult, cycl_results.len) catch {
+        ctx.mutex.unlock();
+        return;
+    };
+    for (cycl_results, 0..) |tr_src, i| {
+        threshold_results[i] = tr_src;
+        threshold_results[i].function_name = ctx.allocator.dupe(u8, tr_src.function_name) catch {
+            for (threshold_results[0..i]) |*tr| {
+                ctx.allocator.free(tr.function_name);
+                ctx.allocator.free(tr.function_kind);
+            }
+            ctx.allocator.free(threshold_results);
+            ctx.mutex.unlock();
+            return;
+        };
+        threshold_results[i].function_kind = ctx.allocator.dupe(u8, tr_src.function_kind) catch {
+            ctx.allocator.free(threshold_results[i].function_name);
+            for (threshold_results[0..i]) |*tr| {
+                ctx.allocator.free(tr.function_name);
+                ctx.allocator.free(tr.function_kind);
+            }
+            ctx.allocator.free(threshold_results);
+            ctx.mutex.unlock();
+            return;
+        };
+    }
+
+    // Dupe path to shared allocator
     const owned_path = ctx.allocator.dupe(u8, path) catch {
+        for (threshold_results) |*tr| {
+            ctx.allocator.free(tr.function_name);
+            ctx.allocator.free(tr.function_kind);
+        }
         ctx.allocator.free(threshold_results);
+        ctx.mutex.unlock();
         return;
     };
 
@@ -301,14 +292,17 @@ fn analyzeFileWorker(ctx: *WorkerContext, path: []const u8) void {
         .error_count = violations.errors,
     };
 
-    // Lock only for the append
-    ctx.mutex.lock();
     ctx.results.append(ctx.allocator, result) catch {
-        ctx.mutex.unlock();
         ctx.allocator.free(owned_path);
+        for (threshold_results) |*tr| {
+            ctx.allocator.free(tr.function_name);
+            ctx.allocator.free(tr.function_kind);
+        }
         ctx.allocator.free(threshold_results);
+        ctx.mutex.unlock();
         return;
     };
+
     ctx.mutex.unlock();
 }
 
@@ -337,7 +331,6 @@ pub fn analyzeFilesParallel(
     var ctx = WorkerContext{
         .mutex = .{},
         .results = std.ArrayList(FileAnalysisResult).empty,
-        .parse_errors = std.ArrayList(ParseErrorEntry).empty,
         .allocator = allocator,
         .cycl_config = cycl_config,
         .cog_config = cog_config,
@@ -351,9 +344,11 @@ pub fn analyzeFilesParallel(
         .with_errors = std.atomic.Value(u32).init(0),
     };
 
-    // Create thread pool with specified thread count
+    // Create thread pool with page_allocator (thread-safe) for pool internals.
+    // The caller's allocator (arena) is NOT thread-safe, so the pool must not use it
+    // for Runnable allocations that happen concurrently with worker allocs.
     var pool: std.Thread.Pool = undefined;
-    try pool.init(.{ .allocator = allocator, .n_jobs = @intCast(thread_count) });
+    try pool.init(.{ .allocator = std.heap.page_allocator, .n_jobs = @intCast(thread_count) });
     defer pool.deinit();
 
     // Dispatch one work item per file using WaitGroup barrier
@@ -365,12 +360,6 @@ pub fn analyzeFilesParallel(
 
     // Sort results by path for deterministic output
     std.mem.sort(FileAnalysisResult, ctx.results.items, {}, resultLessThan);
-
-    // Free parse_errors strings (errors list not returned to caller, just counted)
-    for (ctx.parse_errors.items) |entry| {
-        allocator.free(entry.message);
-    }
-    ctx.parse_errors.deinit(allocator);
 
     const summary = ParallelSummary{
         .total = @intCast(file_paths.len),
