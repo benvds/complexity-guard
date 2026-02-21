@@ -8,6 +8,7 @@
 #   - Run setup.sh --suite full first to clone all 76 projects
 #   - hyperfine must be installed (checked at /home/ben/.cargo/bin/hyperfine or on PATH)
 #   - node/npm must be available for FTA auto-install
+#   - jq must be installed for JSON extraction
 #
 # Output:
 #   benchmarks/results/baseline-YYYY-MM-DD/${project}-full.json (hyperfine JSON per project)
@@ -21,6 +22,12 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
 PROJECTS_JSON="$PROJECT_ROOT/tests/public-projects.json"
+
+# Check for jq
+if ! command -v jq &>/dev/null; then
+  echo "Error: jq not found. Install via: sudo apt install jq (or brew install jq)" >&2
+  exit 1
+fi
 
 # Locate hyperfine
 HYPERFINE=$(command -v hyperfine 2>/dev/null || echo /home/ben/.cargo/bin/hyperfine)
@@ -53,15 +60,8 @@ echo "Results dir: $RESULTS_DIR"
 
 PROJECTS_DIR="$PROJECT_ROOT/benchmarks/projects"
 
-# Extract all project names from JSON
-PROJECTS=$(python3 - <<PYTHON
-import json
-with open("$PROJECTS_JSON") as f:
-    data = json.load(f)
-for lib in data["libraries"]:
-    print(lib["name"])
-PYTHON
-)
+# Extract all project names from JSON using jq
+PROJECTS=$(jq -r '.libraries[].name' "$PROJECTS_JSON")
 
 # Count available projects
 TOTAL_PROJECTS=$(echo "$PROJECTS" | wc -l | tr -d ' ')
@@ -109,19 +109,14 @@ while IFS= read -r project; do
     "${CG_BIN} --format json --fail-on none ${PROJECT_DIR}" \
     "${FTA_BIN} --json --exclude-under 0 ${PROJECT_DIR}"
 
-  if command -v python3 &>/dev/null && [[ -f "$RESULT_JSON" ]]; then
-    read -r cg_ms fta_ms < <(python3 - <<PYTHON
-import json
-with open("$RESULT_JSON") as f:
-    data = json.load(f)
-results = data.get("results", [])
-cg_ms = round(results[0]["mean"] * 1000, 1) if len(results) > 0 else 0
-fta_ms = round(results[1]["mean"] * 1000, 1) if len(results) > 1 else 0
-print(cg_ms, fta_ms)
-PYTHON
-)
-    CG_MEAN[$project]="$cg_ms"
-    FTA_MEAN[$project]="$fta_ms"
+  # Extract mean times from JSON using jq
+  if [[ -f "$RESULT_JSON" ]]; then
+    cg_ms=$(jq -r '.results[0].mean * 1000 | . * 10 | round / 10' "$RESULT_JSON" 2>/dev/null || echo "")
+    fta_ms=$(jq -r '.results[1].mean * 1000 | . * 10 | round / 10' "$RESULT_JSON" 2>/dev/null || echo "")
+    if [[ -n "$cg_ms" && -n "$fta_ms" ]]; then
+      CG_MEAN[$project]="$cg_ms"
+      FTA_MEAN[$project]="$fta_ms"
+    fi
   fi
 
   ((BENCHMARKED++)) || true
@@ -136,7 +131,7 @@ while IFS= read -r project; do
   if [[ -n "${CG_MEAN[$project]:-}" && -n "${FTA_MEAN[$project]:-}" ]]; then
     cg_ms="${CG_MEAN[$project]}"
     fta_ms="${FTA_MEAN[$project]}"
-    ratio=$(python3 -c "print(f'{$fta_ms / max($cg_ms, 0.001):.2f}x')" 2>/dev/null || echo "N/A")
+    ratio=$(node -e "console.log((${fta_ms} / Math.max(${cg_ms}, 0.001)).toFixed(2) + 'x')" 2>/dev/null || echo "N/A")
     printf "%-25s %10s %10s %10s\n" "$project" "${cg_ms}ms" "${fta_ms}ms" "$ratio"
   fi
 done <<< "$PROJECTS"

@@ -16,6 +16,12 @@ PROJECT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
 PROJECTS_JSON="$PROJECT_ROOT/tests/public-projects.json"
 PROJECTS_DIR="$PROJECT_ROOT/benchmarks/projects"
 
+# Check for jq
+if ! command -v jq &>/dev/null; then
+  echo "Error: jq not found. Install via: sudo apt install jq (or brew install jq)" >&2
+  exit 1
+fi
+
 # Quick suite: 10 representative projects spanning size/quality/language tiers
 # Rationale: 2 small (zod, dayjs), 3 medium (got, vite, rxjs),
 #            3 large (nestjs, webpack, typeorm), 2 massive (effect, vscode)
@@ -56,75 +62,74 @@ echo ""
 
 mkdir -p "$PROJECTS_DIR"
 
-# Use python3 to extract project data from JSON and clone projects
-python3 - <<PYTHON
-import json, subprocess, os, sys
-
-projects_json = "$PROJECTS_JSON"
-projects_dir = "$PROJECTS_DIR"
-suite = "$SUITE"
-
-quick_suite = set("""$QUICK_SUITE""".split())
-stress_suite = set("""$STRESS_SUITE""".split())
-
-with open(projects_json) as f:
-    data = json.load(f)
-
-libraries = data["libraries"]
-
-# Filter based on suite
-if suite == "quick":
-    selected = [lib for lib in libraries if lib["name"] in quick_suite]
-    # Sort to match the quick_suite ordering
-    order = list("""$QUICK_SUITE""".split())
-    selected.sort(key=lambda x: order.index(x["name"]) if x["name"] in order else 999)
-elif suite == "stress":
-    selected = [lib for lib in libraries if lib["name"] in stress_suite]
-else:  # full
-    selected = libraries
-
-print(f"Cloning {len(selected)} project(s) for '{suite}' suite...")
-print("")
-
-cloned = 0
-cached = 0
-errors = 0
-error_names = []
-
-for lib in selected:
-    name = lib["name"]
-    url = lib["git_url"]
-    tag = lib["latest_stable_tag"]
-    dest = os.path.join(projects_dir, name)
-
-    if os.path.isdir(dest):
-        print(f"  Cached:  {name}")
-        cached += 1
-        continue
-
-    print(f"  Cloning: {name} @ {tag}", flush=True)
-    result = subprocess.run(
-        ["git", "clone", "--branch", tag, "--depth", "1",
-         "--single-branch", "--no-tags", url, dest],
-        capture_output=True,
-        text=True
+# Build list of projects to clone based on suite
+# Each line: "name git_url tag"
+case "$SUITE" in
+  quick)
+    # Filter and sort to match QUICK_SUITE ordering
+    CLONE_LIST=$(
+      for name in $QUICK_SUITE; do
+        jq -r --arg name "$name" \
+          '.libraries[] | select(.name == $name) | "\(.name) \(.git_url) \(.latest_stable_tag)"' \
+          "$PROJECTS_JSON"
+      done
     )
-    if result.returncode != 0:
-        print(f"  Warning: Failed to clone {name} @ {tag}")
-        print(f"           {result.stderr.strip().splitlines()[-1] if result.stderr.strip() else 'unknown error'}")
-        errors += 1
-        error_names.append(name)
-        # Clean up partial clone directory if it exists
-        if os.path.isdir(dest):
-            import shutil
-            shutil.rmtree(dest, ignore_errors=True)
-    else:
-        cloned += 1
+    ;;
+  stress)
+    CLONE_LIST=$(
+      for name in $STRESS_SUITE; do
+        jq -r --arg name "$name" \
+          '.libraries[] | select(.name == $name) | "\(.name) \(.git_url) \(.latest_stable_tag)"' \
+          "$PROJECTS_JSON"
+      done
+    )
+    ;;
+  full)
+    CLONE_LIST=$(
+      jq -r '.libraries[] | "\(.name) \(.git_url) \(.latest_stable_tag)"' "$PROJECTS_JSON"
+    )
+    ;;
+esac
 
-print("")
-print(f"Done: {cloned} cloned, {cached} cached, {errors} skipped (tag not found)")
-if error_names:
-    print(f"Skipped: {', '.join(error_names)}")
-    print("Note: Some tags in public-projects.json may not match upstream tag names.")
-    print("      These projects will be excluded from benchmark runs.")
-PYTHON
+TOTAL=$(echo "$CLONE_LIST" | wc -l | tr -d ' ')
+echo "Cloning $TOTAL project(s) for '$SUITE' suite..."
+echo ""
+
+cloned=0
+cached=0
+errors=0
+error_names=()
+
+while IFS=' ' read -r name url tag; do
+  [[ -z "$name" ]] && continue
+  dest="$PROJECTS_DIR/$name"
+
+  if [[ -d "$dest" ]]; then
+    echo "  Cached:  $name"
+    ((cached++)) || true
+    continue
+  fi
+
+  echo "  Cloning: $name @ $tag"
+  if git clone --branch "$tag" --depth 1 --single-branch --no-tags "$url" "$dest" 2>/tmp/git-clone-err; then
+    ((cloned++)) || true
+  else
+    last_line=$(tail -1 /tmp/git-clone-err 2>/dev/null || echo "unknown error")
+    echo "  Warning: Failed to clone $name @ $tag"
+    echo "           $last_line"
+    ((errors++)) || true
+    error_names+=("$name")
+    # Clean up partial clone directory if it exists
+    if [[ -d "$dest" ]]; then
+      rm -rf "$dest"
+    fi
+  fi
+done <<< "$CLONE_LIST"
+
+echo ""
+echo "Done: $cloned cloned, $cached cached, $errors skipped (tag not found)"
+if [[ ${#error_names[@]} -gt 0 ]]; then
+  echo "Skipped: ${error_names[*]}"
+  echo "Note: Some tags in public-projects.json may not match upstream tag names."
+  echo "      These projects will be excluded from benchmark runs."
+fi

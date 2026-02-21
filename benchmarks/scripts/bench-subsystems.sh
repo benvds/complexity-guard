@@ -8,6 +8,7 @@
 # Prerequisites:
 #   - Run setup.sh first to clone projects (e.g. setup.sh --suite quick)
 #   - zig must be available on PATH
+#   - jq must be installed for JSON extraction
 #
 # Output:
 #   benchmarks/results/baseline-YYYY-MM-DD/${project}-subsystems.json
@@ -17,6 +18,12 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
+
+# Check for jq
+if ! command -v jq &>/dev/null; then
+  echo "Error: jq not found. Install via: sudo apt install jq (or brew install jq)" >&2
+  exit 1
+fi
 
 # ── Suite definitions (mirror setup.sh) ───────────────────────────────────────
 # quick: 10 representative projects spanning size/quality/language tiers
@@ -171,19 +178,10 @@ for project in "${SUITE_PROJECTS[@]}"; do
 
   ((SUCCEEDED++)) || true
 
-  # Extract hotspot from JSON for aggregate summary
-  if command -v python3 &>/dev/null && [[ -f "$RESULT_JSON" ]]; then
-    hotspot_data=$(python3 - <<PYTHON
-import json
-with open("$RESULT_JSON") as f:
-    data = json.load(f)
-hotspot = data.get("hotspot", "unknown")
-pct = data.get("hotspot_pct", 0.0)
-print(f"{hotspot} {pct:.1f}")
-PYTHON
-)
-    hotspot_name=$(echo "$hotspot_data" | awk '{print $1}')
-    hotspot_pct=$(echo "$hotspot_data" | awk '{print $2}')
+  # Extract hotspot from JSON using jq
+  if [[ -f "$RESULT_JSON" ]]; then
+    hotspot_name=$(jq -r '.hotspot // "unknown"' "$RESULT_JSON" 2>/dev/null || echo "unknown")
+    hotspot_pct=$(jq -r '(.hotspot_pct // 0) * 10 | round / 10' "$RESULT_JSON" 2>/dev/null || echo "0")
 
     # Count hotspot occurrences per subsystem
     if [[ -n "${HOTSPOT_COUNT[$hotspot_name]:-}" ]]; then

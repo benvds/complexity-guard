@@ -7,7 +7,6 @@
 # Prerequisites:
 #   - Run setup.sh --suite <suite> first to clone projects
 #   - node/npm must be available for FTA auto-install
-#   - python3 must be available
 #   - Zig must be available for CG ReleaseFast build
 #
 # Output:
@@ -20,7 +19,7 @@
 #     - Line count (CG: file_length; FTA: line_count)
 #   CG's function-level values are aggregated to file-level for comparison.
 #   Parser differences (tree-sitter vs SWC) cause expected divergence —
-#   see compare_metrics.py for tolerance bands.
+#   see compare-metrics.mjs for tolerance bands.
 
 set -euo pipefail
 
@@ -54,7 +53,7 @@ echo "CG binary: $CG_BIN ($("$CG_BIN" --version 2>&1 || true))"
 # Auto-install FTA into temp dir
 FTA_VERSION="3.0.0"
 FTA_TEMP=$(mktemp -d /tmp/fta-bench-XXXX)
-trap "rm -rf $FTA_TEMP" EXIT
+trap "rm -rf $FTA_TEMP $METRICS_TEMP 2>/dev/null || true" EXIT
 echo "Installing fta-cli@${FTA_VERSION} into $FTA_TEMP..."
 npm install "fta-cli@${FTA_VERSION}" --prefix "$FTA_TEMP" --quiet 2>/dev/null
 FTA_BIN="$FTA_TEMP/node_modules/.bin/fta"
@@ -68,18 +67,18 @@ echo "Results dir: $RESULTS_DIR"
 
 # Temp directory for CG/FTA output JSON files
 METRICS_TEMP=$(mktemp -d /tmp/cg-fta-metrics-XXXX)
-trap "rm -rf $FTA_TEMP $METRICS_TEMP" EXIT
 
 # Project lists
 PROJECTS_DIR="$PROJECT_ROOT/benchmarks/projects"
+COMPARE_SCRIPT="$SCRIPT_DIR/compare-metrics.mjs"
 
 case "$SUITE" in
   quick)
     SUITE_PROJECTS=(zod got dayjs vite nestjs webpack typeorm rxjs effect vscode)
     ;;
   full)
-    if ! command -v python3 &>/dev/null; then
-      echo "Error: python3 required for full suite project list" >&2
+    if ! command -v jq &>/dev/null; then
+      echo "Error: jq required for full suite project list" >&2
       exit 1
     fi
     PROJECTS_JSON="$PROJECT_ROOT/benchmarks/public-projects.json"
@@ -87,13 +86,7 @@ case "$SUITE" in
       echo "Error: $PROJECTS_JSON not found" >&2
       exit 1
     fi
-    mapfile -t SUITE_PROJECTS < <(python3 -c "
-import json
-with open('$PROJECTS_JSON') as f:
-    data = json.load(f)
-for p in data:
-    print(p['name'])
-")
+    mapfile -t SUITE_PROJECTS < <(jq -r '.libraries[].name' "$PROJECTS_JSON")
     ;;
   stress)
     SUITE_PROJECTS=(vscode typescript)
@@ -148,55 +141,43 @@ for project in "${SUITE_PROJECTS[@]}"; do
   echo ""
 done
 
-# Aggregate all comparison results into metric-accuracy.json via Python
+# Aggregate all comparison results into metric-accuracy.json via node
 ACCURACY_FILE="$RESULTS_DIR/metric-accuracy.json"
-COMPARE_SCRIPT="$PROJECT_ROOT/benchmarks/scripts/compare_metrics.py"
 
 echo "Aggregating comparison results..."
-python3 - <<PYTHON
-import json
-import os
-import subprocess
-import sys
 
-metrics_temp = "$METRICS_TEMP"
-project_root = "$PROJECT_ROOT"
-suite_projects = "$( IFS=' '; echo "${SUITE_PROJECTS[*]}" )".split()
-compare_script = "$COMPARE_SCRIPT"
-accuracy_file = "$ACCURACY_FILE"
+# Build JSON array by running compare-metrics.mjs for each project
+echo "[" > "$ACCURACY_FILE"
+FIRST=true
+for project in "${SUITE_PROJECTS[@]}"; do
+  cg_path="$METRICS_TEMP/cg-output-${project}.json"
+  fta_path="$METRICS_TEMP/fta-output-${project}.json"
 
-all_results = []
-for project in suite_projects:
-    cg_path = os.path.join(metrics_temp, f"cg-output-{project}.json")
-    fta_path = os.path.join(metrics_temp, f"fta-output-{project}.json")
-    if not os.path.exists(cg_path) or not os.path.exists(fta_path):
-        continue
-    if os.path.getsize(cg_path) == 0 or os.path.getsize(fta_path) == 0:
-        continue
+  if [[ ! -f "$cg_path" || ! -f "$fta_path" ]]; then
+    continue
+  fi
+  if [[ ! -s "$cg_path" || ! -s "$fta_path" ]]; then
+    continue
+  fi
 
-    result = subprocess.run(
-        [sys.executable, compare_script, cg_path, fta_path, project],
-        capture_output=True, text=True
-    )
-    if result.returncode == 0 and result.stdout.strip():
-        try:
-            obj = json.loads(result.stdout)
-            all_results.append(obj)
-            # Print the human summary that went to stderr
-            if result.stderr.strip():
-                print(result.stderr.strip(), file=sys.stderr)
-        except json.JSONDecodeError as e:
-            print(f"Warning: invalid JSON from {project}: {e}", file=sys.stderr)
-    else:
-        print(f"Warning: comparison failed for {project}", file=sys.stderr)
-        if result.stderr:
-            print(result.stderr, file=sys.stderr)
+  RESULT=$(node "$COMPARE_SCRIPT" "$cg_path" "$fta_path" "$project" 2>/tmp/compare-stderr || true)
+  # Print human summary from stderr
+  if [[ -s /tmp/compare-stderr ]]; then
+    cat /tmp/compare-stderr >&2
+  fi
 
-with open(accuracy_file, "w") as f:
-    json.dump(all_results, f, indent=2)
-
-print(f"Metric accuracy results: {len(all_results)} projects written to {accuracy_file}")
-PYTHON
+  if [[ -n "$RESULT" ]]; then
+    if [[ "$FIRST" == "true" ]]; then
+      FIRST=false
+    else
+      echo "," >> "$ACCURACY_FILE"
+    fi
+    echo "$RESULT" >> "$ACCURACY_FILE"
+  else
+    echo "Warning: comparison failed for $project" >&2
+  fi
+done
+echo "]" >> "$ACCURACY_FILE"
 
 echo ""
 echo "=== Summary ==="
@@ -205,4 +186,4 @@ echo "Projects skipped:  $SKIPPED_COUNT"
 echo "Results written to: $ACCURACY_FILE"
 echo ""
 echo "To view results:"
-echo "  python3 benchmarks/scripts/summarize_results.py $RESULTS_DIR"
+echo "  node benchmarks/scripts/summarize-results.mjs $RESULTS_DIR"

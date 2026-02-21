@@ -8,6 +8,7 @@
 #   - Run setup.sh --suite stress first to clone massive repos
 #   - hyperfine must be installed (checked at /home/ben/.cargo/bin/hyperfine or on PATH)
 #   - node/npm must be available for FTA auto-install
+#   - jq must be installed for JSON extraction
 #
 # Output:
 #   benchmarks/results/baseline-YYYY-MM-DD/${project}-stress.json (hyperfine JSON per project)
@@ -21,6 +22,12 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
+
+# Check for jq
+if ! command -v jq &>/dev/null; then
+  echo "Error: jq not found. Install via: sudo apt install jq (or brew install jq)" >&2
+  exit 1
+fi
 
 # Locate hyperfine
 HYPERFINE=$(command -v hyperfine 2>/dev/null || echo /home/ben/.cargo/bin/hyperfine)
@@ -106,19 +113,14 @@ for project in "${STRESS_SUITE[@]}"; do
     continue
   }
 
-  if command -v python3 &>/dev/null && [[ -f "$RESULT_JSON" ]]; then
-    read -r cg_ms fta_ms < <(python3 - <<PYTHON
-import json
-with open("$RESULT_JSON") as f:
-    data = json.load(f)
-results = data.get("results", [])
-cg_ms = round(results[0]["mean"] * 1000, 1) if len(results) > 0 else 0
-fta_ms = round(results[1]["mean"] * 1000, 1) if len(results) > 1 else 0
-print(cg_ms, fta_ms)
-PYTHON
-)
-    CG_MEAN[$project]="$cg_ms"
-    FTA_MEAN[$project]="$fta_ms"
+  # Extract mean times from JSON using jq
+  if [[ -f "$RESULT_JSON" ]]; then
+    cg_ms=$(jq -r '.results[0].mean * 1000 | . * 10 | round / 10' "$RESULT_JSON" 2>/dev/null || echo "")
+    fta_ms=$(jq -r '.results[1].mean * 1000 | . * 10 | round / 10' "$RESULT_JSON" 2>/dev/null || echo "")
+    if [[ -n "$cg_ms" && -n "$fta_ms" ]]; then
+      CG_MEAN[$project]="$cg_ms"
+      FTA_MEAN[$project]="$fta_ms"
+    fi
   fi
 
   echo ""
@@ -133,7 +135,7 @@ for project in "${STRESS_SUITE[@]}"; do
   if [[ -n "${CG_MEAN[$project]:-}" && -n "${FTA_MEAN[$project]:-}" ]]; then
     cg_ms="${CG_MEAN[$project]}"
     fta_ms="${FTA_MEAN[$project]}"
-    ratio=$(python3 -c "print(f'{$fta_ms / max($cg_ms, 0.001):.2f}x')" 2>/dev/null || echo "N/A")
+    ratio=$(node -e "console.log((${fta_ms} / Math.max(${cg_ms}, 0.001)).toFixed(2) + 'x')" 2>/dev/null || echo "N/A")
     printf "%-15s %12s %12s %10s\n" "$project" "${cg_ms}ms" "${fta_ms}ms" "$ratio"
   fi
 done
