@@ -1,0 +1,21 @@
+{
+  "project": "/home/ben/code/complexity-guard/benchmarks/projects/nestjs",
+  "files": 1653,
+  "functions": 3398,
+  "bytes": 2941576,
+  "runs": 2,
+  "subsystems": {
+    "file_discovery": { "mean_ms": 7.120, "stddev_ms": 0.071, "min_ms": 7.049, "max_ms": 7.191 },
+    "file_read": { "mean_ms": 15.053, "stddev_ms": 0.147, "min_ms": 14.906, "max_ms": 15.200 },
+    "parsing": { "mean_ms": 376.365, "stddev_ms": 6.490, "min_ms": 369.875, "max_ms": 382.855 },
+    "cyclomatic": { "mean_ms": 42.767, "stddev_ms": 0.138, "min_ms": 42.629, "max_ms": 42.904 },
+    "cognitive": { "mean_ms": 53.992, "stddev_ms": 0.150, "min_ms": 53.842, "max_ms": 54.142 },
+    "halstead": { "mean_ms": 53.021, "stddev_ms": 0.066, "min_ms": 52.955, "max_ms": 53.088 },
+    "structural": { "mean_ms": 43.647, "stddev_ms": 0.091, "min_ms": 43.555, "max_ms": 43.738 },
+    "scoring": { "mean_ms": 0.001, "stddev_ms": 0.000, "min_ms": 0.001, "max_ms": 0.001 },
+    "json_output": { "mean_ms": 0.165, "stddev_ms": 0.001, "min_ms": 0.164, "max_ms": 0.166 }
+  },
+  "total_pipeline_mean_ms": 592.132,
+  "hotspot": "parsing",
+  "hotspot_pct": 63.6
+}

@@ -149,6 +149,11 @@ pub fn build(b: *std.Build) void {
     // the default install step, so `zig build` and `zig build test` are unaffected.
     const bench_install = b.addInstallArtifact(bench_exe, .{});
 
+    // bench-build: compile and install complexity-bench without running it.
+    // Used by bench-subsystems.sh to build the binary before invoking it directly.
+    const bench_build_step = b.step("bench-build", "Compile complexity-bench benchmark binary");
+    bench_build_step.dependOn(&bench_install.step);
+
     const bench_run = b.addRunArtifact(bench_exe);
     bench_run.step.dependOn(&bench_install.step);
     if (b.args) |args| bench_run.addArgs(args);
