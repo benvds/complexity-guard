@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** Phase 10.1 in progress - Performance benchmarks and FTA comparison (1 of 3 plans complete)
+**Current focus:** Phase 10.1 in progress - Performance benchmarks and FTA comparison (3 of 3 plans complete, pending Plan 02)
 
 ## Current Position
 
 Phase: 10.1 of 12 (Performance Benchmarks and FTA Comparison)
-Plan: 1 of 3 (IN PROGRESS)
-Status: Phase 10.1-01 Complete - Benchmark infrastructure created: setup.sh + 3 hyperfine benchmark scripts, baseline results in benchmarks/results/baseline-2026-02-21/
-Last activity: 2026-02-21 - Completed 10.1-01: Benchmark directory structure, setup.sh clone script, bench-quick/full/stress.sh
+Plan: 3 of 3 (COMPLETE — Plan 03 done; Plan 02 subsystem benchmarks in parallel wave)
+Status: Phase 10.1-03 Complete - Metric accuracy comparison scripts + benchmark docs: compare-metrics.sh, compare_metrics.py, summarize_results.py, docs/benchmarks.md, benchmarks/README.md
+Last activity: 2026-02-21 - Completed 10.1-03: Metric accuracy comparison tooling and comprehensive benchmark documentation
 
 Progress: [██████████] 83% (10/12 phases complete, 10.1 in progress)
 
@@ -73,6 +73,7 @@ Progress: [██████████] 83% (10/12 phases complete, 10.1 in p
 | Phase 10-html-reports P03 | 4 | 2 tasks | 10 files |
 | Phase 10-html-reports P04 | 2 | 2 tasks | 1 files |
 | Phase 10.1 P01 | 28 | 2 tasks | 7 files |
+| Phase 10.1 P03 | 12 | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -209,6 +210,9 @@ Recent decisions affecting current work:
 - [Phase 10.1]: --ignore-failure in hyperfine required: CG exits 1 on error violations regardless of --fail-on none (--fail-on none only suppresses exit 2 for warnings)
 - [Phase 10.1]: Graceful clone failures in setup.sh: warn-and-continue instead of exit 1 (some public-projects.json tags don't match upstream tag names)
 - [Phase 10.1]: Per-project JSON files: separate ${project}-{suite}.json rather than single suite JSON for granular analysis and partial-run recovery
+- [Phase 10.1]: compare_metrics.py path normalization: normalize_cg_path strips absolute prefix up to project-name segment; FTA paths used as-is (already relative to project root)
+- [Phase 10.1]: summarize_results.py speedup formula: CG_time/FTA_time (>1.0 = FTA is faster), not FTA/CG which was inverted
+- [Phase 10.1]: build.zig bench artifact: b.addInstallArtifact (not b.installArtifact) so bench binary only builds on zig build bench, not blocking default zig build
 
 ### Pending Todos
 
@@ -262,7 +266,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-21 (execute-phase)
-Stopped at: Completed 10.1-01-PLAN.md (Benchmark infrastructure: setup.sh, bench-quick/full/stress.sh, baseline results)
+Stopped at: Completed 10.1-03-PLAN.md (Metric accuracy comparison scripts + benchmark documentation)
 
 ---
 *State initialized: 2026-02-14*
