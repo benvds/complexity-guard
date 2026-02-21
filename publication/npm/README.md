@@ -95,6 +95,7 @@ Create a `.complexityguard.json` file in your project root to customize behavior
 - [Documentation](https://github.com/benvds/complexity-guard#documentation)
 - [SARIF Output / GitHub Code Scanning](https://github.com/benvds/complexity-guard/blob/main/docs/sarif-output.md)
 - [HTML Reports](https://github.com/benvds/complexity-guard/blob/main/docs/examples.md#html-reports)
+- [Performance Benchmarks](https://github.com/benvds/complexity-guard/blob/main/docs/benchmarks.md)
 
 ## License
 

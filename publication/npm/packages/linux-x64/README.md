@@ -25,6 +25,7 @@ npm install -g complexity-guard
 - [complexity-guard on npm](https://www.npmjs.com/package/complexity-guard)
 - [GitHub](https://github.com/benvds/complexity-guard)
 - [Documentation](https://github.com/benvds/complexity-guard#documentation)
+- [Performance Benchmarks](https://github.com/benvds/complexity-guard/blob/main/docs/benchmarks.md)
 
 ## License
 
