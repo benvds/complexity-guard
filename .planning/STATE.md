@@ -253,6 +253,7 @@ Recent decisions affecting current work:
 ### Roadmap Evolution
 
 - Phase 05.1 inserted after Phase 5: CI/CD, Release Pipeline & Documentation (URGENT)
+- Phase 10.1 inserted after Phase 10: Performance benchmarks and FTA comparison (URGENT)
 
 ## Session Continuity
 
