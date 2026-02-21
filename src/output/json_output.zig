@@ -11,6 +11,14 @@ pub const JsonOutput = struct {
     timestamp: i64,
     summary: Summary,
     files: []const FileOutput,
+    metadata: Metadata,
+
+    pub const Metadata = struct {
+        /// Wall-clock time in milliseconds for the analysis phase
+        elapsed_ms: u64,
+        /// Number of threads used during analysis
+        thread_count: u32,
+    };
 
     pub const Summary = struct {
         files_analyzed: u32,
@@ -58,6 +66,8 @@ pub fn buildJsonOutput(
     warning_count: u32,
     error_count: u32,
     project_score: f64,
+    elapsed_ms: u64,
+    thread_count: u32,
 ) !JsonOutput {
     // Determine overall status
     const status = if (error_count > 0)
@@ -137,6 +147,10 @@ pub fn buildJsonOutput(
         .timestamp = std.time.timestamp(),
         .summary = summary,
         .files = try allocator.dupe(JsonOutput.FileOutput, files_list.items),
+        .metadata = JsonOutput.Metadata{
+            .elapsed_ms = elapsed_ms,
+            .thread_count = thread_count,
+        },
     };
 }
 
@@ -163,7 +177,7 @@ test "buildJsonOutput: produces correct version and status fields" {
         .{ .path = "test.ts", .results = &results },
     };
 
-    const output = try buildJsonOutput(allocator, &file_results, 0, 0, 100.0);
+    const output = try buildJsonOutput(allocator, &file_results, 0, 0, 100.0, 0, 1);
     defer {
         for (output.files) |file| {
             allocator.free(file.functions);
@@ -190,7 +204,7 @@ test "buildJsonOutput: counts warnings/errors in summary correctly" {
         .{ .path = "test.ts", .results = &results },
     };
 
-    const output = try buildJsonOutput(allocator, &file_results, 1, 1, 75.0);
+    const output = try buildJsonOutput(allocator, &file_results, 1, 1, 75.0, 0, 1);
     defer {
         for (output.files) |file| {
             allocator.free(file.functions);
@@ -214,7 +228,7 @@ test "buildJsonOutput: converts file/function data correctly" {
         .{ .path = "src/example.ts", .results = &results },
     };
 
-    const output = try buildJsonOutput(allocator, &file_results, 1, 0, 50.0);
+    const output = try buildJsonOutput(allocator, &file_results, 1, 0, 50.0, 0, 1);
     defer {
         for (output.files) |file| {
             allocator.free(file.functions);
@@ -245,7 +259,7 @@ test "serializeJsonOutput: produces valid JSON" {
         .{ .path = "test.ts", .results = &results },
     };
 
-    const output = try buildJsonOutput(allocator, &file_results, 0, 0, 100.0);
+    const output = try buildJsonOutput(allocator, &file_results, 0, 0, 100.0, 0, 1);
     defer {
         for (output.files) |file| {
             allocator.free(file.functions);
@@ -285,7 +299,7 @@ test "JSON includes Halstead fields populated (non-null)" {
         .{ .path = "test.ts", .results = &results },
     };
 
-    const output = try buildJsonOutput(allocator, &file_results, 0, 0, 100.0);
+    const output = try buildJsonOutput(allocator, &file_results, 0, 0, 100.0, 0, 1);
     defer {
         for (output.files) |file| {
             allocator.free(file.functions);
@@ -321,7 +335,7 @@ test "buildJsonOutput: cognitive field is populated from cognitive_complexity" {
         .{ .path = "test.ts", .results = &results },
     };
 
-    const output = try buildJsonOutput(allocator, &file_results, 1, 0, 80.0);
+    const output = try buildJsonOutput(allocator, &file_results, 1, 0, 80.0, 0, 1);
     defer {
         for (output.files) |file| {
             allocator.free(file.functions);
@@ -350,7 +364,7 @@ test "buildJsonOutput: status reflects worst of cyclomatic and cognitive" {
         .{ .path = "test.ts", .results = &results },
     };
 
-    const output = try buildJsonOutput(allocator, &file_results, 1, 1, 60.0);
+    const output = try buildJsonOutput(allocator, &file_results, 1, 1, 60.0, 0, 1);
     defer {
         for (output.files) |file| {
             allocator.free(file.functions);
@@ -368,7 +382,7 @@ test "empty results produce valid JSON with zero counts and pass status" {
 
     const file_results = [_]console.FileThresholdResults{};
 
-    const output = try buildJsonOutput(allocator, &file_results, 0, 0, 100.0);
+    const output = try buildJsonOutput(allocator, &file_results, 0, 0, 100.0, 0, 1);
     defer allocator.free(output.files);
 
     try std.testing.expectEqualStrings("pass", output.summary.status);
@@ -388,4 +402,43 @@ test "empty results produce valid JSON with zero counts and pass status" {
         .{},
     );
     defer parsed.deinit();
+}
+
+test "JSON includes metadata with elapsed_ms and thread_count" {
+    const allocator = std.testing.allocator;
+
+    const results = [_]cyclomatic.ThresholdResult{
+        .{ .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function", .start_line = 1, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok },
+    };
+
+    const file_results = [_]console.FileThresholdResults{
+        .{ .path = "test.ts", .results = &results },
+    };
+
+    const output = try buildJsonOutput(allocator, &file_results, 0, 0, 100.0, 450, 8);
+    defer {
+        for (output.files) |file| {
+            allocator.free(file.functions);
+        }
+        allocator.free(output.files);
+    }
+
+    // Verify metadata fields on the struct
+    try std.testing.expectEqual(@as(u64, 450), output.metadata.elapsed_ms);
+    try std.testing.expectEqual(@as(u32, 8), output.metadata.thread_count);
+
+    // Verify metadata appears in serialized JSON
+    const json_str = try serializeJsonOutput(allocator, output);
+    defer allocator.free(json_str);
+
+    const parsed = try std.json.parseFromSlice(std.json.Value, allocator, json_str, .{});
+    defer parsed.deinit();
+
+    // metadata section must exist at top level
+    try std.testing.expect(parsed.value.object.get("metadata") != null);
+    const metadata = parsed.value.object.get("metadata").?;
+    try std.testing.expect(metadata.object.get("elapsed_ms") != null);
+    try std.testing.expect(metadata.object.get("thread_count") != null);
+    try std.testing.expectEqual(@as(i64, 450), metadata.object.get("elapsed_ms").?.integer);
+    try std.testing.expectEqual(@as(i64, 8), metadata.object.get("thread_count").?.integer);
 }

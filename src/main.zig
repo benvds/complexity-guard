@@ -597,6 +597,8 @@ pub fn main() !void {
             total_warnings,
             total_errors,
             project_score,
+            elapsed_ms,
+            @intCast(effective_threads),
         );
         const json_str = try json_output.serializeJsonOutput(arena_allocator, json_result);
         defer arena_allocator.free(json_str);
