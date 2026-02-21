@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** Phase 10 complete - HTML report output (all 4 plans done including gap closure), Phase 11 next
+**Current focus:** Phase 10.1 in progress - Performance benchmarks and FTA comparison (1 of 3 plans complete)
 
 ## Current Position
 
-Phase: 10 of 12 (HTML Reports)
-Plan: 4 of 4 (COMPLETE)
-Status: Phase 10-04 Complete - HTML report UAT gaps closed: removed letter grade from dashboard, fixed mobile file path truncation using CSS RTL direction trick
-Last activity: 2026-02-19 - Completed quick task 17: Replace HTML table with CSS grid for file table in HTML report output
+Phase: 10.1 of 12 (Performance Benchmarks and FTA Comparison)
+Plan: 1 of 3 (IN PROGRESS)
+Status: Phase 10.1-01 Complete - Benchmark infrastructure created: setup.sh + 3 hyperfine benchmark scripts, baseline results in benchmarks/results/baseline-2026-02-21/
+Last activity: 2026-02-21 - Completed 10.1-01: Benchmark directory structure, setup.sh clone script, bench-quick/full/stress.sh
 
-Progress: [██████████] 83% (10/12 phases complete)
+Progress: [██████████] 83% (10/12 phases complete, 10.1 in progress)
 
 ## Performance Metrics
 
@@ -72,6 +72,7 @@ Progress: [██████████] 83% (10/12 phases complete)
 | Phase 10-html-reports P02 | 5 | 2 tasks | 1 files |
 | Phase 10-html-reports P03 | 4 | 2 tasks | 10 files |
 | Phase 10-html-reports P04 | 2 | 2 tasks | 1 files |
+| Phase 10.1 P01 | 28 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -205,6 +206,9 @@ Recent decisions affecting current work:
 - [Phase 10-html-reports-04]: Letter grade removed from HTML dashboard entirely — numeric score only, no CSS class, no function, no test
 - [Phase 10-html-reports-04]: RTL direction trick for left-side path truncation: direction: rtl + unicode-bidi: plaintext causes ellipsis to clip directory prefix, preserving filename
 - [Phase 10-html-reports-04]: File path column max-width 300px desktop, 160px mobile (via @media max-width: 600px breakpoint)
+- [Phase 10.1]: --ignore-failure in hyperfine required: CG exits 1 on error violations regardless of --fail-on none (--fail-on none only suppresses exit 2 for warnings)
+- [Phase 10.1]: Graceful clone failures in setup.sh: warn-and-continue instead of exit 1 (some public-projects.json tags don't match upstream tag names)
+- [Phase 10.1]: Per-project JSON files: separate ${project}-{suite}.json rather than single suite JSON for granular analysis and partial-run recovery
 
 ### Pending Todos
 
@@ -257,9 +261,9 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-02-19 (execute-phase)
-Stopped at: Completed quick-17 (Replace HTML table with CSS grid for file breakdown section)
+Last session: 2026-02-21 (execute-phase)
+Stopped at: Completed 10.1-01-PLAN.md (Benchmark infrastructure: setup.sh, bench-quick/full/stress.sh, baseline results)
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-19T14:00:24Z*
+*Last updated: 2026-02-21T07:28:12Z*
