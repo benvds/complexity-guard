@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** Phase 10.1 complete - Performance benchmarks and FTA comparison (3 of 3 plans complete)
+**Current focus:** Phase 12 in progress - Parallelization and Distribution (1 of 2 plans complete)
 
 ## Current Position
 
-Phase: 10.1 of 12 (Performance Benchmarks and FTA Comparison)
-Plan: 3 of 3 (ALL COMPLETE)
-Status: Phase 10.1 Complete - All 3 plans done: benchmark infrastructure, Zig subsystem profiler, metric accuracy comparison + docs
-Last activity: 2026-02-21 - Completed quick task 19: include system specs in the benchmarking results, update the current benchmarks with the specs of this system, update any relevant documentation and scripts
+Phase: 12 of 12 (Parallelization and Distribution)
+Plan: 1 of 2 (Phase 12-01 complete)
+Status: Phase 12 In Progress - Plan 01 done: parallel file analysis via thread pool, JSON timing metadata
+Last activity: 2026-02-21 - Completed 12-01: parallel file analysis via std.Thread.Pool with timing metadata
 
-Progress: [██████████] 83% (10/12 phases complete, 10.1 in progress)
+Progress: [██████████] 83% (10/12 phases complete, 12 in progress)
 
 ## Performance Metrics
 
@@ -76,6 +76,7 @@ Progress: [██████████] 83% (10/12 phases complete, 10.1 in p
 | Phase 10.1 P03 | 12 | 2 tasks | 14 files |
 | Phase 10.1 P02 | 17 | 2 tasks | 10 files |
 | Phase quick-18 P01 | 6 | 2 tasks | 10 files |
+| Phase 12 P01 | 10 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -219,6 +220,10 @@ Recent decisions affecting current work:
 - [Phase 10.1]: bench-build step separate from bench: scripts compile the binary first, then invoke it directly with their own args (zig build bench runs the binary with no args)
 - [Phase 10.1]: Parsing is dominant hotspot at 40-64% of total pipeline time across all 7 quick-suite projects — Phase 12 parallelization should prioritize the parser stage
 - [Phase quick-18]: Node.js ESM (.mjs) for Python script ports: same Node.js runtime already required for FTA install, so no new prerequisite; jq for inline shell JSON extraction (simpler, no subprocess)
+- [Phase 12]: Per-worker arena + deep-copy ThresholdResult strings to main allocator before arena free
+- [Phase 12]: Sort file results by path in both sequential and parallel paths for deterministic output
+- [Phase 12]: Sequential path (threads==1) bypasses std.Thread.Pool entirely for zero overhead
+- [Phase 12]: elapsed_ms and thread_count added as metadata top-level field in JSON output (additive, backward compatible)
 
 ### Pending Todos
 
@@ -274,7 +279,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-21 (execute-phase)
-Stopped at: Completed quick-19: Include system specs in benchmarking
+Stopped at: Completed 12-01: parallel file analysis via std.Thread.Pool with JSON timing metadata
 
 ---
 *State initialized: 2026-02-14*

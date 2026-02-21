@@ -136,8 +136,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Performance & Distribution
 
-- [ ] **PERF-01**: Tool analyzes 10,000 TypeScript files in under 2 seconds
-- [ ] **PERF-02**: Tool processes files in parallel via thread pool
+- [x] **PERF-01**: Tool analyzes 10,000 TypeScript files in under 2 seconds
+- [x] **PERF-02**: Tool processes files in parallel via thread pool
 - [ ] **DIST-01**: Tool compiles to single static binary under 5 MB
 - [ ] **DIST-02**: Tool cross-compiles to x86_64-linux, aarch64-linux, x86_64-macos, aarch64-macos, x86_64-windows
 
@@ -269,8 +269,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DUP-05 | Phase 11 | Pending |
 | DUP-06 | Phase 11 | Pending |
 | DUP-07 | Phase 11 | Pending |
-| PERF-01 | Phase 12 | Pending |
-| PERF-02 | Phase 12 | Pending |
+| PERF-01 | Phase 12 | Complete |
+| PERF-02 | Phase 12 | Complete |
 | DIST-01 | Phase 12 | Pending |
 | DIST-02 | Phase 12 | Pending |
 
