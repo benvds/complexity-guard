@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 Phase: 12 of 12 (Parallelization and Distribution)
 Plan: 2 of 2 (Phase 12-02 complete)
 Status: Phase 12 Complete - All plans done: parallel analysis + CI/docs/distribution verification
-Last activity: 2026-02-21 - Completed 12-02: cross-compilation verified, CI fixed to ReleaseSmall, all docs updated
+Last activity: 2026-02-21 - Completed quick task 20: create a script that checks that the tool doesn't have any memory leaks, add a CI step to check this
 
 Progress: [████████████] 100% (12/12 phases complete)
 
@@ -257,6 +257,7 @@ Recent decisions affecting current work:
 | 17 | Replace HTML table with CSS grid for file breakdown section | 2026-02-19 | 99df70f | [17-replace-html-table-with-css-grid-for-fil](./quick/17-replace-html-table-with-css-grid-for-fil/) |
 | 18 | Remove Python dependency from phase 10.1, only zig or node/npm dependencies allowed | 2026-02-21 | 3f9e1c0 | [18-remove-python-dependency-from-phase-10-1](./quick/18-remove-python-dependency-from-phase-10-1/) |
 | 19 | Include system specs in benchmarking results for hardware context | 2026-02-21 | 73c2088 | [19-include-system-specs-in-the-benchmarking](./quick/19-include-system-specs-in-the-benchmarking/) |
+| 20 | create a script that checks that the tool doesn't have any memory leaks, add a CI step to check this | 2026-02-21 | 439edc9 | [20-create-a-script-that-checks-that-the-too](./quick/20-create-a-script-that-checks-that-the-too/) |
 
 ### Blockers/Concerns
 
