@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 Phase: 10.1 of 12 (Performance Benchmarks and FTA Comparison)
 Plan: 3 of 3 (ALL COMPLETE)
 Status: Phase 10.1 Complete - All 3 plans done: benchmark infrastructure, Zig subsystem profiler, metric accuracy comparison + docs
-Last activity: 2026-02-21 - Completed 10.1-02: Zig subsystem benchmark module, bench-subsystems.sh, baseline timing (parsing = 40-64% hotspot)
+Last activity: 2026-02-21 - Completed quick task 18: Remove Python dependency from phase 10.1, only zig or node/npm dependencies allowed
 
 Progress: [██████████] 83% (10/12 phases complete, 10.1 in progress)
 
@@ -246,6 +246,7 @@ Recent decisions affecting current work:
 | 15 | Add automatic CHANGELOG.md generation from conventional commits | 2026-02-16 | bdd0b4a | [15-add-automatic-changelog-md-generation-fr](./quick/15-add-automatic-changelog-md-generation-fr/) |
 | 16 | Remove weight optimization suggestion from --init | 2026-02-17 | 3b29c03 | [16-remove-the-functionality-which-suggests-](./quick/16-remove-the-functionality-which-suggests-/) |
 | 17 | Replace HTML table with CSS grid for file breakdown section | 2026-02-19 | 99df70f | [17-replace-html-table-with-css-grid-for-fil](./quick/17-replace-html-table-with-css-grid-for-fil/) |
+| 18 | Remove Python dependency from phase 10.1, only zig or node/npm dependencies allowed | 2026-02-21 | 3f9e1c0 | [18-remove-python-dependency-from-phase-10-1](./quick/18-remove-python-dependency-from-phase-10-1/) |
 
 ### Blockers/Concerns
 
