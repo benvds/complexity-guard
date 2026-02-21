@@ -210,6 +210,17 @@ Plans:
 - [x] 10-03-PLAN.md -- Documentation: README, docs pages, publication READMEs
 - [x] 10-04-PLAN.md -- Gap closure: remove letter grade from dashboard, fix mobile file path truncation
 
+### Phase 10.1: Performance benchmarks and FTA comparison (INSERTED)
+
+**Goal:** Setup extensive performance tests, compare to FTA tool (https://github.com/sgb-io/fta), use tests/public-projects.json to test against real world projects, use a scientific sound approach to test, verify and reach conclusions, document this all exhaustively — this will be used to do impact analysis of upcoming code duplication and parallelization features
+**Depends on:** Phase 10
+**Plans:** 3 plans
+
+Plans:
+- [ ] 10.1-01-PLAN.md -- Benchmark infrastructure, project clone scripts, and end-to-end hyperfine benchmark scripts
+- [ ] 10.1-02-PLAN.md -- Zig subsystem benchmark module with per-pipeline-stage profiling
+- [ ] 10.1-03-PLAN.md -- Metric accuracy comparison (CG vs FTA) and comprehensive documentation
+
 ### Phase 11: Duplication Detection
 **Goal**: Tool detects code clones across files using Rabin-Karp rolling hash
 **Depends on**: Phase 10
