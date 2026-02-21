@@ -19,6 +19,7 @@ const json_output = @import("output/json_output.zig");
 const sarif_output = @import("output/sarif_output.zig");
 const html_output = @import("output/html_output.zig");
 const exit_codes = @import("output/exit_codes.zig");
+const parallel = @import("pipeline/parallel.zig");
 
 const version = "0.6.0";
 
@@ -145,16 +146,6 @@ pub fn main() !void {
     };
     defer discovery_result.deinit(arena_allocator);
 
-    // Parse discovered files
-    var parse_summary = parse.parseFiles(
-        arena_allocator,
-        discovery_result.files,
-    ) catch |err| {
-        try stderr.print("error: parsing failed: {s}\n", .{@errorName(err)});
-        std.process.exit(1);
-    };
-    defer parse_summary.deinit(arena_allocator);
-
     // Helper: check if a metric family is enabled
     // Returns true if metrics is null (all enabled) or if the name is in the list
     const isMetricEnabled = struct {
@@ -260,6 +251,10 @@ pub fn main() !void {
     // Resolve effective weights once (applies config overrides, normalizes)
     const effective_weights = scoring.resolveEffectiveWeights(cfg.weights);
 
+    // Resolve effective thread count: CLI/config threads override, else auto-detect CPU count
+    const cpu_count = std.Thread.getCpuCount() catch 1;
+    const effective_threads: usize = if (cfg.analysis) |a| if (a.threads) |t| @as(usize, @intCast(t)) else cpu_count else cpu_count;
+
     var file_results_list = std.ArrayList(console.FileThresholdResults).empty;
     defer file_results_list.deinit(arena_allocator);
 
@@ -272,150 +267,215 @@ pub fn main() !void {
     var total_warnings: u32 = 0;
     var total_errors: u32 = 0;
     var total_functions: u32 = 0;
+    var failed_parses: u32 = 0;
 
-    for (parse_summary.results) |result| {
-        // Run cyclomatic analysis
-        const cycl_results = try cyclomatic.analyzeFile(
+    // Capture analysis start time for elapsed_ms computation
+    const analysis_start = std.time.nanoTimestamp();
+
+    if (effective_threads <= 1) {
+        // Sequential path: use existing parseFiles + per-file for-loop (zero pool overhead)
+        // Note: no defer deinit — the arena allocator cleans everything up at end of main()
+        const seq_parse_summary = parse.parseFiles(
             arena_allocator,
-            result,
-            cycl_config,
-        );
+            discovery_result.files,
+        ) catch |err| {
+            try stderr.print("error: parsing failed: {s}\n", .{@errorName(err)});
+            std.process.exit(1);
+        };
 
-        // Run cognitive analysis on the same file
-        var cog_results: []const cognitive.CognitiveFunctionResult = &[_]cognitive.CognitiveFunctionResult{};
-        if (result.tree) |tree| {
-            const root = tree.rootNode();
-            cog_results = try cognitive.analyzeFunctions(
+        failed_parses = seq_parse_summary.failed_parses;
+
+        for (seq_parse_summary.results) |result| {
+            // Run cyclomatic analysis
+            const cycl_results = try cyclomatic.analyzeFile(
                 arena_allocator,
-                root,
-                cog_config,
-                result.source,
+                result,
+                cycl_config,
             );
-        }
 
-        // Merge cognitive results into cyclomatic ThresholdResults
-        // Both walks process the same tree in the same order, so indices align
-        for (cycl_results, 0..) |*tr, i| {
-            if (i < cog_results.len) {
-                const cog = cog_results[i];
-                tr.cognitive_complexity = cog.complexity;
-                tr.cognitive_status = cyclomatic.validateThreshold(
-                    cog.complexity,
-                    cog_config.warning_threshold,
-                    cog_config.error_threshold,
-                );
-            }
-        }
-
-        // Run Halstead analysis if enabled
-        if (isMetricEnabled(parsed_metrics, "halstead")) {
+            // Run cognitive analysis on the same file
+            var cog_results: []const cognitive.CognitiveFunctionResult = &[_]cognitive.CognitiveFunctionResult{};
             if (result.tree) |tree| {
                 const root = tree.rootNode();
-                const hal_results = try halstead.analyzeFunctions(
+                cog_results = try cognitive.analyzeFunctions(
                     arena_allocator,
                     root,
-                    hal_config,
+                    cog_config,
                     result.source,
                 );
-                // Merge by index (same AST walk order)
-                for (cycl_results, 0..) |*tr, i| {
-                    if (i < hal_results.len) {
-                        const hr = hal_results[i];
-                        tr.halstead_volume = hr.metrics.volume;
-                        tr.halstead_difficulty = hr.metrics.difficulty;
-                        tr.halstead_effort = hr.metrics.effort;
-                        tr.halstead_bugs = hr.metrics.bugs;
-                        tr.halstead_volume_status = cyclomatic.validateThresholdF64(
-                            hr.metrics.volume,
-                            hal_config.volume_warning,
-                            hal_config.volume_error,
-                        );
-                        tr.halstead_difficulty_status = cyclomatic.validateThresholdF64(
-                            hr.metrics.difficulty,
-                            hal_config.difficulty_warning,
-                            hal_config.difficulty_error,
-                        );
-                        tr.halstead_effort_status = cyclomatic.validateThresholdF64(
-                            hr.metrics.effort,
-                            hal_config.effort_warning,
-                            hal_config.effort_error,
-                        );
-                        tr.halstead_bugs_status = cyclomatic.validateThresholdF64(
-                            hr.metrics.bugs,
-                            hal_config.bugs_warning,
-                            hal_config.bugs_error,
-                        );
+            }
+
+            // Merge cognitive results into cyclomatic ThresholdResults
+            for (cycl_results, 0..) |*tr, i| {
+                if (i < cog_results.len) {
+                    const cog = cog_results[i];
+                    tr.cognitive_complexity = cog.complexity;
+                    tr.cognitive_status = cyclomatic.validateThreshold(
+                        cog.complexity,
+                        cog_config.warning_threshold,
+                        cog_config.error_threshold,
+                    );
+                }
+            }
+
+            // Run Halstead analysis if enabled
+            if (isMetricEnabled(parsed_metrics, "halstead")) {
+                if (result.tree) |tree| {
+                    const root = tree.rootNode();
+                    const hal_results = try halstead.analyzeFunctions(
+                        arena_allocator,
+                        root,
+                        hal_config,
+                        result.source,
+                    );
+                    for (cycl_results, 0..) |*tr, i| {
+                        if (i < hal_results.len) {
+                            const hr = hal_results[i];
+                            tr.halstead_volume = hr.metrics.volume;
+                            tr.halstead_difficulty = hr.metrics.difficulty;
+                            tr.halstead_effort = hr.metrics.effort;
+                            tr.halstead_bugs = hr.metrics.bugs;
+                            tr.halstead_volume_status = cyclomatic.validateThresholdF64(
+                                hr.metrics.volume,
+                                hal_config.volume_warning,
+                                hal_config.volume_error,
+                            );
+                            tr.halstead_difficulty_status = cyclomatic.validateThresholdF64(
+                                hr.metrics.difficulty,
+                                hal_config.difficulty_warning,
+                                hal_config.difficulty_error,
+                            );
+                            tr.halstead_effort_status = cyclomatic.validateThresholdF64(
+                                hr.metrics.effort,
+                                hal_config.effort_warning,
+                                hal_config.effort_error,
+                            );
+                            tr.halstead_bugs_status = cyclomatic.validateThresholdF64(
+                                hr.metrics.bugs,
+                                hal_config.bugs_warning,
+                                hal_config.bugs_error,
+                            );
+                        }
                     }
                 }
             }
-        }
 
-        // Run structural function analysis if enabled
-        var str_file_result: ?structural.FileStructuralResult = null;
-        if (isMetricEnabled(parsed_metrics, "structural")) {
-            if (result.tree) |tree| {
-                const root = tree.rootNode();
-                const str_results = try structural.analyzeFunctions(
-                    arena_allocator,
-                    root,
-                    result.source,
-                );
-                // Merge by index
-                for (cycl_results, 0..) |*tr, i| {
-                    if (i < str_results.len) {
-                        const sr = str_results[i];
-                        tr.function_length = sr.function_length;
-                        tr.params_count = sr.params_count;
-                        tr.nesting_depth = sr.nesting_depth;
-                        tr.end_line = sr.end_line;
-                        tr.function_length_status = cyclomatic.validateThreshold(
-                            sr.function_length,
-                            str_config.function_length_warning,
-                            str_config.function_length_error,
-                        );
-                        tr.params_count_status = cyclomatic.validateThreshold(
-                            sr.params_count,
-                            str_config.params_count_warning,
-                            str_config.params_count_error,
-                        );
-                        tr.nesting_depth_status = cyclomatic.validateThreshold(
-                            sr.nesting_depth,
-                            str_config.nesting_depth_warning,
-                            str_config.nesting_depth_error,
-                        );
+            // Run structural function analysis if enabled
+            var str_file_result: ?structural.FileStructuralResult = null;
+            if (isMetricEnabled(parsed_metrics, "structural")) {
+                if (result.tree) |tree| {
+                    const root = tree.rootNode();
+                    const str_results = try structural.analyzeFunctions(
+                        arena_allocator,
+                        root,
+                        result.source,
+                    );
+                    for (cycl_results, 0..) |*tr, i| {
+                        if (i < str_results.len) {
+                            const sr = str_results[i];
+                            tr.function_length = sr.function_length;
+                            tr.params_count = sr.params_count;
+                            tr.nesting_depth = sr.nesting_depth;
+                            tr.end_line = sr.end_line;
+                            tr.function_length_status = cyclomatic.validateThreshold(
+                                sr.function_length,
+                                str_config.function_length_warning,
+                                str_config.function_length_error,
+                            );
+                            tr.params_count_status = cyclomatic.validateThreshold(
+                                sr.params_count,
+                                str_config.params_count_warning,
+                                str_config.params_count_error,
+                            );
+                            tr.nesting_depth_status = cyclomatic.validateThreshold(
+                                sr.nesting_depth,
+                                str_config.nesting_depth_warning,
+                                str_config.nesting_depth_error,
+                            );
+                        }
                     }
+                    str_file_result = structural.analyzeFile(result.source, root);
                 }
-                // Compute file-level structural metrics
-                str_file_result = structural.analyzeFile(result.source, root);
             }
+
+            // Compute health scores for each function
+            var func_scores = std.ArrayList(f64).empty;
+            defer func_scores.deinit(arena_allocator);
+            for (cycl_results) |*tr| {
+                const breakdown = scoring.computeFunctionScore(tr.*, effective_weights, metric_thresholds);
+                tr.health_score = breakdown.total;
+                try func_scores.append(arena_allocator, breakdown.total);
+            }
+
+            const file_score = scoring.computeFileScore(func_scores.items);
+            try file_scores_list.append(arena_allocator, file_score);
+            try file_function_counts.append(arena_allocator, @intCast(cycl_results.len));
+
+            total_functions += @intCast(cycl_results.len);
+
+            const violations = exit_codes.countViolations(cycl_results);
+            total_warnings += violations.warnings;
+            total_errors += violations.errors;
+
+            try file_results_list.append(arena_allocator, console.FileThresholdResults{
+                .path = result.path,
+                .results = cycl_results,
+                .structural = str_file_result,
+            });
         }
+    } else {
+        // Parallel path: dispatch all files to thread pool, collect sorted results
+        const par_out = try parallel.analyzeFilesParallel(
+            arena_allocator,
+            discovery_result.files,
+            effective_threads,
+            cycl_config,
+            cog_config,
+            hal_config,
+            str_config,
+            effective_weights,
+            metric_thresholds,
+            parsed_metrics,
+        );
+        // par_out.results is owned by arena_allocator (paths and results slices duped)
+        failed_parses = par_out.summary.failed;
 
-        // Compute health scores for each function (always runs, not gated by --metrics)
-        var func_scores = std.ArrayList(f64).empty;
-        defer func_scores.deinit(arena_allocator);
-        for (cycl_results) |*tr| {
-            const breakdown = scoring.computeFunctionScore(tr.*, effective_weights, metric_thresholds);
-            tr.health_score = breakdown.total;
-            try func_scores.append(arena_allocator, breakdown.total);
+        for (par_out.results) |par_result| {
+            try file_scores_list.append(arena_allocator, par_result.file_score);
+            try file_function_counts.append(arena_allocator, par_result.function_count);
+
+            total_functions += par_result.function_count;
+            total_warnings += par_result.warning_count;
+            total_errors += par_result.error_count;
+
+            try file_results_list.append(arena_allocator, console.FileThresholdResults{
+                .path = par_result.path,
+                .results = par_result.results,
+                .structural = par_result.structural,
+            });
         }
+    }
 
-        // Compute file score and track for project score
-        const file_score = scoring.computeFileScore(func_scores.items);
-        try file_scores_list.append(arena_allocator, file_score);
-        try file_function_counts.append(arena_allocator, @intCast(cycl_results.len));
+    // Compute elapsed time in milliseconds (covers both parallel and sequential paths)
+    const analysis_end = std.time.nanoTimestamp();
+    const elapsed_ns = analysis_end - analysis_start;
+    const elapsed_ms: u64 = @intCast(@divTrunc(elapsed_ns, std.time.ns_per_ms));
 
-        total_functions += @intCast(cycl_results.len);
-
-        const violations = exit_codes.countViolations(cycl_results);
-        total_warnings += violations.warnings;
-        total_errors += violations.errors;
-
-        try file_results_list.append(arena_allocator, console.FileThresholdResults{
-            .path = result.path,
-            .results = cycl_results,
-            .structural = str_file_result,
+    // Verbose mode: print timing to stderr (not stdout, to avoid polluting machine-readable output)
+    if (cli_args.verbose) {
+        try stderr.print("Analyzed {d} files in {d}ms ({d} threads)\n", .{
+            file_results_list.items.len,
+            elapsed_ms,
+            effective_threads,
         });
     }
+
+    // Sort file results by path for deterministic output regardless of thread count or discovery order
+    std.mem.sort(console.FileThresholdResults, file_results_list.items, {}, struct {
+        fn lessThan(_: void, a: console.FileThresholdResults, b: console.FileThresholdResults) bool {
+            return std.mem.lessThan(u8, a.path, b.path);
+        }
+    }.lessThan);
 
     const file_results = file_results_list.items;
 
@@ -637,7 +697,7 @@ pub fn main() !void {
         try console.formatSummary(
             stdout,
             arena_allocator,
-            @intCast(parse_summary.results.len),
+            @intCast(file_results.len),
             total_functions,
             total_warnings,
             total_errors,
@@ -649,7 +709,7 @@ pub fn main() !void {
 
     // Step 7: Determine and apply exit code
     const exit_code = exit_codes.determineExitCode(
-        parse_summary.failed_parses > 0,
+        failed_parses > 0,
         total_errors,
         total_warnings,
         fail_on_warnings,
@@ -695,4 +755,5 @@ test {
     _ = @import("output/sarif_output.zig");
     _ = @import("output/html_output.zig");
     _ = @import("metrics/scoring.zig");
+    _ = @import("pipeline/parallel.zig");
 }
