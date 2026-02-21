@@ -67,6 +67,7 @@ Top Halstead volume hotspots:
 - **Structural Metrics**: Function length, parameter count, nesting depth, file length, and export count
 - **Composite Health Score**: Single 0–100 score combining all metric families with configurable weights — enforce in CI with `--fail-health-below`
 - **Console + JSON + SARIF + HTML Output**: Human-readable terminal display, machine-readable JSON, SARIF 2.1.0 for GitHub Code Scanning, and self-contained HTML reports with interactive dashboard, treemap visualization, and sortable metric tables
+- **Parallel Analysis**: Analyzes files concurrently across all CPU cores by default — use `--threads N` to control thread count or `--threads 1` for single-threaded mode
 - **Configurable Thresholds**: Warning and error levels for all four metric families, customizable per project
 - **Selective Metrics**: Use `--metrics cyclomatic,halstead` to compute only specific families
 - **Zero Config**: Works out of the box with sensible defaults, optional `.complexityguard.json` for customization
@@ -126,6 +127,9 @@ Create a `.complexityguard.json` file in your project root to customize behavior
     "cyclomatic": 0.20,
     "halstead": 0.15,
     "structural": 0.15
+  },
+  "analysis": {
+    "threads": 4
   },
   "baseline": 73.2
 }

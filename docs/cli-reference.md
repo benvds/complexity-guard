@@ -175,14 +175,23 @@ complexity-guard --no-duplication src/
 
 **`--threads <N>`**
 
-Set the number of threads for parallel analysis. Defaults to CPU count.
+Set the number of threads for parallel file analysis. Defaults to the number of available CPU cores (auto-detected at runtime). Use `--threads 1` to disable parallelization for debugging or reproducible timing.
 
 ```sh
-# Use 4 threads
+# Use all CPU cores (default)
+complexity-guard src/
+
+# Limit to 4 threads
 complexity-guard --threads 4 src/
 
-# Single-threaded (for debugging)
+# Single-threaded (sequential, no thread pool overhead)
 complexity-guard --threads 1 src/
+```
+
+The `--threads` flag overrides the `analysis.threads` field in `.complexityguard.json`. When `--verbose` is enabled, the analysis time and thread count are printed to stderr:
+
+```
+Analyzed 12 files in 43ms (8 threads)
 ```
 
 **`--baseline <FILE>`**
@@ -362,6 +371,9 @@ ComplexityGuard uses `.complexityguard.json` for configuration. Generate a defau
     "structural": 0.15
   },
   "baseline": 73.2,
+  "analysis": {
+    "threads": 4
+  },
   "output": {
     "format": "console"
   }
@@ -516,6 +528,18 @@ Weights are normalized to sum to 1.0 before use. Set a weight to `0.0` to exclud
 
 Health score threshold for CI enforcement. When set, `complexity-guard` exits with code 1 if the project health score falls below this value. Set automatically by `--save-baseline`. Default: none (no enforcement).
 
+**`analysis.threads`** (integer)
+
+Number of threads to use for parallel file analysis. Default: auto-detect CPU cores. Set to `1` to disable parallelization. The `--threads` CLI flag overrides this value.
+
+```json
+{
+  "analysis": {
+    "threads": 4
+  }
+}
+```
+
 ### CLI Flags Override Config
 
 When both a config file and CLI flags are provided, CLI flags take precedence:
@@ -573,6 +597,10 @@ When using `--format json`, ComplexityGuard produces structured JSON output.
 {
   "version": "1.0.0",
   "timestamp": 1708012345,
+  "metadata": {
+    "elapsed_ms": 43,
+    "thread_count": 8
+  },
   "summary": {
     "files_analyzed": 12,
     "total_functions": 47,
@@ -632,8 +660,13 @@ When using `--format json`, ComplexityGuard produces structured JSON output.
 **Top Level:**
 - `version` (string) — JSON schema version
 - `timestamp` (integer) — Unix timestamp when analysis was run
+- `metadata` (object) — Analysis execution statistics
 - `summary` (object) — Aggregate statistics
 - `files` (array) — Per-file results
+
+**Metadata:**
+- `elapsed_ms` (integer) — Wall-clock time for the analysis in milliseconds
+- `thread_count` (integer) — Number of threads used (1 = sequential mode, >1 = parallel mode)
 
 **Summary:**
 - `files_analyzed` (integer) — Number of files analyzed

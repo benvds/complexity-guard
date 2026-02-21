@@ -68,7 +68,7 @@ complexity-guard src/auth.ts src/utils.ts
 complexity-guard .
 ```
 
-ComplexityGuard automatically finds all `.ts`, `.tsx`, `.js`, and `.jsx` files in the given paths.
+ComplexityGuard automatically finds all `.ts`, `.tsx`, `.js`, and `.jsx` files in the given paths and analyzes them in parallel across all available CPU cores by default. On multi-core machines this means large codebases run significantly faster than single-threaded analysis. Use `--threads 1` if you need single-threaded sequential output (useful for debugging or timing comparisons).
 
 ## Understanding the Output
 

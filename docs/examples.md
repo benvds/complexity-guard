@@ -58,6 +58,42 @@ complexity-guard --metrics structural src/
 
 This is useful in CI pipelines where you want fast feedback on specific metrics, or when profiling large codebases where you want to skip Halstead token counting.
 
+### Performance and Threading
+
+ComplexityGuard analyzes files in parallel across all CPU cores by default. Use `--threads` to control parallelism:
+
+```sh
+# Use all available CPU cores (default — no flag needed)
+complexity-guard src/
+
+# Limit to 4 threads
+complexity-guard --threads 4 src/
+
+# Single-threaded (sequential) mode — disables thread pool entirely
+complexity-guard --threads 1 src/
+
+# See timing and thread count in verbose mode
+complexity-guard --verbose src/
+```
+
+Verbose mode prints analysis time and thread count to stderr:
+
+```
+Analyzed 12 files in 43ms (8 threads)
+```
+
+You can also set a default thread count in `.complexityguard.json`:
+
+```json
+{
+  "analysis": {
+    "threads": 4
+  }
+}
+```
+
+The `--threads` CLI flag always overrides the config file value.
+
 ### Save Results to File
 
 ```sh
@@ -99,6 +135,24 @@ File-level structural metrics appear at the file level:
   "export_count": 4,
   "functions": [...]
 }
+```
+
+The top-level JSON object includes a `metadata` field with analysis timing and thread count:
+
+```json
+{
+  "metadata": {
+    "elapsed_ms": 43,
+    "thread_count": 8
+  }
+}
+```
+
+Use this to track analysis performance across runs or verify which thread mode was used:
+
+```sh
+# Check elapsed time and thread count from JSON output
+complexity-guard --format json src/ | jq '.metadata'
 ```
 
 ## Health Score

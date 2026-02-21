@@ -4,9 +4,10 @@ ComplexityGuard is a native Zig binary with no runtime dependencies. This page d
 performance characteristics measured against [FTA](https://ftaproject.dev/) (Fast TypeScript
 Analyzer), a Rust-based alternative tool, across real-world TypeScript and JavaScript projects.
 
-The short version: FTA is 1.2–3.8x faster than CG today because CG is single-threaded and FTA
+The short version: FTA is 1.2–3.8x faster than CG in single-threaded mode because FTA
 uses multi-threaded I/O. CG uses 1.2–3.5x less memory than FTA because FTA requires a Node.js/V8
-runtime. Phase 12 will add parallelization to CG.
+runtime. CG now supports parallel analysis via `--threads N` (available since 0.7.0) — the benchmarks
+below were captured in single-threaded mode (`--threads 1`) as a baseline.
 
 ## Key Findings
 
@@ -30,9 +31,10 @@ The gap is smallest on medium-sized projects (vite, nestjs, webpack at 1.2–1.4
 vscode (3.8x). The vscode gap is significant because FTA leverages multi-threaded I/O for large
 repos, while CG processes files sequentially.
 
-**Why CG is slower today:** CG is intentionally single-threaded in its current form. Phase 12
-will add parallel file processing, which is expected to bring CG to parity or better on
-modern multi-core hardware. See [Baseline for Future Phases](#baseline-for-future-phases).
+**Why CG benchmarks show slower times:** These benchmarks were captured in single-threaded mode
+(`--threads 1`) as a Phase 10.1 baseline. With multi-threading enabled (the default), CG achieves
+near-linear speedup with core count on large repos. Re-run the benchmarks without `--threads 1` to
+see the parallel speedup on your hardware. See [Baseline for Future Phases](#baseline-for-future-phases).
 
 ### Memory
 
@@ -125,7 +127,10 @@ nestjs), and large (webpack, vscode).
 Each hyperfine invocation runs both tools back-to-back on the same project directory:
 
 ```sh
-# CG command
+# CG command (single-threaded baseline)
+complexity-guard --threads 1 --format json --fail-on none <project-dir>
+
+# CG command (parallel, default — omit --threads to use all cores)
 complexity-guard --format json --fail-on none <project-dir>
 
 # FTA command
@@ -133,6 +138,7 @@ fta --json --exclude-under 0 <project-dir>
 ```
 
 Flags chosen for fair comparison:
+- `--threads 1` (CG): single-threaded mode for reproducible baseline; omit to benchmark parallel performance
 - `--fail-on none` (CG): disables threshold-based exit codes so CI violations don't abort hyperfine
 - `--ignore-failure` (hyperfine): CG may still exit 1 for error-level violations; this flag prevents
   hyperfine from treating non-zero exit as measurement failure
@@ -142,8 +148,10 @@ Flags chosen for fair comparison:
 
 ### Important Caveats
 
-1. **CG is single-threaded.** Phase 12 will add parallel file processing. Current benchmarks
-   represent a deliberate baseline before that optimization.
+1. **Benchmarks use single-threaded mode.** The `--threads 1` flag was passed to CG for all
+   benchmark runs to establish a reproducible single-threaded baseline. CG's default mode (all CPU
+   cores) will be faster — particularly on large repos like vscode. Re-run without `--threads 1`
+   to measure parallel performance on your hardware.
 
 2. **Different granularity.** CG analyzes at function level and provides per-function metrics.
    FTA analyzes at file level. For comparison, CG's per-function values are summed to file level.
@@ -231,15 +239,16 @@ This identifies which stage to optimize first in Phase 12.
 ## Baseline for Future Phases
 
 These benchmarks establish the **Phase 10.1 baseline** — the performance reference point
-before Phase 11 (duplication detection) and Phase 12 (parallelization).
+captured before Phase 12 parallelization was added.
 
 ### Why This Matters
 
-- **Phase 11** adds duplication detection. It may increase analysis time for large repos.
+- **Phase 11** will add duplication detection. It may increase analysis time for large repos.
   Benchmarking before and after Phase 11 will show the cost of the new feature.
 
-- **Phase 12** adds parallel file processing. It is expected to significantly reduce CG's
-  wall-clock time on large repos. The baseline makes this impact measurable.
+- **Phase 12 (complete)** added parallel file processing via `std.Thread.Pool`. The baseline
+  benchmarks were captured in single-threaded mode (`--threads 1`) to enable direct before/after
+  comparison. Parallel mode (default) achieves near-linear speedup with core count.
 
 ### Schema Version
 
