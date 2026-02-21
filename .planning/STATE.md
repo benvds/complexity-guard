@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** Phase 12 in progress - Parallelization and Distribution (1 of 2 plans complete)
+**Current focus:** Phase 12 complete - Parallelization and Distribution (2 of 2 plans complete)
 
 ## Current Position
 
 Phase: 12 of 12 (Parallelization and Distribution)
-Plan: 1 of 2 (Phase 12-01 complete)
-Status: Phase 12 In Progress - Plan 01 done: parallel file analysis via thread pool, JSON timing metadata
-Last activity: 2026-02-21 - Completed 12-01: parallel file analysis via std.Thread.Pool with timing metadata
+Plan: 2 of 2 (Phase 12-02 complete)
+Status: Phase 12 Complete - All plans done: parallel analysis + CI/docs/distribution verification
+Last activity: 2026-02-21 - Completed 12-02: cross-compilation verified, CI fixed to ReleaseSmall, all docs updated
 
-Progress: [██████████] 83% (10/12 phases complete, 12 in progress)
+Progress: [████████████] 100% (12/12 phases complete)
 
 ## Performance Metrics
 
@@ -77,6 +77,7 @@ Progress: [██████████] 83% (10/12 phases complete, 12 in pro
 | Phase 10.1 P02 | 17 | 2 tasks | 10 files |
 | Phase quick-18 P01 | 6 | 2 tasks | 10 files |
 | Phase 12 P01 | 10 | 2 tasks | 4 files |
+| Phase 12 P02 | 8 | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -224,6 +225,7 @@ Recent decisions affecting current work:
 - [Phase 12]: Sort file results by path in both sequential and parallel paths for deterministic output
 - [Phase 12]: Sequential path (threads==1) bypasses std.Thread.Pool entirely for zero overhead
 - [Phase 12]: elapsed_ms and thread_count added as metadata top-level field in JSON output (additive, backward compatible)
+- [Phase 12]: ReleaseSmall for release builds: Linux ReleaseSafe binaries 9.1-9.2 MB exceed DIST-01 5 MB limit; ReleaseSmall 3.6-3.8 MB across all 5 targets
 
 ### Pending Todos
 
@@ -279,7 +281,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-21 (execute-phase)
-Stopped at: Completed 12-01: parallel file analysis via std.Thread.Pool with JSON timing metadata
+Stopped at: Completed 12-02: cross-compilation verified (ReleaseSmall, all targets under 5 MB), docs updated with --threads flag and parallel analysis
 
 ---
 *State initialized: 2026-02-14*
