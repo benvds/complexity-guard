@@ -78,6 +78,7 @@ Progress: [████████████] 100% (12/12 phases complete)
 | Phase quick-18 P01 | 6 | 2 tasks | 10 files |
 | Phase 12 P01 | 10 | 2 tasks | 4 files |
 | Phase 12 P02 | 8 | 2 tasks | 12 files |
+| Phase quick-20 P01 | 2 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -226,6 +227,7 @@ Recent decisions affecting current work:
 - [Phase 12]: Sequential path (threads==1) bypasses std.Thread.Pool entirely for zero overhead
 - [Phase 12]: elapsed_ms and thread_count added as metadata top-level field in JSON output (additive, backward compatible)
 - [Phase 12]: ReleaseSmall for release builds: Linux ReleaseSafe binaries 9.1-9.2 MB exceed DIST-01 5 MB limit; ReleaseSmall 3.6-3.8 MB across all 5 targets
+- [Phase quick-20]: --error-exitcode=99 distinguishes Valgrind errors from CG threshold exits; memory-check CI job runs parallel to test matrix on ubuntu-latest
 
 ### Pending Todos
 
