@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** Phase 10.1 in progress - Performance benchmarks and FTA comparison (3 of 3 plans complete, pending Plan 02)
+**Current focus:** Phase 10.1 complete - Performance benchmarks and FTA comparison (3 of 3 plans complete)
 
 ## Current Position
 
 Phase: 10.1 of 12 (Performance Benchmarks and FTA Comparison)
-Plan: 3 of 3 (COMPLETE — Plan 03 done; Plan 02 subsystem benchmarks in parallel wave)
-Status: Phase 10.1-03 Complete - Metric accuracy comparison scripts + benchmark docs: compare-metrics.sh, compare_metrics.py, summarize_results.py, docs/benchmarks.md, benchmarks/README.md
-Last activity: 2026-02-21 - Completed 10.1-03: Metric accuracy comparison tooling and comprehensive benchmark documentation
+Plan: 3 of 3 (ALL COMPLETE)
+Status: Phase 10.1 Complete - All 3 plans done: benchmark infrastructure, Zig subsystem profiler, metric accuracy comparison + docs
+Last activity: 2026-02-21 - Completed 10.1-02: Zig subsystem benchmark module, bench-subsystems.sh, baseline timing (parsing = 40-64% hotspot)
 
 Progress: [██████████] 83% (10/12 phases complete, 10.1 in progress)
 
@@ -74,6 +74,7 @@ Progress: [██████████] 83% (10/12 phases complete, 10.1 in p
 | Phase 10-html-reports P04 | 2 | 2 tasks | 1 files |
 | Phase 10.1 P01 | 28 | 2 tasks | 7 files |
 | Phase 10.1 P03 | 12 | 2 tasks | 14 files |
+| Phase 10.1 P02 | 17 | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -213,6 +214,9 @@ Recent decisions affecting current work:
 - [Phase 10.1]: compare_metrics.py path normalization: normalize_cg_path strips absolute prefix up to project-name segment; FTA paths used as-is (already relative to project root)
 - [Phase 10.1]: summarize_results.py speedup formula: CG_time/FTA_time (>1.0 = FTA is faster), not FTA/CG which was inverted
 - [Phase 10.1]: build.zig bench artifact: b.addInstallArtifact (not b.installArtifact) so bench binary only builds on zig build bench, not blocking default zig build
+- [Phase 10.1]: Single cg module from src/lib.zig: Zig 0.15 forbids files in multiple named modules — all src/ files form one transitive dependency graph via relative imports
+- [Phase 10.1]: bench-build step separate from bench: scripts compile the binary first, then invoke it directly with their own args (zig build bench runs the binary with no args)
+- [Phase 10.1]: Parsing is dominant hotspot at 40-64% of total pipeline time across all 7 quick-suite projects — Phase 12 parallelization should prioritize the parser stage
 
 ### Pending Todos
 

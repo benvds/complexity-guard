@@ -214,7 +214,7 @@ Plans:
 
 **Goal:** Setup extensive performance tests, compare to FTA tool (https://github.com/sgb-io/fta), use tests/public-projects.json to test against real world projects, use a scientific sound approach to test, verify and reach conclusions, document this all exhaustively — this will be used to do impact analysis of upcoming code duplication and parallelization features
 **Depends on:** Phase 10
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [ ] 10.1-01-PLAN.md -- Benchmark infrastructure, project clone scripts, and end-to-end hyperfine benchmark scripts
