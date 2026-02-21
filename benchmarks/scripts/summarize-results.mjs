@@ -115,15 +115,26 @@ function parseHyperfineFile(filepath) {
 /**
  * Parse a Zig subsystem benchmark JSON file.
  *
- * Expected schema: { project, suite, subsystems: [{ name, mean_ms, stddev_ms }] }
- * Returns null on error.
+ * Handles two schemas:
+ *   - Array schema: { project, subsystems: [{ name, mean_ms, stddev_ms }] }
+ *   - Object schema: { project, subsystems: { name: { mean_ms, ... }, ... } }
+ * Normalizes to array schema before returning. Returns null on error.
  * @param {string} filepath
  * @returns {object|null}
  */
 function parseSubsystemsFile(filepath) {
   try {
     const content = fs.readFileSync(filepath, 'utf8');
-    return JSON.parse(content);
+    const data = JSON.parse(content);
+    // Normalize object-keyed subsystems to array format
+    if (data.subsystems && !Array.isArray(data.subsystems) && typeof data.subsystems === 'object') {
+      data.subsystems = Object.entries(data.subsystems).map(([name, stats]) => ({
+        name,
+        mean_ms: stats.mean_ms || 0,
+        stddev_ms: stats.stddev_ms || 0,
+      }));
+    }
+    return data;
   } catch (e) {
     process.stderr.write(`Warning: Could not load ${filepath}: ${e.message}\n`);
     return null;
@@ -303,9 +314,27 @@ function main() {
   const suiteSet = new Set(benchmarkResults.map(r => r.suite));
   const suites = [...suiteSet].sort();
 
+  // Load system info if present
+  const systemInfoPath = path.join(resultsDir, 'system-info.json');
+  let systemInfo = null;
+  try {
+    systemInfo = JSON.parse(fs.readFileSync(systemInfoPath, 'utf8'));
+  } catch (_e) { /* system-info.json not present in older baselines */ }
+
   // Print markdown output
   console.log('## ComplexityGuard vs FTA: Benchmark Summary\n');
   console.log(`Results from: \`${resultsDir}\`\n`);
+
+  if (systemInfo) {
+    console.log('### System\n');
+    console.log('| Component | Value |');
+    console.log('| --------- | ----- |');
+    console.log(`| CPU | ${systemInfo.cpu.model} (${systemInfo.cpu.cores} cores / ${systemInfo.cpu.threads} threads) |`);
+    console.log(`| Memory | ${systemInfo.memory.total_gb} GB |`);
+    console.log(`| OS | ${systemInfo.os} (kernel ${systemInfo.kernel}) |`);
+    console.log(`| Architecture | ${systemInfo.arch} |`);
+    console.log('');
+  }
 
   for (const suite of suites) {
     printSpeedTable(benchmarkResults, suite);
@@ -370,6 +399,7 @@ function main() {
   if (jsonOutputPath) {
     const summary = {
       results_dir: resultsDir,
+      system_info: systemInfo,
       benchmark_results: benchmarkResults,
       subsystem_data: subsystemData,
       accuracy_data: accuracyData,

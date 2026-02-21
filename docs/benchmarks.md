@@ -81,8 +81,17 @@ strongest (74–94% within ±20% tolerance).
 
 ### Hardware
 
-Benchmarks were run on a Linux x86-64 development machine. For reproducible results on your
-hardware, run `bash benchmarks/scripts/bench-quick.sh` directly.
+Benchmarks were run on the following system:
+
+| Component | Value |
+| --------- | ----- |
+| CPU | AMD Ryzen 7 5700U with Radeon Graphics (8 cores / 16 threads, up to 4.37 GHz) |
+| Memory | 13.5 GB DDR4 |
+| OS | Fedora Linux 43 (kernel 6.18.9) |
+| Architecture | x86_64 |
+
+For reproducible results on your hardware, run `bash benchmarks/scripts/bench-quick.sh` directly.
+System specs are automatically captured in `system-info.json` alongside benchmark results.
 
 ### Tool Versions
 

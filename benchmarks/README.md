@@ -73,6 +73,7 @@ libraries (got: 68 files) to massive projects (vscode: 5,000+ files).
 ```
 benchmarks/results/
   baseline-2026-02-21/          # Timestamped baseline directory
+    system-info.json              # Hardware specs captured during benchmark run
     zod-quick.json              # hyperfine JSON: CG vs FTA timings for zod
     got-quick.json              # hyperfine JSON: CG vs FTA timings for got
     ...
@@ -143,6 +144,33 @@ Each `*-quick.json` / `*-full.json` / `*-stress.json` file follows the
   }
 ]
 ```
+
+### System Info JSON Schema (`system-info.json`)
+
+Each benchmark results directory contains a `system-info.json` file automatically captured
+by the bench scripts. This documents the hardware context for reproducibility and comparison.
+
+```json
+{
+  "hostname": "fedora.home",
+  "os": "Fedora Linux 43",
+  "kernel": "6.18.9-200.fc43.x86_64",
+  "arch": "x86_64",
+  "cpu": {
+    "model": "AMD Ryzen 7 5700U with Radeon Graphics",
+    "cores": 8,
+    "threads": 16,
+    "max_mhz": 4374
+  },
+  "memory": {
+    "total_gb": 13.5
+  },
+  "captured_at": "2026-02-21T00:00:00Z"
+}
+```
+
+If multiple bench scripts write to the same dated results directory, only the first one
+writes `system-info.json` (subsequent scripts skip if the file already exists).
 
 ## Interpreting Results
 
