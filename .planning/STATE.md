@@ -75,6 +75,7 @@ Progress: [██████████] 83% (10/12 phases complete, 10.1 in p
 | Phase 10.1 P01 | 28 | 2 tasks | 7 files |
 | Phase 10.1 P03 | 12 | 2 tasks | 14 files |
 | Phase 10.1 P02 | 17 | 2 tasks | 10 files |
+| Phase quick-18 P01 | 6 | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -217,6 +218,7 @@ Recent decisions affecting current work:
 - [Phase 10.1]: Single cg module from src/lib.zig: Zig 0.15 forbids files in multiple named modules — all src/ files form one transitive dependency graph via relative imports
 - [Phase 10.1]: bench-build step separate from bench: scripts compile the binary first, then invoke it directly with their own args (zig build bench runs the binary with no args)
 - [Phase 10.1]: Parsing is dominant hotspot at 40-64% of total pipeline time across all 7 quick-suite projects — Phase 12 parallelization should prioritize the parser stage
+- [Phase quick-18]: Node.js ESM (.mjs) for Python script ports: same Node.js runtime already required for FTA install, so no new prerequisite; jq for inline shell JSON extraction (simpler, no subprocess)
 
 ### Pending Todos
 
