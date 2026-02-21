@@ -106,4 +106,53 @@ pub fn build(b: *std.Build) void {
     const run_unit_tests = b.addRunArtifact(unit_tests);
     const test_step = b.step("test", "Run unit tests");
     test_step.dependOn(&run_unit_tests.step);
+
+    // Bench step: Zig subsystem benchmark profiling each pipeline stage independently.
+    //
+    // All src/ files use relative @import paths and share a single interconnected
+    // dependency graph. They're exposed to benchmark.zig via a single "cg" named module
+    // rooted at src/lib.zig, which re-exports each pipeline namespace as pub fields.
+    // This avoids the "file exists in multiple modules" error that occurs when shared
+    // files (e.g. tree_sitter.zig) are reachable via multiple named module paths.
+    //
+    // The only named package import in the src/ tree is "toml" (in config.zig).
+    const bench_exe = b.addExecutable(.{
+        .name = "complexity-bench",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("benchmarks/src/benchmark.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+
+    // Add tree-sitter C sources (required for parser)
+    addTreeSitterSources(b, bench_exe);
+
+    // Single "cg" module exposing all pipeline namespaces via src/lib.zig.
+    // All relative imports within src/ resolve correctly from the module root.
+    // toml is registered here because scoring.zig -> config.zig -> @import("toml").
+    // tree-sitter include paths are added to cg_mod because tree_sitter.zig uses
+    // @cImport for tree_sitter/api.h — modules need their own include path setup.
+    const cg_mod = b.createModule(.{
+        .root_source_file = b.path("src/lib.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    cg_mod.addImport("toml", toml_dep.module("toml"));
+    cg_mod.addIncludePath(b.path("vendor/tree-sitter/lib/include"));
+    cg_mod.addIncludePath(b.path("vendor/tree-sitter/lib/src"));
+    cg_mod.addIncludePath(b.path("vendor/tree-sitter/lib/src/unicode"));
+    bench_exe.root_module.addImport("cg", cg_mod);
+
+    // Install bench binary only when the bench step is explicitly requested.
+    // Using addInstallArtifact (not installArtifact) keeps bench isolated from
+    // the default install step, so `zig build` and `zig build test` are unaffected.
+    const bench_install = b.addInstallArtifact(bench_exe, .{});
+
+    const bench_run = b.addRunArtifact(bench_exe);
+    bench_run.step.dependOn(&bench_install.step);
+    if (b.args) |args| bench_run.addArgs(args);
+
+    const bench_step = b.step("bench", "Run subsystem benchmarks");
+    bench_step.dependOn(&bench_run.step);
 }
