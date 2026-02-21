@@ -72,6 +72,7 @@ Top Halstead volume hotspots:
 - **Selective Metrics**: Use `--metrics cyclomatic,halstead` to compute only specific families
 - **Zero Config**: Works out of the box with sensible defaults, optional `.complexityguard.json` for customization
 - **Single Binary**: No runtime dependencies, runs offline, fast startup — under 300ms on mid-size projects
+- **Fast**: 1.5–3.1x faster than FTA with parallel analysis across all CPU cores (see [benchmarks](docs/benchmarks.md))
 - **Low Memory Footprint**: 1.2–2.2x less memory than Node.js-based tools on small and medium projects (see [benchmarks](docs/benchmarks.md))
 - **Error-Tolerant Parsing**: Tree-sitter based parser handles syntax errors gracefully, continues analysis on remaining files
 

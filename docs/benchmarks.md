@@ -4,37 +4,47 @@ ComplexityGuard is a native Zig binary with no runtime dependencies. This page d
 performance characteristics measured against [FTA](https://ftaproject.dev/) (Fast TypeScript
 Analyzer), a Rust-based alternative tool, across real-world TypeScript and JavaScript projects.
 
-The short version: FTA is 1.2–3.8x faster than CG in single-threaded mode because FTA
-uses multi-threaded I/O. CG uses 1.2–3.5x less memory than FTA because FTA requires a Node.js/V8
-runtime. CG now supports parallel analysis via `--threads N` (available since 0.7.0) — the benchmarks
-below were captured in single-threaded mode (`--threads 1`) as a baseline.
+The short version: CG is 1.5–3.1x faster than FTA with parallel analysis enabled (the default).
+CG uses 1.2–3.5x less memory than FTA because FTA requires a Node.js/V8 runtime.
 
 ## Key Findings
 
 ### Speed
 
-FTA is currently faster than CG on most projects:
+CG is faster than FTA on all quick-suite projects with parallel analysis (the default):
 
 | Project | CG (ms) | FTA (ms) | Speedup | Project Size |
 |---------|---------|---------|---------|-------------|
-| got | 131 ± 1 | 104 ± 2 | 1.3x FTA | 68 files |
-| dayjs | 206 ± 1 | 137 ± 2 | 1.5x FTA | 283 files |
-| zod | 291 ± 3 | 150 ± 3 | 1.9x FTA | 169 files |
-| vite | 481 ± 3 | 400 ± 7 | 1.2x FTA | 1,182 files |
-| nestjs | 588 ± 3 | 414 ± 4 | 1.4x FTA | 1,653 files |
-| webpack | 1,735 ± 4 | 1,275 ± 10 | 1.4x FTA | 6,889 files |
-| vscode | 19,845 ± 340 | 5,256 ± 52 | 3.8x FTA | 5,071 files |
+| got | 37 ± 4 | 106 ± 4 | 2.9x CG | 68 files |
+| dayjs | 56 ± 2 | 139 ± 2 | 2.5x CG | 283 files |
+| zod | 82 ± 3 | 154 ± 2 | 1.9x CG | 169 files |
+| vite | 131 ± 4 | 411 ± 8 | 3.1x CG | 1,182 files |
+| nestjs | 145 ± 3 | 424 ± 7 | 2.9x CG | 1,653 files |
+| webpack | 678 ± 49 | 1,320 ± 13 | 1.9x CG | 6,889 files |
+| vscode | 3,394 ± 124 | 5,218 ± 96 | 1.5x CG | 5,071 files |
 
-**Mean: FTA is 1.8x faster than CG** across the quick suite.
+**Mean: CG is 2.4x faster than FTA** across the quick suite.
 
-The gap is smallest on medium-sized projects (vite, nestjs, webpack at 1.2–1.4x) and largest on
-vscode (3.8x). The vscode gap is significant because FTA leverages multi-threaded I/O for large
-repos, while CG processes files sequentially.
+The advantage is largest on medium-sized projects (vite at 3.1x, nestjs at 2.9x) where CG's
+multi-threaded analysis scales well relative to project size. Even the largest project (vscode,
+5,071 files) analyzes in 3.4 seconds — a 5.8x speedup over CG's single-threaded baseline.
 
-**Why CG benchmarks show slower times:** These benchmarks were captured in single-threaded mode
-(`--threads 1`) as a Phase 10.1 baseline. With multi-threading enabled (the default), CG achieves
-near-linear speedup with core count on large repos. Re-run the benchmarks without `--threads 1` to
-see the parallel speedup on your hardware. See [Baseline for Future Phases](#baseline-for-future-phases).
+### Parallelization Impact
+
+Parallel analysis (added in Phase 12) delivers 2.6–5.8x speedup over single-threaded mode:
+
+| Project | Single-threaded (ms) | Parallel (ms) | Speedup | Files |
+|---------|---------------------|---------------|---------|-------|
+| got | 131 | 37 | 3.5x | 68 |
+| dayjs | 206 | 56 | 3.7x | 283 |
+| zod | 291 | 82 | 3.6x | 169 |
+| vite | 481 | 131 | 3.7x | 1,182 |
+| nestjs | 588 | 145 | 4.1x | 1,653 |
+| webpack | 1,735 | 678 | 2.6x | 6,889 |
+| vscode | 19,845 | 3,394 | 5.8x | 5,071 |
+
+**Mean: 3.9x speedup** with parallelization on 8 cores / 16 threads. The speedup is largest on
+vscode (5.8x) where CG can saturate all cores with file-level parallelism.
 
 ### Memory
 
@@ -127,18 +137,17 @@ nestjs), and large (webpack, vscode).
 Each hyperfine invocation runs both tools back-to-back on the same project directory:
 
 ```sh
-# CG command (single-threaded baseline)
-complexity-guard --threads 1 --format json --fail-on none <project-dir>
-
-# CG command (parallel, default — omit --threads to use all cores)
+# CG command (parallel, default — uses all CPU cores)
 complexity-guard --format json --fail-on none <project-dir>
+
+# CG command (single-threaded — for baseline comparison)
+complexity-guard --threads 1 --format json --fail-on none <project-dir>
 
 # FTA command
 fta --json --exclude-under 0 <project-dir>
 ```
 
 Flags chosen for fair comparison:
-- `--threads 1` (CG): single-threaded mode for reproducible baseline; omit to benchmark parallel performance
 - `--fail-on none` (CG): disables threshold-based exit codes so CI violations don't abort hyperfine
 - `--ignore-failure` (hyperfine): CG may still exit 1 for error-level violations; this flag prevents
   hyperfine from treating non-zero exit as measurement failure
@@ -148,10 +157,8 @@ Flags chosen for fair comparison:
 
 ### Important Caveats
 
-1. **Benchmarks use single-threaded mode.** The `--threads 1` flag was passed to CG for all
-   benchmark runs to establish a reproducible single-threaded baseline. CG's default mode (all CPU
-   cores) will be faster — particularly on large repos like vscode. Re-run without `--threads 1`
-   to measure parallel performance on your hardware.
+1. **Parallel by default.** CG benchmarks use the default parallel mode (all CPU cores). Pass
+   `--threads 1` for single-threaded baseline comparison. Results will vary by core count.
 
 2. **Different granularity.** CG analyzes at function level and provides per-function metrics.
    FTA analyzes at file level. For comparison, CG's per-function values are summed to file level.
@@ -197,7 +204,8 @@ Results will differ based on hardware but relative ratios should be consistent.
 ### Speed and Memory (Quick Suite)
 
 See the table in [Key Findings: Speed](#speed) above. Raw data is available in
-`benchmarks/results/baseline-2026-02-21/`:
+`benchmarks/results/baseline-2026-02-21/` (parallel) and
+`benchmarks/results/baseline-2026-02-21-single-threaded/` (single-threaded baseline):
 
 - Per-project timing: `*-quick.json` (hyperfine JSON format)
 - Aggregate summary: run `node benchmarks/scripts/summarize-results.mjs benchmarks/results/baseline-2026-02-21/`
@@ -236,24 +244,22 @@ This identifies which stage to optimize first in Phase 12.
 
 ---
 
-## Baseline for Future Phases
+## Baseline History
 
-These benchmarks establish the **Phase 10.1 baseline** — the performance reference point
-captured before Phase 12 parallelization was added.
+### Phase 12: Parallelization (current)
 
-### Why This Matters
+The current benchmarks reflect CG with parallel analysis enabled (the default since Phase 12).
+CG went from 1.2–3.8x slower than FTA to 1.5–3.1x faster across all projects.
 
-- **Phase 11** will add duplication detection. It may increase analysis time for large repos.
-  Benchmarking before and after Phase 11 will show the cost of the new feature.
+### Phase 10.1: Single-threaded Baseline
 
-- **Phase 12 (complete)** added parallel file processing via `std.Thread.Pool`. The baseline
-  benchmarks were captured in single-threaded mode (`--threads 1`) to enable direct before/after
-  comparison. Parallel mode (default) achieves near-linear speedup with core count.
+The Phase 10.1 baseline captured single-threaded (`--threads 1`) performance before
+parallelization. Raw data is preserved in `benchmarks/results/baseline-2026-02-21-single-threaded/`.
 
 ### Schema Version
 
 The benchmark JSON schema is at **version 1.0**. The schema is intentionally stable so
-Phase 11/12 before/after comparisons require no format conversion.
+before/after comparisons require no format conversion.
 
 The schema consists of:
 - hyperfine JSON format (from `hyperfine --export-json`)
@@ -263,7 +269,7 @@ The schema consists of:
 
 ### Running a New Baseline
 
-After Phase 11 or 12 changes are merged, capture a new baseline:
+Capture a new baseline at any time:
 
 ```sh
 bash benchmarks/scripts/setup.sh --suite quick
@@ -272,20 +278,14 @@ bash benchmarks/scripts/compare-metrics.sh --suite quick
 ```
 
 The results directory will be timestamped automatically (`baseline-YYYY-MM-DD`).
-Compare old and new summaries to measure phase impact:
-
-```sh
-node benchmarks/scripts/summarize-results.mjs benchmarks/results/baseline-2026-02-21/ > before.md
-node benchmarks/scripts/summarize-results.mjs benchmarks/results/baseline-<new-date>/ > after.md
-diff before.md after.md
-```
 
 ### Raw Data
 
 All raw benchmark data is committed to the repository in
 [`benchmarks/results/`](../benchmarks/results/). This includes:
 
-- `baseline-2026-02-21/*.json` — Phase 10.1 baseline: 7 quick-suite projects
-- `metric-accuracy.json` — Phase 10.1 metric accuracy comparison
+- `baseline-2026-02-21/*.json` — Phase 12 parallel benchmarks: 7 quick-suite projects
+- `baseline-2026-02-21-single-threaded/*.json` — Phase 10.1 single-threaded baseline
+- `metric-accuracy.json` — Metric accuracy comparison
 
 See [`benchmarks/`](../benchmarks/) for scripts and additional documentation.
