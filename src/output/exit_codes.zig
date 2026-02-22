@@ -305,3 +305,65 @@ test "ExitCode.toInt: returns correct numeric values" {
     try std.testing.expectEqual(@as(u8, 3), ExitCode.config_error.toInt());
     try std.testing.expectEqual(@as(u8, 4), ExitCode.parse_error.toInt());
 }
+
+test "worstStatusForMetrics: null metrics considers all families" {
+    const result = cyclomatic.ThresholdResult{
+        .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function",
+        .start_line = 1, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok,
+        .halstead_volume_status = .warning,
+    };
+    try std.testing.expectEqual(cyclomatic.ThresholdStatus.warning, worstStatusForMetrics(result, null));
+}
+
+test "worstStatusForMetrics: cyclomatic-only ignores halstead warning" {
+    const result = cyclomatic.ThresholdResult{
+        .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function",
+        .start_line = 1, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok,
+        .halstead_volume_status = .warning,
+    };
+    const metrics = [_][]const u8{"cyclomatic"};
+    try std.testing.expectEqual(cyclomatic.ThresholdStatus.ok, worstStatusForMetrics(result, &metrics));
+}
+
+test "worstStatusForMetrics: cognitive-only ignores structural" {
+    const result = cyclomatic.ThresholdResult{
+        .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function",
+        .start_line = 1, .start_col = 0, .cognitive_complexity = 16, .cognitive_status = .warning,
+        .nesting_depth_status = .@"error",
+    };
+    const metrics = [_][]const u8{"cognitive"};
+    try std.testing.expectEqual(cyclomatic.ThresholdStatus.warning, worstStatusForMetrics(result, &metrics));
+}
+
+test "countViolationsFiltered: filters by enabled metrics" {
+    // Result 1: cyclomatic ok, halstead warning
+    // Result 2: cyclomatic warning
+    const results = [_]cyclomatic.ThresholdResult{
+        .{ .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function",
+           .start_line = 1, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok,
+           .halstead_volume_status = .warning },
+        .{ .complexity = 12, .status = .warning, .function_name = "bar", .function_kind = "function",
+           .start_line = 10, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok },
+    };
+    const metrics = [_][]const u8{"cyclomatic"};
+    const counts = countViolationsFiltered(&results, &metrics);
+    // halstead warning on result 1 is ignored; only cyclomatic warning on result 2 counts
+    try std.testing.expectEqual(@as(u32, 1), counts.warnings);
+    try std.testing.expectEqual(@as(u32, 0), counts.errors);
+}
+
+test "countViolationsFiltered: null metrics matches countViolations" {
+    const results = [_]cyclomatic.ThresholdResult{
+        .{ .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function",
+           .start_line = 1, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok,
+           .halstead_volume_status = .warning },
+        .{ .complexity = 12, .status = .warning, .function_name = "bar", .function_kind = "function",
+           .start_line = 10, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok },
+        .{ .complexity = 25, .status = .@"error", .function_name = "baz", .function_kind = "function",
+           .start_line = 20, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok },
+    };
+    const all = countViolations(&results);
+    const filtered = countViolationsFiltered(&results, null);
+    try std.testing.expectEqual(all.warnings, filtered.warnings);
+    try std.testing.expectEqual(all.errors, filtered.errors);
+}

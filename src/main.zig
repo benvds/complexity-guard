@@ -980,6 +980,33 @@ test "buildStructuralConfig: very high thresholds suppress file-level violations
     try std.testing.expect(result.export_count_warning > 20);
 }
 
+test "buildCyclomaticConfig: applies config thresholds" {
+    const thresholds = config_mod.ThresholdsConfig{
+        .cyclomatic = config_mod.ThresholdPair{ .warning = 15, .@"error" = 30 },
+    };
+    const result = buildCyclomaticConfig(thresholds);
+    try std.testing.expectEqual(@as(u32, 15), result.warning_threshold);
+    try std.testing.expectEqual(@as(u32, 30), result.error_threshold);
+}
+
+test "buildCyclomaticConfig: falls back to defaults for null" {
+    const thresholds = config_mod.ThresholdsConfig{};
+    const default_cycl = cyclomatic.CyclomaticConfig.default();
+    const result = buildCyclomaticConfig(thresholds);
+    try std.testing.expectEqual(default_cycl.warning_threshold, result.warning_threshold);
+    try std.testing.expectEqual(default_cycl.error_threshold, result.error_threshold);
+}
+
+test "buildCyclomaticConfig: partial override (warning only)" {
+    const thresholds = config_mod.ThresholdsConfig{
+        .cyclomatic = config_mod.ThresholdPair{ .warning = 12, .@"error" = null },
+    };
+    const default_cycl = cyclomatic.CyclomaticConfig.default();
+    const result = buildCyclomaticConfig(thresholds);
+    try std.testing.expectEqual(@as(u32, 12), result.warning_threshold);
+    try std.testing.expectEqual(default_cycl.error_threshold, result.error_threshold);
+}
+
 // Import core modules to ensure their tests are discovered
 test {
     _ = @import("core/types.zig");
