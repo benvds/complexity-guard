@@ -53,13 +53,13 @@ complexity-guard --version
 
 **`--init`**
 
-Generate a `.complexityguard.json` configuration file with default thresholds and weights.
+Generate a `.complexityguard.json` configuration file with all available options and sensible defaults. The generated file includes every threshold category, file patterns, metric weights, and a baseline placeholder — edit it to customize for your project.
 
 ```sh
 complexity-guard --init
 ```
 
-Creates a config file with standard thresholds, default metric weights, and common exclude patterns. Edit the generated file to customize for your project.
+Creates a comprehensive config file covering all 12 threshold categories (cyclomatic, cognitive, Halstead, structural, duplication), file include/exclude patterns, metric weights, and a baseline placeholder. Edit the generated file to customize for your project.
 
 ### Output
 
