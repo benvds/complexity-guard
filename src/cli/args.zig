@@ -16,6 +16,7 @@ pub const CliArgs = struct {
     include: []const []const u8 = &[_][]const u8{},
     exclude: []const []const u8 = &[_][]const u8{},
     metrics: ?[]const u8 = null,
+    duplication: bool = false,
     no_duplication: bool = false,
     save_baseline: bool = false,
     threads: ?[]const u8 = null,
@@ -70,6 +71,8 @@ pub fn parseArgsFromSlice(allocator: std.mem.Allocator, args: []const []const u8
                 cli_args.version = true;
             } else if (std.mem.eql(u8, flag, "init")) {
                 cli_args.init = true;
+            } else if (std.mem.eql(u8, flag, "duplication")) {
+                cli_args.duplication = true;
             } else if (std.mem.eql(u8, flag, "no-duplication")) {
                 cli_args.no_duplication = true;
             } else if (std.mem.eql(u8, flag, "save-baseline")) {

@@ -26,6 +26,7 @@ pub const AnalysisConfig = struct {
     metrics: ?[]const []const u8 = null, // ["cyclomatic", "cognitive", "halstead"]
     thresholds: ?ThresholdsConfig = null,
     no_duplication: ?bool = null,
+    duplication_enabled: ?bool = null,
     threads: ?u32 = null,
 };
 
@@ -42,6 +43,7 @@ pub const ThresholdsConfig = struct {
     params_count: ?ThresholdPair = null,
     file_length: ?ThresholdPair = null,
     export_count: ?ThresholdPair = null,
+    duplication: ?DuplicationThresholds = null,
 };
 
 /// Warning and error threshold pair for a single metric.
@@ -50,6 +52,14 @@ pub const ThresholdsConfig = struct {
 pub const ThresholdPair = struct {
     warning: ?u32 = null,
     @"error": ?u32 = null,
+};
+
+/// Duplication percentage thresholds (floating-point, not integer).
+pub const DuplicationThresholds = struct {
+    file_warning: ?f64 = null, // default 15.0
+    file_error: ?f64 = null, // default 25.0
+    project_warning: ?f64 = null, // default 5.0
+    project_error: ?f64 = null, // default 10.0
 };
 
 /// File inclusion/exclusion patterns.
@@ -93,6 +103,7 @@ pub fn defaults() Config {
             .metrics = &default_metrics,
             .thresholds = null,
             .no_duplication = false,
+            .duplication_enabled = false,
             .threads = null, // null = use CPU count
         },
         .files = null,
@@ -208,8 +219,9 @@ fn deepCopyConfig(allocator: std.mem.Allocator, config: Config) !Config {
 
         result.analysis = AnalysisConfig{
             .metrics = metrics_copy,
-            .thresholds = analysis.thresholds, // ThresholdPair contains only integers, no strings
+            .thresholds = analysis.thresholds, // ThresholdPair/DuplicationThresholds contain only numbers, no strings
             .no_duplication = analysis.no_duplication,
+            .duplication_enabled = analysis.duplication_enabled,
             .threads = analysis.threads,
         };
     }

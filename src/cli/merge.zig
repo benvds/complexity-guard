@@ -32,6 +32,9 @@ pub fn mergeArgsIntoConfig(cli_args: CliArgs, cfg: *Config) void {
     }
 
     // Merge analysis options
+    if (cli_args.duplication) {
+        cfg.analysis.?.duplication_enabled = true;
+    }
     if (cli_args.no_duplication) {
         cfg.analysis.?.no_duplication = true;
     }
@@ -144,6 +147,18 @@ test "mergeArgsIntoConfig with threads parses to u32" {
 
     try std.testing.expect(cfg.analysis != null);
     try std.testing.expectEqual(@as(?u32, 8), cfg.analysis.?.threads);
+}
+
+test "mergeArgsIntoConfig with --duplication sets duplication_enabled" {
+    var cfg = config.defaults();
+    const cli_args = CliArgs{
+        .duplication = true,
+    };
+
+    mergeArgsIntoConfig(cli_args, &cfg);
+
+    try std.testing.expect(cfg.analysis != null);
+    try std.testing.expectEqual(@as(?bool, true), cfg.analysis.?.duplication_enabled);
 }
 
 test "mergeArgsIntoConfig with include and exclude patterns" {
