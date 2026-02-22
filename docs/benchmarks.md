@@ -244,6 +244,61 @@ This identifies which stage to optimize first in Phase 12.
 
 ---
 
+## Duplication Detection Performance
+
+Duplication detection adds a **cross-file analysis pass** that runs after the standard per-file analysis. This pass re-reads and re-parses all files to build a token index, then runs the Rabin-Karp hash pipeline.
+
+The overhead is significant because duplication detection requires:
+1. Re-reading all source files from disk
+2. Re-parsing all files with tree-sitter (since parse trees were freed after per-file analysis)
+3. Building a cross-file hash index of all 25-token windows
+4. Verifying candidate clone pairs with token-by-token comparison
+
+Duplication is **disabled by default** so these costs are never incurred unless explicitly requested via `--duplication` or `analysis.duplication_enabled: true` in config.
+
+### Results
+
+Benchmarks run on the duplication benchmark subset (zod, got, dayjs) using 5 runs with 2 warmup runs. Same hardware as the main benchmarks.
+
+| Project | Files | Without `--duplication` | With `--duplication` | Overhead |
+|---------|-------|------------------------|----------------------|----------|
+| zod | 169 | 579 ms | 6,817 ms | +6,238 ms (+1,077%) |
+| got | 68 | 216 ms | 1,935 ms | +1,720 ms (+798%) |
+| dayjs | 283 | 362 ms | 1,017 ms | +655 ms (+181%) |
+
+### Interpreting the Numbers
+
+The overhead varies widely across projects:
+
+- **dayjs (181% overhead):** Large number of short files. Re-parsing is fast per file. The token index stays manageable. This is the best-case scenario for duplication detection.
+- **got (798% overhead):** Medium-sized project with complex TypeScript. Re-parsing and hash index construction dominate.
+- **zod (1,077% overhead):** zod has very long, deeply-typed files. Re-parsing complex TypeScript ASTs is expensive, and the token index grows large.
+
+The re-parse approach (chosen for implementation simplicity) is the primary overhead source. A future optimization could cache token sequences during the first parse pass to eliminate the re-parse entirely.
+
+### When to Use `--duplication`
+
+Given the overhead, use duplication detection:
+- **In CI for periodic audits** (daily or on PR, not every commit) — `complexity-guard --duplication src/`
+- **During refactoring sessions** to find copy-paste candidates
+- **In pre-merge gates** when reducing technical debt is a priority
+
+Avoid on very large repos (webpack/vscode scale) in fast CI pipelines — the re-parse overhead will dominate. For those cases, consider running duplication analysis in a separate, less frequent CI job.
+
+### Reproducing
+
+```sh
+# Clone benchmark projects (if not already done)
+bash benchmarks/scripts/setup.sh --suite quick
+
+# Run duplication overhead benchmark
+bash benchmarks/scripts/bench-duplication.sh
+```
+
+Results are saved to `/tmp/bench-dup-*.json` in hyperfine JSON format.
+
+---
+
 ## Baseline History
 
 ### Phase 12: Parallelization (current)
