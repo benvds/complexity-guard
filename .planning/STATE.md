@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** Phase 11 in progress - Duplication Detection (1 of 4 plans complete)
+**Current focus:** Phase 11 in progress - Duplication Detection (2 of 4 plans complete)
 
 ## Current Position
 
 Phase: 11 of 12+ (Duplication Detection)
-Plan: 1 of 4 (Phase 11-01 complete)
-Status: Phase 11 In Progress - Core algorithm (tokenization, rolling hash, cross-file index) complete
-Last activity: 2026-02-22 - Completed 11-01: Rabin-Karp duplication detection core algorithm with tokenization and cross-file indexing
+Plan: 2 of 4 (Phase 11-02 complete)
+Status: Phase 11 In Progress - CLI flag, config, pipeline wiring, and scoring integration complete
+Last activity: 2026-02-22 - Completed 11-02: CLI --duplication flag, DuplicationThresholds config, pipeline wiring, 5-metric scoring
 
 Progress: [████████████] (Phase 11 started)
 
@@ -80,6 +80,7 @@ Progress: [████████████] (Phase 11 started)
 | Phase 12 P02 | 8 | 2 tasks | 12 files |
 | Phase quick-20 P01 | 2 | 2 tasks | 2 files |
 | Phase 11-duplication-detection P01 | 5 | 2 tasks | 5 files |
+| Phase 11-duplication-detection P02 | 5 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -232,6 +233,9 @@ Recent decisions affecting current work:
 - [Phase 11-01]: Identifier sentinel V for Type 2 clone detection (conservative — no string/number literal normalization)
 - [Phase 11-01]: MAX_BUCKET_SIZE=1000 guard prevents O(N^2) verification on common-pattern hash buckets
 - [Phase 11-01]: Include {} in token stream but skip ;/,: preserves block structure for better Type 1 precision
+- [Phase 11-02]: Re-parse approach: main.zig re-reads and re-parses files for duplication tokenization after per-file analysis (trees freed)
+- [Phase 11-02]: duplication_enabled: bool param on resolveEffectiveWeights: single function handles 4-metric and 5-metric normalization modes
+- [Phase 11-02]: duplication: f64 always in EffectiveWeights struct (0.0 when disabled): avoids branching at every use site
 
 ### Pending Todos
 
@@ -288,7 +292,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-22 (execute-phase)
-Stopped at: Completed 11-01: Rabin-Karp duplication detection core algorithm with tokenization, rolling hash, cross-file index, token-by-token verification, and interval merging
+Stopped at: Completed 11-02: CLI --duplication flag, DuplicationThresholds config, pipeline wiring, 5-metric scoring integration
 
 ---
 *State initialized: 2026-02-14*

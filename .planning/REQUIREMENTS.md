@@ -80,8 +80,8 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **DUP-03**: Tool uses Rabin-Karp rolling hash with configurable minimum window (default 25 tokens)
 - [x] **DUP-04**: Tool builds cross-file hash index and verifies matches token-by-token
 - [x] **DUP-05**: Tool merges overlapping matches into maximal clone groups
-- [ ] **DUP-06**: Tool reports clone groups with locations, token counts, and duplication percentages
-- [ ] **DUP-07**: Tool applies configurable thresholds for file duplication % and project duplication %
+- [x] **DUP-06**: Tool reports clone groups with locations, token counts, and duplication percentages
+- [x] **DUP-07**: Tool applies configurable thresholds for file duplication % and project duplication %
 
 ### Structural Metrics
 
@@ -267,8 +267,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DUP-03 | Phase 11 | Complete |
 | DUP-04 | Phase 11 | Complete |
 | DUP-05 | Phase 11 | Complete |
-| DUP-06 | Phase 11 | Pending |
-| DUP-07 | Phase 11 | Pending |
+| DUP-06 | Phase 11 | Complete |
+| DUP-07 | Phase 11 | Complete |
 | PERF-01 | Phase 12 | Complete |
 | PERF-02 | Phase 12 | Complete |
 | DIST-01 | Phase 12 | Complete |
