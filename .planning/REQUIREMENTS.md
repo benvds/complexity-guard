@@ -75,11 +75,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Duplication Detection
 
-- [ ] **DUP-01**: Tool tokenizes source files stripping comments and whitespace
-- [ ] **DUP-02**: Tool normalizes identifiers for Type 2 clone detection
-- [ ] **DUP-03**: Tool uses Rabin-Karp rolling hash with configurable minimum window (default 25 tokens)
-- [ ] **DUP-04**: Tool builds cross-file hash index and verifies matches token-by-token
-- [ ] **DUP-05**: Tool merges overlapping matches into maximal clone groups
+- [x] **DUP-01**: Tool tokenizes source files stripping comments and whitespace
+- [x] **DUP-02**: Tool normalizes identifiers for Type 2 clone detection
+- [x] **DUP-03**: Tool uses Rabin-Karp rolling hash with configurable minimum window (default 25 tokens)
+- [x] **DUP-04**: Tool builds cross-file hash index and verifies matches token-by-token
+- [x] **DUP-05**: Tool merges overlapping matches into maximal clone groups
 - [ ] **DUP-06**: Tool reports clone groups with locations, token counts, and duplication percentages
 - [ ] **DUP-07**: Tool applies configurable thresholds for file duplication % and project duplication %
 
@@ -262,11 +262,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | OUT-HTML-02 | Phase 10 | Complete |
 | OUT-HTML-03 | Phase 10 | Complete |
 | OUT-HTML-04 | Phase 10 | Complete |
-| DUP-01 | Phase 11 | Pending |
-| DUP-02 | Phase 11 | Pending |
-| DUP-03 | Phase 11 | Pending |
-| DUP-04 | Phase 11 | Pending |
-| DUP-05 | Phase 11 | Pending |
+| DUP-01 | Phase 11 | Complete |
+| DUP-02 | Phase 11 | Complete |
+| DUP-03 | Phase 11 | Complete |
+| DUP-04 | Phase 11 | Complete |
+| DUP-05 | Phase 11 | Complete |
 | DUP-06 | Phase 11 | Pending |
 | DUP-07 | Phase 11 | Pending |
 | PERF-01 | Phase 12 | Complete |

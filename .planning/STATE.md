@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** Phase 12 complete - Parallelization and Distribution (2 of 2 plans complete)
+**Current focus:** Phase 11 in progress - Duplication Detection (1 of 4 plans complete)
 
 ## Current Position
 
-Phase: 12 of 12 (Parallelization and Distribution)
-Plan: 2 of 2 (Phase 12-02 complete)
-Status: Phase 12 Complete - All plans done: parallel analysis + CI/docs/distribution verification
-Last activity: 2026-02-21 - Completed quick task 20: create a script that checks that the tool doesn't have any memory leaks, add a CI step to check this
+Phase: 11 of 12+ (Duplication Detection)
+Plan: 1 of 4 (Phase 11-01 complete)
+Status: Phase 11 In Progress - Core algorithm (tokenization, rolling hash, cross-file index) complete
+Last activity: 2026-02-22 - Completed 11-01: Rabin-Karp duplication detection core algorithm with tokenization and cross-file indexing
 
-Progress: [████████████] 100% (12/12 phases complete)
+Progress: [████████████] (Phase 11 started)
 
 ## Performance Metrics
 
@@ -79,6 +79,7 @@ Progress: [████████████] 100% (12/12 phases complete)
 | Phase 12 P01 | 10 | 2 tasks | 4 files |
 | Phase 12 P02 | 8 | 2 tasks | 12 files |
 | Phase quick-20 P01 | 2 | 2 tasks | 2 files |
+| Phase 11-duplication-detection P01 | 5 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -228,6 +229,9 @@ Recent decisions affecting current work:
 - [Phase 12]: elapsed_ms and thread_count added as metadata top-level field in JSON output (additive, backward compatible)
 - [Phase 12]: ReleaseSmall for release builds: Linux ReleaseSafe binaries 9.1-9.2 MB exceed DIST-01 5 MB limit; ReleaseSmall 3.6-3.8 MB across all 5 targets
 - [Phase quick-20]: --error-exitcode=99 distinguishes Valgrind errors from CG threshold exits; memory-check CI job runs parallel to test matrix on ubuntu-latest
+- [Phase 11-01]: Identifier sentinel V for Type 2 clone detection (conservative — no string/number literal normalization)
+- [Phase 11-01]: MAX_BUCKET_SIZE=1000 guard prevents O(N^2) verification on common-pattern hash buckets
+- [Phase 11-01]: Include {} in token stream but skip ;/,: preserves block structure for better Type 1 precision
 
 ### Pending Todos
 
@@ -283,9 +287,9 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-02-21 (execute-phase)
-Stopped at: Completed 12-02: cross-compilation verified (ReleaseSmall, all targets under 5 MB), docs updated with --threads flag and parallel analysis
+Last session: 2026-02-22 (execute-phase)
+Stopped at: Completed 11-01: Rabin-Karp duplication detection core algorithm with tokenization, rolling hash, cross-file index, token-by-token verification, and interval merging
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-21T07:28:12Z*
+*Last updated: 2026-02-22T00:13:46Z*
