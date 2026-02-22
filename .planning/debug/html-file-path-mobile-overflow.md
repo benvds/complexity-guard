@@ -1,5 +1,5 @@
 ---
-status: diagnosed
+status: resolved
 trigger: "file breakdown table too wide on mobile - long file paths cause horizontal overflow"
 created: 2026-02-19T00:00:00Z
 updated: 2026-02-19T00:00:00Z
