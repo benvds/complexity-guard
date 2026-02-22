@@ -113,6 +113,78 @@ pub const FileTokens = struct {
     tokens: []const Token,
 };
 
+// --- Rolling hash constants ---
+const HASH_BASE: u64 = 37;
+
+/// Maximum bucket size for hash buckets. Buckets larger than this are likely common patterns
+/// (boilerplate, short keywords) and are discarded to prevent O(N^2) verification.
+const MAX_BUCKET_SIZE: usize = 1000;
+
+// --- Internal helpers ---
+
+/// Returns true for token kinds that should be skipped during tokenization.
+/// Skips comments, whitespace-only tokens, and structural punctuation.
+fn isSkippedKind(kind: []const u8) bool {
+    return std.mem.eql(u8, kind, "comment") or
+        std.mem.eql(u8, kind, "line_comment") or
+        std.mem.eql(u8, kind, "block_comment") or
+        std.mem.eql(u8, kind, ";") or
+        std.mem.eql(u8, kind, ",") or
+        // Skip hash-bang and other file-level noise
+        std.mem.eql(u8, kind, "hash_bang_line");
+}
+
+/// Returns the normalized kind for a token.
+/// Identifiers (all variants) are normalized to sentinel "V" for Type 2 clone detection.
+fn normalizeKind(kind: []const u8) []const u8 {
+    if (std.mem.eql(u8, kind, "identifier") or
+        std.mem.eql(u8, kind, "property_identifier") or
+        std.mem.eql(u8, kind, "shorthand_property_identifier") or
+        std.mem.eql(u8, kind, "shorthand_property_identifier_pattern"))
+    {
+        return "V";
+    }
+    return kind;
+}
+
+/// Recursively collect normalized tokens from an AST node.
+/// Skips comment nodes, punctuation, and TypeScript type annotation subtrees.
+fn tokenizeNode(
+    node: tree_sitter.Node,
+    tokens: *std.ArrayList(Token),
+    allocator: std.mem.Allocator,
+) !void {
+    const node_type = node.nodeType();
+
+    // Skip entire TypeScript type annotation subtrees
+    if (halstead.isTypeOnlyNode(node_type)) {
+        return;
+    }
+
+    const count = node.childCount();
+    if (count == 0) {
+        // Leaf node — classify and possibly collect
+        if (isSkippedKind(node_type)) return;
+
+        const normalized = normalizeKind(node_type);
+        const start_line = node.startPoint().row + 1; // 1-indexed
+        try tokens.append(allocator, Token{
+            .kind = normalized,
+            .start_byte = node.startByte(),
+            .start_line = start_line,
+        });
+        return;
+    }
+
+    // Non-leaf: recurse into all children
+    var i: u32 = 0;
+    while (i < count) : (i += 1) {
+        if (node.child(i)) |child| {
+            try tokenizeNode(child, tokens, allocator);
+        }
+    }
+}
+
 /// Tokenize a tree-sitter AST into a normalized token sequence.
 /// Strips comments, whitespace, and TypeScript type annotations.
 /// Normalizes identifier nodes to sentinel "V" for Type 2 clone detection.
@@ -128,6 +200,221 @@ pub fn tokenizeTree(
     return try tokens.toOwnedSlice(allocator);
 }
 
+// --- Rolling hash implementation ---
+
+/// Compute a hash value for a token kind string using Rabin-Karp polynomial hashing.
+fn tokenHash(kind: []const u8) u64 {
+    var h: u64 = 0;
+    for (kind) |c| {
+        h = h *% HASH_BASE +% @as(u64, c);
+    }
+    return h;
+}
+
+/// Rolling hash state for a sliding window over a token sequence.
+const RollingHasher = struct {
+    hash: u64,
+    /// B^(window_size - 1) for removing the leftmost token.
+    base_pow: u64,
+
+    /// Initialize the hasher over the first `window` tokens.
+    fn init(tokens: []const Token, window: u32) RollingHasher {
+        var h: u64 = 0;
+        var bpow: u64 = 1;
+        var i: u32 = 0;
+        while (i < window) : (i += 1) {
+            h = h *% HASH_BASE +% tokenHash(tokens[i].kind);
+            if (i < window - 1) bpow *%= HASH_BASE;
+        }
+        return .{ .hash = h, .base_pow = bpow };
+    }
+
+    /// Slide the window: remove `remove` token from the left, add `add` token to the right.
+    fn roll(self: *RollingHasher, remove: Token, add: Token) void {
+        self.hash = (self.hash -% tokenHash(remove.kind) *% self.base_pow) *%
+            HASH_BASE +% tokenHash(add.kind);
+    }
+};
+
+/// Build the global hash index mapping rolling hash → list of TokenWindows across all files.
+fn buildHashIndex(
+    allocator: std.mem.Allocator,
+    all_tokens: []const []const Token,
+    window: u32,
+    index: *std.AutoHashMap(u64, std.ArrayList(TokenWindow)),
+) !void {
+    for (all_tokens, 0..) |file_tokens, file_idx| {
+        if (file_tokens.len < window) continue;
+
+        var hasher = RollingHasher.init(file_tokens, window);
+        var start: u32 = 0;
+
+        while (start + window <= file_tokens.len) : (start += 1) {
+            const end = start + window;
+            const gop = try index.getOrPut(hasher.hash);
+            if (!gop.found_existing) {
+                gop.value_ptr.* = std.ArrayList(TokenWindow).empty;
+            }
+            try gop.value_ptr.append(allocator, TokenWindow{
+                .file_index = @intCast(file_idx),
+                .start_token = start,
+                .end_token = end,
+                .start_line = file_tokens[start].start_line,
+                .end_line = file_tokens[end - 1].start_line,
+            });
+            if (start + window < file_tokens.len) {
+                hasher.roll(file_tokens[start], file_tokens[start + window]);
+            }
+        }
+    }
+}
+
+/// Verify that two token windows have identical normalized token sequences (collision check).
+fn tokensMatch(
+    a_tokens: []const Token,
+    a_start: u32,
+    b_tokens: []const Token,
+    b_start: u32,
+    window: u32,
+) bool {
+    var i: u32 = 0;
+    while (i < window) : (i += 1) {
+        if (!std.mem.eql(u8, a_tokens[a_start + i].kind, b_tokens[b_start + i].kind)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/// Form clone groups from the hash index by verifying token-by-token matches.
+/// Returns a slice of CloneGroup (caller owns each locations slice and the outer slice).
+fn formCloneGroups(
+    allocator: std.mem.Allocator,
+    index: *std.AutoHashMap(u64, std.ArrayList(TokenWindow)),
+    all_tokens: []const []const Token,
+    file_paths: []const []const u8,
+    window: u32,
+) ![]CloneGroup {
+    var groups = std.ArrayList(CloneGroup).empty;
+    errdefer {
+        for (groups.items) |g| allocator.free(g.locations);
+        groups.deinit(allocator);
+    }
+
+    var iter = index.iterator();
+    while (iter.next()) |entry| {
+        const bucket = entry.value_ptr.items;
+        if (bucket.len < 2) continue;
+        // Discard very large buckets (common patterns — see RESEARCH.md pitfall 2)
+        if (bucket.len > MAX_BUCKET_SIZE) continue;
+
+        // For each pair of windows in this bucket, verify token-by-token
+        // Group all verified matches into one clone group per bucket
+        var locations = std.ArrayList(CloneLocation).empty;
+        errdefer locations.deinit(allocator);
+
+        // Track which window indices have been added to locations
+        var added = try allocator.alloc(bool, bucket.len);
+        defer allocator.free(added);
+        @memset(added, false);
+
+        var i: usize = 0;
+        while (i < bucket.len) : (i += 1) {
+            var j: usize = i + 1;
+            while (j < bucket.len) : (j += 1) {
+                const a = bucket[i];
+                const b = bucket[j];
+
+                // Skip identical position in the same file (not a clone)
+                if (a.file_index == b.file_index and a.start_token == b.start_token) continue;
+
+                if (tokensMatch(
+                    all_tokens[a.file_index],
+                    a.start_token,
+                    all_tokens[b.file_index],
+                    b.start_token,
+                    window,
+                )) {
+                    // Add both windows to the clone group if not already added
+                    if (!added[i]) {
+                        added[i] = true;
+                        try locations.append(allocator, CloneLocation{
+                            .file_path = file_paths[a.file_index],
+                            .start_line = a.start_line,
+                            .end_line = a.end_line,
+                        });
+                    }
+                    if (!added[j]) {
+                        added[j] = true;
+                        try locations.append(allocator, CloneLocation{
+                            .file_path = file_paths[b.file_index],
+                            .start_line = b.start_line,
+                            .end_line = b.end_line,
+                        });
+                    }
+                }
+            }
+        }
+
+        if (locations.items.len >= 2) {
+            try groups.append(allocator, CloneGroup{
+                .token_count = window,
+                .locations = try locations.toOwnedSlice(allocator),
+            });
+        } else {
+            locations.deinit(allocator);
+        }
+    }
+
+    return try groups.toOwnedSlice(allocator);
+}
+
+/// Simple interval for token range tracking.
+const Interval = struct {
+    start: u32,
+    end: u32,
+};
+
+fn intervalLessThan(_: void, a: Interval, b: Interval) bool {
+    return a.start < b.start;
+}
+
+/// Merge overlapping token intervals to prevent double-counting cloned tokens.
+/// Returns the total count of non-overlapping cloned tokens.
+fn countMergedClonedTokens(
+    allocator: std.mem.Allocator,
+    intervals: []const Interval,
+) !u32 {
+    if (intervals.len == 0) return 0;
+
+    // Sort a mutable copy by start position
+    const sorted = try allocator.dupe(Interval, intervals);
+    defer allocator.free(sorted);
+    std.mem.sort(Interval, sorted, {}, intervalLessThan);
+
+    var total: u32 = 0;
+    var cur_start = sorted[0].start;
+    var cur_end = sorted[0].end;
+
+    var i: usize = 1;
+    while (i < sorted.len) : (i += 1) {
+        const iv = sorted[i];
+        if (iv.start <= cur_end) {
+            // Overlapping or adjacent — extend current merged interval
+            if (iv.end > cur_end) cur_end = iv.end;
+        } else {
+            // Gap — flush current merged interval
+            total += cur_end - cur_start;
+            cur_start = iv.start;
+            cur_end = iv.end;
+        }
+    }
+    // Flush last interval
+    total += cur_end - cur_start;
+
+    return total;
+}
+
 /// Detect code clones across multiple files using Rabin-Karp rolling hash.
 /// Returns clone groups with per-file and project-level duplication statistics.
 pub fn detectDuplication(
@@ -135,31 +422,129 @@ pub fn detectDuplication(
     file_tokens: []const FileTokens,
     config: DuplicationConfig,
 ) !DuplicationResult {
-    _ = file_tokens;
-    _ = config;
-    // Stub: return empty result (tests will fail in RED phase)
+    const window = config.min_window;
+
+    // Build slices for all_tokens and file_paths
+    const all_tokens = try allocator.alloc([]const Token, file_tokens.len);
+    defer allocator.free(all_tokens);
+    const file_paths = try allocator.alloc([]const u8, file_tokens.len);
+    defer allocator.free(file_paths);
+
+    for (file_tokens, 0..) |ft, i| {
+        all_tokens[i] = ft.tokens;
+        file_paths[i] = ft.path;
+    }
+
+    // Build hash index (arena-like: we free it after clone groups are formed)
+    var index = std.AutoHashMap(u64, std.ArrayList(TokenWindow)).init(allocator);
+    defer {
+        var it = index.iterator();
+        while (it.next()) |entry| {
+            entry.value_ptr.deinit(allocator);
+        }
+        index.deinit();
+    }
+
+    try buildHashIndex(allocator, all_tokens, window, &index);
+
+    // Form clone groups from verified hash collisions
+    const clone_groups = try formCloneGroups(allocator, &index, all_tokens, file_paths, window);
+    errdefer {
+        for (clone_groups) |cg| allocator.free(cg.locations);
+        allocator.free(clone_groups);
+    }
+
+    // Build per-file clone interval lists for merging
+    // intervals_per_file[i] = list of (start_token, end_token) intervals that are part of a clone
+    const intervals_per_file = try allocator.alloc(std.ArrayList(Interval), file_tokens.len);
+    defer {
+        for (intervals_per_file) |*list| list.deinit(allocator);
+        allocator.free(intervals_per_file);
+    }
+    for (intervals_per_file) |*list| {
+        list.* = std.ArrayList(Interval).empty;
+    }
+
+    // Collect all clone windows from the hash index buckets
+    // We iterate the index again to gather which windows belong to clones
+    {
+        var it = index.iterator();
+        while (it.next()) |entry| {
+            const bucket = entry.value_ptr.items;
+            if (bucket.len < 2 or bucket.len > MAX_BUCKET_SIZE) continue;
+
+            // Check each pair for verified matches
+            var i: usize = 0;
+            while (i < bucket.len) : (i += 1) {
+                var j: usize = i + 1;
+                while (j < bucket.len) : (j += 1) {
+                    const a = bucket[i];
+                    const b = bucket[j];
+                    if (a.file_index == b.file_index and a.start_token == b.start_token) continue;
+
+                    if (tokensMatch(
+                        all_tokens[a.file_index],
+                        a.start_token,
+                        all_tokens[b.file_index],
+                        b.start_token,
+                        window,
+                    )) {
+                        try intervals_per_file[a.file_index].append(allocator, Interval{
+                            .start = a.start_token,
+                            .end = a.end_token,
+                        });
+                        try intervals_per_file[b.file_index].append(allocator, Interval{
+                            .start = b.start_token,
+                            .end = b.end_token,
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    // Compute per-file results
+    var file_results = try allocator.alloc(FileDuplicationResult, file_tokens.len);
+    errdefer allocator.free(file_results);
+
+    var total_cloned: u32 = 0;
+    var total_all: u32 = 0;
+
+    for (file_tokens, 0..) |ft, i| {
+        const total_toks: u32 = @intCast(ft.tokens.len);
+        const cloned_toks = try countMergedClonedTokens(allocator, intervals_per_file[i].items);
+        const pct: f64 = if (total_toks == 0)
+            0.0
+        else
+            @as(f64, @floatFromInt(cloned_toks)) / @as(f64, @floatFromInt(total_toks)) * 100.0;
+
+        file_results[i] = FileDuplicationResult{
+            .path = ft.path,
+            .total_tokens = total_toks,
+            .cloned_tokens = cloned_toks,
+            .duplication_pct = pct,
+            .warning = pct >= config.file_warning_pct,
+            .@"error" = pct >= config.file_error_pct,
+        };
+
+        total_cloned += cloned_toks;
+        total_all += total_toks;
+    }
+
+    const project_pct: f64 = if (total_all == 0)
+        0.0
+    else
+        @as(f64, @floatFromInt(total_cloned)) / @as(f64, @floatFromInt(total_all)) * 100.0;
+
     return DuplicationResult{
-        .clone_groups = try allocator.alloc(CloneGroup, 0),
-        .file_results = try allocator.alloc(FileDuplicationResult, 0),
-        .total_cloned_tokens = 0,
-        .total_tokens = 0,
-        .project_duplication_pct = 0.0,
-        .project_warning = false,
-        .project_error = false,
+        .clone_groups = clone_groups,
+        .file_results = file_results,
+        .total_cloned_tokens = total_cloned,
+        .total_tokens = total_all,
+        .project_duplication_pct = project_pct,
+        .project_warning = project_pct >= config.project_warning_pct,
+        .project_error = project_pct >= config.project_error_pct,
     };
-}
-
-// --- Internal helpers (stubs for RED phase) ---
-
-fn tokenizeNode(
-    node: tree_sitter.Node,
-    tokens: *std.ArrayList(Token),
-    allocator: std.mem.Allocator,
-) !void {
-    _ = node;
-    _ = tokens;
-    _ = allocator;
-    // Stub: does nothing — tests will fail because token count == 0
 }
 
 // TESTS
