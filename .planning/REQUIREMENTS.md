@@ -190,8 +190,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CLI-04 | Phase 2 | Pending |
 | CLI-05 | Phase 2 | Pending |
 | CLI-06 | Phase 2 | Pending |
-| CLI-07 | Phase 2 | Pending |
-| CLI-08 | Phase 2 | Pending |
+| CLI-07 | Phase 13 | Pending |
+| CLI-08 | Phase 13 | Pending |
 | CLI-09 | Phase 2 | Pending |
 | CLI-10 | Phase 2 | Pending |
 | CLI-11 | Phase 2 | Pending |
@@ -199,7 +199,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CFG-01 | Phase 2 | Pending |
 | CFG-02 | Phase 2 | Pending |
 | CFG-03 | Phase 2 | Pending |
-| CFG-04 | Phase 2 | Pending |
+| CFG-04 | Phase 13 | Pending |
 | CFG-05 | Phase 2 | Pending |
 | CFG-06 | Phase 2 | Pending |
 | CFG-07 | Phase 2 | Pending |
@@ -217,7 +217,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CYCL-06 | Phase 4 | Pending |
 | CYCL-07 | Phase 4 | Pending |
 | CYCL-08 | Phase 4 | Pending |
-| CYCL-09 | Phase 4 | Pending |
+| CYCL-09 | Phase 13 | Pending |
 | COGN-01 | Phase 5 | Pending |
 | COGN-02 | Phase 5 | Pending |
 | COGN-03 | Phase 5 | Pending |

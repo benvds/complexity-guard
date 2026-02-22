@@ -25,6 +25,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 10: HTML Reports** - Self-contained visual reports for stakeholders (completed 2026-02-18)
 - [x] **Phase 11: Duplication Detection** - Rabin-Karp cross-file clone analysis (completed 2026-02-22)
 - [x] **Phase 12: Parallelization & Distribution** - Thread pool, performance tuning, cross-compilation (completed 2026-02-21)
+- [ ] **Phase 13: Gap Closure — Main Pipeline Wiring** - Fix cyclomatic config, --metrics gating, duplication weight, --no-duplication wiring
+- [ ] **Phase 14: Tech Debt Cleanup** - Function names, dead code, doc staleness, benchmarks placeholder
 
 ## Phase Details
 
@@ -255,6 +257,35 @@ Plans:
 - [ ] 12-01-PLAN.md -- Parallel analysis pipeline (thread pool, per-file workers, JSON metadata, verbose timing)
 - [ ] 12-02-PLAN.md -- Cross-compilation verification and documentation updates
 
+### Phase 13: Gap Closure — Main Pipeline Wiring
+**Goal:** Close all requirement, integration, and flow gaps found by v1.0 milestone audit
+**Depends on:** Phase 12
+**Requirements:** CYCL-09, CFG-04, CLI-07, CLI-08
+**Gap Closure:** Closes gaps from audit (4 requirements, 3 integration, 1 flow)
+**Success Criteria** (what must be TRUE):
+  1. Config file cyclomatic thresholds are read and applied (not hardcoded defaults)
+  2. `--metrics` flag gates which metrics are computed and which drive exit codes
+  3. `--save-baseline` writes duplication weight in default config
+  4. `--no-duplication` flag properly gates duplication computation end-to-end
+
+Plans:
+(none yet)
+
+### Phase 14: Tech Debt Cleanup
+**Goal:** Resolve all tech debt items identified by v1.0 milestone audit
+**Depends on:** Phase 13
+**Requirements:** None (housekeeping)
+**Gap Closure:** Closes tech debt from audit
+**Success Criteria** (what must be TRUE):
+  1. Function name extraction uses actual names instead of placeholders
+  2. Dead code (unreachable arrow_function branch) removed
+  3. ROADMAP.md checkboxes updated for all completed plans
+  4. REQUIREMENTS.md checkboxes, phase numbers, and count corrected
+  5. docs/benchmarks.md placeholder filled with actual benchmark data
+
+Plans:
+(none yet)
+
 ## Progress
 
 **Execution Order:**
@@ -275,6 +306,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 10. HTML Reports | 4/4 | Complete    | 2026-02-19 |
 | 11. Duplication Detection | 4/4 | Complete    | 2026-02-22 |
 | 12. Parallelization & Distribution | 2/2 | Complete    | 2026-02-21 |
+| 13. Gap Closure — Pipeline Wiring | 0/0 | Planned | — |
+| 14. Tech Debt Cleanup | 0/0 | Planned | — |
 
 ---
 *Roadmap created: 2026-02-14*
