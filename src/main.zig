@@ -44,6 +44,40 @@ fn writeDefaultConfigWithBaseline(allocator: std.mem.Allocator, path: []const u8
     try std.fs.cwd().writeFile(.{ .sub_path = path, .data = content.items });
 }
 
+/// Build HalsteadConfig from ThresholdsConfig, falling back to defaults for missing fields.
+/// Exposed for unit testing.
+pub fn buildHalsteadConfig(thresholds: config_mod.ThresholdsConfig) halstead.HalsteadConfig {
+    const default_hal = halstead.HalsteadConfig.default();
+    return halstead.HalsteadConfig{
+        .volume_warning = if (thresholds.halstead_volume) |t| @as(f64, @floatFromInt(t.warning orelse @as(u32, @intFromFloat(default_hal.volume_warning)))) else default_hal.volume_warning,
+        .volume_error = if (thresholds.halstead_volume) |t| @as(f64, @floatFromInt(t.@"error" orelse @as(u32, @intFromFloat(default_hal.volume_error)))) else default_hal.volume_error,
+        .difficulty_warning = if (thresholds.halstead_difficulty) |t| @as(f64, @floatFromInt(t.warning orelse @as(u32, @intFromFloat(default_hal.difficulty_warning)))) else default_hal.difficulty_warning,
+        .difficulty_error = if (thresholds.halstead_difficulty) |t| @as(f64, @floatFromInt(t.@"error" orelse @as(u32, @intFromFloat(default_hal.difficulty_error)))) else default_hal.difficulty_error,
+        .effort_warning = if (thresholds.halstead_effort) |t| @as(f64, @floatFromInt(t.warning orelse @as(u32, @intFromFloat(default_hal.effort_warning)))) else default_hal.effort_warning,
+        .effort_error = if (thresholds.halstead_effort) |t| @as(f64, @floatFromInt(t.@"error" orelse @as(u32, @intFromFloat(default_hal.effort_error)))) else default_hal.effort_error,
+        .bugs_warning = if (thresholds.halstead_bugs) |t| @as(f64, @floatFromInt(t.warning orelse 1)) else default_hal.bugs_warning,
+        .bugs_error = if (thresholds.halstead_bugs) |t| @as(f64, @floatFromInt(t.@"error" orelse 2)) else default_hal.bugs_error,
+    };
+}
+
+/// Build StructuralConfig from ThresholdsConfig, falling back to defaults for missing fields.
+/// Exposed for unit testing.
+pub fn buildStructuralConfig(thresholds: config_mod.ThresholdsConfig) structural.StructuralConfig {
+    const default_str = structural.StructuralConfig.default();
+    return structural.StructuralConfig{
+        .function_length_warning = if (thresholds.line_count) |t| t.warning orelse default_str.function_length_warning else default_str.function_length_warning,
+        .function_length_error = if (thresholds.line_count) |t| t.@"error" orelse default_str.function_length_error else default_str.function_length_error,
+        .params_count_warning = if (thresholds.params_count) |t| t.warning orelse default_str.params_count_warning else default_str.params_count_warning,
+        .params_count_error = if (thresholds.params_count) |t| t.@"error" orelse default_str.params_count_error else default_str.params_count_error,
+        .nesting_depth_warning = if (thresholds.nesting_depth) |t| t.warning orelse default_str.nesting_depth_warning else default_str.nesting_depth_warning,
+        .nesting_depth_error = if (thresholds.nesting_depth) |t| t.@"error" orelse default_str.nesting_depth_error else default_str.nesting_depth_error,
+        .file_length_warning = if (thresholds.file_length) |t| t.warning orelse default_str.file_length_warning else default_str.file_length_warning,
+        .file_length_error = if (thresholds.file_length) |t| t.@"error" orelse default_str.file_length_error else default_str.file_length_error,
+        .export_count_warning = if (thresholds.export_count) |t| t.warning orelse default_str.export_count_warning else default_str.export_count_warning,
+        .export_count_error = if (thresholds.export_count) |t| t.@"error" orelse default_str.export_count_error else default_str.export_count_error,
+    };
+}
+
 pub fn main() !void {
     // Set up arena allocator for CLI lifecycle
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
@@ -192,45 +226,17 @@ pub fn main() !void {
     else
         default_cog;
 
-    // Build halstead config from loaded config
-    const default_hal = halstead.HalsteadConfig.default();
+    // Build halstead config from loaded config (uses buildHalsteadConfig helper)
     const hal_config = if (cfg.analysis) |analysis|
-        if (analysis.thresholds) |thresholds|
-            halstead.HalsteadConfig{
-                .volume_warning = if (thresholds.halstead_volume) |t| @as(f64, @floatFromInt(t.warning orelse @as(u32, @intFromFloat(default_hal.volume_warning)))) else default_hal.volume_warning,
-                .volume_error = if (thresholds.halstead_volume) |t| @as(f64, @floatFromInt(t.@"error" orelse @as(u32, @intFromFloat(default_hal.volume_error)))) else default_hal.volume_error,
-                .difficulty_warning = default_hal.difficulty_warning,
-                .difficulty_error = default_hal.difficulty_error,
-                .effort_warning = default_hal.effort_warning,
-                .effort_error = default_hal.effort_error,
-                .bugs_warning = default_hal.bugs_warning,
-                .bugs_error = default_hal.bugs_error,
-            }
-        else
-            default_hal
+        if (analysis.thresholds) |thresholds| buildHalsteadConfig(thresholds) else halstead.HalsteadConfig.default()
     else
-        default_hal;
+        halstead.HalsteadConfig.default();
 
-    // Build structural config from loaded config
-    const default_str = structural.StructuralConfig.default();
+    // Build structural config from loaded config (uses buildStructuralConfig helper)
     const str_config = if (cfg.analysis) |analysis|
-        if (analysis.thresholds) |thresholds|
-            structural.StructuralConfig{
-                .function_length_warning = if (thresholds.line_count) |t| t.warning orelse default_str.function_length_warning else default_str.function_length_warning,
-                .function_length_error = if (thresholds.line_count) |t| t.@"error" orelse default_str.function_length_error else default_str.function_length_error,
-                .params_count_warning = if (thresholds.params_count) |t| t.warning orelse default_str.params_count_warning else default_str.params_count_warning,
-                .params_count_error = if (thresholds.params_count) |t| t.@"error" orelse default_str.params_count_error else default_str.params_count_error,
-                .nesting_depth_warning = if (thresholds.nesting_depth) |t| t.warning orelse default_str.nesting_depth_warning else default_str.nesting_depth_warning,
-                .nesting_depth_error = if (thresholds.nesting_depth) |t| t.@"error" orelse default_str.nesting_depth_error else default_str.nesting_depth_error,
-                .file_length_warning = default_str.file_length_warning,
-                .file_length_error = default_str.file_length_error,
-                .export_count_warning = default_str.export_count_warning,
-                .export_count_error = default_str.export_count_error,
-            }
-        else
-            default_str
+        if (analysis.thresholds) |thresholds| buildStructuralConfig(thresholds) else structural.StructuralConfig.default()
     else
-        default_str;
+        structural.StructuralConfig.default();
 
     // Build MetricThresholds for scoring (used across all files)
     const metric_thresholds = scoring.MetricThresholds{
@@ -683,6 +689,12 @@ pub fn main() !void {
             .use_color = use_color,
             .verbosity = verbosity,
             .selected_metrics = parsed_metrics,
+            .file_level_thresholds = console.FileLevelThresholds{
+                .file_length_warning = str_config.file_length_warning,
+                .file_length_error = str_config.file_length_error,
+                .export_count_warning = str_config.export_count_warning,
+                .export_count_error = str_config.export_count_error,
+            },
         };
 
         // Display per-file results
@@ -729,6 +741,102 @@ pub fn main() !void {
 test "version format" {
     try std.testing.expect(version.len > 0);
     try std.testing.expect(std.mem.startsWith(u8, version, "0."));
+}
+
+test "buildHalsteadConfig: uses defaults when no thresholds set" {
+    const thresholds = config_mod.ThresholdsConfig{};
+    const default_hal = halstead.HalsteadConfig.default();
+    const result = buildHalsteadConfig(thresholds);
+    try std.testing.expectApproxEqAbs(default_hal.volume_warning, result.volume_warning, 1e-6);
+    try std.testing.expectApproxEqAbs(default_hal.volume_error, result.volume_error, 1e-6);
+    try std.testing.expectApproxEqAbs(default_hal.difficulty_warning, result.difficulty_warning, 1e-6);
+    try std.testing.expectApproxEqAbs(default_hal.difficulty_error, result.difficulty_error, 1e-6);
+    try std.testing.expectApproxEqAbs(default_hal.effort_warning, result.effort_warning, 1e-6);
+    try std.testing.expectApproxEqAbs(default_hal.effort_error, result.effort_error, 1e-6);
+    try std.testing.expectApproxEqAbs(default_hal.bugs_warning, result.bugs_warning, 1e-6);
+    try std.testing.expectApproxEqAbs(default_hal.bugs_error, result.bugs_error, 1e-6);
+}
+
+test "buildHalsteadConfig: halstead_difficulty threshold read from config" {
+    const thresholds = config_mod.ThresholdsConfig{
+        .halstead_difficulty = config_mod.ThresholdPair{ .warning = 50, .@"error" = 100 },
+    };
+    const result = buildHalsteadConfig(thresholds);
+    try std.testing.expectApproxEqAbs(@as(f64, 50.0), result.difficulty_warning, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 100.0), result.difficulty_error, 1e-6);
+}
+
+test "buildHalsteadConfig: halstead_effort threshold read from config" {
+    const thresholds = config_mod.ThresholdsConfig{
+        .halstead_effort = config_mod.ThresholdPair{ .warning = 9999, .@"error" = 99999 },
+    };
+    const result = buildHalsteadConfig(thresholds);
+    try std.testing.expectApproxEqAbs(@as(f64, 9999.0), result.effort_warning, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 99999.0), result.effort_error, 1e-6);
+}
+
+test "buildHalsteadConfig: halstead_bugs threshold read from config" {
+    const thresholds = config_mod.ThresholdsConfig{
+        .halstead_bugs = config_mod.ThresholdPair{ .warning = 3, .@"error" = 9999 },
+    };
+    const result = buildHalsteadConfig(thresholds);
+    try std.testing.expectApproxEqAbs(@as(f64, 3.0), result.bugs_warning, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 9999.0), result.bugs_error, 1e-6);
+}
+
+test "buildHalsteadConfig: very high thresholds set difficulty to 9999" {
+    // When all halstead thresholds set to 9999, no function should trigger warnings
+    const thresholds = config_mod.ThresholdsConfig{
+        .halstead_difficulty = config_mod.ThresholdPair{ .warning = 9999, .@"error" = 9999 },
+        .halstead_effort = config_mod.ThresholdPair{ .warning = 9999, .@"error" = 9999 },
+        .halstead_bugs = config_mod.ThresholdPair{ .warning = 9999, .@"error" = 9999 },
+    };
+    const result = buildHalsteadConfig(thresholds);
+    try std.testing.expectApproxEqAbs(@as(f64, 9999.0), result.difficulty_warning, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 9999.0), result.difficulty_error, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 9999.0), result.effort_warning, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 9999.0), result.effort_error, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 9999.0), result.bugs_warning, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 9999.0), result.bugs_error, 1e-6);
+}
+
+test "buildStructuralConfig: uses defaults when no thresholds set" {
+    const thresholds = config_mod.ThresholdsConfig{};
+    const default_str = structural.StructuralConfig.default();
+    const result = buildStructuralConfig(thresholds);
+    try std.testing.expectEqual(default_str.file_length_warning, result.file_length_warning);
+    try std.testing.expectEqual(default_str.file_length_error, result.file_length_error);
+    try std.testing.expectEqual(default_str.export_count_warning, result.export_count_warning);
+    try std.testing.expectEqual(default_str.export_count_error, result.export_count_error);
+}
+
+test "buildStructuralConfig: file_length threshold read from config" {
+    const thresholds = config_mod.ThresholdsConfig{
+        .file_length = config_mod.ThresholdPair{ .warning = 9999, .@"error" = 9999 },
+    };
+    const result = buildStructuralConfig(thresholds);
+    try std.testing.expectEqual(@as(u32, 9999), result.file_length_warning);
+    try std.testing.expectEqual(@as(u32, 9999), result.file_length_error);
+}
+
+test "buildStructuralConfig: export_count threshold read from config" {
+    const thresholds = config_mod.ThresholdsConfig{
+        .export_count = config_mod.ThresholdPair{ .warning = 9999, .@"error" = 9999 },
+    };
+    const result = buildStructuralConfig(thresholds);
+    try std.testing.expectEqual(@as(u32, 9999), result.export_count_warning);
+    try std.testing.expectEqual(@as(u32, 9999), result.export_count_error);
+}
+
+test "buildStructuralConfig: very high thresholds suppress file-level violations" {
+    const thresholds = config_mod.ThresholdsConfig{
+        .file_length = config_mod.ThresholdPair{ .warning = 9999, .@"error" = 9999 },
+        .export_count = config_mod.ThresholdPair{ .warning = 9999, .@"error" = 9999 },
+    };
+    const result = buildStructuralConfig(thresholds);
+    // A file with 400 lines and 20 exports would NOT trigger with these thresholds
+    try std.testing.expect(result.file_length_warning > 400);
+    try std.testing.expect(result.export_count_warning > 20);
 }
 
 // Import core modules to ensure their tests are discovered

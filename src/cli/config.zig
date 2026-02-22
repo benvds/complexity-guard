@@ -35,9 +35,13 @@ pub const ThresholdsConfig = struct {
     cognitive: ?ThresholdPair = null,
     halstead_volume: ?ThresholdPair = null,
     halstead_difficulty: ?ThresholdPair = null,
+    halstead_effort: ?ThresholdPair = null,
+    halstead_bugs: ?ThresholdPair = null,
     nesting_depth: ?ThresholdPair = null,
     line_count: ?ThresholdPair = null,
     params_count: ?ThresholdPair = null,
+    file_length: ?ThresholdPair = null,
+    export_count: ?ThresholdPair = null,
 };
 
 /// Warning and error threshold pair for a single metric.
@@ -301,9 +305,13 @@ pub fn validate(config: Config) ValidationError!void {
             try validateThresholdPair(thresholds.cognitive);
             try validateThresholdPair(thresholds.halstead_volume);
             try validateThresholdPair(thresholds.halstead_difficulty);
+            try validateThresholdPair(thresholds.halstead_effort);
+            try validateThresholdPair(thresholds.halstead_bugs);
             try validateThresholdPair(thresholds.nesting_depth);
             try validateThresholdPair(thresholds.line_count);
             try validateThresholdPair(thresholds.params_count);
+            try validateThresholdPair(thresholds.file_length);
+            try validateThresholdPair(thresholds.export_count);
         }
 
         // Validate thread count
@@ -560,9 +568,13 @@ test "validate rejects warning > error threshold" {
                 .cognitive = null,
                 .halstead_volume = null,
                 .halstead_difficulty = null,
+                .halstead_effort = null,
+                .halstead_bugs = null,
                 .nesting_depth = null,
                 .line_count = null,
                 .params_count = null,
+                .file_length = null,
+                .export_count = null,
             },
             .no_duplication = null,
             .threads = null,
@@ -599,4 +611,124 @@ test "deepCopyConfig preserves baseline field" {
     };
     const copy = try deepCopyConfig(allocator, original);
     try std.testing.expectEqual(@as(?f64, 77.5), copy.baseline);
+}
+
+test "ThresholdsConfig has halstead_effort field" {
+    const thresholds = ThresholdsConfig{
+        .halstead_effort = ThresholdPair{ .warning = 5000, .@"error" = 10000 },
+    };
+    try std.testing.expect(thresholds.halstead_effort != null);
+    try std.testing.expectEqual(@as(?u32, 5000), thresholds.halstead_effort.?.warning);
+    try std.testing.expectEqual(@as(?u32, 10000), thresholds.halstead_effort.?.@"error");
+}
+
+test "ThresholdsConfig has halstead_bugs field" {
+    const thresholds = ThresholdsConfig{
+        .halstead_bugs = ThresholdPair{ .warning = 1, .@"error" = 2 },
+    };
+    try std.testing.expect(thresholds.halstead_bugs != null);
+    try std.testing.expectEqual(@as(?u32, 1), thresholds.halstead_bugs.?.warning);
+    try std.testing.expectEqual(@as(?u32, 2), thresholds.halstead_bugs.?.@"error");
+}
+
+test "ThresholdsConfig has file_length field" {
+    const thresholds = ThresholdsConfig{
+        .file_length = ThresholdPair{ .warning = 300, .@"error" = 600 },
+    };
+    try std.testing.expect(thresholds.file_length != null);
+    try std.testing.expectEqual(@as(?u32, 300), thresholds.file_length.?.warning);
+    try std.testing.expectEqual(@as(?u32, 600), thresholds.file_length.?.@"error");
+}
+
+test "ThresholdsConfig has export_count field" {
+    const thresholds = ThresholdsConfig{
+        .export_count = ThresholdPair{ .warning = 15, .@"error" = 30 },
+    };
+    try std.testing.expect(thresholds.export_count != null);
+    try std.testing.expectEqual(@as(?u32, 15), thresholds.export_count.?.warning);
+    try std.testing.expectEqual(@as(?u32, 30), thresholds.export_count.?.@"error");
+}
+
+test "validate validates halstead_effort threshold pair" {
+    const config = Config{
+        .output = null,
+        .analysis = AnalysisConfig{
+            .metrics = null,
+            .thresholds = ThresholdsConfig{
+                .halstead_effort = ThresholdPair{
+                    .warning = 10000,
+                    .@"error" = 5000, // warning > error is invalid
+                },
+            },
+            .no_duplication = null,
+            .threads = null,
+        },
+        .files = null,
+        .weights = null,
+        .overrides = null,
+    };
+    try std.testing.expectError(ValidationError.InvalidThresholds, validate(config));
+}
+
+test "validate validates halstead_bugs threshold pair" {
+    const config = Config{
+        .output = null,
+        .analysis = AnalysisConfig{
+            .metrics = null,
+            .thresholds = ThresholdsConfig{
+                .halstead_bugs = ThresholdPair{
+                    .warning = 5,
+                    .@"error" = 2, // warning > error is invalid
+                },
+            },
+            .no_duplication = null,
+            .threads = null,
+        },
+        .files = null,
+        .weights = null,
+        .overrides = null,
+    };
+    try std.testing.expectError(ValidationError.InvalidThresholds, validate(config));
+}
+
+test "validate validates file_length threshold pair" {
+    const config = Config{
+        .output = null,
+        .analysis = AnalysisConfig{
+            .metrics = null,
+            .thresholds = ThresholdsConfig{
+                .file_length = ThresholdPair{
+                    .warning = 600,
+                    .@"error" = 300, // warning > error is invalid
+                },
+            },
+            .no_duplication = null,
+            .threads = null,
+        },
+        .files = null,
+        .weights = null,
+        .overrides = null,
+    };
+    try std.testing.expectError(ValidationError.InvalidThresholds, validate(config));
+}
+
+test "validate validates export_count threshold pair" {
+    const config = Config{
+        .output = null,
+        .analysis = AnalysisConfig{
+            .metrics = null,
+            .thresholds = ThresholdsConfig{
+                .export_count = ThresholdPair{
+                    .warning = 30,
+                    .@"error" = 15, // warning > error is invalid
+                },
+            },
+            .no_duplication = null,
+            .threads = null,
+        },
+        .files = null,
+        .weights = null,
+        .overrides = null,
+    };
+    try std.testing.expectError(ValidationError.InvalidThresholds, validate(config));
 }

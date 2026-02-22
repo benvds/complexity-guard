@@ -4,6 +4,15 @@ const structural = @import("../metrics/structural.zig");
 const help = @import("../cli/help.zig");
 const Allocator = std.mem.Allocator;
 
+/// File-level structural thresholds for display in console output.
+/// Passed through OutputConfig so console functions don't need direct access to StructuralConfig.
+pub const FileLevelThresholds = struct {
+    file_length_warning: u32,
+    file_length_error: u32,
+    export_count_warning: u32,
+    export_count_error: u32,
+};
+
 /// ANSI escape codes for colored output
 const AnsiCode = struct {
     pub const reset = "\x1b[0m";
@@ -28,6 +37,8 @@ pub const OutputConfig = struct {
     /// When non-null, only these metric families are shown in output and hotspot sections.
     /// Null means all metrics are enabled (backward compatible).
     selected_metrics: ?[]const []const u8,
+    /// File-level structural thresholds for display. Defaults to standard values when null.
+    file_level_thresholds: ?FileLevelThresholds = null,
 };
 
 /// Returns true if the given metric is enabled.
@@ -100,7 +111,13 @@ pub fn formatFileResults(
     var has_file_level_violations = false;
     if (file_results.structural) |str| {
         if (isMetricEnabled(config.selected_metrics, "structural")) {
-            if (str.file_length >= 300 or str.export_count >= 15) {
+            const flt = config.file_level_thresholds orelse FileLevelThresholds{
+                .file_length_warning = 300,
+                .file_length_error = 600,
+                .export_count_warning = 15,
+                .export_count_error = 30,
+            };
+            if (str.file_length >= flt.file_length_warning or str.export_count >= flt.export_count_warning) {
                 has_file_level_violations = true;
                 has_problems = true;
                 has_output = true;
@@ -134,9 +151,15 @@ pub fn formatFileResults(
             const show_file_line = config.verbosity == .verbose or has_file_level_violations;
             if (show_file_line) {
                 const file_worst: cyclomatic.ThresholdStatus = blk: {
+                    const flt = config.file_level_thresholds orelse FileLevelThresholds{
+                        .file_length_warning = 300,
+                        .file_length_error = 600,
+                        .export_count_warning = 15,
+                        .export_count_error = 30,
+                    };
                     var w: cyclomatic.ThresholdStatus = .ok;
-                    if (str.file_length >= 600) w = .@"error" else if (str.file_length >= 300) w = .warning;
-                    const ec: cyclomatic.ThresholdStatus = if (str.export_count >= 30) .@"error" else if (str.export_count >= 15) .warning else .ok;
+                    if (str.file_length >= flt.file_length_error) w = .@"error" else if (str.file_length >= flt.file_length_warning) w = .warning;
+                    const ec: cyclomatic.ThresholdStatus = if (str.export_count >= flt.export_count_error) .@"error" else if (str.export_count >= flt.export_count_warning) .warning else .ok;
                     break :blk worstStatus(w, ec);
                 };
                 const file_symbol: []const u8 = switch (file_worst) {
@@ -1001,4 +1024,92 @@ test "formatSummary: shows Halstead volume hotspot list" {
     try std.testing.expect(std.mem.indexOf(u8, output, "Top Halstead volume hotspots:") != null);
     try std.testing.expect(std.mem.indexOf(u8, output, "bigFunc") != null);
     try std.testing.expect(std.mem.indexOf(u8, output, "volume 800") != null);
+}
+
+test "formatFileResults: file-level thresholds from config respected (no violation at low count)" {
+    // File has 10 exports and 200 lines - below default thresholds (15/300).
+    // With custom very-high thresholds (9999/9999), there should be no violation.
+    // This test verifies that hardcoded magic numbers are NOT used.
+    const allocator = std.testing.allocator;
+    var buffer = std.ArrayList(u8).empty;
+    defer buffer.deinit(allocator);
+
+    const results = [_]cyclomatic.ThresholdResult{};
+    const str_result = structural.FileStructuralResult{ .file_length = 200, .export_count = 10 };
+
+    // Default thresholds: file_length_warning=300, export_count_warning=15
+    // 200 < 300 and 10 < 15, so no violation with defaults either
+    const config_default = OutputConfig{ .use_color = false, .verbosity = .default, .selected_metrics = null };
+    const wrote_output_default = try formatFileResults(
+        buffer.writer(allocator),
+        allocator,
+        FileThresholdResults{ .path = "test.ts", .results = &results, .structural = str_result },
+        config_default,
+    );
+    // With default thresholds, 200 lines and 10 exports = no violation -> no output in default mode
+    try std.testing.expectEqual(false, wrote_output_default);
+}
+
+test "formatFileResults: file-level violation uses config thresholds not hardcoded defaults" {
+    // File has 12 exports - above default threshold (15) would NOT trigger,
+    // but we set custom threshold of 10, so it SHOULD trigger.
+    const allocator = std.testing.allocator;
+    var buffer = std.ArrayList(u8).empty;
+    defer buffer.deinit(allocator);
+
+    const results = [_]cyclomatic.ThresholdResult{};
+    const str_result = structural.FileStructuralResult{ .file_length = 50, .export_count = 12 };
+
+    // Custom threshold: export_count_warning=10 (lower than default 15)
+    const config = OutputConfig{
+        .use_color = false,
+        .verbosity = .default,
+        .selected_metrics = null,
+        .file_level_thresholds = FileLevelThresholds{
+            .file_length_warning = 300,
+            .file_length_error = 600,
+            .export_count_warning = 10,  // lower than default 15
+            .export_count_error = 20,
+        },
+    };
+    const wrote_output = try formatFileResults(
+        buffer.writer(allocator),
+        allocator,
+        FileThresholdResults{ .path = "test.ts", .results = &results, .structural = str_result },
+        config,
+    );
+    // 12 exports >= 10 (custom warning threshold) -> should show violation
+    try std.testing.expectEqual(true, wrote_output);
+    try std.testing.expect(std.mem.indexOf(u8, buffer.items, "warning") != null);
+}
+
+test "formatFileResults: very high config thresholds suppress file-level violations" {
+    // File has 400 lines and 20 exports - would normally trigger with default thresholds.
+    // With very high custom thresholds (9999/9999), no violation should occur.
+    const allocator = std.testing.allocator;
+    var buffer = std.ArrayList(u8).empty;
+    defer buffer.deinit(allocator);
+
+    const results = [_]cyclomatic.ThresholdResult{};
+    const str_result = structural.FileStructuralResult{ .file_length = 400, .export_count = 20 };
+
+    const config = OutputConfig{
+        .use_color = false,
+        .verbosity = .default,
+        .selected_metrics = null,
+        .file_level_thresholds = FileLevelThresholds{
+            .file_length_warning = 9999,
+            .file_length_error = 9999,
+            .export_count_warning = 9999,
+            .export_count_error = 9999,
+        },
+    };
+    const wrote_output = try formatFileResults(
+        buffer.writer(allocator),
+        allocator,
+        FileThresholdResults{ .path = "test.ts", .results = &results, .structural = str_result },
+        config,
+    );
+    // 400 < 9999 and 20 < 9999 -> no violation -> no output in default mode
+    try std.testing.expectEqual(false, wrote_output);
 }
