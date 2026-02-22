@@ -870,4 +870,5 @@ test {
     _ = @import("output/html_output.zig");
     _ = @import("metrics/scoring.zig");
     _ = @import("pipeline/parallel.zig");
+    _ = @import("metrics/duplication.zig");
 }

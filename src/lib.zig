@@ -8,3 +8,4 @@ pub const halstead = @import("metrics/halstead.zig");
 pub const structural = @import("metrics/structural.zig");
 pub const scoring = @import("metrics/scoring.zig");
 pub const parallel = @import("pipeline/parallel.zig");
+pub const duplication = @import("metrics/duplication.zig");
