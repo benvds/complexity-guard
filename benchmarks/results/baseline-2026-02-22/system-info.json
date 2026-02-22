@@ -1,0 +1,16 @@
+{
+  "hostname": "macbookpro.home",
+  "os": "macOS 26.3",
+  "kernel": "25.3.0",
+  "arch": "arm64",
+  "cpu": {
+    "model": "Apple M1 Max",
+    "cores": 10,
+    "threads": 10,
+    "max_mhz": null
+  },
+  "memory": {
+    "total_gb": 64.0
+  },
+  "captured_at": "2026-02-22T15:20:05Z"
+}
