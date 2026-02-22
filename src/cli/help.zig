@@ -25,7 +25,6 @@ pub fn printHelp(writer: anytype) !void {
         \\      --duplication          Enable cross-file duplication detection (disabled by default)
         \\      --no-duplication       Skip duplication analysis
         \\      --threads <N>          Thread count (default: CPU count)
-        \\      --save-baseline        Save current health score as baseline in config
         \\
         \\FILES:
         \\      --include <GLOB>       Include files matching pattern (repeatable)

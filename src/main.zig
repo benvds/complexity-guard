@@ -25,28 +25,6 @@ const parallel = @import("pipeline/parallel.zig");
 
 const version = "0.6.0";
 
-/// Write a minimal config file with a baseline field.
-/// Used by --save-baseline when no existing config file is found.
-fn writeDefaultConfigWithBaseline(allocator: std.mem.Allocator, path: []const u8, baseline: f64) !void {
-    var content = std.ArrayList(u8).empty;
-    defer content.deinit(allocator);
-    const writer = content.writer(allocator);
-    try writer.writeAll("{\n");
-    try writer.writeAll("  \"output\": {\n");
-    try writer.writeAll("    \"format\": \"console\"\n");
-    try writer.writeAll("  },\n");
-    try writer.writeAll("  \"weights\": {\n");
-    try writer.writeAll("    \"cyclomatic\": 0.20,\n");
-    try writer.writeAll("    \"cognitive\": 0.30,\n");
-    try writer.writeAll("    \"halstead\": 0.15,\n");
-    try writer.writeAll("    \"structural\": 0.15,\n");
-    try writer.writeAll("    \"duplication\": 0.20\n");
-    try writer.writeAll("  },\n");
-    try writer.print("  \"baseline\": {d:.1}\n", .{baseline});
-    try writer.writeAll("}\n");
-    try std.fs.cwd().writeFile(.{ .sub_path = path, .data = content.items });
-}
-
 /// Build HalsteadConfig from ThresholdsConfig, falling back to defaults for missing fields.
 /// Exposed for unit testing.
 pub fn buildHalsteadConfig(thresholds: config_mod.ThresholdsConfig) halstead.HalsteadConfig {
@@ -615,64 +593,6 @@ pub fn main() !void {
 
     // Compute project score from all file scores
     const project_score = scoring.computeProjectScore(file_scores_list.items, file_function_counts.items);
-
-    // Handle --save-baseline: write rounded score to config file, then exit
-    if (cli_args.save_baseline) {
-        const rounded_score = @round(project_score * 10.0) / 10.0;
-        // Determine config file path: use discovered config or default
-        const save_path = ".complexityguard.json";
-
-        // Try to read existing config to preserve its contents
-        const existing_content = std.fs.cwd().readFileAlloc(arena_allocator, save_path, 1024 * 1024) catch null;
-
-        if (existing_content) |content| {
-            // Parse existing JSON as dynamic value, update baseline, write back
-            const parsed = std.json.parseFromSlice(std.json.Value, arena_allocator, content, .{}) catch null;
-            if (parsed) |p| {
-                // Rebuild JSON with baseline field added/updated
-                var new_content = std.ArrayList(u8).empty;
-                defer new_content.deinit(arena_allocator);
-                const writer = new_content.writer(arena_allocator);
-
-                if (p.value == .object) {
-                    try writer.writeAll("{\n");
-                    var first = true;
-                    var iter = p.value.object.iterator();
-                    while (iter.next()) |entry| {
-                        if (!first) try writer.writeAll(",\n");
-                        first = false;
-                        if (std.mem.eql(u8, entry.key_ptr.*, "baseline")) {
-                            try writer.print("  \"baseline\": {d:.1}", .{rounded_score});
-                        } else {
-                            try writer.print("  \"{s}\": ", .{entry.key_ptr.*});
-                            const val_str = try std.json.Stringify.valueAlloc(arena_allocator, entry.value_ptr.*, .{ .whitespace = .indent_2 });
-                            defer arena_allocator.free(val_str);
-                            try writer.writeAll(val_str);
-                        }
-                    }
-                    // Add baseline if it wasn't already present
-                    if (p.value.object.get("baseline") == null) {
-                        if (!first) try writer.writeAll(",\n");
-                        try writer.print("  \"baseline\": {d:.1}", .{rounded_score});
-                    }
-                    try writer.writeAll("\n}\n");
-                    try std.fs.cwd().writeFile(.{ .sub_path = save_path, .data = new_content.items });
-                } else {
-                    // Not an object, write new config
-                    try writeDefaultConfigWithBaseline(arena_allocator, save_path, rounded_score);
-                }
-            } else {
-                // Parse failed, write new config
-                try writeDefaultConfigWithBaseline(arena_allocator, save_path, rounded_score);
-            }
-        } else {
-            // No existing config, create new one with baseline
-            try writeDefaultConfigWithBaseline(arena_allocator, save_path, rounded_score);
-        }
-
-        try stdout.print("Baseline saved: {d:.1}\n", .{rounded_score});
-        return;
-    }
 
     // Step 2: Determine output format
     const effective_format = cli_args.format orelse (if (cfg.output) |out| (out.format orelse "console") else "console");
