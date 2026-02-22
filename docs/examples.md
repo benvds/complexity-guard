@@ -918,8 +918,138 @@ make complexity
 make complexity-strict
 ```
 
+## Duplication Detection
+
+### Basic Duplication Analysis
+
+Enable duplication detection with the `--duplication` flag:
+
+```sh
+complexity-guard --duplication src/
+```
+
+Output includes a project-level duplication summary:
+
+```
+Analyzed 12 files, 47 functions
+Found 3 warnings, 1 errors
+Duplication: 8.2% (project warning threshold: 5%)
+Health: 68
+
+✗ 4 problems (1 errors, 3 warnings)
+```
+
+### Combine with Other Flags
+
+Duplication works with all standard flags:
+
+```sh
+# Duplication with verbose output
+complexity-guard --duplication --verbose src/
+
+# Duplication only, skip other metrics
+complexity-guard --metrics duplication src/
+
+# Duplication with strict failure mode
+complexity-guard --duplication --fail-on warning src/
+```
+
+### Custom Duplication Thresholds
+
+Configure duplication thresholds in `.complexityguard.json`:
+
+```json
+{
+  "analysis": {
+    "duplication_enabled": true
+  },
+  "thresholds": {
+    "duplication": {
+      "file_warning": 10.0,
+      "file_error": 20.0,
+      "project_warning": 3.0,
+      "project_error": 8.0
+    }
+  }
+}
+```
+
+Then run without the `--duplication` flag (the config enables it):
+
+```sh
+complexity-guard src/
+```
+
+### JSON Output with Duplication Data
+
+Use `--format json` to get structured duplication data:
+
+```sh
+complexity-guard --duplication --format json src/
+```
+
+The JSON output includes per-file and project-level duplication fields:
+
+```json
+{
+  "summary": {
+    "files_analyzed": 12,
+    "health_score": 68.4,
+    "duplication": {
+      "project_duplication_pct": 8.2,
+      "clone_groups": 4,
+      "project_warning": false,
+      "project_error": true
+    }
+  },
+  "files": [
+    {
+      "path": "src/utils/helpers.ts",
+      "duplication_pct": 22.1,
+      "duplication_warning": true,
+      "duplication_error": false
+    }
+  ]
+}
+```
+
+Use `jq` to extract duplication data:
+
+```sh
+# Get project-level duplication percentage
+complexity-guard --duplication --format json src/ | jq '.summary.duplication.project_duplication_pct'
+
+# Find files with duplication errors
+complexity-guard --duplication --format json src/ | jq '.files[] | select(.duplication_error == true) | {path, duplication_pct}'
+
+# Find files above a custom duplication threshold
+complexity-guard --duplication --format json src/ | jq '.files[] | select((.duplication_pct // 0) > 15) | {path, duplication_pct}'
+
+# Get all duplication warnings
+complexity-guard --duplication --format json src/ | jq '.files[] | select(.duplication_warning == true) | .path'
+```
+
+### CI Integration with Duplication
+
+Add duplication enforcement to your CI pipeline:
+
+```yaml
+      - name: Run complexity analysis with duplication detection
+        run: complexity-guard --duplication --fail-on warning src/
+```
+
+Or use a config file to enable duplication with custom thresholds, keeping CI commands clean:
+
+```yaml
+      - name: Run complexity analysis
+        run: complexity-guard src/  # duplication_enabled: true in .complexityguard.json
+```
+
+See [Duplication Detection](duplication-detection.md) for algorithm details, clone type descriptions, and the full configuration reference.
+
 ## Next Steps
 
 - Review the [CLI Reference](cli-reference.md) for complete flag documentation
 - Check out the [Getting Started](getting-started.md) guide for configuration details
+- See [Duplication Detection](duplication-detection.md) for copy-paste detection details
 - Star the project on [GitHub](https://github.com/benvds/complexity-guard) if you find it useful!

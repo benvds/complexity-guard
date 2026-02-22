@@ -72,16 +72,17 @@ ComplexityGuard automatically finds all `.ts`, `.tsx`, `.js`, and `.jsx` files i
 
 ## Understanding the Output
 
-ComplexityGuard measures four families of metrics:
+ComplexityGuard measures five families of metrics:
 
 - **Cyclomatic complexity** — testability: how many paths need testing (McCabe, 1976)
 - **Cognitive complexity** — readability: how hard the code is to understand (SonarSource, 2016)
 - **Halstead metrics** — information theory: vocabulary density, volume, difficulty, and estimated bugs
 - **Structural metrics** — shape: function length, parameter count, nesting depth, file length, export count
+- **Duplication detection** — copy-paste detection: what percentage of tokens are cloned across files (opt-in, see [Duplication Detection](duplication-detection.md))
 
-By default, all four families run on every analysis. Use `--metrics cyclomatic,cognitive` to compute a subset.
+By default, the first four families run on every analysis. Duplication detection is opt-in — enable it with `--duplication` when you want to measure copy-paste debt. Use `--metrics cyclomatic,cognitive` to compute a subset of the standard metrics.
 
-ComplexityGuard also computes a **[Health Score](health-score.md)** — a single 0–100 number that combines all four metric families into one signal. It appears at the bottom of each run and is useful for CI enforcement via `--fail-health-below`.
+ComplexityGuard also computes a **[Health Score](health-score.md)** — a single 0–100 number that combines all active metric families into one signal. It appears at the bottom of each run and is useful for CI enforcement via `--fail-health-below`. When duplication is enabled, it contributes 20% to the composite score.
 
 Cyclomatic and cognitive scores appear side by side on each function line. Halstead and structural violations appear as additional annotations when thresholds are exceeded. Run with `--verbose` to see all metric values for every function.
 
@@ -376,3 +377,4 @@ Now that you have ComplexityGuard installed and understand the basics, explore:
 - **[Structural Metrics](structural-metrics.md)** — Function length, parameters, nesting depth, and more
 - **[Cyclomatic Complexity](cyclomatic-complexity.md)** — How path counting works and when it matters
 - **[Cognitive Complexity](cognitive-complexity.md)** — How nesting penalties measure readability
+- **[Duplication Detection](duplication-detection.md)** — Copy-paste detection using Rabin-Karp rolling hash (opt-in)

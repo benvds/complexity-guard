@@ -147,10 +147,10 @@ complexity-guard --quiet src/
 
 **`--metrics <LIST>`**
 
-Select which metric families to compute. Comma-separated list. Available: `cyclomatic`, `cognitive`, `halstead`, `structural`. Default: all families enabled.
+Select which metric families to compute. Comma-separated list. Available: `cyclomatic`, `cognitive`, `halstead`, `structural`, `duplication`. Default: all standard families enabled (duplication is opt-in and excluded from default).
 
 ```sh
-# Enable all metrics (default)
+# Enable all standard metrics (default — no duplication)
 complexity-guard src/
 
 # Cyclomatic and Halstead only
@@ -159,19 +159,24 @@ complexity-guard --metrics cyclomatic,halstead src/
 # Cyclomatic only
 complexity-guard --metrics cyclomatic src/
 
-# Skip Halstead (compute everything else)
+# Skip Halstead (compute everything else, no duplication)
 complexity-guard --metrics cyclomatic,cognitive,structural src/
+
+# Add duplication to the standard set
+complexity-guard --metrics cyclomatic,cognitive,halstead,structural,duplication src/
 ```
 
-When `--metrics` is specified, only the listed families are computed and displayed. Unspecified families are skipped entirely — both in analysis and in output.
+When `--metrics` is specified, only the listed families are computed and displayed. Unspecified families are skipped entirely — both in analysis and in output. Including `duplication` in the `--metrics` list is equivalent to passing `--duplication`.
 
-**`--no-duplication`**
+**`--duplication`**
 
-Skip duplication analysis (reserved for future use).
+Enable duplication detection. Runs a cross-file Rabin-Karp rolling hash analysis to find Type 1 and Type 2 code clones. Disabled by default because it requires an extra analysis pass.
 
 ```sh
-complexity-guard --no-duplication src/
+complexity-guard --duplication src/
 ```
+
+Equivalent to `--metrics duplication` when combined with the default metric set. See [Duplication Detection](duplication-detection.md) for algorithm details, threshold configuration, and output examples.
 
 **`--threads <N>`**
 
@@ -356,6 +361,12 @@ ComplexityGuard uses `.complexityguard.json` for configuration. Generate a defau
     "exports": {
       "warning": 15,
       "error": 30
+    },
+    "duplication": {
+      "file_warning": 15.0,
+      "file_error": 25.0,
+      "project_warning": 5.0,
+      "project_error": 10.0
     }
   },
   "counting_rules": {
@@ -372,7 +383,8 @@ ComplexityGuard uses `.complexityguard.json` for configuration. Generate a defau
   },
   "baseline": 73.2,
   "analysis": {
-    "threads": 4
+    "threads": 4,
+    "duplication_enabled": false
   },
   "output": {
     "format": "console"
@@ -540,6 +552,28 @@ Number of threads to use for parallel file analysis. Default: auto-detect CPU co
 }
 ```
 
+**`analysis.duplication_enabled`** (boolean)
+
+Whether to run duplication detection. Default: `false`. Equivalent to passing `--duplication` on the CLI.
+
+**`thresholds.duplication.file_warning`** (float)
+
+Per-file duplication percentage that triggers a warning. Default: `15.0`. Only used when duplication detection is enabled.
+
+**`thresholds.duplication.file_error`** (float)
+
+Per-file duplication percentage that triggers an error. Default: `25.0`. Only used when duplication detection is enabled.
+
+**`thresholds.duplication.project_warning`** (float)
+
+Project-wide duplication percentage that triggers a warning. Default: `5.0`. Only used when duplication detection is enabled.
+
+**`thresholds.duplication.project_error`** (float)
+
+Project-wide duplication percentage that triggers an error. Default: `10.0`. Only used when duplication detection is enabled.
+
+See [Duplication Detection](duplication-detection.md) for algorithm details and configuration examples.
+
 ### CLI Flags Override Config
 
 When both a config file and CLI flags are provided, CLI flags take precedence:
@@ -607,6 +641,12 @@ When using `--format json`, ComplexityGuard produces structured JSON output.
     "warnings": 3,
     "errors": 1,
     "health_score": 73.2,
+    "duplication": {
+      "project_duplication_pct": 8.2,
+      "clone_groups": 4,
+      "project_warning": false,
+      "project_error": true
+    },
     "status": "error"
   },
   "files": [
@@ -614,6 +654,9 @@ When using `--format json`, ComplexityGuard produces structured JSON output.
       "path": "src/auth/login.ts",
       "file_length": 112,
       "export_count": 4,
+      "duplication_pct": 22.1,
+      "duplication_warning": true,
+      "duplication_error": false,
       "functions": [
         {
           "name": "validateCredentials",
@@ -674,12 +717,20 @@ When using `--format json`, ComplexityGuard produces structured JSON output.
 - `warnings` (integer) — Number of warning-level violations
 - `errors` (integer) — Number of error-level violations
 - `health_score` (float) — Project-level composite health score (0–100)
+- `duplication` (object, optional) — Present only when `--duplication` is enabled:
+  - `project_duplication_pct` (float) — Percentage of all tokens that are cloned
+  - `clone_groups` (integer) — Number of distinct clone groups found
+  - `project_warning` (boolean) — Whether project duplication exceeds warning threshold
+  - `project_error` (boolean) — Whether project duplication exceeds error threshold
 - `status` (string) — Overall status: `"pass"`, `"warning"`, or `"error"`
 
 **File:**
 - `path` (string) — Relative path to the file
 - `file_length` (integer) — Logical lines in the file (excludes blank and comment-only lines)
 - `export_count` (integer) — Number of export statements in the file
+- `duplication_pct` (float, optional) — Percentage of this file's tokens that are cloned; present only when `--duplication` is enabled
+- `duplication_warning` (boolean, optional) — Whether file duplication exceeds warning threshold
+- `duplication_error` (boolean, optional) — Whether file duplication exceeds error threshold
 - `functions` (array) — Functions found in this file
 
 **Function:**

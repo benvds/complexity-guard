@@ -65,10 +65,11 @@ Top Halstead volume hotspots:
 - **Cognitive Complexity**: SonarSource-based metric with nesting depth penalties — measures understandability
 - **Halstead Metrics**: Information-theoretic vocabulary density, volume, difficulty, effort, and estimated bugs
 - **Structural Metrics**: Function length, parameter count, nesting depth, file length, and export count
+- **Duplication Detection**: Rabin-Karp rolling hash detects Type 1 and Type 2 code clones across files — enable with `--duplication` (see [duplication docs](docs/duplication-detection.md))
 - **Composite Health Score**: Single 0–100 score combining all metric families with configurable weights — enforce in CI with `--fail-health-below`
 - **Console + JSON + SARIF + HTML Output**: Human-readable terminal display, machine-readable JSON, SARIF 2.1.0 for GitHub Code Scanning, and self-contained HTML reports with interactive dashboard, treemap visualization, and sortable metric tables
 - **Parallel Analysis**: Analyzes files concurrently across all CPU cores by default — use `--threads N` to control thread count or `--threads 1` for single-threaded mode
-- **Configurable Thresholds**: Warning and error levels for all four metric families, customizable per project
+- **Configurable Thresholds**: Warning and error levels for all metric families, customizable per project
 - **Selective Metrics**: Use `--metrics cyclomatic,halstead` to compute only specific families
 - **Zero Config**: Works out of the box with sensible defaults, optional `.complexityguard.json` for customization
 - **Single Binary**: No runtime dependencies, runs offline, fast startup — under 300ms on mid-size projects
@@ -93,6 +94,7 @@ Top Halstead volume hotspots:
 - **[Cognitive Complexity](docs/cognitive-complexity.md)** — Nesting-aware readability metric from SonarSource
 - **[Halstead Metrics](docs/halstead-metrics.md)** — Vocabulary density, volume, difficulty, effort, estimated bugs
 - **[Structural Metrics](docs/structural-metrics.md)** — Function length, parameters, nesting depth, file length, exports
+- **[Duplication Detection](docs/duplication-detection.md)** — Rabin-Karp clone detection, Type 1/2 clones, thresholds (opt-in)
 
 ## Configuration
 
@@ -115,7 +117,8 @@ Create a `.complexityguard.json` file in your project root to customize behavior
     "params": { "warning": 3, "error": 6 },
     "nesting": { "warning": 3, "error": 5 },
     "file_length": { "warning": 300, "error": 600 },
-    "exports": { "warning": 15, "error": 30 }
+    "exports": { "warning": 15, "error": 30 },
+    "duplication": { "file_warning": 15.0, "file_error": 25.0, "project_warning": 5.0, "project_error": 10.0 }
   },
   "counting_rules": {
     "logical_operators": true,
@@ -130,7 +133,8 @@ Create a `.complexityguard.json` file in your project root to customize behavior
     "structural": 0.15
   },
   "analysis": {
-    "threads": 4
+    "threads": 4,
+    "duplication_enabled": false
   },
   "baseline": 73.2
 }
