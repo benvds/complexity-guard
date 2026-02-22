@@ -232,9 +232,13 @@ Plans:
   4. Tool merges overlapping matches into maximal clone groups
   5. Tool reports clone groups with locations, token counts, and duplication percentages
   6. Tool applies configurable thresholds for file and project duplication percentages
-**Plans**: TBD
+**Plans:** 4 plans
 
-Plans: (to be created during /gsd:plan-phase)
+Plans:
+- [ ] 11-01-PLAN.md -- Core duplication algorithm: tokenization, rolling hash, cross-file index, verification, merging (TDD)
+- [ ] 11-02-PLAN.md -- CLI/config integration, main.zig pipeline wiring, scoring 5-weight mode, thresholds
+- [ ] 11-03-PLAN.md -- Output format integration: console, JSON, SARIF, HTML duplication sections
+- [ ] 11-04-PLAN.md -- Documentation (duplication-detection.md, docs updates, publication READMEs) and benchmarking
 
 ### Phase 12: Parallelization & Distribution
 **Goal**: Tool analyzes 10,000 files in under 2 seconds and cross-compiles to all target platforms
@@ -269,7 +273,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 8. Composite Health Score | 4/5 | Complete    | 2026-02-17 |
 | 9. SARIF Output | 2/2 | Complete    | 2026-02-18 |
 | 10. HTML Reports | 4/4 | Complete    | 2026-02-19 |
-| 11. Duplication Detection | 0/TBD | Not started | - |
+| 11. Duplication Detection | 0/4 | Planning complete | - |
 | 12. Parallelization & Distribution | 2/2 | Complete    | 2026-02-21 |
 
 ---
