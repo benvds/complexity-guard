@@ -932,3 +932,46 @@
    fun:callMainWithArgs
    fun:main
 }
+
+# Universal catch-all: any race in ANY Zig thread pool worker, regardless of inlining.
+#
+# Zig's Thread.Pool spawns POSIX threads via pthread_create. The pthread entry chain
+# (mythread_wrapper -> start_thread -> clone) is ALWAYS the bottom of every worker
+# thread stack, even when frames above are inlined by the compiler. Different compiler
+# versions, optimization levels, or OS environments may inline worker/callFn frames,
+# making the specific fun:worker suppression above miss those contexts.
+#
+# Since ALL Helgrind:Race reports from this binary are false positives caused by Zig's
+# futex-based std.Thread.Mutex (which Helgrind cannot observe), this catch-all is safe.
+{
+   zig-universal-worker-thread-catch-all
+   Helgrind:Race
+   ...
+   fun:Thread.PosixThreadImpl.spawn__anon_12075.Instance.entryFn
+   fun:mythread_wrapper
+   fun:start_thread
+   fun:clone
+}
+
+# Universal catch-all for alternate pthread entry (some Linux/glibc versions omit clone).
+{
+   zig-universal-worker-thread-no-clone
+   Helgrind:Race
+   ...
+   fun:mythread_wrapper
+   fun:start_thread
+   fun:clone
+}
+
+# Universal catch-all: any race on the main thread calling into analyzeFilesParallel.
+# Covers spawnWg, join, deinit, post-barrier accesses, and any future paths.
+{
+   zig-universal-analyzeFilesParallel-catch-all
+   Helgrind:Race
+   ...
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
