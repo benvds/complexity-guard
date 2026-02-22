@@ -755,6 +755,7 @@ pub fn main() !void {
             project_score,
             parsed_metrics,
             sarif_thresholds,
+            dup_result,
         );
         const sarif_str = try sarif_output.serializeSarifOutput(arena_allocator, sarif_result);
 
@@ -777,6 +778,7 @@ pub fn main() !void {
             total_errors,
             project_score,
             version,
+            dup_result,
         );
 
         if (cli_args.output_file) |output_path| {

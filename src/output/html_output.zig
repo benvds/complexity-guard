@@ -1,6 +1,7 @@
 const std = @import("std");
 const console = @import("console.zig");
 const cyclomatic = @import("../metrics/cyclomatic.zig");
+const duplication = @import("../metrics/duplication.zig");
 const Allocator = std.mem.Allocator;
 
 const ThresholdResult = cyclomatic.ThresholdResult;
@@ -209,6 +210,28 @@ const CSS =
     \\ .bar-chart { width: 100%; display: block; }
     \\
     \\ footer { border-top: 1px solid var(--border); padding: 1rem 0; margin-top: 2rem; text-align: center; color: var(--muted); font-size: 0.75rem; }
+    \\
+    \\ /* Duplication section */
+    \\ .duplication-section { margin-bottom: 2rem; }
+    \\ .duplication-section h2 { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; }
+    \\ .clone-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    \\ .clone-table th { text-align: left; padding: 0.5rem 0.75rem; font-weight: 600; color: var(--muted); border-bottom: 1px solid var(--border); background: var(--bg); cursor: pointer; user-select: none; white-space: nowrap; }
+    \\ .clone-table td { padding: 0.45rem 0.75rem; border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent); font-family: monospace; font-size: 0.78rem; }
+    \\ .clone-table tr:last-child td { border-bottom: none; }
+    \\ .dup-file-list { margin-top: 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    \\ .dup-file-row { display: grid; grid-template-columns: 1fr 5rem 5rem; gap: 0 0.75rem; padding: 0.4rem 0.75rem; border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent); font-size: 0.82rem; align-items: center; }
+    \\ .dup-file-row:last-child { border-bottom: none; }
+    \\ .dup-file-row.header { font-weight: 600; color: var(--muted); background: var(--bg); font-size: 0.78rem; border-bottom: 1px solid var(--border); }
+    \\ .dup-pct-bar { height: 6px; border-radius: 3px; background: var(--border); overflow: hidden; margin-top: 2px; }
+    \\ .dup-pct-fill { height: 100%; border-radius: 3px; }
+    \\ .dup-pct-fill.ok { background: var(--color-ok); }
+    \\ .dup-pct-fill.warning { background: var(--color-warning); }
+    \\ .dup-pct-fill.error { background: var(--color-error); }
+    \\ .dup-project-summary { margin-top: 0.75rem; padding: 0.5rem 0.75rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.85rem; }
+    \\ .heatmap-section { margin-top: 1rem; }
+    \\ .heatmap-table { border-collapse: collapse; font-size: 0.7rem; }
+    \\ .heatmap-table th, .heatmap-table td { border: 1px solid var(--border); padding: 0.25rem 0.35rem; text-align: center; white-space: nowrap; }
+    \\ .heatmap-table th { background: var(--bg); color: var(--muted); font-weight: 600; max-width: 80px; overflow: hidden; text-overflow: ellipsis; }
 ;
 
 // ── Embedded JS ───────────────────────────────────────────────────────────────
@@ -802,6 +825,7 @@ test "file table row count" {
         0,
         81.0,
         "0.5.0",
+        null,
     );
     defer allocator.free(html);
 
@@ -850,6 +874,7 @@ test "buildHtmlReport basic" {
         0,
         72.0,
         "0.5.0",
+        null,
     );
     defer allocator.free(html);
 
@@ -1195,6 +1220,171 @@ fn writeVisualizations(w: anytype, allocator: Allocator, file_results: []const F
     try w.writeAll("    </section>\n");
 }
 
+/// Write the duplication section: clone groups table + file duplication list + heatmap.
+/// Only called when dup_result is non-null.
+fn writeDuplicationSection(writer: anytype, allocator: Allocator, dup: duplication.DuplicationResult) !void {
+    try writer.writeAll("    <div class=\"duplication-section\">\n");
+    try writer.writeAll("      <h2>Duplication</h2>\n");
+
+    // Project summary
+    const proj_status: []const u8 = if (dup.project_error) "error" else if (dup.project_warning) "warning" else "ok";
+    try writer.print("      <div class=\"dup-project-summary\">Project duplication: <strong>{d:.1}%</strong> <span class=\"score-badge {s}\">{s}</span></div>\n", .{
+        dup.project_duplication_pct,
+        proj_status,
+        if (dup.project_error) "ERROR" else if (dup.project_warning) "WARNING" else "OK",
+    });
+
+    // Clone groups table (only if there are any)
+    if (dup.clone_groups.len > 0) {
+        try writer.writeAll("      <h3 style=\"margin-top:1rem;font-size:0.9rem;font-weight:600;margin-bottom:0.5rem;\">Clone Groups</h3>\n");
+        try writer.writeAll("      <table class=\"clone-table\" id=\"clone-groups-table\">\n");
+        try writer.writeAll("        <thead><tr><th>#</th><th>Tokens</th><th>Locations</th></tr></thead>\n");
+        try writer.writeAll("        <tbody>\n");
+        for (dup.clone_groups, 0..) |group, i| {
+            try writer.print("          <tr><td>{d}</td><td>{d}</td><td>", .{ i + 1, group.token_count });
+            for (group.locations, 0..) |loc, j| {
+                if (j > 0) try writer.writeAll(", ");
+                try writer.print("{s}:{d}", .{ loc.file_path, loc.start_line });
+            }
+            try writer.writeAll("</td></tr>\n");
+        }
+        try writer.writeAll("        </tbody>\n");
+        try writer.writeAll("      </table>\n");
+    }
+
+    // File duplication list (only files with any clones)
+    if (dup.file_results.len > 0) {
+        try writer.writeAll("      <h3 style=\"margin-top:1rem;font-size:0.9rem;font-weight:600;margin-bottom:0.5rem;\">File Duplication</h3>\n");
+        try writer.writeAll("      <div class=\"dup-file-list\">\n");
+        try writer.writeAll("        <div class=\"dup-file-row header\"><span>File</span><span>Duplication</span><span>Status</span></div>\n");
+
+        // Show top 20 files by duplication pct (or all if <= 20)
+        const max_files = @min(20, dup.file_results.len);
+
+        // Copy and sort by duplication_pct descending (simple bubble sort for small N)
+        var sorted_indices = try allocator.alloc(usize, dup.file_results.len);
+        defer allocator.free(sorted_indices);
+        for (sorted_indices, 0..) |*idx, i| idx.* = i;
+
+        // Bubble sort descending by duplication_pct
+        var si: usize = 0;
+        while (si < sorted_indices.len) : (si += 1) {
+            var sj: usize = si + 1;
+            while (sj < sorted_indices.len) : (sj += 1) {
+                if (dup.file_results[sorted_indices[sj]].duplication_pct > dup.file_results[sorted_indices[si]].duplication_pct) {
+                    const tmp = sorted_indices[si];
+                    sorted_indices[si] = sorted_indices[sj];
+                    sorted_indices[sj] = tmp;
+                }
+            }
+        }
+
+        for (sorted_indices[0..max_files]) |idx| {
+            const fr = dup.file_results[idx];
+            const file_status: []const u8 = if (fr.@"error") "error" else if (fr.warning) "warning" else "ok";
+            const bar_pct = @min(100.0, fr.duplication_pct);
+            try writer.print("        <div class=\"dup-file-row\"><span style=\"font-family:monospace;font-size:0.78rem;\">{s}</span><span>{d:.1}%<div class=\"dup-pct-bar\"><div class=\"dup-pct-fill {s}\" style=\"width:{d:.0}%\"></div></div></span><span class=\"score-badge {s}\">{s}</span></div>\n", .{
+                fr.path,
+                fr.duplication_pct,
+                file_status,
+                bar_pct,
+                file_status,
+                if (fr.@"error") "ERROR" else if (fr.warning) "WARNING" else "OK",
+            });
+        }
+        try writer.writeAll("      </div>\n");
+    }
+
+    // Simple adjacency heatmap: only render when there are multiple files with clones
+    if (dup.file_results.len >= 2 and dup.clone_groups.len > 0) {
+        // Find files that actually have clones
+        var clone_files = std.ArrayList([]const u8).empty;
+        defer clone_files.deinit(allocator);
+        for (dup.file_results) |fr| {
+            if (fr.cloned_tokens > 0) {
+                try clone_files.append(allocator, fr.path);
+            }
+        }
+        if (clone_files.items.len >= 2) {
+            const n: usize = if (clone_files.items.len > 10) 10 else clone_files.items.len;
+            const files = clone_files.items[0..n];
+
+            // Build adjacency matrix: shared_tokens[i][j] = tokens shared between files i and j
+            const matrix_size: usize = n * n;
+            var shared = try allocator.alloc(u32, matrix_size);
+            defer allocator.free(shared);
+            @memset(shared, 0);
+
+            for (dup.clone_groups) |group| {
+                for (group.locations, 0..) |loc_a, ai| {
+                    for (group.locations[ai + 1 ..]) |loc_b| {
+                        // Find indices of loc_a.file_path and loc_b.file_path in files
+                        var ia: ?usize = null;
+                        var ib: ?usize = null;
+                        for (files, 0..) |f, fi| {
+                            if (std.mem.eql(u8, f, loc_a.file_path)) ia = fi;
+                            if (std.mem.eql(u8, f, loc_b.file_path)) ib = fi;
+                        }
+                        if (ia != null and ib != null) {
+                            shared[ia.? * n + ib.?] += group.token_count;
+                            shared[ib.? * n + ia.?] += group.token_count;
+                        }
+                    }
+                }
+            }
+
+            // Find max value for color scaling
+            var max_shared: u32 = 1;
+            for (shared) |v| {
+                if (v > max_shared) max_shared = v;
+            }
+
+            try writer.writeAll("      <div class=\"heatmap-section\">\n");
+            try writer.writeAll("        <h3 style=\"font-size:0.9rem;font-weight:600;margin-bottom:0.5rem;\">Clone Heatmap</h3>\n");
+            try writer.writeAll("        <p style=\"font-size:0.75rem;color:var(--muted);margin-bottom:0.5rem;\">Shared clone tokens between files (darker = more shared code)</p>\n");
+            try writer.writeAll("        <div style=\"overflow-x:auto;\">\n");
+            try writer.writeAll("        <table class=\"heatmap-table\">\n");
+            try writer.writeAll("          <thead><tr><th></th>");
+            for (files) |f| {
+                // Show just the filename (last path component)
+                const basename = if (std.mem.lastIndexOfScalar(u8, f, '/')) |slash_idx| f[slash_idx + 1 ..] else f;
+                try writer.print("<th title=\"{s}\">{s}</th>", .{ f, basename });
+            }
+            try writer.writeAll("</tr></thead>\n");
+            try writer.writeAll("          <tbody>\n");
+            for (files, 0..) |f_row, ri| {
+                const basename_row = if (std.mem.lastIndexOfScalar(u8, f_row, '/')) |slash_idx| f_row[slash_idx + 1 ..] else f_row;
+                try writer.print("            <tr><th title=\"{s}\">{s}</th>", .{ f_row, basename_row });
+                for (0..n) |ci| {
+                    const val = shared[ri * n + ci];
+                    if (ri == ci) {
+                        // Diagonal: self
+                        try writer.writeAll("<td style=\"background:var(--border);\">-</td>");
+                    } else if (val == 0) {
+                        try writer.writeAll("<td>0</td>");
+                    } else {
+                        const intensity: f64 = @as(f64, @floatFromInt(val)) / @as(f64, @floatFromInt(max_shared));
+                        // Orange to red gradient: clamp to valid u8 range
+                        const r_f: f64 = @min(255.0, 200.0 + 55.0 * intensity);
+                        const g_f: f64 = @max(0.0, 100.0 * (1.0 - intensity));
+                        const r: u8 = @intFromFloat(r_f);
+                        const g: u8 = @intFromFloat(g_f);
+                        const b: u8 = 0;
+                        try writer.print("<td style=\"background:rgba({d},{d},{d},{d:.2});\" title=\"{d} shared tokens\">{d}</td>", .{ r, g, b, 0.3 + intensity * 0.7, val, val });
+                    }
+                }
+                try writer.writeAll("</tr>\n");
+            }
+            try writer.writeAll("          </tbody>\n");
+            try writer.writeAll("        </table>\n");
+            try writer.writeAll("        </div>\n");
+            try writer.writeAll("      </div>\n");
+        }
+    }
+
+    try writer.writeAll("    </div>\n");
+}
+
 // ── Public API ────────────────────────────────────────────────────────────────
 
 /// Build a self-contained HTML report. Returns heap-allocated HTML string; caller owns the slice.
@@ -1205,6 +1395,7 @@ pub fn buildHtmlReport(
     error_count: u32,
     project_score: f64,
     tool_version: []const u8,
+    dup_result: ?duplication.DuplicationResult,
 ) ![]u8 {
     var buf = std.ArrayList(u8).empty;
     defer buf.deinit(allocator);
@@ -1219,6 +1410,10 @@ pub fn buildHtmlReport(
     try w.writeAll("  <div class=\"container\">\n");
     try writeDashboard(w, file_results, project_score, warning_count, error_count, allocator);
     try writeVisualizations(w, allocator, file_results);
+    // Write duplication section before file table (only when enabled)
+    if (dup_result) |dup| {
+        try writeDuplicationSection(w, allocator, dup);
+    }
     try writeFileTable(w, file_results);
     try w.writeAll("  </div>\n");
     try writeFooter(w, tool_version);
@@ -1323,6 +1518,7 @@ test "treemap SVG structure" {
         0,
         85.0,
         "0.5.0",
+        null,
     );
     defer allocator.free(html);
 
@@ -1331,4 +1527,88 @@ test "treemap SVG structure" {
     try std.testing.expect(std.mem.indexOf(u8, html, "<rect") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "treemap") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "bar-chart") != null);
+}
+
+test "buildHtmlReport: duplication section appears when dup_result provided" {
+    const allocator = std.testing.allocator;
+
+    const locations = [_]duplication.CloneLocation{
+        .{ .file_path = "src/auth.ts", .start_line = 10, .end_line = 20 },
+        .{ .file_path = "src/register.ts", .start_line = 50, .end_line = 60 },
+    };
+    const clone_groups = [_]duplication.CloneGroup{
+        .{ .token_count = 42, .locations = &locations },
+    };
+    const file_results_dup = [_]duplication.FileDuplicationResult{
+        .{ .path = "src/auth.ts", .total_tokens = 300, .cloned_tokens = 60, .duplication_pct = 20.0, .warning = true, .@"error" = false },
+        .{ .path = "src/register.ts", .total_tokens = 200, .cloned_tokens = 60, .duplication_pct = 30.0, .warning = true, .@"error" = true },
+    };
+    const dup = duplication.DuplicationResult{
+        .clone_groups = &clone_groups,
+        .file_results = &file_results_dup,
+        .total_cloned_tokens = 120,
+        .total_tokens = 500,
+        .project_duplication_pct = 24.0,
+        .project_warning = true,
+        .project_error = false,
+    };
+
+    const results = [_]ThresholdResult{
+        .{ .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function",
+           .start_line = 1, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok,
+           .health_score = 85.0 },
+    };
+    const file_results = [_]FileThresholdResults{
+        .{ .path = "src/auth.ts", .results = &results },
+    };
+
+    const html = try buildHtmlReport(
+        allocator,
+        &file_results,
+        1,
+        1,
+        60.0,
+        "0.6.0",
+        dup,
+    );
+    defer allocator.free(html);
+
+    // Duplication section div should appear
+    try std.testing.expect(std.mem.indexOf(u8, html, "<div class=\"duplication-section\">") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "Clone Groups") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "42") != null); // token count
+    try std.testing.expect(std.mem.indexOf(u8, html, "src/auth.ts:10") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "File Duplication") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "Project duplication") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "24.0%") != null);
+}
+
+test "buildHtmlReport: no duplication section when dup_result is null" {
+    const allocator = std.testing.allocator;
+
+    const results = [_]ThresholdResult{
+        .{ .complexity = 5, .status = .ok, .function_name = "foo", .function_kind = "function",
+           .start_line = 1, .start_col = 0, .cognitive_complexity = 0, .cognitive_status = .ok,
+           .health_score = 85.0 },
+    };
+    const file_results = [_]FileThresholdResults{
+        .{ .path = "src/foo.ts", .results = &results },
+    };
+
+    const html = try buildHtmlReport(
+        allocator,
+        &file_results,
+        0,
+        0,
+        85.0,
+        "0.6.0",
+        null,
+    );
+    defer allocator.free(html);
+
+    // No duplication section div should appear (CSS class in stylesheet is expected,
+    // but the actual <div class="duplication-section"> should NOT appear)
+    try std.testing.expect(std.mem.indexOf(u8, html, "<div class=\"duplication-section\">") == null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "Clone Groups") == null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "Project duplication") == null);
 }

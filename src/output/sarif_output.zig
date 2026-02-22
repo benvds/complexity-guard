@@ -1,6 +1,7 @@
 const std = @import("std");
 const console = @import("console.zig");
 const cyclomatic = @import("../metrics/cyclomatic.zig");
+const duplication = @import("../metrics/duplication.zig");
 const Allocator = std.mem.Allocator;
 
 // Rule index constants
@@ -14,6 +15,7 @@ pub const RULE_LINE_COUNT: u32 = 6;
 pub const RULE_PARAM_COUNT: u32 = 7;
 pub const RULE_NESTING_DEPTH: u32 = 8;
 pub const RULE_HEALTH_SCORE: u32 = 9;
+pub const RULE_DUPLICATION: u32 = 10;
 
 /// SARIF 2.1.0 top-level log object
 pub const SarifLog = struct {
@@ -56,12 +58,21 @@ pub const SarifMessage = struct {
     text: []const u8,
 };
 
+/// A related location entry used in clone group SARIF results.
+pub const SarifRelatedLocation = struct {
+    id: u32,
+    message: SarifMessage,
+    physicalLocation: SarifPhysicalLocation,
+};
+
 pub const SarifResult = struct {
     ruleId: []const u8,
     ruleIndex: u32,
     level: []const u8,
     message: SarifMessage,
     locations: []const SarifLocation,
+    /// Related locations (used for clone group instances; null for other results)
+    relatedLocations: ?[]const SarifRelatedLocation = null,
 };
 
 pub const SarifLocation = struct {
@@ -239,6 +250,17 @@ fn buildRules(allocator: Allocator) ![]SarifRule {
         .help = .{ .text = "Improve the health score by addressing the metric violations shown in other results. The health score weights cyclomatic, cognitive, Halstead, and structural metrics. Run without a baseline to see individual violations." },
     });
 
+    // RULE 10: Duplication
+    try rules.append(allocator, SarifRule{
+        .id = "complexity-guard/duplication",
+        .name = "CodeDuplication",
+        .shortDescription = .{ .text = "Duplicate code block detected across files" },
+        .fullDescription = .{ .text = "A sequence of tokens was found duplicated in multiple locations. Consider extracting shared code into a reusable function or module." },
+        .defaultConfiguration = .{ .level = "warning" },
+        .helpUri = "https://github.com/benvds/complexity-guard/blob/main/docs/duplication.md",
+        .help = .{ .text = "Eliminate code duplication by extracting duplicated logic into shared functions, utilities, or modules. Type 2 clones (structurally identical with different variable names) can often be generalized with parameters." },
+    });
+
     return try allocator.dupe(SarifRule, rules.items);
 }
 
@@ -282,6 +304,7 @@ pub fn buildSarifOutput(
     project_score: f64,
     selected_metrics: ?[]const []const u8,
     thresholds: SarifThresholds,
+    dup_result: ?duplication.DuplicationResult,
 ) !SarifLog {
     _ = project_score; // Used implicitly via baseline_failed
 
@@ -595,6 +618,66 @@ pub fn buildSarifOutput(
         }
     }
 
+    // Emit duplication results: one SARIF result per clone group
+    if (dup_result) |dup| {
+        for (dup.clone_groups) |group| {
+            if (group.locations.len == 0) continue;
+
+            // Use the first location as the primary location
+            const primary = group.locations[0];
+
+            // Build relatedLocations for remaining instances
+            var related = std.ArrayList(SarifRelatedLocation).empty;
+            defer related.deinit(allocator);
+
+            for (group.locations[1..], 0..) |loc, i| {
+                const rel_msg = try std.fmt.allocPrint(allocator, "Clone instance {d}", .{i + 2});
+                try related.append(allocator, SarifRelatedLocation{
+                    .id = @intCast(i + 1),
+                    .message = .{ .text = rel_msg },
+                    .physicalLocation = .{
+                        .artifactLocation = .{ .uri = loc.file_path },
+                        .region = .{
+                            .startLine = loc.start_line,
+                            .startColumn = 1,
+                            .endLine = loc.end_line,
+                        },
+                    },
+                });
+            }
+
+            // Build message with all location pairs
+            var msg_buf = std.ArrayList(u8).empty;
+            defer msg_buf.deinit(allocator);
+            try msg_buf.writer(allocator).print("Clone group: {d} tokens duplicated in {d} locations (", .{ group.token_count, group.locations.len });
+            for (group.locations, 0..) |loc, i| {
+                if (i > 0) try msg_buf.writer(allocator).writeAll(", ");
+                try msg_buf.writer(allocator).print("{s}:{d}", .{ loc.file_path, loc.start_line });
+            }
+            try msg_buf.writer(allocator).writeAll(")");
+
+            const primary_locs = try allocator.dupe(SarifLocation, &[_]SarifLocation{.{
+                .physicalLocation = .{
+                    .artifactLocation = .{ .uri = primary.file_path },
+                    .region = .{
+                        .startLine = primary.start_line,
+                        .startColumn = 1,
+                        .endLine = primary.end_line,
+                    },
+                },
+            }});
+
+            try sarif_results.append(allocator, SarifResult{
+                .ruleId = "complexity-guard/duplication",
+                .ruleIndex = RULE_DUPLICATION,
+                .level = "warning",
+                .message = .{ .text = try allocator.dupe(u8, msg_buf.items) },
+                .locations = primary_locs,
+                .relatedLocations = try allocator.dupe(SarifRelatedLocation, related.items),
+            });
+        }
+    }
+
     // Build the run
     const run = SarifRun{
         .tool = SarifTool{
@@ -652,6 +735,7 @@ test "buildSarifOutput: produces valid SARIF envelope" {
         100.0,
         null,
         thresholds,
+        null,
     );
     defer {
         for (output.runs) |run| {
@@ -707,6 +791,7 @@ test "buildSarifOutput: no results for passing functions" {
         100.0,
         null,
         thresholds,
+        null,
     );
     defer {
         for (output.runs) |run| {
@@ -759,6 +844,7 @@ test "buildSarifOutput: cyclomatic violation produces result" {
         75.0,
         null,
         thresholds,
+        null,
     );
     defer {
         for (output.runs) |run| {
@@ -825,6 +911,7 @@ test "buildSarifOutput: column is 1-indexed" {
         80.0,
         null,
         thresholds,
+        null,
     );
     defer {
         for (output.runs) |run| {
@@ -885,6 +972,7 @@ test "buildSarifOutput: multiple metrics produce multiple results" {
         30.0,
         null,
         thresholds,
+        null,
     );
     defer {
         for (output.runs) |run| {
@@ -944,6 +1032,7 @@ test "buildSarifOutput: baseline failure produces file-level result" {
         42.5,
         null,
         thresholds,
+        null,
     );
     defer {
         for (output.runs) |run| {
@@ -1017,6 +1106,7 @@ test "buildSarifOutput: metrics filtering limits results" {
         50.0,
         &selected,
         thresholds,
+        null,
     );
     defer {
         for (output.runs) |run| {
@@ -1061,6 +1151,7 @@ test "serializeSarifOutput: produces valid JSON" {
         100.0,
         null,
         thresholds,
+        null,
     );
     defer {
         for (output.runs) |run| {
@@ -1091,4 +1182,136 @@ test "serializeSarifOutput: produces valid JSON" {
         parsed.value.object.get("$schema").?.string,
     );
     try std.testing.expectEqualStrings("2.1.0", parsed.value.object.get("version").?.string);
+}
+
+test "buildSarifOutput: duplication clone groups produce results with relatedLocations" {
+    const allocator = std.testing.allocator;
+
+    const locations = [_]duplication.CloneLocation{
+        .{ .file_path = "src/auth.ts", .start_line = 10, .end_line = 20 },
+        .{ .file_path = "src/register.ts", .start_line = 50, .end_line = 60 },
+        .{ .file_path = "src/common.ts", .start_line = 100, .end_line = 110 },
+    };
+    const clone_groups = [_]duplication.CloneGroup{
+        .{ .token_count = 42, .locations = &locations },
+    };
+    const file_dup_results = [_]duplication.FileDuplicationResult{
+        .{ .path = "src/auth.ts", .total_tokens = 300, .cloned_tokens = 60, .duplication_pct = 20.0, .warning = true, .@"error" = false },
+    };
+    const dup = duplication.DuplicationResult{
+        .clone_groups = &clone_groups,
+        .file_results = &file_dup_results,
+        .total_cloned_tokens = 60,
+        .total_tokens = 300,
+        .project_duplication_pct = 20.0,
+        .project_warning = true,
+        .project_error = false,
+    };
+
+    const file_results = [_]console.FileThresholdResults{};
+    const thresholds = SarifThresholds{
+        .cyclomatic_warning = 10, .cyclomatic_error = 20,
+        .cognitive_warning = 15, .cognitive_error = 30,
+        .halstead_volume_warning = 500.0, .halstead_volume_error = 1000.0,
+        .halstead_difficulty_warning = 10.0, .halstead_difficulty_error = 20.0,
+        .halstead_effort_warning = 5000.0, .halstead_effort_error = 10000.0,
+        .halstead_bugs_warning = 0.5, .halstead_bugs_error = 1.0,
+        .line_count_warning = 50, .line_count_error = 100,
+        .param_count_warning = 4, .param_count_error = 7,
+        .nesting_depth_warning = 3, .nesting_depth_error = 5,
+    };
+
+    const output = try buildSarifOutput(
+        allocator,
+        &file_results,
+        "0.6.0",
+        false,
+        null,
+        80.0,
+        null,
+        thresholds,
+        dup,
+    );
+    defer {
+        for (output.runs) |run| {
+            allocator.free(run.tool.driver.rules);
+            for (run.results) |r| {
+                allocator.free(r.message.text);
+                allocator.free(r.locations);
+                if (r.relatedLocations) |rl| {
+                    for (rl) |rel| allocator.free(rel.message.text);
+                    allocator.free(rl);
+                }
+            }
+            allocator.free(run.results);
+        }
+        allocator.free(output.runs);
+    }
+
+    const run_results = output.runs[0].results;
+    // Should have exactly 1 result for the clone group
+    try std.testing.expectEqual(@as(usize, 1), run_results.len);
+
+    const result = run_results[0];
+    try std.testing.expectEqualStrings("complexity-guard/duplication", result.ruleId);
+    try std.testing.expectEqual(RULE_DUPLICATION, result.ruleIndex);
+    try std.testing.expectEqualStrings("warning", result.level);
+
+    // Message should mention token count and locations
+    try std.testing.expect(std.mem.indexOf(u8, result.message.text, "42 tokens") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result.message.text, "3 locations") != null);
+
+    // Primary location should be first clone instance
+    try std.testing.expectEqualStrings("src/auth.ts", result.locations[0].physicalLocation.artifactLocation.uri);
+    try std.testing.expectEqual(@as(u32, 10), result.locations[0].physicalLocation.region.startLine);
+
+    // relatedLocations should have 2 entries (locations 2 and 3)
+    try std.testing.expect(result.relatedLocations != null);
+    const related = result.relatedLocations.?;
+    try std.testing.expectEqual(@as(usize, 2), related.len);
+    try std.testing.expectEqualStrings("src/register.ts", related[0].physicalLocation.artifactLocation.uri);
+    try std.testing.expectEqual(@as(u32, 50), related[0].physicalLocation.region.startLine);
+    try std.testing.expectEqualStrings("src/common.ts", related[1].physicalLocation.artifactLocation.uri);
+    try std.testing.expectEqual(@as(u32, 100), related[1].physicalLocation.region.startLine);
+}
+
+test "buildSarifOutput: no duplication results when dup_result is null" {
+    const allocator = std.testing.allocator;
+
+    const file_results = [_]console.FileThresholdResults{};
+    const thresholds = SarifThresholds{
+        .cyclomatic_warning = 10, .cyclomatic_error = 20,
+        .cognitive_warning = 15, .cognitive_error = 30,
+        .halstead_volume_warning = 500.0, .halstead_volume_error = 1000.0,
+        .halstead_difficulty_warning = 10.0, .halstead_difficulty_error = 20.0,
+        .halstead_effort_warning = 5000.0, .halstead_effort_error = 10000.0,
+        .halstead_bugs_warning = 0.5, .halstead_bugs_error = 1.0,
+        .line_count_warning = 50, .line_count_error = 100,
+        .param_count_warning = 4, .param_count_error = 7,
+        .nesting_depth_warning = 3, .nesting_depth_error = 5,
+    };
+
+    const output = try buildSarifOutput(
+        allocator,
+        &file_results,
+        "0.6.0",
+        false,
+        null,
+        100.0,
+        null,
+        thresholds,
+        null, // no duplication result
+    );
+    defer {
+        for (output.runs) |run| {
+            allocator.free(run.tool.driver.rules);
+            allocator.free(run.results);
+        }
+        allocator.free(output.runs);
+    }
+
+    // No results at all - no duplication results emitted
+    try std.testing.expectEqual(@as(usize, 0), output.runs[0].results.len);
+    // But we should still have 11 rules (including duplication rule)
+    try std.testing.expectEqual(@as(usize, 11), output.runs[0].tool.driver.rules.len);
 }
