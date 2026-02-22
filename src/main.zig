@@ -39,7 +39,8 @@ fn writeDefaultConfigWithBaseline(allocator: std.mem.Allocator, path: []const u8
     try writer.writeAll("    \"cyclomatic\": 0.20,\n");
     try writer.writeAll("    \"cognitive\": 0.30,\n");
     try writer.writeAll("    \"halstead\": 0.15,\n");
-    try writer.writeAll("    \"structural\": 0.15\n");
+    try writer.writeAll("    \"structural\": 0.15,\n");
+    try writer.writeAll("    \"duplication\": 0.20\n");
     try writer.writeAll("  },\n");
     try writer.print("  \"baseline\": {d:.1}\n", .{baseline});
     try writer.writeAll("}\n");
@@ -93,6 +94,22 @@ pub fn buildStructuralConfig(thresholds: config_mod.ThresholdsConfig) structural
         .file_length_error = if (thresholds.file_length) |t| t.@"error" orelse default_str.file_length_error else default_str.file_length_error,
         .export_count_warning = if (thresholds.export_count) |t| t.warning orelse default_str.export_count_warning else default_str.export_count_warning,
         .export_count_error = if (thresholds.export_count) |t| t.@"error" orelse default_str.export_count_error else default_str.export_count_error,
+    };
+}
+
+/// Build CyclomaticConfig from ThresholdsConfig, falling back to defaults for missing fields.
+/// Exposed for unit testing.
+pub fn buildCyclomaticConfig(thresholds: config_mod.ThresholdsConfig) cyclomatic.CyclomaticConfig {
+    const default_cycl = cyclomatic.CyclomaticConfig.default();
+    return cyclomatic.CyclomaticConfig{
+        .count_logical_operators = default_cycl.count_logical_operators,
+        .count_nullish_coalescing = default_cycl.count_nullish_coalescing,
+        .count_optional_chaining = default_cycl.count_optional_chaining,
+        .count_ternary = default_cycl.count_ternary,
+        .count_default_params = default_cycl.count_default_params,
+        .switch_case_mode = default_cycl.switch_case_mode,
+        .warning_threshold = if (thresholds.cyclomatic) |t| t.warning orelse default_cycl.warning_threshold else default_cycl.warning_threshold,
+        .error_threshold = if (thresholds.cyclomatic) |t| t.@"error" orelse default_cycl.error_threshold else default_cycl.error_threshold,
     };
 }
 
@@ -226,7 +243,10 @@ pub fn main() !void {
     }
 
     // Step 1: Analyze all files once and store results
-    const cycl_config = cyclomatic.CyclomaticConfig.default();
+    const cycl_config = if (cfg.analysis) |analysis|
+        if (analysis.thresholds) |thresholds| buildCyclomaticConfig(thresholds) else cyclomatic.CyclomaticConfig.default()
+    else
+        cyclomatic.CyclomaticConfig.default();
 
     // Build cognitive config from loaded config (use defaults if not specified)
     const default_cog = cognitive.CognitiveConfig.default();
@@ -274,6 +294,12 @@ pub fn main() !void {
 
     // Determine if duplication detection is enabled (via --duplication flag or --metrics duplication)
     const duplication_enabled: bool = blk: {
+        // --no-duplication overrides everything
+        if (cfg.analysis) |a| {
+            if (a.no_duplication) |nd| {
+                if (nd) break :blk false;
+            }
+        }
         if (cfg.analysis) |a| {
             if (a.duplication_enabled) |de| {
                 if (de) break :blk true;
@@ -456,7 +482,7 @@ pub fn main() !void {
 
             total_functions += @intCast(cycl_results.len);
 
-            const violations = exit_codes.countViolations(cycl_results);
+            const violations = exit_codes.countViolationsFiltered(cycl_results, parsed_metrics);
             total_warnings += violations.warnings;
             total_errors += violations.errors;
 

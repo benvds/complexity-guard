@@ -237,7 +237,7 @@ fn analyzeFileWorker(ctx: *WorkerContext, path: []const u8) void {
     }
 
     const file_score = scoring.computeFileScore(func_scores.items);
-    const violations = exit_codes.countViolations(cycl_results);
+    const violations = exit_codes.countViolationsFiltered(cycl_results, ctx.parsed_metrics);
 
     // === CRITICAL: Lock mutex for ALL shared allocator operations ===
     // ArenaAllocator is NOT thread-safe — every alloc/dupe/append must be serialized.

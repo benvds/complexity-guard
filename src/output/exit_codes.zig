@@ -86,6 +86,62 @@ pub fn countViolations(
     return .{ .warnings = warnings, .errors = errors };
 }
 
+/// Check if a metric family is enabled.
+/// Returns true when metrics is null (all families enabled) or the name is in the list.
+/// Duplicated from main.zig/parallel.zig to avoid circular imports (Phase 07-03 decision).
+fn isMetricEnabled(metrics: ?[]const []const u8, metric: []const u8) bool {
+    const list = metrics orelse return true;
+    for (list) |m| {
+        if (std.mem.eql(u8, m, metric)) return true;
+    }
+    return false;
+}
+
+/// Return the worst status across only the enabled metric families for a ThresholdResult.
+/// When metrics is null, considers all families (same as worstStatusAll).
+pub fn worstStatusForMetrics(result: cyclomatic.ThresholdResult, metrics: ?[]const []const u8) cyclomatic.ThresholdStatus {
+    var worst = cyclomatic.ThresholdStatus.ok;
+    if (isMetricEnabled(metrics, "cyclomatic")) {
+        worst = worstStatus(worst, result.status);
+    }
+    if (isMetricEnabled(metrics, "cognitive")) {
+        worst = worstStatus(worst, result.cognitive_status);
+    }
+    if (isMetricEnabled(metrics, "halstead")) {
+        worst = worstStatus(worst, result.halstead_volume_status);
+        worst = worstStatus(worst, result.halstead_difficulty_status);
+        worst = worstStatus(worst, result.halstead_effort_status);
+        worst = worstStatus(worst, result.halstead_bugs_status);
+    }
+    if (isMetricEnabled(metrics, "structural")) {
+        worst = worstStatus(worst, result.function_length_status);
+        worst = worstStatus(worst, result.params_count_status);
+        worst = worstStatus(worst, result.nesting_depth_status);
+    }
+    return worst;
+}
+
+/// Count warnings and errors, considering only the enabled metric families.
+/// When metrics is null, behaves identically to countViolations (all families).
+pub fn countViolationsFiltered(
+    threshold_results: []const cyclomatic.ThresholdResult,
+    metrics: ?[]const []const u8,
+) struct { warnings: u32, errors: u32 } {
+    var warnings: u32 = 0;
+    var errors: u32 = 0;
+
+    for (threshold_results) |result| {
+        const worst = worstStatusForMetrics(result, metrics);
+        switch (worst) {
+            .warning => warnings += 1,
+            .@"error" => errors += 1,
+            .ok => {},
+        }
+    }
+
+    return .{ .warnings = warnings, .errors = errors };
+}
+
 // TESTS
 
 test "determineExitCode: success when no violations" {
