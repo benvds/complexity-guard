@@ -23,7 +23,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 8: Composite Health Score** - Weighted scoring, baseline ratchet, and enhanced --init (completed 2026-02-17)
 - [x] **Phase 9: SARIF Output** - GitHub Code Scanning integration (completed 2026-02-18)
 - [x] **Phase 10: HTML Reports** - Self-contained visual reports for stakeholders (completed 2026-02-18)
-- [ ] **Phase 11: Duplication Detection** - Rabin-Karp cross-file clone analysis
+- [x] **Phase 11: Duplication Detection** - Rabin-Karp cross-file clone analysis (completed 2026-02-22)
 - [x] **Phase 12: Parallelization & Distribution** - Thread pool, performance tuning, cross-compilation (completed 2026-02-21)
 
 ## Phase Details
@@ -232,7 +232,7 @@ Plans:
   4. Tool merges overlapping matches into maximal clone groups
   5. Tool reports clone groups with locations, token counts, and duplication percentages
   6. Tool applies configurable thresholds for file and project duplication percentages
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans complete
 
 Plans:
 - [ ] 11-01-PLAN.md -- Core duplication algorithm: tokenization, rolling hash, cross-file index, verification, merging (TDD)
@@ -273,7 +273,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 8. Composite Health Score | 4/5 | Complete    | 2026-02-17 |
 | 9. SARIF Output | 2/2 | Complete    | 2026-02-18 |
 | 10. HTML Reports | 4/4 | Complete    | 2026-02-19 |
-| 11. Duplication Detection | 3/4 | In Progress|  |
+| 11. Duplication Detection | 4/4 | Complete   | 2026-02-22 |
 | 12. Parallelization & Distribution | 2/2 | Complete    | 2026-02-21 |
 
 ---

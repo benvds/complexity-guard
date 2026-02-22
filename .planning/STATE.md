@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 ## Current Position
 
 Phase: 11 of 12+ (Duplication Detection)
-Plan: 4 of 4 (Phase 11-04 complete)
+Plan: 4 of 4 (Phase 11-03 complete)
 Status: Phase 11 Complete - All duplication detection plans executed (core algorithm, CLI/pipeline, output modules, documentation/benchmarks)
-Last activity: 2026-02-22 - Completed 11-04: Duplication detection documentation and benchmarks
+Last activity: 2026-02-22 - Completed 11-03: Duplication output integration in all four output formats (console, JSON, SARIF, HTML)
 
 Progress: [████████████] (Phase 11 started)
 
@@ -82,6 +82,7 @@ Progress: [████████████] (Phase 11 started)
 | Phase 11-duplication-detection P01 | 5 | 2 tasks | 5 files |
 | Phase 11-duplication-detection P02 | 5 | 2 tasks | 7 files |
 | Phase 11-duplication-detection P04 | 9 | 2 tasks | 13 files |
+| Phase 11-duplication-detection P03 | 10 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -238,6 +239,9 @@ Recent decisions affecting current work:
 - [Phase 11-02]: duplication_enabled: bool param on resolveEffectiveWeights: single function handles 4-metric and 5-metric normalization modes
 - [Phase 11-02]: duplication: f64 always in EffectiveWeights struct (0.0 when disabled): avoids branching at every use site
 - [Phase 11-04]: Real benchmark numbers for duplication overhead: zod +1077%, got +798%, dayjs +181% — re-parse approach is primary cost driver
+- [Phase 11-03]: Exit codes: Plan 02 already counts duplication violations in total_warnings/total_errors; no changes to exit_codes.zig needed
+- [Phase 11-03]: SARIF relatedLocations: one result per clone group, primary=first location, related=remaining instances with sequential IDs
+- [Phase 11-03]: HTML heatmap uses explicit usize conditional instead of @min() to avoid Zig comptime integer overflow in debug builds
 
 ### Pending Todos
 
