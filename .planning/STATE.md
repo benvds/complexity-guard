@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** Phase 13 - Gap Closure Pipeline Wiring (1 of 1 plans complete)
+**Current focus:** Phase 13 - Gap Closure Pipeline Wiring (2 of 3 plans complete)
 
 ## Current Position
 
 Phase: 13 of 14 (Gap Closure Pipeline Wiring)
-Plan: 1 of 1 (Phase 13-01 complete)
-Status: Phase 13 Complete - All four v1.0 pipeline wiring gaps closed (cyclomatic config, metrics exit gating, no-duplication flag, duplication weight in baseline)
-Last activity: 2026-02-22 - Completed 13-01: Four pipeline gap fixes with 8 new tests
+Plan: 2 of 3 (Phase 13-02 complete)
+Status: In Progress - 13-01 pipeline gaps closed, 13-02 --save-baseline removed; 13-03 (--init expansion) remaining
+Last activity: 2026-02-22 - Completed 13-02: Removed --save-baseline from source and documentation
 
 Progress: [████████████] (Phase 11 started)
 
@@ -84,6 +84,7 @@ Progress: [████████████] (Phase 11 started)
 | Phase 11-duplication-detection P04 | 9 | 2 tasks | 13 files |
 | Phase 11-duplication-detection P03 | 10 | 2 tasks | 5 files |
 | Phase 13 P01 | 2 | 2 tasks | 3 files |
+| Phase 13 P02 | 8 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -247,6 +248,7 @@ Recent decisions affecting current work:
 - [Phase 13-gap-closure-pipeline-wiring]: countViolationsFiltered added alongside countViolations (not replacing): worstStatusAll/countViolations unchanged for verbosity filtering (Phase 07-05 preserved)
 - [Phase 13-gap-closure-pipeline-wiring]: isMetricEnabled duplicated in exit_codes.zig to avoid circular imports (Phase 07-03 pattern)
 - [Phase 13-gap-closure-pipeline-wiring]: no_duplication gate placed before duplication_enabled check so flag overrides all other duplication-enabling paths
+- [Phase 13-02]: Baseline set via manual config editing: users run --format json to get score then edit .complexityguard.json baseline field directly
 
 ### Pending Todos
 
@@ -303,7 +305,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-22 (execute-phase)
-Stopped at: Completed 13-01: Four pipeline gap fixes (buildCyclomaticConfig, countViolationsFiltered, no-duplication gate, duplication weight in baseline) — Phase 13 complete
+Stopped at: Completed 13-02: Remove --save-baseline flag and documentation — 13-03 (--init expansion) remaining
 
 ---
 *State initialized: 2026-02-14*

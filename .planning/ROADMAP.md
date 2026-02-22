@@ -269,7 +269,7 @@ Plans:
   4. `--save-baseline` flag is removed entirely (no source code, no docs)
   5. `--init` generates complete config with all 12 threshold categories, include patterns, weights, and baseline
 
-**Plans:** 3 plans
+**Plans:** 2/3 plans executed
 
 Plans:
 - [x] 13-01-PLAN.md -- Wire four pipeline gaps: cyclomatic config thresholds, --metrics exit code gating, --no-duplication flag, duplication weight in --save-baseline
@@ -311,7 +311,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 10. HTML Reports | 4/4 | Complete    | 2026-02-19 |
 | 11. Duplication Detection | 4/4 | Complete    | 2026-02-22 |
 | 12. Parallelization & Distribution | 2/2 | Complete    | 2026-02-21 |
-| 13. Gap Closure — Pipeline Wiring | 1/3 | In Progress | — |
+| 13. Gap Closure — Pipeline Wiring | 2/3 | In Progress|  |
 | 14. Tech Debt Cleanup | 0/0 | Planned | — |
 
 ---
