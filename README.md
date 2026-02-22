@@ -59,6 +59,14 @@ Top Halstead volume hotspots:
 ✗ 4 problems (1 errors, 3 warnings)
 ```
 
+### SARIF Output in VS Code
+
+<a href="docs/images/sarif-vscode-dark.png"><img src="docs/images/sarif-vscode-dark.png" alt="SARIF results in VS Code (dark theme)" width="400"></a>&nbsp;&nbsp;<a href="docs/images/sarif-vscode-light.png"><img src="docs/images/sarif-vscode-light.png" alt="SARIF results in VS Code (light theme)" width="400"></a>
+
+### HTML Report
+
+<a href="docs/examples/cxg.html"><img src="docs/images/html-report.png" alt="HTML report with dashboard, treemap, and file breakdown" width="400"></a>
+
 ## Features
 
 - **Cyclomatic Complexity**: McCabe metric counting independent code paths — measures testability
