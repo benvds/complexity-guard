@@ -1,6 +1,7 @@
 const std = @import("std");
 const cyclomatic = @import("../metrics/cyclomatic.zig");
 const structural = @import("../metrics/structural.zig");
+const duplication = @import("../metrics/duplication.zig");
 const help = @import("../cli/help.zig");
 const Allocator = std.mem.Allocator;
 
@@ -540,6 +541,79 @@ pub fn formatVerdict(
             try writer.writeAll("✓ All checks passed\n");
         }
     }
+}
+
+/// Format duplication analysis results as a separate section after per-file output.
+/// Only called when duplication detection is enabled and dup_result is non-null.
+pub fn formatDuplicationSection(
+    writer: anytype,
+    allocator: Allocator,
+    dup_result: duplication.DuplicationResult,
+    config: OutputConfig,
+) !void {
+    _ = allocator;
+
+    // In quiet mode, skip entirely unless there are errors
+    if (config.verbosity == .quiet and !dup_result.project_error) {
+        var has_file_error = false;
+        for (dup_result.file_results) |fr| {
+            if (fr.@"error") {
+                has_file_error = true;
+                break;
+            }
+        }
+        if (!has_file_error) return;
+    }
+
+    try writer.writeAll("\nDuplication\n");
+    try writer.writeAll("-----------\n");
+
+    // Print clone groups
+    for (dup_result.clone_groups) |group| {
+        try writer.print("Clone group ({d} tokens): ", .{group.token_count});
+        for (group.locations, 0..) |loc, i| {
+            if (i > 0) try writer.writeAll(", ");
+            try writer.print("{s}:{d}", .{ loc.file_path, loc.start_line });
+        }
+        try writer.writeAll("\n");
+    }
+
+    // File duplication section
+    try writer.writeAll("\nFile duplication:\n");
+    for (dup_result.file_results) |fr| {
+        // In quiet mode, only show error-level files
+        if (config.verbosity == .quiet and !fr.@"error") continue;
+        // In default mode, only show files with warnings or errors
+        if (config.verbosity == .default and !fr.warning and !fr.@"error") continue;
+
+        const status_str: []const u8 = if (fr.@"error") "ERROR" else if (fr.warning) "WARNING" else "OK";
+        const color: []const u8 = if (config.use_color)
+            if (fr.@"error") AnsiCode.red else if (fr.warning) AnsiCode.yellow else AnsiCode.green
+        else
+            "";
+        const reset = if (config.use_color) AnsiCode.reset else "";
+        try writer.print("  {s:<40} {d:.1}%  {s}[{s}]{s}\n", .{
+            fr.path,
+            fr.duplication_pct,
+            color,
+            status_str,
+            reset,
+        });
+    }
+
+    // Project duplication
+    const proj_status: []const u8 = if (dup_result.project_error) "ERROR" else if (dup_result.project_warning) "WARNING" else "OK";
+    const proj_color: []const u8 = if (config.use_color)
+        if (dup_result.project_error) AnsiCode.red else if (dup_result.project_warning) AnsiCode.yellow else AnsiCode.green
+    else
+        "";
+    const proj_reset = if (config.use_color) AnsiCode.reset else "";
+    try writer.print("\nProject duplication: {d:.1}%  {s}[{s}]{s}\n", .{
+        dup_result.project_duplication_pct,
+        proj_color,
+        proj_status,
+        proj_reset,
+    });
 }
 
 // TESTS
@@ -1112,4 +1186,88 @@ test "formatFileResults: very high config thresholds suppress file-level violati
     );
     // 400 < 9999 and 20 < 9999 -> no violation -> no output in default mode
     try std.testing.expectEqual(false, wrote_output);
+}
+
+test "formatDuplicationSection: shows clone groups and project duplication" {
+    const allocator = std.testing.allocator;
+    var buffer = std.ArrayList(u8).empty;
+    defer buffer.deinit(allocator);
+
+    const locations1 = [_]duplication.CloneLocation{
+        .{ .file_path = "src/auth/login.ts", .start_line = 15, .end_line = 25 },
+        .{ .file_path = "src/auth/register.ts", .start_line = 88, .end_line = 98 },
+    };
+    const clone_groups = [_]duplication.CloneGroup{
+        .{ .token_count = 42, .locations = &locations1 },
+    };
+    const file_results = [_]duplication.FileDuplicationResult{
+        .{ .path = "src/auth/login.ts", .total_tokens = 500, .cloned_tokens = 62, .duplication_pct = 12.4, .warning = false, .@"error" = false },
+        .{ .path = "src/auth/register.ts", .total_tokens = 400, .cloned_tokens = 68, .duplication_pct = 17.0, .warning = true, .@"error" = false },
+    };
+    const dup_result = duplication.DuplicationResult{
+        .clone_groups = &clone_groups,
+        .file_results = &file_results,
+        .total_cloned_tokens = 130,
+        .total_tokens = 900,
+        .project_duplication_pct = 4.2,
+        .project_warning = false,
+        .project_error = false,
+    };
+
+    const config = OutputConfig{ .use_color = false, .verbosity = .default, .selected_metrics = null };
+    try formatDuplicationSection(buffer.writer(allocator), allocator, dup_result, config);
+
+    const output = buffer.items;
+
+    // Check header
+    try std.testing.expect(std.mem.indexOf(u8, output, "Duplication") != null);
+
+    // Check clone group output
+    try std.testing.expect(std.mem.indexOf(u8, output, "Clone group (42 tokens)") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "src/auth/login.ts:15") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "src/auth/register.ts:88") != null);
+
+    // Check file duplication section (warning file should appear in default mode)
+    try std.testing.expect(std.mem.indexOf(u8, output, "File duplication:") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "src/auth/register.ts") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "17.0%") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "[WARNING]") != null);
+
+    // Check project duplication
+    try std.testing.expect(std.mem.indexOf(u8, output, "Project duplication: 4.2%") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "[OK]") != null);
+}
+
+test "formatDuplicationSection: quiet mode only shows error-level files in file duplication list" {
+    const allocator = std.testing.allocator;
+    var buffer = std.ArrayList(u8).empty;
+    defer buffer.deinit(allocator);
+
+    // No clone groups to avoid src/b.ts appearing in the group list
+    const clone_groups = [_]duplication.CloneGroup{};
+    const file_results = [_]duplication.FileDuplicationResult{
+        .{ .path = "src/a.ts", .total_tokens = 200, .cloned_tokens = 50, .duplication_pct = 26.0, .warning = true, .@"error" = true },
+        .{ .path = "src/b.ts", .total_tokens = 300, .cloned_tokens = 30, .duplication_pct = 10.0, .warning = false, .@"error" = false },
+    };
+    const dup_result = duplication.DuplicationResult{
+        .clone_groups = &clone_groups,
+        .file_results = &file_results,
+        .total_cloned_tokens = 80,
+        .total_tokens = 500,
+        .project_duplication_pct = 16.0,
+        .project_warning = true,
+        .project_error = false,
+    };
+
+    const config = OutputConfig{ .use_color = false, .verbosity = .quiet, .selected_metrics = null };
+    try formatDuplicationSection(buffer.writer(allocator), allocator, dup_result, config);
+
+    const output = buffer.items;
+
+    // Error-level file should appear in file duplication list (in quiet mode)
+    // Note: src/a.ts shows in the file duplication list because it has @"error" = true
+    try std.testing.expect(std.mem.indexOf(u8, output, "src/a.ts") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "[ERROR]") != null);
+    // Non-error, non-warning file should NOT appear in file duplication section
+    try std.testing.expect(std.mem.indexOf(u8, output, "src/b.ts") == null);
 }

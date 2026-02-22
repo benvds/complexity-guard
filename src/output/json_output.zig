@@ -1,8 +1,40 @@
 const std = @import("std");
 const console = @import("console.zig");
 const cyclomatic = @import("../metrics/cyclomatic.zig");
+const duplication = @import("../metrics/duplication.zig");
 const exit_codes = @import("exit_codes.zig");
 const Allocator = std.mem.Allocator;
+
+/// JSON representation of a single clone location within a clone group.
+pub const JsonCloneLocation = struct {
+    file: []const u8,
+    start_line: u32,
+    end_line: u32,
+};
+
+/// JSON representation of a clone group.
+pub const JsonCloneGroup = struct {
+    token_count: u32,
+    locations: []const JsonCloneLocation,
+};
+
+/// JSON representation of per-file duplication data.
+pub const JsonFileDuplication = struct {
+    path: []const u8,
+    total_tokens: u32,
+    cloned_tokens: u32,
+    duplication_pct: f64,
+    status: []const u8, // "ok", "warning", "error"
+};
+
+/// JSON representation of the project-wide duplication summary.
+pub const JsonDuplication = struct {
+    enabled: bool,
+    project_duplication_pct: f64,
+    project_status: []const u8, // "ok", "warning", "error"
+    clone_groups: []const JsonCloneGroup,
+    files: []const JsonFileDuplication,
+};
 
 /// JSON output envelope for ComplexityGuard results
 /// Uses snake_case field naming to match existing codebase convention
@@ -12,6 +44,8 @@ pub const JsonOutput = struct {
     summary: Summary,
     files: []const FileOutput,
     metadata: Metadata,
+    /// Duplication analysis results (null when duplication detection is disabled)
+    duplication: ?JsonDuplication = null,
 
     pub const Metadata = struct {
         /// Wall-clock time in milliseconds for the analysis phase
@@ -68,6 +102,7 @@ pub fn buildJsonOutput(
     project_score: f64,
     elapsed_ms: u64,
     thread_count: u32,
+    dup_result: ?duplication.DuplicationResult,
 ) !JsonOutput {
     // Determine overall status
     const status = if (error_count > 0)
@@ -142,6 +177,56 @@ pub fn buildJsonOutput(
         });
     }
 
+    // Build duplication field when dup_result is provided
+    var json_dup: ?JsonDuplication = null;
+    if (dup_result) |dup| {
+        // Build clone groups array
+        var groups_list = std.ArrayList(JsonCloneGroup).empty;
+        defer groups_list.deinit(allocator);
+
+        for (dup.clone_groups) |group| {
+            var locs_list = std.ArrayList(JsonCloneLocation).empty;
+            defer locs_list.deinit(allocator);
+
+            for (group.locations) |loc| {
+                try locs_list.append(allocator, JsonCloneLocation{
+                    .file = loc.file_path,
+                    .start_line = loc.start_line,
+                    .end_line = loc.end_line,
+                });
+            }
+
+            try groups_list.append(allocator, JsonCloneGroup{
+                .token_count = group.token_count,
+                .locations = try allocator.dupe(JsonCloneLocation, locs_list.items),
+            });
+        }
+
+        // Build file duplication array
+        var files_dup_list = std.ArrayList(JsonFileDuplication).empty;
+        defer files_dup_list.deinit(allocator);
+
+        for (dup.file_results) |fr| {
+            const file_status: []const u8 = if (fr.@"error") "error" else if (fr.warning) "warning" else "ok";
+            try files_dup_list.append(allocator, JsonFileDuplication{
+                .path = fr.path,
+                .total_tokens = fr.total_tokens,
+                .cloned_tokens = fr.cloned_tokens,
+                .duplication_pct = fr.duplication_pct,
+                .status = file_status,
+            });
+        }
+
+        const proj_status: []const u8 = if (dup.project_error) "error" else if (dup.project_warning) "warning" else "ok";
+        json_dup = JsonDuplication{
+            .enabled = true,
+            .project_duplication_pct = dup.project_duplication_pct,
+            .project_status = proj_status,
+            .clone_groups = try allocator.dupe(JsonCloneGroup, groups_list.items),
+            .files = try allocator.dupe(JsonFileDuplication, files_dup_list.items),
+        };
+    }
+
     return JsonOutput{
         .version = "1.0.0",
         .timestamp = std.time.timestamp(),
@@ -151,6 +236,7 @@ pub fn buildJsonOutput(
             .elapsed_ms = elapsed_ms,
             .thread_count = thread_count,
         },
+        .duplication = json_dup,
     };
 }
 
@@ -177,7 +263,7 @@ test "buildJsonOutput: produces correct version and status fields" {
         .{ .path = "test.ts", .results = &results },
     };
 
-    const output = try buildJsonOutput(allocator, &file_results, 0, 0, 100.0, 0, 1);
+    const output = try buildJsonOutput(allocator, &file_results, 0, 0, 100.0, 0, 1, null);
     defer {
         for (output.files) |file| {
             allocator.free(file.functions);
@@ -204,7 +290,7 @@ test "buildJsonOutput: counts warnings/errors in summary correctly" {
         .{ .path = "test.ts", .results = &results },
     };
 
-    const output = try buildJsonOutput(allocator, &file_results, 1, 1, 75.0, 0, 1);
+    const output = try buildJsonOutput(allocator, &file_results, 1, 1, 75.0, 0, 1, null);
     defer {
         for (output.files) |file| {
             allocator.free(file.functions);
@@ -228,7 +314,7 @@ test "buildJsonOutput: converts file/function data correctly" {
         .{ .path = "src/example.ts", .results = &results },
     };
 
-    const output = try buildJsonOutput(allocator, &file_results, 1, 0, 50.0, 0, 1);
+    const output = try buildJsonOutput(allocator, &file_results, 1, 0, 50.0, 0, 1, null);
     defer {
         for (output.files) |file| {
             allocator.free(file.functions);
@@ -259,7 +345,7 @@ test "serializeJsonOutput: produces valid JSON" {
         .{ .path = "test.ts", .results = &results },
     };
 
-    const output = try buildJsonOutput(allocator, &file_results, 0, 0, 100.0, 0, 1);
+    const output = try buildJsonOutput(allocator, &file_results, 0, 0, 100.0, 0, 1, null);
     defer {
         for (output.files) |file| {
             allocator.free(file.functions);
@@ -299,7 +385,7 @@ test "JSON includes Halstead fields populated (non-null)" {
         .{ .path = "test.ts", .results = &results },
     };
 
-    const output = try buildJsonOutput(allocator, &file_results, 0, 0, 100.0, 0, 1);
+    const output = try buildJsonOutput(allocator, &file_results, 0, 0, 100.0, 0, 1, null);
     defer {
         for (output.files) |file| {
             allocator.free(file.functions);
@@ -335,7 +421,7 @@ test "buildJsonOutput: cognitive field is populated from cognitive_complexity" {
         .{ .path = "test.ts", .results = &results },
     };
 
-    const output = try buildJsonOutput(allocator, &file_results, 1, 0, 80.0, 0, 1);
+    const output = try buildJsonOutput(allocator, &file_results, 1, 0, 80.0, 0, 1, null);
     defer {
         for (output.files) |file| {
             allocator.free(file.functions);
@@ -364,7 +450,7 @@ test "buildJsonOutput: status reflects worst of cyclomatic and cognitive" {
         .{ .path = "test.ts", .results = &results },
     };
 
-    const output = try buildJsonOutput(allocator, &file_results, 1, 1, 60.0, 0, 1);
+    const output = try buildJsonOutput(allocator, &file_results, 1, 1, 60.0, 0, 1, null);
     defer {
         for (output.files) |file| {
             allocator.free(file.functions);
@@ -382,7 +468,7 @@ test "empty results produce valid JSON with zero counts and pass status" {
 
     const file_results = [_]console.FileThresholdResults{};
 
-    const output = try buildJsonOutput(allocator, &file_results, 0, 0, 100.0, 0, 1);
+    const output = try buildJsonOutput(allocator, &file_results, 0, 0, 100.0, 0, 1, null);
     defer allocator.free(output.files);
 
     try std.testing.expectEqualStrings("pass", output.summary.status);
@@ -415,7 +501,7 @@ test "JSON includes metadata with elapsed_ms and thread_count" {
         .{ .path = "test.ts", .results = &results },
     };
 
-    const output = try buildJsonOutput(allocator, &file_results, 0, 0, 100.0, 450, 8);
+    const output = try buildJsonOutput(allocator, &file_results, 0, 0, 100.0, 450, 8, null);
     defer {
         for (output.files) |file| {
             allocator.free(file.functions);
@@ -441,4 +527,75 @@ test "JSON includes metadata with elapsed_ms and thread_count" {
     try std.testing.expect(metadata.object.get("thread_count") != null);
     try std.testing.expectEqual(@as(i64, 450), metadata.object.get("elapsed_ms").?.integer);
     try std.testing.expectEqual(@as(i64, 8), metadata.object.get("thread_count").?.integer);
+}
+
+test "buildJsonOutput: duplication field present in JSON when dup_result provided" {
+    const allocator = std.testing.allocator;
+
+    const locations = [_]duplication.CloneLocation{
+        .{ .file_path = "src/a.ts", .start_line = 10, .end_line = 20 },
+        .{ .file_path = "src/b.ts", .start_line = 30, .end_line = 40 },
+    };
+    const clone_groups = [_]duplication.CloneGroup{
+        .{ .token_count = 35, .locations = &locations },
+    };
+    const file_results_dup = [_]duplication.FileDuplicationResult{
+        .{ .path = "src/a.ts", .total_tokens = 200, .cloned_tokens = 50, .duplication_pct = 25.0, .warning = true, .@"error" = true },
+    };
+    const dup = duplication.DuplicationResult{
+        .clone_groups = &clone_groups,
+        .file_results = &file_results_dup,
+        .total_cloned_tokens = 50,
+        .total_tokens = 200,
+        .project_duplication_pct = 25.0,
+        .project_warning = true,
+        .project_error = true,
+    };
+
+    const file_results = [_]console.FileThresholdResults{};
+
+    const output = try buildJsonOutput(allocator, &file_results, 1, 1, 50.0, 0, 1, dup);
+    defer {
+        allocator.free(output.files);
+        if (output.duplication) |d| {
+            for (d.clone_groups) |g| allocator.free(g.locations);
+            allocator.free(d.clone_groups);
+            allocator.free(d.files);
+        }
+    }
+
+    // Verify duplication field is set
+    try std.testing.expect(output.duplication != null);
+    const json_dup = output.duplication.?;
+    try std.testing.expect(json_dup.enabled);
+    try std.testing.expectApproxEqAbs(@as(f64, 25.0), json_dup.project_duplication_pct, 1e-6);
+    try std.testing.expectEqualStrings("error", json_dup.project_status);
+    try std.testing.expectEqual(@as(usize, 1), json_dup.clone_groups.len);
+    try std.testing.expectEqual(@as(u32, 35), json_dup.clone_groups[0].token_count);
+    try std.testing.expectEqual(@as(usize, 2), json_dup.clone_groups[0].locations.len);
+    try std.testing.expectEqualStrings("src/a.ts", json_dup.clone_groups[0].locations[0].file);
+
+    // Serialize to verify JSON includes duplication field
+    const json_str = try serializeJsonOutput(allocator, output);
+    defer allocator.free(json_str);
+
+    try std.testing.expect(std.mem.indexOf(u8, json_str, "\"duplication\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json_str, "\"clone_groups\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json_str, "\"enabled\": true") != null);
+}
+
+test "buildJsonOutput: duplication field is null when not provided" {
+    const allocator = std.testing.allocator;
+    const file_results = [_]console.FileThresholdResults{};
+
+    const output = try buildJsonOutput(allocator, &file_results, 0, 0, 100.0, 0, 1, null);
+    defer allocator.free(output.files);
+
+    try std.testing.expect(output.duplication == null);
+
+    // Serialize and verify "duplication": null appears in JSON
+    const json_str = try serializeJsonOutput(allocator, output);
+    defer allocator.free(json_str);
+
+    try std.testing.expect(std.mem.indexOf(u8, json_str, "\"duplication\": null") != null);
 }

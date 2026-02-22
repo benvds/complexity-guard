@@ -707,6 +707,7 @@ pub fn main() !void {
             project_score,
             elapsed_ms,
             @intCast(effective_threads),
+            dup_result,
         );
         const json_str = try json_output.serializeJsonOutput(arena_allocator, json_result);
         defer arena_allocator.free(json_str);
@@ -821,6 +822,16 @@ pub fn main() !void {
             output_config,
             project_score,
         );
+
+        // Display duplication section after summary (only when enabled)
+        if (dup_result) |dup| {
+            try console.formatDuplicationSection(
+                stdout,
+                arena_allocator,
+                dup,
+                output_config,
+            );
+        }
     }
 
     // Step 7: Determine and apply exit code
