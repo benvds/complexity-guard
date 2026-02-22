@@ -25,7 +25,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 10: HTML Reports** - Self-contained visual reports for stakeholders (completed 2026-02-18)
 - [x] **Phase 11: Duplication Detection** - Rabin-Karp cross-file clone analysis (completed 2026-02-22)
 - [x] **Phase 12: Parallelization & Distribution** - Thread pool, performance tuning, cross-compilation (completed 2026-02-21)
-- [x] **Phase 13: Gap Closure — Main Pipeline Wiring** - Fix cyclomatic config, --metrics gating, duplication weight, --no-duplication wiring (completed 2026-02-22)
+- [ ] **Phase 13: Gap Closure — Main Pipeline Wiring** - Fix cyclomatic config, --metrics gating, --no-duplication wiring, remove --save-baseline, expand --init config
 - [ ] **Phase 14: Tech Debt Cleanup** - Function names, dead code, doc staleness, benchmarks placeholder
 
 ## Phase Details
@@ -258,20 +258,23 @@ Plans:
 - [ ] 12-02-PLAN.md -- Cross-compilation verification and documentation updates
 
 ### Phase 13: Gap Closure — Main Pipeline Wiring
-**Goal:** Close all requirement, integration, and flow gaps found by v1.0 milestone audit
+**Goal:** Close all requirement, integration, and flow gaps found by v1.0 milestone audit and UAT
 **Depends on:** Phase 12
 **Requirements:** CYCL-09, CFG-04, CLI-07, CLI-08
-**Gap Closure:** Closes gaps from audit (4 requirements, 3 integration, 1 flow)
+**Gap Closure:** Closes gaps from audit (4 requirements, 3 integration, 1 flow) plus UAT gap (remove --save-baseline, expand --init)
 **Success Criteria** (what must be TRUE):
   1. Config file cyclomatic thresholds are read and applied (not hardcoded defaults)
   2. `--metrics` flag gates which metrics are computed and which drive exit codes
-  3. `--save-baseline` writes duplication weight in default config
-  4. `--no-duplication` flag properly gates duplication computation end-to-end
+  3. `--no-duplication` flag properly gates duplication computation end-to-end
+  4. `--save-baseline` flag is removed entirely (no source code, no docs)
+  5. `--init` generates complete config with all 12 threshold categories, include patterns, weights, and baseline
 
-**Plans:** 1/1 plans complete
+**Plans:** 3 plans
 
 Plans:
-- [ ] 13-01-PLAN.md -- Wire four pipeline gaps: cyclomatic config thresholds, --metrics exit code gating, --no-duplication flag, duplication weight in --save-baseline
+- [x] 13-01-PLAN.md -- Wire four pipeline gaps: cyclomatic config thresholds, --metrics exit code gating, --no-duplication flag, duplication weight in --save-baseline
+- [ ] 13-02-PLAN.md -- Remove --save-baseline from source code and all documentation
+- [ ] 13-03-PLAN.md -- Expand --init to generate complete config with all options
 
 ### Phase 14: Tech Debt Cleanup
 **Goal:** Resolve all tech debt items identified by v1.0 milestone audit
@@ -308,9 +311,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 10. HTML Reports | 4/4 | Complete    | 2026-02-19 |
 | 11. Duplication Detection | 4/4 | Complete    | 2026-02-22 |
 | 12. Parallelization & Distribution | 2/2 | Complete    | 2026-02-21 |
-| 13. Gap Closure — Pipeline Wiring | 1/1 | Complete    | 2026-02-22 |
+| 13. Gap Closure — Pipeline Wiring | 1/3 | In Progress | — |
 | 14. Tech Debt Cleanup | 0/0 | Planned | — |
 
 ---
 *Roadmap created: 2026-02-14*
-*Last updated: 2026-02-19 (Phase 10 gap closure plan 10-04 created)*
+*Last updated: 2026-02-22 (Phase 13 gap closure plans 13-02, 13-03 created)*
