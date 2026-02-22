@@ -268,8 +268,10 @@ Plans:
   3. `--save-baseline` writes duplication weight in default config
   4. `--no-duplication` flag properly gates duplication computation end-to-end
 
+**Plans:** 1 plan
+
 Plans:
-(none yet)
+- [ ] 13-01-PLAN.md -- Wire four pipeline gaps: cyclomatic config thresholds, --metrics exit code gating, --no-duplication flag, duplication weight in --save-baseline
 
 ### Phase 14: Tech Debt Cleanup
 **Goal:** Resolve all tech debt items identified by v1.0 milestone audit
@@ -306,7 +308,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 10. HTML Reports | 4/4 | Complete    | 2026-02-19 |
 | 11. Duplication Detection | 4/4 | Complete    | 2026-02-22 |
 | 12. Parallelization & Distribution | 2/2 | Complete    | 2026-02-21 |
-| 13. Gap Closure — Pipeline Wiring | 0/0 | Planned | — |
+| 13. Gap Closure — Pipeline Wiring | 0/1 | Planned | — |
 | 14. Tech Debt Cleanup | 0/0 | Planned | — |
 
 ---
