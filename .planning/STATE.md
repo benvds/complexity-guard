@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** Phase 11 complete - Duplication Detection (4 of 4 plans complete)
+**Current focus:** Phase 13 - Gap Closure Pipeline Wiring (1 of 1 plans complete)
 
 ## Current Position
 
-Phase: 11 of 12+ (Duplication Detection)
-Plan: 4 of 4 (Phase 11-03 complete)
-Status: Phase 11 Complete - All duplication detection plans executed (core algorithm, CLI/pipeline, output modules, documentation/benchmarks)
-Last activity: 2026-02-22 - Completed 11-03: Duplication output integration in all four output formats (console, JSON, SARIF, HTML)
+Phase: 13 of 14 (Gap Closure Pipeline Wiring)
+Plan: 1 of 1 (Phase 13-01 complete)
+Status: Phase 13 Complete - All four v1.0 pipeline wiring gaps closed (cyclomatic config, metrics exit gating, no-duplication flag, duplication weight in baseline)
+Last activity: 2026-02-22 - Completed 13-01: Four pipeline gap fixes with 8 new tests
 
 Progress: [████████████] (Phase 11 started)
 
@@ -83,6 +83,7 @@ Progress: [████████████] (Phase 11 started)
 | Phase 11-duplication-detection P02 | 5 | 2 tasks | 7 files |
 | Phase 11-duplication-detection P04 | 9 | 2 tasks | 13 files |
 | Phase 11-duplication-detection P03 | 10 | 2 tasks | 5 files |
+| Phase 13 P01 | 2 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -242,6 +243,10 @@ Recent decisions affecting current work:
 - [Phase 11-03]: Exit codes: Plan 02 already counts duplication violations in total_warnings/total_errors; no changes to exit_codes.zig needed
 - [Phase 11-03]: SARIF relatedLocations: one result per clone group, primary=first location, related=remaining instances with sequential IDs
 - [Phase 11-03]: HTML heatmap uses explicit usize conditional instead of @min() to avoid Zig comptime integer overflow in debug builds
+- [Phase 13-gap-closure-pipeline-wiring]: buildCyclomaticConfig follows same helper pattern as buildHalsteadConfig: reads ThresholdPair, falls back to CyclomaticConfig.default() for all other fields
+- [Phase 13-gap-closure-pipeline-wiring]: countViolationsFiltered added alongside countViolations (not replacing): worstStatusAll/countViolations unchanged for verbosity filtering (Phase 07-05 preserved)
+- [Phase 13-gap-closure-pipeline-wiring]: isMetricEnabled duplicated in exit_codes.zig to avoid circular imports (Phase 07-03 pattern)
+- [Phase 13-gap-closure-pipeline-wiring]: no_duplication gate placed before duplication_enabled check so flag overrides all other duplication-enabling paths
 
 ### Pending Todos
 
@@ -298,8 +303,8 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-22 (execute-phase)
-Stopped at: Completed 11-04: Duplication detection documentation and benchmarks — Phase 11 complete
+Stopped at: Completed 13-01: Four pipeline gap fixes (buildCyclomaticConfig, countViolationsFiltered, no-duplication gate, duplication weight in baseline) — Phase 13 complete
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-22T00:13:46Z*
+*Last updated: 2026-02-22T00:38:00Z*

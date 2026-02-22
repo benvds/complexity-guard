@@ -15,8 +15,8 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **CLI-04**: User can set failure level via `--fail-on` flag (warning, error, none)
 - [ ] **CLI-05**: User can set health score threshold via `--fail-health-below` flag
 - [ ] **CLI-06**: User can filter files via `--include` and `--exclude` glob flags
-- [ ] **CLI-07**: User can select specific metrics via `--metrics` flag
-- [ ] **CLI-08**: User can skip duplication via `--no-duplication` flag
+- [x] **CLI-07**: User can select specific metrics via `--metrics` flag
+- [x] **CLI-08**: User can skip duplication via `--no-duplication` flag
 - [ ] **CLI-09**: User can set thread count via `--threads` flag
 - [ ] **CLI-10**: User can compare against baseline via `--baseline` flag
 - [ ] **CLI-11**: User can control verbosity via `--verbose` and `--quiet` flags
@@ -27,7 +27,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **CFG-01**: Tool loads configuration from `.complexityguard.json` when present
 - [ ] **CFG-02**: User can specify custom config path via `--config` flag
 - [ ] **CFG-03**: User can set include/exclude glob patterns in config file
-- [ ] **CFG-04**: User can set per-metric warning and error thresholds in config file
+- [x] **CFG-04**: User can set per-metric warning and error thresholds in config file
 - [ ] **CFG-05**: User can set composite score weights in config file
 - [ ] **CFG-06**: User can set CI failure behavior in config file
 - [ ] **CFG-07**: CLI flags override config file values
@@ -51,7 +51,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **CYCL-06**: Tool increments for logical && and || operators
 - [ ] **CYCL-07**: Tool increments for nullish coalescing (??) operator
 - [ ] **CYCL-08**: Tool makes optional chaining (?.) counting configurable
-- [ ] **CYCL-09**: Tool applies configurable warning (default 10) and error (default 20) thresholds
+- [x] **CYCL-09**: Tool applies configurable warning (default 10) and error (default 20) thresholds
 
 ### Cognitive Complexity
 
@@ -190,8 +190,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CLI-04 | Phase 2 | Pending |
 | CLI-05 | Phase 2 | Pending |
 | CLI-06 | Phase 2 | Pending |
-| CLI-07 | Phase 13 | Pending |
-| CLI-08 | Phase 13 | Pending |
+| CLI-07 | Phase 13 | Complete |
+| CLI-08 | Phase 13 | Complete |
 | CLI-09 | Phase 2 | Pending |
 | CLI-10 | Phase 2 | Pending |
 | CLI-11 | Phase 2 | Pending |
@@ -199,7 +199,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CFG-01 | Phase 2 | Pending |
 | CFG-02 | Phase 2 | Pending |
 | CFG-03 | Phase 2 | Pending |
-| CFG-04 | Phase 13 | Pending |
+| CFG-04 | Phase 13 | Complete |
 | CFG-05 | Phase 2 | Pending |
 | CFG-06 | Phase 2 | Pending |
 | CFG-07 | Phase 2 | Pending |
@@ -217,7 +217,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CYCL-06 | Phase 4 | Pending |
 | CYCL-07 | Phase 4 | Pending |
 | CYCL-08 | Phase 4 | Pending |
-| CYCL-09 | Phase 13 | Pending |
+| CYCL-09 | Phase 13 | Complete |
 | COGN-01 | Phase 5 | Pending |
 | COGN-02 | Phase 5 | Pending |
 | COGN-03 | Phase 5 | Pending |
