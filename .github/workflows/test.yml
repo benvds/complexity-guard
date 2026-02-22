@@ -45,5 +45,8 @@ jobs:
       - name: Install Valgrind
         run: sudo apt-get update && sudo apt-get install -y valgrind
 
+      - name: Clone test repos for stress testing
+        run: git clone --depth 1 https://github.com/colinhacks/zod.git tests/repos/zod
+
       - name: Run memory and thread-safety checks
         run: bash scripts/check-memory.sh

@@ -30,3 +30,6 @@ publication/npm/packages/*/complexity-guard.exe
 # Benchmark cloned projects (large, ephemeral)
 benchmarks/projects/*/
 !benchmarks/projects/.gitkeep
+
+# Test repos cloned for memory/stress testing
+tests/repos/
