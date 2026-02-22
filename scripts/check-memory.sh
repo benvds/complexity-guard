@@ -13,6 +13,7 @@ set -euo pipefail
 
 BINARY="./zig-out/bin/complexity-guard"
 FIXTURES="tests/fixtures/typescript"
+SUPPRESSIONS=".valgrind.supp"
 PASS=0
 FAIL=0
 
@@ -62,7 +63,7 @@ run_check "Valgrind memcheck (single-threaded)" \
     --error-exitcode=99 \
     "$BINARY" \
     --threads 1 \
-    --fail-on none \
+    --config .complexityguard.always-pass.json \
     "$FIXTURES"
 
 # ── Valgrind memcheck: multi-threaded ────────────────────────────────────────
@@ -74,36 +75,41 @@ run_check "Valgrind memcheck (multi-threaded, --threads 4)" \
     --error-exitcode=99 \
     "$BINARY" \
     --threads 4 \
-    --fail-on none \
+    --config .complexityguard.always-pass.json \
     "$FIXTURES"
 
 # ── Helgrind: thread-safety ───────────────────────────────────────────────────
+# Note: Zig's std.Thread.Mutex uses futex(2) syscalls directly (not pthread_mutex_*).
+# Helgrind tracks happens-before only through pthread wrappers, so it reports false
+# positives for all mutex-protected accesses in the thread pool. A suppression file
+# (.valgrind.supp) silences these known false positives so real races are not masked.
 
 run_check "Helgrind thread-safety (--threads 4)" \
   valgrind \
     --tool=helgrind \
+    --suppressions="$SUPPRESSIONS" \
     --error-exitcode=99 \
     "$BINARY" \
     --threads 4 \
-    --fail-on none \
+    --config .complexityguard.always-pass.json \
     "$FIXTURES"
 
 # ── Stress test: real-world codebase (optional) ───────────────────────────────
 
-WEBPACK_DIR="tests/repos/webpack"
-if [ -d "$WEBPACK_DIR" ]; then
-  run_check "Valgrind memcheck stress test (webpack, --threads 4)" \
+ZOD_DIR="tests/repos/zod"
+if [ -d "$ZOD_DIR" ]; then
+  run_check "Valgrind memcheck stress test (zod, --threads 4)" \
     valgrind \
       --leak-check=full \
       --errors-for-leak-kinds=all \
       --error-exitcode=99 \
       "$BINARY" \
       --threads 4 \
-      --fail-on none \
-      "$WEBPACK_DIR"
+      --config .complexityguard.always-pass.json \
+      "$ZOD_DIR"
 else
-  echo "=== Stress test (webpack) ==="
-  echo "SKIP: $WEBPACK_DIR not found — run 'git clone https://github.com/webpack/webpack tests/repos/webpack' to enable"
+  echo "=== Stress test (zod) ==="
+  echo "SKIP: $ZOD_DIR not found — run 'git clone https://github.com/colinhacks/zod.git tests/repos/zod' to enable"
   echo ""
 fi
 

@@ -280,7 +280,6 @@ pub fn main() !void {
 
     if (effective_threads <= 1) {
         // Sequential path: use existing parseFiles + per-file for-loop (zero pool overhead)
-        // Note: no defer deinit — the arena allocator cleans everything up at end of main()
         const seq_parse_summary = parse.parseFiles(
             arena_allocator,
             discovery_result.files,
@@ -292,6 +291,11 @@ pub fn main() !void {
         failed_parses = seq_parse_summary.failed_parses;
 
         for (seq_parse_summary.results) |result| {
+            // Free the TSTree after processing each file. The arena allocator only frees Zig
+            // allocations; TSTree is allocated via ts_malloc (C heap) and requires an explicit
+            // ts_tree_delete call. Function name slices borrow from result.source which must
+            // remain alive until output, so we only free the tree here — not the full result.
+            defer if (result.tree) |tree| tree.deinit();
             // Run cyclomatic analysis
             const cycl_results = try cyclomatic.analyzeFile(
                 arena_allocator,

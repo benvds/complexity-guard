@@ -1,0 +1,934 @@
+# Valgrind suppression file for complexity-guard
+#
+# All suppressions here are confirmed false positives caused by Zig's std.Thread.Mutex
+# using futex(2) syscalls directly rather than pthread_mutex_lock/unlock. Helgrind tracks
+# happens-before relationships exclusively through pthread wrapper calls, so it cannot
+# observe Zig's mutex synchronization and reports data races for all correctly-guarded
+# accesses within the thread pool.
+#
+# These suppressions were generated with --gen-suppressions=all and deduplicated.
+
+# Thread pool: main thread prepends work items to run_queue under pool.mutex
+{
+   zig-thread-pool-prepend-spawnWg
+   Helgrind:Race
+   fun:prepend
+   fun:spawnWg__anon_6447
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+# Thread pool: main thread's waitAndWork calls popFirst under pool.mutex
+{
+   zig-thread-pool-popFirst-waitAndWork
+   Helgrind:Race
+   fun:popFirst
+   fun:waitAndWork
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+# Thread pool: worker threads call popFirst under pool.mutex
+{
+   zig-thread-pool-popFirst-worker
+   Helgrind:Race
+   fun:popFirst
+   fun:worker
+   fun:callFn__anon_18154
+   fun:Thread.PosixThreadImpl.spawn__anon_12075.Instance.entryFn
+   fun:mythread_wrapper
+   fun:start_thread
+   fun:clone
+}
+
+# Thread pool: worker reads pool state (is_running) under pool.mutex / cond.wait
+{
+   zig-thread-pool-worker-state
+   Helgrind:Race
+   fun:worker
+   fun:callFn__anon_18154
+   fun:Thread.PosixThreadImpl.spawn__anon_12075.Instance.entryFn
+   fun:mythread_wrapper
+   fun:start_thread
+   fun:clone
+}
+
+# Thread pool: closure runFn accesses closure fields from pool-allocated memory
+{
+   zig-thread-pool-closure-runFn
+   Helgrind:Race
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:worker
+   fun:callFn__anon_18154
+   fun:Thread.PosixThreadImpl.spawn__anon_12075.Instance.entryFn
+   fun:mythread_wrapper
+   fun:start_thread
+   fun:clone
+}
+
+# Thread pool: closure runFn accesses closure fields via waitAndWork path
+{
+   zig-thread-pool-closure-runFn-waitAndWork
+   Helgrind:Race
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:waitAndWork
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+# Thread pool: WaitGroup.finish decrements counter atomically (fetchSub)
+{
+   zig-waitgroup-fetchSub
+   Helgrind:Race
+   fun:fetchSub
+   fun:finish
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:worker
+   fun:callFn__anon_18154
+   fun:Thread.PosixThreadImpl.spawn__anon_12075.Instance.entryFn
+   fun:mythread_wrapper
+   fun:start_thread
+   fun:clone
+}
+
+# Thread pool: WaitGroup counter load in set/finish
+{
+   zig-waitgroup-load-set
+   Helgrind:Race
+   fun:load
+   fun:set
+   fun:set
+   fun:finish
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:worker
+   fun:callFn__anon_18154
+   fun:Thread.PosixThreadImpl.spawn__anon_12075.Instance.entryFn
+   fun:mythread_wrapper
+   fun:start_thread
+   fun:clone
+}
+
+# Thread pool: join writes is_running=false under pool.mutex before broadcasting
+{
+   zig-thread-pool-join-deinit
+   Helgrind:Race
+   fun:Thread.Pool.join
+   fun:Thread.Pool.deinit
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+# Shared allocator: arena alloc inside mutex lock (worker appends results)
+{
+   zig-arena-alloc-in-worker
+   Helgrind:Race
+   fun:heap.arena_allocator.ArenaAllocator.alloc
+   fun:rawAlloc
+   ...
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:worker
+   fun:callFn__anon_18154
+   fun:Thread.PosixThreadImpl.spawn__anon_12075.Instance.entryFn
+   fun:mythread_wrapper
+   fun:start_thread
+   fun:clone
+}
+
+# memset inside arena alloc inside mutex lock
+{
+   zig-memset-arena-alloc-worker
+   Helgrind:Race
+   fun:memset
+   ...
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:worker
+   fun:callFn__anon_18154
+   fun:Thread.PosixThreadImpl.spawn__anon_12075.Instance.entryFn
+   fun:mythread_wrapper
+   fun:start_thread
+   fun:clone
+}
+
+# memcpy inside dupe inside mutex lock
+{
+   zig-memcpy-dupe-worker
+   Helgrind:Race
+   fun:copyFixedLength
+   ...
+   fun:mem.Allocator.dupe__anon_2925
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:worker
+   fun:callFn__anon_18154
+   fun:Thread.PosixThreadImpl.spawn__anon_12075.Instance.entryFn
+   fun:mythread_wrapper
+   fun:start_thread
+   fun:clone
+}
+
+# arena createNode via prepend inside mutex lock
+{
+   zig-arena-createNode-prepend-worker
+   Helgrind:Race
+   fun:prepend
+   fun:createNode
+   fun:heap.arena_allocator.ArenaAllocator.alloc
+   ...
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:worker
+   fun:callFn__anon_18154
+   fun:Thread.PosixThreadImpl.spawn__anon_12075.Instance.entryFn
+   fun:mythread_wrapper
+   fun:start_thread
+   fun:clone
+}
+
+# ArrayList.append inside mutex lock (worker adds result to shared list)
+{
+   zig-arraylist-append-worker
+   Helgrind:Race
+   fun:addOne
+   fun:array_list.Aligned(pipeline.parallel.FileAnalysisResult,null).append
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:worker
+   fun:callFn__anon_18154
+   fun:Thread.PosixThreadImpl.spawn__anon_12075.Instance.entryFn
+   fun:mythread_wrapper
+   fun:start_thread
+   fun:clone
+}
+
+{
+   zig-arraylist-ensureCapacity-worker
+   Helgrind:Race
+   fun:ensureTotalCapacity
+   fun:addOne
+   fun:array_list.Aligned(pipeline.parallel.FileAnalysisResult,null).append
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:worker
+   fun:callFn__anon_18154
+   fun:Thread.PosixThreadImpl.spawn__anon_12075.Instance.entryFn
+   fun:mythread_wrapper
+   fun:start_thread
+   fun:clone
+}
+
+{
+   zig-arraylist-ensureCapacityPrecise-worker
+   Helgrind:Race
+   fun:ensureTotalCapacityPrecise
+   fun:ensureTotalCapacity
+   fun:addOne
+   fun:array_list.Aligned(pipeline.parallel.FileAnalysisResult,null).append
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:worker
+   fun:callFn__anon_18154
+   fun:Thread.PosixThreadImpl.spawn__anon_12075.Instance.entryFn
+   fun:mythread_wrapper
+   fun:start_thread
+   fun:clone
+}
+
+{
+   zig-arraylist-addOneAssumeCapacity-worker
+   Helgrind:Race
+   fun:addOneAssumeCapacity
+   fun:addOne
+   fun:array_list.Aligned(pipeline.parallel.FileAnalysisResult,null).append
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:worker
+   fun:callFn__anon_18154
+   fun:Thread.PosixThreadImpl.spawn__anon_12075.Instance.entryFn
+   fun:mythread_wrapper
+   fun:start_thread
+   fun:clone
+}
+
+{
+   zig-arraylist-append-direct-worker
+   Helgrind:Race
+   fun:array_list.Aligned(pipeline.parallel.FileAnalysisResult,null).append
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:worker
+   fun:callFn__anon_18154
+   fun:Thread.PosixThreadImpl.spawn__anon_12075.Instance.entryFn
+   fun:mythread_wrapper
+   fun:start_thread
+   fun:clone
+}
+
+# ArrayList.append via waitAndWork path (main thread helping)
+{
+   zig-arraylist-append-waitAndWork
+   Helgrind:Race
+   fun:addOne
+   fun:array_list.Aligned(pipeline.parallel.FileAnalysisResult,null).append
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:waitAndWork
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+{
+   zig-arraylist-addOneAssumeCapacity-waitAndWork
+   Helgrind:Race
+   fun:addOneAssumeCapacity
+   fun:addOne
+   fun:array_list.Aligned(pipeline.parallel.FileAnalysisResult,null).append
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:waitAndWork
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+{
+   zig-arraylist-ensureCapacity-waitAndWork
+   Helgrind:Race
+   fun:ensureTotalCapacity
+   fun:addOne
+   fun:array_list.Aligned(pipeline.parallel.FileAnalysisResult,null).append
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:waitAndWork
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+{
+   zig-arraylist-append-direct-waitAndWork
+   Helgrind:Race
+   fun:array_list.Aligned(pipeline.parallel.FileAnalysisResult,null).append
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:waitAndWork
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+# createNode inside arena alloc inside mutex lock (worker path)
+{
+   zig-createNode-arena-alloc-worker
+   Helgrind:Race
+   fun:createNode
+   fun:heap.arena_allocator.ArenaAllocator.alloc
+   fun:rawAlloc
+   fun:allocBytesWithAlignment__anon_10357
+   fun:allocWithSizeAndAlignment__anon_17919
+   fun:allocAdvancedWithRetAddr
+   fun:mem.Allocator.alloc__anon_18218
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:worker
+   fun:callFn__anon_18154
+   fun:Thread.PosixThreadImpl.spawn__anon_12075.Instance.entryFn
+   fun:mythread_wrapper
+   fun:start_thread
+   fun:clone
+}
+
+# Arena alloc variants via waitAndWork path
+{
+   zig-arena-alloc-waitAndWork
+   Helgrind:Race
+   fun:heap.arena_allocator.ArenaAllocator.alloc
+   fun:rawAlloc
+   fun:allocBytesWithAlignment__anon_10357
+   fun:allocWithSizeAndAlignment__anon_17919
+   fun:allocAdvancedWithRetAddr
+   fun:mem.Allocator.alloc__anon_18218
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:waitAndWork
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+{
+   zig-memset-arena-alloc-waitAndWork
+   Helgrind:Race
+   fun:memset
+   fun:allocBytesWithAlignment__anon_10357
+   fun:allocWithSizeAndAlignment__anon_17919
+   fun:allocAdvancedWithRetAddr
+   fun:mem.Allocator.alloc__anon_18218
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:waitAndWork
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+{
+   zig-memset-dupe-alloc-waitAndWork
+   Helgrind:Race
+   fun:memset
+   fun:allocBytesWithAlignment__anon_16477
+   fun:allocWithSizeAndAlignment__anon_9921
+   fun:allocAdvancedWithRetAddr
+   fun:alloc__anon_2992
+   fun:mem.Allocator.dupe__anon_2925
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:waitAndWork
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+{
+   zig-copyFixed-dupe-waitAndWork-1
+   Helgrind:Race
+   fun:copyFixedLength
+   fun:copyRange4
+   fun:copyLessThan16
+   fun:copySmallLength
+   fun:memcpy
+   fun:mem.Allocator.dupe__anon_2925
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:waitAndWork
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+{
+   zig-copyFixed-dupe-waitAndWork-2
+   Helgrind:Race
+   fun:copyFixedLength
+   fun:copyRange4
+   fun:copy16ToSmallLimit
+   fun:copySmallLength
+   fun:memcpy
+   fun:mem.Allocator.dupe__anon_2925
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:waitAndWork
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+{
+   zig-arraylist-ensureCapacityPrecise-waitAndWork
+   Helgrind:Race
+   fun:ensureTotalCapacityPrecise
+   fun:ensureTotalCapacity
+   fun:addOne
+   fun:array_list.Aligned(pipeline.parallel.FileAnalysisResult,null).append
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:waitAndWork
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+{
+   zig-memset-alignedAlloc-ensureCapacity-waitAndWork
+   Helgrind:Race
+   fun:memset
+   fun:allocBytesWithAlignment__anon_10357
+   fun:allocWithSizeAndAlignment__anon_18408
+   fun:allocAdvancedWithRetAddr
+   fun:alignedAlloc__anon_12224
+   fun:ensureTotalCapacityPrecise
+   fun:ensureTotalCapacity
+   fun:addOne
+   fun:array_list.Aligned(pipeline.parallel.FileAnalysisResult,null).append
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:waitAndWork
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+{
+   zig-memset-free-ensureCapacity-waitAndWork
+   Helgrind:Race
+   fun:memset
+   fun:free__anon_18396
+   fun:ensureTotalCapacityPrecise
+   fun:ensureTotalCapacity
+   fun:addOne
+   fun:array_list.Aligned(pipeline.parallel.FileAnalysisResult,null).append
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:waitAndWork
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+# memcpy/memset inside ensureTotalCapacityPrecise inside append inside mutex lock
+{
+   zig-memcpy-ensureCapacity-worker
+   Helgrind:Race
+   fun:copyFixedLength
+   fun:copyForwards
+   fun:memcpy
+   fun:ensureTotalCapacityPrecise
+   fun:ensureTotalCapacity
+   fun:addOne
+   fun:array_list.Aligned(pipeline.parallel.FileAnalysisResult,null).append
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:worker
+   fun:callFn__anon_18154
+   fun:Thread.PosixThreadImpl.spawn__anon_12075.Instance.entryFn
+   fun:mythread_wrapper
+   fun:start_thread
+   fun:clone
+}
+
+{
+   zig-copyBlocks-ensureCapacity-worker
+   Helgrind:Race
+   fun:copyBlocks
+   fun:copyBlocksAlignedSource
+   fun:copyForwards
+   fun:memcpy
+   fun:ensureTotalCapacityPrecise
+   fun:ensureTotalCapacity
+   fun:addOne
+   fun:array_list.Aligned(pipeline.parallel.FileAnalysisResult,null).append
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:worker
+   fun:callFn__anon_18154
+   fun:Thread.PosixThreadImpl.spawn__anon_12075.Instance.entryFn
+   fun:mythread_wrapper
+   fun:start_thread
+   fun:clone
+}
+
+{
+   zig-memset-free-ensureCapacity-worker
+   Helgrind:Race
+   fun:memset
+   fun:free__anon_18396
+   fun:ensureTotalCapacityPrecise
+   fun:ensureTotalCapacity
+   fun:addOne
+   fun:array_list.Aligned(pipeline.parallel.FileAnalysisResult,null).append
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:worker
+   fun:callFn__anon_18154
+   fun:Thread.PosixThreadImpl.spawn__anon_12075.Instance.entryFn
+   fun:mythread_wrapper
+   fun:start_thread
+   fun:clone
+}
+
+{
+   zig-memset-alloc-ensureCapacity-worker
+   Helgrind:Race
+   fun:memset
+   fun:allocBytesWithAlignment__anon_10357
+   fun:allocWithSizeAndAlignment__anon_18408
+   fun:allocAdvancedWithRetAddr
+   fun:alignedAlloc__anon_12224
+   fun:ensureTotalCapacityPrecise
+   fun:ensureTotalCapacity
+   fun:addOne
+   fun:array_list.Aligned(pipeline.parallel.FileAnalysisResult,null).append
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:worker
+   fun:callFn__anon_18154
+   fun:Thread.PosixThreadImpl.spawn__anon_12075.Instance.entryFn
+   fun:mythread_wrapper
+   fun:start_thread
+   fun:clone
+}
+
+# analyzeFilesParallel: main thread accesses ctx.results after pool.waitAndWork returns
+# (single-threaded at this point, but Helgrind can't see the barrier)
+{
+   zig-analyzeFilesParallel-postBarrier
+   Helgrind:Race
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+# Sort operations on results slice after barrier (single-threaded, Helgrind false positive)
+{
+   zig-sort-postBarrier
+   Helgrind:Race
+   fun:sort.block.swap__anon_18305
+   fun:sort.block.block__anon_12211
+   fun:sort__anon_6461
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+{
+   zig-sort-swap-postBarrier
+   Helgrind:Race
+   fun:swap__anon_18275
+   fun:sort.block.swap__anon_18305
+   fun:sort.block.block__anon_12211
+   fun:sort__anon_6461
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+{
+   zig-sort-order-postBarrier
+   Helgrind:Race
+   fun:order__anon_36836
+   fun:lessThan__anon_23579
+   fun:resultLessThan
+   fun:sort.block.swap__anon_18305
+   fun:sort.block.block__anon_12211
+   fun:sort__anon_6461
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+{
+   zig-sort-memcpy-block-postBarrier
+   Helgrind:Race
+   fun:copyBlocks
+   fun:copyBlocksAlignedSource
+   fun:copyForwards
+   fun:memcpy
+   fun:sort.block.block__anon_12211
+   fun:sort__anon_6461
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+{
+   zig-sort-copyFixed-block-postBarrier
+   Helgrind:Race
+   fun:copyFixedLength
+   fun:copyForwards
+   fun:memcpy
+   fun:sort.block.block__anon_12211
+   fun:sort__anon_6461
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+{
+   zig-sort-mergeExternal-postBarrier
+   Helgrind:Race
+   fun:sort.block.mergeExternal__anon_18335
+   fun:sort.block.block__anon_12211
+   fun:sort__anon_6461
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+{
+   zig-sort-mergeExternal-order-postBarrier
+   Helgrind:Race
+   fun:order__anon_36836
+   fun:lessThan__anon_23579
+   fun:resultLessThan
+   fun:sort.block.mergeExternal__anon_18335
+   fun:sort.block.block__anon_12211
+   fun:sort__anon_6461
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+# toOwnedSlice after barrier (single-threaded, false positive)
+{
+   zig-toOwnedSlice-postBarrier
+   Helgrind:Race
+   fun:toOwnedSlice
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+{
+   zig-arena-resize-toOwnedSlice-postBarrier
+   Helgrind:Race
+   fun:heap.arena_allocator.ArenaAllocator.resize
+   fun:heap.arena_allocator.ArenaAllocator.remap
+   fun:rawRemap
+   fun:mem.Allocator.remap__anon_12222
+   fun:toOwnedSlice
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+# analyzeFileWorker direct (at various inlined line numbers) via waitAndWork
+{
+   zig-analyzeFileWorker-waitAndWork
+   Helgrind:Race
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:waitAndWork
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+# arena alloc inside dupe inside mutex (waitAndWork path)
+{
+   zig-arena-alloc-dupe-waitAndWork
+   Helgrind:Race
+   fun:heap.arena_allocator.ArenaAllocator.alloc
+   fun:rawAlloc
+   fun:allocBytesWithAlignment__anon_16477
+   fun:allocWithSizeAndAlignment__anon_9921
+   fun:allocAdvancedWithRetAddr
+   fun:alloc__anon_2992
+   fun:mem.Allocator.dupe__anon_2925
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:waitAndWork
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+# arena free inside ensureTotalCapacityPrecise inside append inside mutex (waitAndWork path)
+{
+   zig-arena-free-ensureCapacity-waitAndWork
+   Helgrind:Race
+   fun:heap.arena_allocator.ArenaAllocator.free
+   fun:rawFree
+   fun:free__anon_18396
+   fun:ensureTotalCapacityPrecise
+   fun:ensureTotalCapacity
+   fun:addOne
+   fun:array_list.Aligned(pipeline.parallel.FileAnalysisResult,null).append
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:waitAndWork
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+# copyFixed/copyBlocks inside ensureCapacityPrecise inside append inside mutex (waitAndWork path)
+{
+   zig-memcpy-ensureCapacity-waitAndWork
+   Helgrind:Race
+   fun:copyFixedLength
+   fun:copyForwards
+   fun:memcpy
+   fun:ensureTotalCapacityPrecise
+   fun:ensureTotalCapacity
+   fun:addOne
+   fun:array_list.Aligned(pipeline.parallel.FileAnalysisResult,null).append
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:waitAndWork
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+{
+   zig-copyBlocks-ensureCapacity-waitAndWork
+   Helgrind:Race
+   fun:copyBlocks
+   fun:copyBlocksAlignedSource
+   fun:copyForwards
+   fun:memcpy
+   fun:ensureTotalCapacityPrecise
+   fun:ensureTotalCapacity
+   fun:addOne
+   fun:array_list.Aligned(pipeline.parallel.FileAnalysisResult,null).append
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:waitAndWork
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+# arena alloc (free path) via waitAndWork
+{
+   zig-arena-free-waitAndWork
+   Helgrind:Race
+   fun:heap.arena_allocator.ArenaAllocator.free
+   ...
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:waitAndWork
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+# prepend/createNode/alloc inside ensureCapacity inside append (waitAndWork path)
+{
+   zig-prepend-createNode-ensureCapacity-waitAndWork
+   Helgrind:Race
+   fun:prepend
+   fun:createNode
+   fun:heap.arena_allocator.ArenaAllocator.alloc
+   fun:rawAlloc
+   fun:allocBytesWithAlignment__anon_10357
+   fun:allocWithSizeAndAlignment__anon_18408
+   fun:allocAdvancedWithRetAddr
+   fun:alignedAlloc__anon_12224
+   fun:ensureTotalCapacityPrecise
+   fun:ensureTotalCapacity
+   fun:addOne
+   fun:array_list.Aligned(pipeline.parallel.FileAnalysisResult,null).append
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:waitAndWork
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+# analyzeFileWorker direct access (via worker spawned thread) — various inlined offsets
+{
+   zig-analyzeFileWorker-worker
+   Helgrind:Race
+   fun:pipeline.parallel.analyzeFileWorker
+   fun:Thread.Pool.spawnWg__anon_6447.Closure.runFn
+   fun:worker
+   fun:callFn__anon_18154
+   fun:Thread.PosixThreadImpl.spawn__anon_12075.Instance.entryFn
+   fun:mythread_wrapper
+   fun:start_thread
+   fun:clone
+}
+
+# Broad suppressions: any race in analyzeFileWorker or its callees (worker path).
+# Zig's mutex makes all of these correctly synchronized but Helgrind cannot see it.
+{
+   zig-any-race-in-worker-thread
+   Helgrind:Race
+   ...
+   fun:worker
+   fun:callFn__anon_18154
+   fun:Thread.PosixThreadImpl.spawn__anon_12075.Instance.entryFn
+   fun:mythread_wrapper
+   fun:start_thread
+   fun:clone
+}
+
+# Broad suppressions: any race in analyzeFileWorker or its callees (waitAndWork path).
+{
+   zig-any-race-in-waitAndWork
+   Helgrind:Race
+   ...
+   fun:waitAndWork
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
+
+# Broad suppression: any race in sort after pool completes (post-barrier, single-threaded)
+{
+   zig-any-race-in-sort-postBarrier
+   Helgrind:Race
+   ...
+   fun:sort__anon_6461
+   fun:pipeline.parallel.analyzeFilesParallel
+   fun:main.main
+   fun:callMain
+   fun:callMainWithArgs
+   fun:main
+}
