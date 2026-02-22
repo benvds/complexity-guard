@@ -135,19 +135,22 @@ The health score is most powerful when used as a ratchet: capture today's score 
 
 ### Step 1: Set a Baseline
 
-Run ComplexityGuard with `--save-baseline` to capture the current project score and write it to your config:
+Run ComplexityGuard with `--format json` to see your project score, then add it to your config file:
 
 ```sh
-complexity-guard --save-baseline src/
+complexity-guard --format json src/ | jq '.summary.health_score'
+# e.g. 73.2
 ```
 
-This writes (or updates) `.complexityguard.json` with the current score:
+Then edit (or create) `.complexityguard.json` and add the baseline field:
 
 ```json
 {
   "baseline": 73.2
 }
 ```
+
+You can also generate a default config first with `complexity-guard --init`, then edit the `baseline` field.
 
 ### Step 2: Enforce in CI
 
@@ -158,7 +161,7 @@ complexity-guard src/
 # Exits 1 if health score drops below baseline
 ```
 
-Or override the threshold directly from the command line:
+Or override the threshold directly from the command line (no config change needed):
 
 ```sh
 complexity-guard --fail-health-below 70 src/
@@ -172,10 +175,12 @@ Health score 68.4 is below threshold 70.0 — exiting with error
 
 ### Step 3: Improve Over Time
 
-As your team refactors high-complexity functions, the health score rises. When you're comfortable with the new level, update the baseline:
+As your team refactors high-complexity functions, the health score rises. When you're comfortable with the new level, update the baseline value in your config file:
 
-```sh
-complexity-guard --save-baseline src/
+```json
+{
+  "baseline": 78.5
+}
 ```
 
 The ratchet only ever moves forward — toward a healthier codebase.
@@ -234,7 +239,7 @@ A healthy workflow: start where you are, commit to not regressing (baseline), an
 
 ## See Also
 
-- [CLI Reference](cli-reference.md) — `--save-baseline`, `--fail-health-below`, and weights config options
+- [CLI Reference](cli-reference.md) — `--fail-health-below`, `--init`, and weights config options
 - [Examples](examples.md) — Health score in CI workflows and JSON output
 - [Cyclomatic Complexity](cyclomatic-complexity.md) — One of the four contributing metrics
 - [Cognitive Complexity](cognitive-complexity.md) — The highest-weighted metric by default

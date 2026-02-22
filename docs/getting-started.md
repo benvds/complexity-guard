@@ -346,19 +346,30 @@ See [SARIF Output](sarif-output.md) for a complete GitHub Actions workflow that 
 
 ## Tracking Health Over Time
 
-Once you have a baseline analysis, use `--save-baseline` to capture it as a CI enforcement threshold:
+Use the health score as a ratchet: set a baseline once, then enforce it in CI to prevent regression.
 
 ```sh
-# Generate a default config file
+# Step 1: Generate a default config file
 complexity-guard --init
 
-# Capture the current score as a baseline
-complexity-guard --save-baseline src/
+# Step 2: Check your current score
+complexity-guard --format json src/ | jq '.summary.health_score'
+# e.g. 73.2
+```
 
-# In CI: enforce the baseline (exits 1 if score drops below it)
+Edit `.complexityguard.json` to add the baseline field:
+
+```json
+{
+  "baseline": 73.2
+}
+```
+
+```sh
+# Step 3: In CI — enforce the baseline (exits 1 if score drops below it)
 complexity-guard src/
 
-# Or override from the command line
+# Or override the threshold from the command line (no config change needed)
 complexity-guard --fail-health-below 70 src/
 ```
 

@@ -268,24 +268,6 @@ Health score 68.4 is below threshold 70.0 — exiting with error
 
 See [Health Score](health-score.md) for the full baseline + ratchet workflow.
 
-**`--save-baseline`**
-
-Run the analysis, compute the project health score, and save it to `.complexityguard.json` as the `baseline` field. Future runs will enforce this score automatically.
-
-```sh
-complexity-guard --save-baseline src/
-```
-
-This reads the existing config (if any), updates the `baseline` field, and writes it back. If no config exists, a minimal config is created. The saved score is rounded to one decimal place:
-
-```json
-{
-  "baseline": 73.2
-}
-```
-
-After saving a baseline, subsequent runs of `complexity-guard src/` will exit 1 if the score drops below it. To change the baseline, re-run with `--save-baseline`.
-
 ### Configuration
 
 **`-c, --config <FILE>`**
@@ -538,7 +520,7 @@ Weights are normalized to sum to 1.0 before use. Set a weight to `0.0` to exclud
 
 **`baseline`** (float)
 
-Health score threshold for CI enforcement. When set, `complexity-guard` exits with code 1 if the project health score falls below this value. Set automatically by `--save-baseline`. Default: none (no enforcement).
+Health score threshold for CI enforcement. When set, `complexity-guard` exits with code 1 if the project health score falls below this value. Set this value manually in your config file. Default: none (no enforcement).
 
 **`analysis.threads`** (integer)
 

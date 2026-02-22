@@ -239,16 +239,27 @@ complexity-guard --format json src/ | jq '[.files[].functions[]] | sort_by(.heal
 Set a baseline once, then enforce it in CI to prevent regression:
 
 ```sh
-# Step 1: Generate default config
+# Step 1: Generate a default config file
 complexity-guard --init
 
-# Step 2: Or just capture the current score as a baseline
-complexity-guard --save-baseline src/
+# Step 2: Check your current score
+complexity-guard --format json src/ | jq '.summary.health_score'
+# e.g. 73.2
+```
 
+Edit `.complexityguard.json` to add the baseline field:
+
+```json
+{
+  "baseline": 73.2
+}
+```
+
+```sh
 # Step 3: Enforce in CI (uses baseline from .complexityguard.json)
 complexity-guard src/
 
-# Or enforce a specific threshold from the command line
+# Or enforce a specific threshold from the command line (no config change needed)
 complexity-guard --fail-health-below 70 src/
 ```
 
@@ -257,6 +268,8 @@ When the score drops below the threshold, ComplexityGuard exits 1:
 ```
 Health score 68.4 is below threshold 70.0 — exiting with error
 ```
+
+To raise the baseline after improving your codebase, update the `baseline` value in `.complexityguard.json` directly.
 
 See [Health Score](health-score.md) for the complete formula, weight customization, and ratchet workflow guide.
 
