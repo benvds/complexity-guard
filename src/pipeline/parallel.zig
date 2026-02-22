@@ -400,7 +400,7 @@ test "analyzeFilesParallel: single file" {
     const cog_config = @import("../metrics/cognitive.zig").CognitiveConfig.default();
     const hal_config = @import("../metrics/halstead.zig").HalsteadConfig.default();
     const str_config = @import("../metrics/structural.zig").StructuralConfig.default();
-    const weights = scoring.resolveEffectiveWeights(null);
+    const weights = scoring.resolveEffectiveWeights(null, false);
     const metric_thresholds = scoring.MetricThresholds{
         .cyclomatic_warning = 10.0,
         .cyclomatic_error = 20.0,
@@ -449,7 +449,7 @@ test "analyzeFilesParallel: results sorted by path" {
     const cog_config = @import("../metrics/cognitive.zig").CognitiveConfig.default();
     const hal_config = @import("../metrics/halstead.zig").HalsteadConfig.default();
     const str_config = @import("../metrics/structural.zig").StructuralConfig.default();
-    const weights = scoring.resolveEffectiveWeights(null);
+    const weights = scoring.resolveEffectiveWeights(null, false);
     const metric_thresholds = scoring.MetricThresholds{
         .cyclomatic_warning = 10.0,
         .cyclomatic_error = 20.0,

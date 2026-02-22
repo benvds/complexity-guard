@@ -9,11 +9,13 @@ const init = @import("cli/init.zig");
 const walker = @import("discovery/walker.zig");
 const filter = @import("discovery/filter.zig");
 const parse = @import("parser/parse.zig");
+const tree_sitter_mod = @import("parser/tree_sitter.zig");
 const cyclomatic = @import("metrics/cyclomatic.zig");
 const cognitive = @import("metrics/cognitive.zig");
 const halstead = @import("metrics/halstead.zig");
 const structural = @import("metrics/structural.zig");
 const scoring = @import("metrics/scoring.zig");
+const duplication_mod = @import("metrics/duplication.zig");
 const console = @import("output/console.zig");
 const json_output = @import("output/json_output.zig");
 const sarif_output = @import("output/sarif_output.zig");
@@ -58,6 +60,22 @@ pub fn buildHalsteadConfig(thresholds: config_mod.ThresholdsConfig) halstead.Hal
         .bugs_warning = if (thresholds.halstead_bugs) |t| @as(f64, @floatFromInt(t.warning orelse 1)) else default_hal.bugs_warning,
         .bugs_error = if (thresholds.halstead_bugs) |t| @as(f64, @floatFromInt(t.@"error" orelse 2)) else default_hal.bugs_error,
     };
+}
+
+/// Build DuplicationConfig from Config, applying configurable thresholds from config file.
+fn buildDuplicationConfig(cfg: config_mod.Config) duplication_mod.DuplicationConfig {
+    var dc = duplication_mod.DuplicationConfig.default();
+    if (cfg.analysis) |a| {
+        if (a.thresholds) |t| {
+            if (t.duplication) |d| {
+                if (d.file_warning) |v| dc.file_warning_pct = v;
+                if (d.file_error) |v| dc.file_error_pct = v;
+                if (d.project_warning) |v| dc.project_warning_pct = v;
+                if (d.project_error) |v| dc.project_error_pct = v;
+            }
+        }
+    }
+    return dc;
 }
 
 /// Build StructuralConfig from ThresholdsConfig, falling back to defaults for missing fields.
@@ -254,8 +272,23 @@ pub fn main() !void {
         .nesting_depth_error = @as(f64, @floatFromInt(str_config.nesting_depth_error)),
     };
 
+    // Determine if duplication detection is enabled (via --duplication flag or --metrics duplication)
+    const duplication_enabled: bool = blk: {
+        if (cfg.analysis) |a| {
+            if (a.duplication_enabled) |de| {
+                if (de) break :blk true;
+            }
+        }
+        if (parsed_metrics) |pm| {
+            for (pm) |m| {
+                if (std.mem.eql(u8, m, "duplication")) break :blk true;
+            }
+        }
+        break :blk false;
+    };
+
     // Resolve effective weights once (applies config overrides, normalizes)
-    const effective_weights = scoring.resolveEffectiveWeights(cfg.weights);
+    const effective_weights = scoring.resolveEffectiveWeights(cfg.weights, duplication_enabled);
 
     // Resolve effective thread count: CLI/config threads override, else auto-detect CPU count
     const cpu_count = std.Thread.getCpuCount() catch 1;
@@ -488,6 +521,71 @@ pub fn main() !void {
     }.lessThan);
 
     const file_results = file_results_list.items;
+
+    // Run duplication pass after all per-file analysis (re-parses files to get AST tokens)
+    var dup_result: ?duplication_mod.DuplicationResult = null;
+    if (duplication_enabled) {
+        const dup_config = buildDuplicationConfig(cfg);
+
+        var file_tokens_list = std.ArrayList(duplication_mod.FileTokens).empty;
+        defer file_tokens_list.deinit(arena_allocator);
+
+        for (discovery_result.files) |file_path| {
+            const source = std.fs.cwd().readFileAlloc(arena_allocator, file_path, 10 * 1024 * 1024) catch continue;
+            const lang = parse.selectLanguage(file_path) catch continue;
+            const ts_parser = tree_sitter_mod.Parser.init() catch continue;
+            defer ts_parser.deinit();
+            ts_parser.setLanguage(lang) catch continue;
+            const tree = ts_parser.parseString(source) catch continue;
+            defer tree.deinit();
+            const root = tree.rootNode();
+            const tokens = duplication_mod.tokenizeTree(arena_allocator, root, source) catch continue;
+            file_tokens_list.append(arena_allocator, duplication_mod.FileTokens{
+                .path = file_path,
+                .tokens = tokens,
+            }) catch continue;
+        }
+
+        dup_result = duplication_mod.detectDuplication(
+            arena_allocator,
+            file_tokens_list.items,
+            dup_config,
+        ) catch null;
+    }
+
+    // If duplication enabled, blend duplication scores into file scores and update warning/error counts
+    if (dup_result) |dup| {
+        const dup_config = buildDuplicationConfig(cfg);
+        for (dup.file_results) |fdr| {
+            // Find matching file_scores_list entry by path
+            for (file_results_list.items, 0..) |fr, i| {
+                if (std.mem.eql(u8, fr.path, fdr.path)) {
+                    const dup_score = scoring.normalizeDuplication(
+                        fdr.duplication_pct,
+                        dup_config.file_warning_pct,
+                        dup_config.file_error_pct,
+                    );
+                    file_scores_list.items[i] = scoring.computeFileScoreWithDuplication(
+                        file_scores_list.items[i],
+                        dup_score,
+                        effective_weights,
+                    );
+                    if (fdr.@"error") {
+                        total_errors += 1;
+                    } else if (fdr.warning) {
+                        total_warnings += 1;
+                    }
+                    break;
+                }
+            }
+        }
+        // Project-level duplication threshold violations
+        if (dup.project_error) {
+            total_errors += 1;
+        } else if (dup.project_warning) {
+            total_warnings += 1;
+        }
+    }
 
     // Compute project score from all file scores
     const project_score = scoring.computeProjectScore(file_scores_list.items, file_function_counts.items);

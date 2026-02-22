@@ -21,12 +21,15 @@ pub const MetricThresholds = struct {
     nesting_depth_error: f64,
 };
 
-/// Resolved and normalized weights for each metric family (duplication excluded).
+/// Resolved and normalized weights for each metric family.
+/// When duplication is enabled, all 5 weights are normalized to sum 1.0.
+/// When disabled, duplication is 0.0 and the other 4 weights sum 1.0.
 pub const EffectiveWeights = struct {
     cyclomatic: f64,
     cognitive: f64,
     halstead: f64,
     structural: f64,
+    duplication: f64,
 };
 
 /// Per-metric sub-scores plus weighted total.
@@ -93,46 +96,87 @@ pub fn normalizeStructural(tr: ThresholdResult, thresholds: MetricThresholds) f6
 }
 
 /// Resolve effective weights from optional WeightsConfig.
-/// Defaults: cyclomatic=0.20, cognitive=0.30, halstead=0.15, structural=0.15.
-/// Duplication is always excluded. Normalizes active weights to sum 1.0.
-/// If all zero, returns equal weights (0.25 each) as fallback.
-pub fn resolveEffectiveWeights(weights: ?WeightsConfig) EffectiveWeights {
+/// Defaults: cyclomatic=0.20, cognitive=0.30, halstead=0.15, structural=0.15, duplication=0.20.
+/// When duplication_enabled=true: includes duplication weight and normalizes all 5 to sum 1.0.
+/// When duplication_enabled=false: duplication=0.0, normalizes 4 weights to sum 1.0 (existing behavior).
+/// If all active weights are zero, returns equal weights as fallback.
+pub fn resolveEffectiveWeights(weights: ?WeightsConfig, duplication_enabled: bool) EffectiveWeights {
     const defaults_cycl: f64 = 0.20;
     const defaults_cogn: f64 = 0.30;
     const defaults_hal: f64 = 0.15;
     const defaults_str: f64 = 0.15;
+    const defaults_dup: f64 = 0.20;
 
     var w_cycl: f64 = defaults_cycl;
     var w_cogn: f64 = defaults_cogn;
     var w_hal: f64 = defaults_hal;
     var w_str: f64 = defaults_str;
+    var w_dup: f64 = defaults_dup;
 
     if (weights) |w| {
         if (w.cyclomatic) |v| w_cycl = v;
         if (w.cognitive) |v| w_cogn = v;
         if (w.halstead) |v| w_hal = v;
         if (w.structural) |v| w_str = v;
-        // duplication always excluded — never read w.duplication
+        if (w.duplication) |v| w_dup = v;
     }
 
-    const total = w_cycl + w_cogn + w_hal + w_str;
-
-    // Fallback: all zero -> equal weights
-    if (total == 0.0) {
+    if (!duplication_enabled) {
+        // 4-metric mode: duplication excluded, normalize remaining 4 weights
+        const total = w_cycl + w_cogn + w_hal + w_str;
+        if (total == 0.0) {
+            return EffectiveWeights{
+                .cyclomatic = 0.25,
+                .cognitive = 0.25,
+                .halstead = 0.25,
+                .structural = 0.25,
+                .duplication = 0.0,
+            };
+        }
         return EffectiveWeights{
-            .cyclomatic = 0.25,
-            .cognitive = 0.25,
-            .halstead = 0.25,
-            .structural = 0.25,
+            .cyclomatic = w_cycl / total,
+            .cognitive = w_cogn / total,
+            .halstead = w_hal / total,
+            .structural = w_str / total,
+            .duplication = 0.0,
+        };
+    } else {
+        // 5-metric mode: include duplication weight, normalize all 5
+        const total = w_cycl + w_cogn + w_hal + w_str + w_dup;
+        if (total == 0.0) {
+            return EffectiveWeights{
+                .cyclomatic = 0.2,
+                .cognitive = 0.2,
+                .halstead = 0.2,
+                .structural = 0.2,
+                .duplication = 0.2,
+            };
+        }
+        return EffectiveWeights{
+            .cyclomatic = w_cycl / total,
+            .cognitive = w_cogn / total,
+            .halstead = w_hal / total,
+            .structural = w_str / total,
+            .duplication = w_dup / total,
         };
     }
+}
 
-    return EffectiveWeights{
-        .cyclomatic = w_cycl / total,
-        .cognitive = w_cogn / total,
-        .halstead = w_hal / total,
-        .structural = w_str / total,
-    };
+/// Normalize a duplication percentage (0-100) to a 0-100 health score.
+/// Uses sigmoid so that warning_pct maps to 50 and error_pct maps to ~20.
+pub fn normalizeDuplication(duplication_pct: f64, warning_pct: f64, error_pct: f64) f64 {
+    const k = computeSteepness(warning_pct, error_pct);
+    return sigmoidScore(duplication_pct, warning_pct, k);
+}
+
+/// Compute a file-level health score blending function scores with a duplication score.
+/// When weights.duplication > 0, blends: base_file_score * (1 - dup_weight) + dup_score * dup_weight.
+/// When weights.duplication == 0, returns base_file_score unchanged.
+pub fn computeFileScoreWithDuplication(base_file_score: f64, dup_score: f64, weights: EffectiveWeights) f64 {
+    if (weights.duplication == 0.0) return base_file_score;
+    // Re-normalize the non-duplication portion to sum 1.0
+    const non_dup_weight = 1.0 - weights.duplication;
+    return base_file_score * non_dup_weight + dup_score * weights.duplication;
 }
 
 /// Compute composite function score from a ThresholdResult.
@@ -301,14 +345,15 @@ test "normalizeStructural: low values = high score" {
     try std.testing.expect(score > 65.0);
 }
 
-test "resolveEffectiveWeights: defaults normalize to 1.0 (duplication excluded)" {
-    const ew = resolveEffectiveWeights(null);
+test "resolveEffectiveWeights: defaults normalize to 1.0 (duplication disabled)" {
+    const ew = resolveEffectiveWeights(null, false);
     const total = ew.cyclomatic + ew.cognitive + ew.halstead + ew.structural;
     try std.testing.expectApproxEqAbs(@as(f64, 1.0), total, 0.0001);
     try std.testing.expectApproxEqAbs(@as(f64, 0.25), ew.cyclomatic, 0.0001);
     try std.testing.expectApproxEqAbs(@as(f64, 0.375), ew.cognitive, 0.0001);
     try std.testing.expectApproxEqAbs(@as(f64, 0.1875), ew.halstead, 0.0001);
     try std.testing.expectApproxEqAbs(@as(f64, 0.1875), ew.structural, 0.0001);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.0), ew.duplication, 0.0001);
 }
 
 test "resolveEffectiveWeights: weight of 0 excludes metric" {
@@ -319,13 +364,13 @@ test "resolveEffectiveWeights: weight of 0 excludes metric" {
         .structural = 0.2,
         .duplication = null,
     };
-    const ew = resolveEffectiveWeights(w);
+    const ew = resolveEffectiveWeights(w, false);
     const total = ew.cyclomatic + ew.cognitive + ew.halstead + ew.structural;
     try std.testing.expectApproxEqAbs(@as(f64, 1.0), total, 0.0001);
     try std.testing.expectApproxEqAbs(@as(f64, 0.0), ew.cyclomatic, 0.0001);
 }
 
-test "resolveEffectiveWeights: all weights zero returns 0.25 each" {
+test "resolveEffectiveWeights: all 4 weights zero returns 0.25 each (duplication disabled)" {
     const w = WeightsConfig{
         .cyclomatic = 0.0,
         .cognitive = 0.0,
@@ -333,11 +378,12 @@ test "resolveEffectiveWeights: all weights zero returns 0.25 each" {
         .structural = 0.0,
         .duplication = null,
     };
-    const ew = resolveEffectiveWeights(w);
+    const ew = resolveEffectiveWeights(w, false);
     try std.testing.expectApproxEqAbs(@as(f64, 0.25), ew.cyclomatic, 0.0001);
     try std.testing.expectApproxEqAbs(@as(f64, 0.25), ew.cognitive, 0.0001);
     try std.testing.expectApproxEqAbs(@as(f64, 0.25), ew.halstead, 0.0001);
     try std.testing.expectApproxEqAbs(@as(f64, 0.25), ew.structural, 0.0001);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.0), ew.duplication, 0.0001);
 }
 
 test "resolveEffectiveWeights: partial override normalizes correctly" {
@@ -348,13 +394,13 @@ test "resolveEffectiveWeights: partial override normalizes correctly" {
         .structural = null,
         .duplication = null,
     };
-    const ew = resolveEffectiveWeights(w);
+    const ew = resolveEffectiveWeights(w, false);
     const total = ew.cyclomatic + ew.cognitive + ew.halstead + ew.structural;
     try std.testing.expectApproxEqAbs(@as(f64, 1.0), total, 0.0001);
     try std.testing.expectApproxEqAbs(@as(f64, 0.50 / 1.10), ew.cyclomatic, 0.0001);
 }
 
-test "resolveEffectiveWeights: duplication weight is ignored" {
+test "resolveEffectiveWeights: duplication disabled ignores duplication weight" {
     const w = WeightsConfig{
         .cyclomatic = 0.20,
         .cognitive = 0.30,
@@ -362,9 +408,41 @@ test "resolveEffectiveWeights: duplication weight is ignored" {
         .structural = 0.15,
         .duplication = 0.99,
     };
-    const ew = resolveEffectiveWeights(w);
+    const ew = resolveEffectiveWeights(w, false);
     const total = ew.cyclomatic + ew.cognitive + ew.halstead + ew.structural;
     try std.testing.expectApproxEqAbs(@as(f64, 1.0), total, 0.0001);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.0), ew.duplication, 0.0001);
+}
+
+test "resolveEffectiveWeights: duplication enabled normalizes 5 weights" {
+    const w = WeightsConfig{
+        .cyclomatic = 0.20,
+        .cognitive = 0.30,
+        .halstead = 0.15,
+        .structural = 0.15,
+        .duplication = 0.20,
+    };
+    const ew = resolveEffectiveWeights(w, true);
+    const total = ew.cyclomatic + ew.cognitive + ew.halstead + ew.structural + ew.duplication;
+    try std.testing.expectApproxEqAbs(@as(f64, 1.0), total, 0.0001);
+    // Each weight = w / 1.0 since they sum exactly to 1.0
+    try std.testing.expectApproxEqAbs(@as(f64, 0.20), ew.cyclomatic, 0.0001);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.30), ew.cognitive, 0.0001);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.20), ew.duplication, 0.0001);
+}
+
+test "resolveEffectiveWeights: duplication enabled all zero returns equal 5 weights" {
+    const w = WeightsConfig{
+        .cyclomatic = 0.0,
+        .cognitive = 0.0,
+        .halstead = 0.0,
+        .structural = 0.0,
+        .duplication = 0.0,
+    };
+    const ew = resolveEffectiveWeights(w, true);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.2), ew.cyclomatic, 0.0001);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.2), ew.cognitive, 0.0001);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.2), ew.duplication, 0.0001);
 }
 
 test "computeFunctionScore: returns breakdown within 0-100" {
@@ -397,7 +475,7 @@ test "computeFunctionScore: returns breakdown within 0-100" {
         .nesting_depth_warning = 3,
         .nesting_depth_error = 6,
     };
-    const weights = resolveEffectiveWeights(null);
+    const weights = resolveEffectiveWeights(null, false);
     const breakdown = computeFunctionScore(tr, weights, thresholds);
 
     try std.testing.expect(breakdown.total >= 0.0);
@@ -436,4 +514,44 @@ test "computeProjectScore: all files with zero functions returns 100" {
     const counts = [_]u32{ 0, 0 };
     const result = computeProjectScore(&scores, &counts);
     try std.testing.expectApproxEqAbs(@as(f64, 100.0), result, 0.001);
+}
+
+test "normalizeDuplication: 0% duplication gives high score" {
+    const score = normalizeDuplication(0.0, 15.0, 25.0);
+    try std.testing.expect(score > 80.0);
+}
+
+test "normalizeDuplication: at warning threshold gives ~50" {
+    const score = normalizeDuplication(15.0, 15.0, 25.0);
+    try std.testing.expectApproxEqAbs(@as(f64, 50.0), score, 0.1);
+}
+
+test "normalizeDuplication: at error threshold gives ~20" {
+    const score = normalizeDuplication(25.0, 15.0, 25.0);
+    try std.testing.expectApproxEqAbs(@as(f64, 20.0), score, 0.5);
+}
+
+test "computeFileScoreWithDuplication: zero duplication weight returns base score" {
+    const weights = EffectiveWeights{
+        .cyclomatic = 0.25,
+        .cognitive = 0.25,
+        .halstead = 0.25,
+        .structural = 0.25,
+        .duplication = 0.0,
+    };
+    const result = computeFileScoreWithDuplication(80.0, 50.0, weights);
+    try std.testing.expectApproxEqAbs(@as(f64, 80.0), result, 0.001);
+}
+
+test "computeFileScoreWithDuplication: blends base and dup scores" {
+    const weights = EffectiveWeights{
+        .cyclomatic = 0.20,
+        .cognitive = 0.30,
+        .halstead = 0.15,
+        .structural = 0.15,
+        .duplication = 0.20,
+    };
+    // base=80, dup=60, expected = 80*0.8 + 60*0.2 = 64 + 12 = 76
+    const result = computeFileScoreWithDuplication(80.0, 60.0, weights);
+    try std.testing.expectApproxEqAbs(@as(f64, 76.0), result, 0.001);
 }
