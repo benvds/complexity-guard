@@ -1,0 +1,13 @@
+{
+  "analysis": {
+    "thresholds": {
+      "cyclomatic": { "warning": 9999, "error": 99999 },
+      "cognitive": { "warning": 9999, "error": 99999 },
+      "halstead_volume": { "warning": 9999999, "error": 99999999 },
+      "halstead_difficulty": { "warning": 9999, "error": 99999 },
+      "nesting_depth": { "warning": 9999, "error": 99999 },
+      "line_count": { "warning": 9999, "error": 99999 },
+      "params_count": { "warning": 9999, "error": 99999 }
+    }
+  }
+}
