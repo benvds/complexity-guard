@@ -221,8 +221,9 @@ test "discoverFiles: all fixtures" {
     var result = try discoverFiles(allocator, &[_][]const u8{"tests/fixtures"}, config);
     defer result.deinit(allocator);
 
-    // Should find 10 .ts + 1 .tsx + 2 .js + 1 .jsx = 14 files
-    try std.testing.expectEqual(@as(usize, 14), result.files.len);
+    // Should find 11 .ts + 1 .tsx + 2 .js + 1 .jsx = 15 files
+    // (includes tests/fixtures/naming-edge-cases.ts at the root of fixtures/)
+    try std.testing.expectEqual(@as(usize, 15), result.files.len);
 }
 
 test "discoverFiles: single file path" {

@@ -118,6 +118,7 @@ pub fn isFunctionNode(node: tree_sitter.Node) bool {
     const node_type = node.nodeType();
     return std.mem.eql(u8, node_type, "function_declaration") or
         std.mem.eql(u8, node_type, "function") or
+        std.mem.eql(u8, node_type, "function_expression") or
         std.mem.eql(u8, node_type, "arrow_function") or
         std.mem.eql(u8, node_type, "method_definition") or
         std.mem.eql(u8, node_type, "generator_function") or
@@ -139,13 +140,14 @@ pub fn extractFunctionInfo(node: tree_sitter.Node, source: []const u8) FunctionI
         "method"
     else if (std.mem.eql(u8, node_type, "arrow_function"))
         "arrow"
-    else if (std.mem.eql(u8, node_type, "function"))
+    else if (std.mem.eql(u8, node_type, "function") or std.mem.eql(u8, node_type, "function_expression"))
         "function"
     else
         "function";
 
-    // For function/generator declarations, look for identifier child
+    // For function/generator declarations and named function expressions, look for identifier child
     if (std.mem.eql(u8, node_type, "function_declaration") or
+        std.mem.eql(u8, node_type, "function_expression") or
         std.mem.eql(u8, node_type, "generator_function_declaration"))
     {
         var i: u32 = 0;
@@ -344,6 +346,14 @@ pub fn calculateComplexity(node: tree_sitter.Node, config: CyclomaticConfig, sou
 const FunctionContext = struct {
     name: []const u8,
     kind: []const u8,
+    /// Class name when walking inside a class_declaration (for "ClassName.method" naming)
+    class_name: ?[]const u8 = null,
+    /// Object key name when walking inside a pair node (for object literal methods)
+    object_key: ?[]const u8 = null,
+    /// Call expression callee name when function is an argument (for "callee callback" naming)
+    call_name: ?[]const u8 = null,
+    /// Whether function is a direct child of export default (for "default export" naming)
+    is_default_export: bool = false,
 };
 
 /// Analyze all functions in an AST, returning complexity results
@@ -457,10 +467,54 @@ fn walkAndAnalyze(
         var func_name = func_info.name;
         const func_kind = func_info.kind;
 
-        // Override name if we have parent context (e.g., variable assignment)
+        // Apply naming priority from parent context
         if (parent_context) |ctx| {
-            func_name = ctx.name;
-            // Keep the kind from the actual function node type, not the variable
+            if (ctx.name.len > 0 and !std.mem.eql(u8, ctx.name, "<anonymous>")) {
+                // Priority 1: explicit variable name from variable_declarator
+                // (ctx.name is set directly for variable_declarator nodes)
+                if (ctx.class_name == null and ctx.object_key == null and ctx.call_name == null and !ctx.is_default_export) {
+                    func_name = ctx.name;
+                }
+            }
+
+            // Priority 2: class method — compose "ClassName.methodName"
+            if (ctx.class_name) |class_name| {
+                if (std.mem.eql(u8, func_kind, "method")) {
+                    // func_info.name already has the method name from extractFunctionInfo
+                    const method_name = func_info.name;
+                    if (!std.mem.eql(u8, method_name, "<anonymous>")) {
+                        func_name = try std.fmt.allocPrint(allocator, "{s}.{s}", .{ class_name, method_name });
+                    } else {
+                        func_name = class_name;
+                    }
+                }
+            }
+
+            // Priority 3: object key name
+            if (ctx.object_key) |key| {
+                if (std.mem.eql(u8, func_info.name, "<anonymous>") or std.mem.eql(u8, func_kind, "arrow")) {
+                    func_name = key;
+                }
+            }
+
+            // Priority 4: callback naming — "callee callback" or "event handler"
+            if (ctx.call_name) |call_name| {
+                if (std.mem.eql(u8, func_info.name, "<anonymous>") or std.mem.eql(u8, func_kind, "arrow")) {
+                    // check if ctx.name encodes a handler format (from addEventListener)
+                    if (std.mem.endsWith(u8, call_name, " handler")) {
+                        func_name = call_name;
+                    } else {
+                        func_name = try std.fmt.allocPrint(allocator, "{s} callback", .{call_name});
+                    }
+                }
+            }
+
+            // Priority 5: default export
+            if (ctx.is_default_export) {
+                if (std.mem.eql(u8, func_info.name, "<anonymous>")) {
+                    func_name = "default export";
+                }
+            }
         }
 
         // Calculate complexity
@@ -508,6 +562,181 @@ fn walkAndAnalyze(
             }
         }
     }
+    // Track class declarations for "ClassName.method" naming
+    else if (std.mem.eql(u8, node_type, "class_declaration") or std.mem.eql(u8, node_type, "class")) {
+        // Find identifier child = class name
+        var i: u32 = 0;
+        while (i < node.childCount()) : (i += 1) {
+            if (node.child(i)) |child| {
+                const child_type = child.nodeType();
+                if (std.mem.eql(u8, child_type, "identifier") or std.mem.eql(u8, child_type, "type_identifier")) {
+                    const id_start = child.startByte();
+                    const id_end = child.endByte();
+                    if (id_start < source.len and id_end <= source.len) {
+                        child_context = FunctionContext{
+                            .name = "<anonymous>",
+                            .kind = "class",
+                            .class_name = source[id_start..id_end],
+                        };
+                    }
+                    break;
+                }
+            }
+        }
+        if (child_context == null) {
+            child_context = FunctionContext{ .name = "<anonymous>", .kind = "class", .class_name = "class" };
+        }
+    }
+    // Track object literal pair key for method naming: { handler: () => {} }
+    else if (std.mem.eql(u8, node_type, "pair")) {
+        // First child is the key (property_identifier or string)
+        if (node.child(0)) |key_node| {
+            const key_type = key_node.nodeType();
+            if (std.mem.eql(u8, key_type, "property_identifier") or std.mem.eql(u8, key_type, "string")) {
+                const key_start = key_node.startByte();
+                const key_end = key_node.endByte();
+                if (key_start < source.len and key_end <= source.len) {
+                    var key_text = source[key_start..key_end];
+                    // Strip quotes from string keys
+                    if (std.mem.startsWith(u8, key_text, "\"") or std.mem.startsWith(u8, key_text, "'")) {
+                        key_text = key_text[1 .. key_text.len - 1];
+                    }
+                    child_context = FunctionContext{
+                        .name = "<anonymous>",
+                        .kind = "pair",
+                        .object_key = key_text,
+                    };
+                }
+            }
+        }
+    }
+    // Track call expression callee for "X callback" or "event handler" naming
+    else if (std.mem.eql(u8, node_type, "call_expression")) {
+        // First child is the callee
+        if (node.child(0)) |callee| {
+            const callee_type = callee.nodeType();
+            if (std.mem.eql(u8, callee_type, "identifier")) {
+                // Simple identifier callee: map, forEach, etc.
+                const id_start = callee.startByte();
+                const id_end = callee.endByte();
+                if (id_start < source.len and id_end <= source.len) {
+                    const callee_name = source[id_start..id_end];
+                    if (std.mem.eql(u8, callee_name, "addEventListener")) {
+                        // Special case: read first argument string for "event handler"
+                        var event_name: ?[]const u8 = null;
+                        if (node.child(1)) |args_node| {
+                            if (std.mem.eql(u8, args_node.nodeType(), "arguments")) {
+                                var j: u32 = 0;
+                                while (j < args_node.childCount()) : (j += 1) {
+                                    if (args_node.child(j)) |arg| {
+                                        const arg_type = arg.nodeType();
+                                        if (std.mem.eql(u8, arg_type, "string")) {
+                                            const s_start = arg.startByte();
+                                            const s_end = arg.endByte();
+                                            if (s_start < source.len and s_end <= source.len) {
+                                                var str_text = source[s_start..s_end];
+                                                // Strip quotes
+                                                if (str_text.len >= 2) {
+                                                    str_text = str_text[1 .. str_text.len - 1];
+                                                }
+                                                event_name = str_text;
+                                            }
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (event_name) |ev| {
+                            const handler_name = try std.fmt.allocPrint(allocator, "{s} handler", .{ev});
+                            child_context = FunctionContext{
+                                .name = "<anonymous>",
+                                .kind = "call",
+                                .call_name = handler_name,
+                            };
+                        } else {
+                            child_context = FunctionContext{
+                                .name = "<anonymous>",
+                                .kind = "call",
+                                .call_name = "addEventListener handler",
+                            };
+                        }
+                    } else {
+                        child_context = FunctionContext{
+                            .name = "<anonymous>",
+                            .kind = "call",
+                            .call_name = callee_name,
+                        };
+                    }
+                }
+            } else if (std.mem.eql(u8, callee_type, "member_expression")) {
+                // Member expression: arr.map, obj.forEach — extract last segment
+                const last_seg = getLastMemberSegment(callee, source);
+                if (last_seg) |seg| {
+                    if (std.mem.eql(u8, seg, "addEventListener")) {
+                        // Special case: extract event name from first string argument
+                        var event_name: ?[]const u8 = null;
+                        if (node.child(1)) |args_node| {
+                            if (std.mem.eql(u8, args_node.nodeType(), "arguments")) {
+                                var j: u32 = 0;
+                                while (j < args_node.childCount()) : (j += 1) {
+                                    if (args_node.child(j)) |arg| {
+                                        if (std.mem.eql(u8, arg.nodeType(), "string")) {
+                                            const s_start = arg.startByte();
+                                            const s_end = arg.endByte();
+                                            if (s_start < source.len and s_end <= source.len) {
+                                                var str_text = source[s_start..s_end];
+                                                if (str_text.len >= 2) str_text = str_text[1 .. str_text.len - 1];
+                                                event_name = str_text;
+                                            }
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (event_name) |ev| {
+                            const handler_name = try std.fmt.allocPrint(allocator, "{s} handler", .{ev});
+                            child_context = FunctionContext{ .name = "<anonymous>", .kind = "call", .call_name = handler_name };
+                        } else {
+                            child_context = FunctionContext{ .name = "<anonymous>", .kind = "call", .call_name = "addEventListener handler" };
+                        }
+                    } else {
+                        child_context = FunctionContext{
+                            .name = "<anonymous>",
+                            .kind = "call",
+                            .call_name = seg,
+                        };
+                    }
+                }
+            }
+        }
+    }
+    // Track export default for "default export" naming
+    else if (std.mem.eql(u8, node_type, "export_statement")) {
+        // Check if this is a default export
+        var i: u32 = 0;
+        while (i < node.childCount()) : (i += 1) {
+            if (node.child(i)) |child| {
+                if (std.mem.eql(u8, child.nodeType(), "default")) {
+                    child_context = FunctionContext{
+                        .name = "<anonymous>",
+                        .kind = "export",
+                        .is_default_export = true,
+                    };
+                    break;
+                }
+            }
+        }
+    }
+    // Pass class context through class_body (container node — no context change)
+    else if (std.mem.eql(u8, node_type, "class_body")) {
+        child_context = parent_context;
+    }
+    // Pass call context through arguments (container for callback function arguments)
+    else if (std.mem.eql(u8, node_type, "arguments")) {
+        child_context = parent_context;
+    }
 
     // Recurse into children
     var i: u32 = 0;
@@ -516,6 +745,27 @@ fn walkAndAnalyze(
             try walkAndAnalyze(allocator, child, results, config, source, child_context);
         }
     }
+}
+
+/// Extract the last identifier segment from a member_expression node (e.g., arr.map → "map")
+fn getLastMemberSegment(node: tree_sitter.Node, source: []const u8) ?[]const u8 {
+    // member_expression typically: object "." property_identifier
+    // Walk children to find the last property_identifier
+    var last: ?[]const u8 = null;
+    var i: u32 = 0;
+    while (i < node.childCount()) : (i += 1) {
+        if (node.child(i)) |child| {
+            const ct = child.nodeType();
+            if (std.mem.eql(u8, ct, "property_identifier") or std.mem.eql(u8, ct, "identifier")) {
+                const s = child.startByte();
+                const e = child.endByte();
+                if (s < source.len and e <= source.len) {
+                    last = source[s..e];
+                }
+            }
+        }
+    }
+    return last;
 }
 
 // TESTS
@@ -930,17 +1180,23 @@ test "integration: cyclomatic_cases.ts fixture" {
     const tree = try parser.parseString(source);
     defer tree.deinit();
 
+    // Use arena allocator: composed names (e.g., "DataProcessor.process") are allocPrint'd
+    // into the arena and freed together with arena.deinit()
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+    const alloc = arena.allocator();
+
     const root = tree.rootNode();
     const config = CyclomaticConfig.default();
-    const results = try analyzeFunctions(std.testing.allocator, root, config, source);
-    defer std.testing.allocator.free(results);
+    const results = try analyzeFunctions(alloc, root, config, source);
 
     // Expected complexities based on fixture comments
     // Note: The fixture contains functions with the following expected complexities:
     // baseline: 1, simpleConditionals: 3, loopWithConditions: 5,
     // switchStatement: 5, errorHandling: 3, ternaryAndLogical: 3,
-    // nullishCoalescing: 3, nestedFunctions outer: 2, nestedFunctions inner: 2,
+    // nullishCoalescing: 3, nestedFunctions outer: 2,
     // arrowFunc: 2, complexLogical: 5, DataProcessor.process: 2
+    // Class methods are now named "ClassName.methodName" (e.g., "DataProcessor.process")
 
     // We should find at least 11 functions (not counting the class itself)
     try std.testing.expect(results.len >= 11);
@@ -969,7 +1225,7 @@ test "integration: cyclomatic_cases.ts fixture" {
             found_arrow = true;
             try std.testing.expectEqualStrings("arrow", result.kind);
         }
-        if (std.mem.eql(u8, result.name, "process")) {
+        if (std.mem.eql(u8, result.name, "DataProcessor.process")) {
             found_method = true;
             try std.testing.expectEqualStrings("method", result.kind);
         }
@@ -994,3 +1250,5 @@ test "integration: cyclomatic_cases.ts fixture" {
     try std.testing.expect(found_arrow);
     try std.testing.expect(found_method);
 }
+
+
