@@ -233,9 +233,34 @@ parser-independent — both tools count newlines in the same files.
 
 ### Subsystem Breakdown
 
-[RESULTS: Run `bash benchmarks/scripts/bench-subsystems.sh` then
-`node benchmarks/scripts/summarize-results.mjs benchmarks/results/baseline-$(date +%Y-%m-%d)/`
-to populate this section with actual subsystem timing data]
+> **Note:** Subsystem data is from the single-threaded baseline (Phase 10.1, captured 2026-02-21).
+> This is the appropriate reference for understanding per-stage costs before parallelization (Phase 12).
+
+| Project | Files | Funcs | Discovery | File I/O | Parsing | Cyclomatic | Cognitive | Halstead | Structural | Scoring | JSON | Total |
+|---------|------:|------:|----------:|---------:|--------:|-----------:|----------:|---------:|-----------:|--------:|-----:|------:|
+| dayjs | 283 | 994 | 1.1 ms | 2.4 ms | 102.1 ms | 26.2 ms | 29.4 ms | 34.4 ms | 22.2 ms | 0.0 ms | 0.0 ms | 217.8 ms |
+| got | 68 | 888 | 0.7 ms | 0.8 ms | 68.9 ms | 14.1 ms | 14.4 ms | 19.7 ms | 13.0 ms | 0.0 ms | 0.0 ms | 131.7 ms |
+| zod | 172 | 1,878 | 0.5 ms | 1.9 ms | 135.9 ms | 36.2 ms | 33.9 ms | 46.3 ms | 32.7 ms | 0.0 ms | 0.0 ms | 287.4 ms |
+| vite | 1,182 | 2,652 | 7.8 ms | 10.1 ms | 283.0 ms | 43.0 ms | 50.0 ms | 56.1 ms | 41.6 ms | 0.0 ms | 0.1 ms | 491.8 ms |
+| NestJS | 1,653 | 3,398 | 7.1 ms | 15.1 ms | 376.4 ms | 42.8 ms | 54.0 ms | 53.0 ms | 43.6 ms | 0.0 ms | 0.2 ms | 592.1 ms |
+| webpack | 6,889 | 9,463 | 27.6 ms | 61.0 ms | 967.6 ms | 161.1 ms | 170.8 ms | 219.9 ms | 151.1 ms | 0.0 ms | 0.8 ms | 1,759.7 ms |
+| VS Code | 5,071 | 62,565 | 26.0 ms | 82.3 ms | 7,707.4 ms | 2,769.3 ms | 2,923.3 ms | 3,154.5 ms | 2,679.1 ms | 0.0 ms | 0.6 ms | 19,342.3 ms |
+
+**Parsing dominates** across all projects, consuming 40-64% of total pipeline time:
+
+| Project | Parsing % | Analysis % | I/O % |
+|---------|----------:|-----------:|------:|
+| dayjs | 46.9% | 51.5% | 1.6% |
+| got | 52.3% | 46.6% | 1.1% |
+| zod | 47.3% | 51.9% | 0.8% |
+| vite | 57.6% | 38.8% | 3.6% |
+| NestJS | 63.6% | 32.7% | 3.7% |
+| webpack | 55.0% | 39.9% | 5.0% |
+| VS Code | 39.8% | 59.6% | 0.6% |
+
+**Key takeaway:** Tree-sitter parsing is the clear optimization target. For projects up to ~1,600 files, parsing takes more time than all four metric analyses combined. For VS Code (5,071 files, 62,565 functions), the sheer volume of functions shifts the balance toward analysis, but parsing still accounts for 40% of total time.
+
+Scoring and JSON serialization are negligible (<0.1% combined) at all scales.
 
 The subsystem benchmark profiles each CG pipeline stage independently:
 file discovery, file I/O, parsing, cyclomatic analysis, cognitive analysis,
