@@ -140,27 +140,6 @@ fn visitNode(ctx: *CognitiveContext, node: tree_sitter.Node) void {
         return;
     }
 
-    // arrow_function encountered inside traversal = a nested callback (structural)
-    // Top-level arrows are handled at walkAndAnalyze level and never reach visitNode
-    if (std.mem.eql(u8, node_type, "arrow_function")) {
-        ctx.complexity += 1 + ctx.nesting_level;
-        ctx.nesting_level += 1;
-        // Visit the body children (not the whole arrow_function to avoid re-triggering
-        // the isFunctionNode check — but arrow_function IS a function node, so we
-        // already returned above if we'd use isFunctionNode check).
-        // Wait: we already check isFunctionNode at the top and return early.
-        // But we want to visit the arrow's body HERE for callbacks.
-        // The solution: don't call visitNode(ctx, child) for the arrow itself,
-        // but visit its body children directly.
-        // Since we're inside visitNode and we've already bypassed the isFunctionNode
-        // check at the top... actually, arrow_function IS returned by isFunctionNode,
-        // so this branch can never be reached as written!
-        // We need a different approach: check for arrow_function BEFORE the isFunctionNode check.
-        // This logic is restructured — see the note at function top.
-        ctx.nesting_level -= 1;
-        return;
-    }
-
     // binary_expression: check for logical operators && || ??
     // Each counts as +1 flat (ComplexityGuard deviation: per-operator, not per-group)
     if (std.mem.eql(u8, node_type, "binary_expression")) {
