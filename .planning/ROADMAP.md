@@ -288,8 +288,11 @@ Plans:
   4. REQUIREMENTS.md checkboxes, phase numbers, and count corrected
   5. docs/benchmarks.md placeholder filled with actual benchmark data
 
+**Plans:** 2 plans
+
 Plans:
-(none yet)
+- [ ] 14-01-PLAN.md -- Function name extraction improvements and dead code removal
+- [ ] 14-02-PLAN.md -- Documentation corrections (ROADMAP, REQUIREMENTS, benchmarks, audit)
 
 ## Progress
 
@@ -312,8 +315,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 11. Duplication Detection | 4/4 | Complete    | 2026-02-22 |
 | 12. Parallelization & Distribution | 2/2 | Complete    | 2026-02-21 |
 | 13. Gap Closure — Pipeline Wiring | 3/3 | Complete    | 2026-02-22 |
-| 14. Tech Debt Cleanup | 0/0 | Planned | — |
+| 14. Tech Debt Cleanup | 0/2 | Planned | — |
 
 ---
 *Roadmap created: 2026-02-14*
-*Last updated: 2026-02-22 (Phase 13 gap closure plans 13-02, 13-03 created)*
+*Last updated: 2026-02-23 (Phase 14 tech debt cleanup plans created)*
