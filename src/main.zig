@@ -23,7 +23,7 @@ const html_output = @import("output/html_output.zig");
 const exit_codes = @import("output/exit_codes.zig");
 const parallel = @import("pipeline/parallel.zig");
 
-const version = "0.6.0";
+const version = "0.7.0";
 
 /// Build HalsteadConfig from ThresholdsConfig, falling back to defaults for missing fields.
 /// Exposed for unit testing.

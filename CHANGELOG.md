@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-02-23
+
+### Added
+
+- Enhance function naming with class, callback, and export context
+- Expand --init to generate complete config with all 12 threshold categories
+- Remove --save-baseline from source code
+- Wire four pipeline gaps in main.zig, exit_codes.zig, parallel.zig
+- Add duplication to SARIF output with relatedLocations and HTML report with heatmap
+- Add duplication benchmark script and update benchmarks documentation
+- Add duplication output to console and JSON formats, update exit codes
+- Wire duplication into pipeline, scoring, and threshold system
+- Add --duplication CLI flag, DuplicationThresholds config, and merge logic
+- Implement Rabin-Karp duplication detection with tokenization and cross-file indexing
+- Add example config which always passes
+- Add memory-check CI job to test workflow
+- Add memory leak and thread-safety check script
+- Add elapsed_ms and thread_count to JSON output metadata
+- Implement parallel file analysis via thread pool
+- Display system specs in benchmark summary and update documentation
+- Add system spec capture to bench scripts and create baseline system-info.json
+- Port Python scripts to Node.js and replace inline Python in shell scripts with jq
+- Create bench-subsystems.sh and add bench-build step
+- Create comprehensive benchmark documentation
+- Create Zig subsystem benchmark module and bench step
+- Create metric accuracy comparison and results summary scripts
+- Create hyperfine benchmark scripts (quick, full, stress)
+- Create benchmark directory structure and setup.sh clone script
+- Add public real world projects index
+
+### Fixed
+
+- Replace helgrind suppressions with universal catch-all
+- Clone zod repo for memory stress test in CI
+- Add universal Helgrind suppressions to fix CI false positives
+- Resolve memory leak and helgrind false positives in check-memory.sh
+- Wire all threshold config fields through to analysis and display
+- Fix thread safety in parallel analysis — protect shared arena allocator with mutex
+- Switch release builds to ReleaseSmall to meet DIST-01 binary size requirement
+- Revise plans based on checker feedback
+
 ## [0.6.0] - 2026-02-20
 
 ### Added
@@ -165,7 +206,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tree-sitter based parsing with error-tolerant syntax handling
 - CLI with --help, --version, --verbose, --quiet, --format, --output, --config, --init flags
 
-[Unreleased]: https://github.com/benvds/complexity-guard/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/benvds/complexity-guard/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/benvds/complexity-guard/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/benvds/complexity-guard/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/benvds/complexity-guard/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/benvds/complexity-guard/compare/v0.3.0...v0.4.0
