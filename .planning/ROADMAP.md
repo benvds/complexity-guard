@@ -219,9 +219,9 @@ Plans:
 **Plans:** 3/3 plans complete
 
 Plans:
-- [ ] 10.1-01-PLAN.md -- Benchmark infrastructure, project clone scripts, and end-to-end hyperfine benchmark scripts
-- [ ] 10.1-02-PLAN.md -- Zig subsystem benchmark module with per-pipeline-stage profiling
-- [ ] 10.1-03-PLAN.md -- Metric accuracy comparison (CG vs FTA) and comprehensive documentation
+- [x] 10.1-01-PLAN.md -- Benchmark infrastructure, project clone scripts, and end-to-end hyperfine benchmark scripts
+- [x] 10.1-02-PLAN.md -- Zig subsystem benchmark module with per-pipeline-stage profiling
+- [x] 10.1-03-PLAN.md -- Metric accuracy comparison (CG vs FTA) and comprehensive documentation
 
 ### Phase 11: Duplication Detection
 **Goal**: Tool detects code clones across files using Rabin-Karp rolling hash
@@ -237,10 +237,10 @@ Plans:
 **Plans:** 4/4 plans complete
 
 Plans:
-- [ ] 11-01-PLAN.md -- Core duplication algorithm: tokenization, rolling hash, cross-file index, verification, merging (TDD)
-- [ ] 11-02-PLAN.md -- CLI/config integration, main.zig pipeline wiring, scoring 5-weight mode, thresholds
-- [ ] 11-03-PLAN.md -- Output format integration: console, JSON, SARIF, HTML duplication sections
-- [ ] 11-04-PLAN.md -- Documentation (duplication-detection.md, docs updates, publication READMEs) and benchmarking
+- [x] 11-01-PLAN.md -- Core duplication algorithm: tokenization, rolling hash, cross-file index, verification, merging (TDD)
+- [x] 11-02-PLAN.md -- CLI/config integration, main.zig pipeline wiring, scoring 5-weight mode, thresholds
+- [x] 11-03-PLAN.md -- Output format integration: console, JSON, SARIF, HTML duplication sections
+- [x] 11-04-PLAN.md -- Documentation (duplication-detection.md, docs updates, publication READMEs) and benchmarking
 
 ### Phase 12: Parallelization & Distribution
 **Goal**: Tool analyzes 10,000 files in under 2 seconds and cross-compiles to all target platforms
@@ -254,8 +254,8 @@ Plans:
 **Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 12-01-PLAN.md -- Parallel analysis pipeline (thread pool, per-file workers, JSON metadata, verbose timing)
-- [ ] 12-02-PLAN.md -- Cross-compilation verification and documentation updates
+- [x] 12-01-PLAN.md -- Parallel analysis pipeline (thread pool, per-file workers, JSON metadata, verbose timing)
+- [x] 12-02-PLAN.md -- Cross-compilation verification and documentation updates
 
 ### Phase 13: Gap Closure — Main Pipeline Wiring
 **Goal:** Close all requirement, integration, and flow gaps found by v1.0 milestone audit and UAT
@@ -273,8 +273,8 @@ Plans:
 
 Plans:
 - [x] 13-01-PLAN.md -- Wire four pipeline gaps: cyclomatic config thresholds, --metrics exit code gating, --no-duplication flag, duplication weight in --save-baseline
-- [ ] 13-02-PLAN.md -- Remove --save-baseline from source code and all documentation
-- [ ] 13-03-PLAN.md -- Expand --init to generate complete config with all options
+- [x] 13-02-PLAN.md -- Remove --save-baseline from source code and all documentation
+- [x] 13-03-PLAN.md -- Expand --init to generate complete config with all options
 
 ### Phase 14: Tech Debt Cleanup
 **Goal:** Resolve all tech debt items identified by v1.0 milestone audit

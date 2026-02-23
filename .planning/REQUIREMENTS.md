@@ -9,69 +9,69 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### CLI & Configuration
 
-- [ ] **CLI-01**: User can run `complexityguard [paths...]` to analyze files/directories
-- [ ] **CLI-02**: User can specify output format via `--format` flag (console, json, sarif, html)
-- [ ] **CLI-03**: User can write report to file via `--output` flag
-- [ ] **CLI-04**: User can set failure level via `--fail-on` flag (warning, error, none)
-- [ ] **CLI-05**: User can set health score threshold via `--fail-health-below` flag
-- [ ] **CLI-06**: User can filter files via `--include` and `--exclude` glob flags
+- [x] **CLI-01**: User can run `complexityguard [paths...]` to analyze files/directories
+- [x] **CLI-02**: User can specify output format via `--format` flag (console, json, sarif, html)
+- [x] **CLI-03**: User can write report to file via `--output` flag
+- [x] **CLI-04**: User can set failure level via `--fail-on` flag (warning, error, none)
+- [x] **CLI-05**: User can set health score threshold via `--fail-health-below` flag
+- [x] **CLI-06**: User can filter files via `--include` and `--exclude` glob flags
 - [x] **CLI-07**: User can select specific metrics via `--metrics` flag
 - [x] **CLI-08**: User can skip duplication via `--no-duplication` flag
-- [ ] **CLI-09**: User can set thread count via `--threads` flag
-- [ ] **CLI-10**: User can compare against baseline via `--baseline` flag
-- [ ] **CLI-11**: User can control verbosity via `--verbose` and `--quiet` flags
-- [ ] **CLI-12**: User can display version via `--version` and help via `--help`
+- [x] **CLI-09**: User can set thread count via `--threads` flag
+- [x] **CLI-10**: User can compare against baseline via `--baseline` flag
+- [x] **CLI-11**: User can control verbosity via `--verbose` and `--quiet` flags
+- [x] **CLI-12**: User can display version via `--version` and help via `--help`
 
 ### Configuration File
 
-- [ ] **CFG-01**: Tool loads configuration from `.complexityguard.json` when present
-- [ ] **CFG-02**: User can specify custom config path via `--config` flag
-- [ ] **CFG-03**: User can set include/exclude glob patterns in config file
+- [x] **CFG-01**: Tool loads configuration from `.complexityguard.json` when present
+- [x] **CFG-02**: User can specify custom config path via `--config` flag
+- [x] **CFG-03**: User can set include/exclude glob patterns in config file
 - [x] **CFG-04**: User can set per-metric warning and error thresholds in config file
-- [ ] **CFG-05**: User can set composite score weights in config file
-- [ ] **CFG-06**: User can set CI failure behavior in config file
-- [ ] **CFG-07**: CLI flags override config file values
+- [x] **CFG-05**: User can set composite score weights in config file
+- [x] **CFG-06**: User can set CI failure behavior in config file
+- [x] **CFG-07**: CLI flags override config file values
 
 ### Parsing
 
-- [ ] **PARSE-01**: Tool parses TypeScript files (.ts) via tree-sitter
-- [ ] **PARSE-02**: Tool parses TSX files (.tsx) via tree-sitter
-- [ ] **PARSE-03**: Tool parses JavaScript files (.js) via tree-sitter
-- [ ] **PARSE-04**: Tool parses JSX files (.jsx) via tree-sitter
-- [ ] **PARSE-05**: Tool handles syntax errors gracefully (skips or best-effort, reports in output)
-- [ ] **PARSE-06**: Tool recursively discovers files in directories matching include/exclude patterns
+- [x] **PARSE-01**: Tool parses TypeScript files (.ts) via tree-sitter
+- [x] **PARSE-02**: Tool parses TSX files (.tsx) via tree-sitter
+- [x] **PARSE-03**: Tool parses JavaScript files (.js) via tree-sitter
+- [x] **PARSE-04**: Tool parses JSX files (.jsx) via tree-sitter
+- [x] **PARSE-05**: Tool handles syntax errors gracefully (skips or best-effort, reports in output)
+- [x] **PARSE-06**: Tool recursively discovers files in directories matching include/exclude patterns
 
 ### Cyclomatic Complexity
 
-- [ ] **CYCL-01**: Tool calculates McCabe cyclomatic complexity per function starting at base 1
-- [ ] **CYCL-02**: Tool increments for if, else if, for, for-in, for-of, while, do-while
-- [ ] **CYCL-03**: Tool increments for switch cases (not default)
-- [ ] **CYCL-04**: Tool increments for catch clauses
-- [ ] **CYCL-05**: Tool increments for ternary operators
-- [ ] **CYCL-06**: Tool increments for logical && and || operators
-- [ ] **CYCL-07**: Tool increments for nullish coalescing (??) operator
-- [ ] **CYCL-08**: Tool makes optional chaining (?.) counting configurable
+- [x] **CYCL-01**: Tool calculates McCabe cyclomatic complexity per function starting at base 1
+- [x] **CYCL-02**: Tool increments for if, else if, for, for-in, for-of, while, do-while
+- [x] **CYCL-03**: Tool increments for switch cases (not default)
+- [x] **CYCL-04**: Tool increments for catch clauses
+- [x] **CYCL-05**: Tool increments for ternary operators
+- [x] **CYCL-06**: Tool increments for logical && and || operators
+- [x] **CYCL-07**: Tool increments for nullish coalescing (??) operator
+- [x] **CYCL-08**: Tool makes optional chaining (?.) counting configurable
 - [x] **CYCL-09**: Tool applies configurable warning (default 10) and error (default 20) thresholds
 
 ### Cognitive Complexity
 
-- [ ] **COGN-01**: Tool calculates SonarSource cognitive complexity per function
-- [ ] **COGN-02**: Tool increments for flow breaks (if, else if, else, switch, loops, catch, ternary, labeled break/continue)
-- [ ] **COGN-03**: Tool adds nesting penalty equal to current nesting depth for nested structures
-- [ ] **COGN-04**: Tool tracks nesting level increases for if, else if, else, switch, loops, catch, ternary, arrow functions
-- [ ] **COGN-05**: Tool counts same-operator logical sequences as +1 (e.g., a && b && c = +1)
-- [ ] **COGN-06**: Tool increments on operator type changes in mixed sequences (e.g., a && b || c = +2)
-- [ ] **COGN-07**: Tool increments +1 for recursive function calls
-- [ ] **COGN-08**: Tool does not increment for null coalescing or optional chaining (shorthand rule)
-- [ ] **COGN-09**: Tool applies configurable warning (default 15) and error (default 25) thresholds
+- [x] **COGN-01**: Tool calculates SonarSource cognitive complexity per function
+- [x] **COGN-02**: Tool increments for flow breaks (if, else if, else, switch, loops, catch, ternary, labeled break/continue)
+- [x] **COGN-03**: Tool adds nesting penalty equal to current nesting depth for nested structures
+- [x] **COGN-04**: Tool tracks nesting level increases for if, else if, else, switch, loops, catch, ternary, arrow functions
+- [x] **COGN-05**: Tool counts same-operator logical sequences as +1 (e.g., a && b && c = +1)
+- [x] **COGN-06**: Tool increments on operator type changes in mixed sequences (e.g., a && b || c = +2)
+- [x] **COGN-07**: Tool increments +1 for recursive function calls
+- [x] **COGN-08**: Tool does not increment for null coalescing or optional chaining (shorthand rule)
+- [x] **COGN-09**: Tool applies configurable warning (default 15) and error (default 25) thresholds
 
 ### Halstead Metrics
 
-- [ ] **HALT-01**: Tool classifies tokens as operators or operands per TypeScript/JavaScript definitions
-- [ ] **HALT-02**: Tool computes distinct operators (n1), distinct operands (n2), total operators (N1), total operands (N2)
-- [ ] **HALT-03**: Tool derives vocabulary, length, volume, difficulty, effort, time-to-program, estimated bugs
-- [ ] **HALT-04**: Tool handles edge cases (zero operands/operators) without divide-by-zero errors
-- [ ] **HALT-05**: Tool applies configurable thresholds for volume, difficulty, effort, and estimated bugs
+- [x] **HALT-01**: Tool classifies tokens as operators or operands per TypeScript/JavaScript definitions
+- [x] **HALT-02**: Tool computes distinct operators (n1), distinct operands (n2), total operators (N1), total operands (N2)
+- [x] **HALT-03**: Tool derives vocabulary, length, volume, difficulty, effort, time-to-program, estimated bugs
+- [x] **HALT-04**: Tool handles edge cases (zero operands/operators) without divide-by-zero errors
+- [x] **HALT-05**: Tool applies configurable thresholds for volume, difficulty, effort, and estimated bugs
 
 ### Duplication Detection
 
@@ -85,32 +85,32 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Structural Metrics
 
-- [ ] **STRC-01**: Tool measures function length (logical lines, excluding blanks/comments) per function
-- [ ] **STRC-02**: Tool measures parameter count per function
-- [ ] **STRC-03**: Tool measures maximum nesting depth per function
-- [ ] **STRC-04**: Tool measures file length (logical lines) per file
-- [ ] **STRC-05**: Tool measures export count per file
-- [ ] **STRC-06**: Tool applies configurable warning and error thresholds for each structural metric
+- [x] **STRC-01**: Tool measures function length (logical lines, excluding blanks/comments) per function
+- [x] **STRC-02**: Tool measures parameter count per function
+- [x] **STRC-03**: Tool measures maximum nesting depth per function
+- [x] **STRC-04**: Tool measures file length (logical lines) per file
+- [x] **STRC-05**: Tool measures export count per file
+- [x] **STRC-06**: Tool applies configurable warning and error thresholds for each structural metric
 
 ### Composite Health Score
 
-- [ ] **COMP-01**: Tool computes weighted composite score (0-100) per file
-- [ ] **COMP-02**: Tool computes weighted composite score (0-100) for entire project
-- [ ] **COMP-03**: Tool uses configurable weights (default: cognitive 0.30, cyclomatic 0.20, duplication 0.20, halstead 0.15, structural 0.15)
-- [ ] **COMP-04**: Tool assigns letter grade (A-F) based on score thresholds
+- [x] **COMP-01**: Tool computes weighted composite score (0-100) per file
+- [x] **COMP-02**: Tool computes weighted composite score (0-100) for entire project
+- [x] **COMP-03**: Tool uses configurable weights (default: cognitive 0.30, cyclomatic 0.20, duplication 0.20, halstead 0.15, structural 0.15)
+- [x] **COMP-04**: Tool assigns letter grade (A-F) based on score thresholds
 
 ### Output: Console
 
-- [ ] **OUT-CON-01**: Tool displays per-file, per-function metric summaries with threshold indicators
-- [ ] **OUT-CON-02**: Tool displays project summary (files, functions, health score, grade)
-- [ ] **OUT-CON-03**: Tool displays error/warning counts per metric category
-- [ ] **OUT-CON-04**: Tool supports --verbose (per-function detail) and --quiet (errors only) modes
+- [x] **OUT-CON-01**: Tool displays per-file, per-function metric summaries with threshold indicators
+- [x] **OUT-CON-02**: Tool displays project summary (files, functions, health score, grade)
+- [x] **OUT-CON-03**: Tool displays error/warning counts per metric category
+- [x] **OUT-CON-04**: Tool supports --verbose (per-function detail) and --quiet (errors only) modes
 
 ### Output: JSON
 
-- [ ] **OUT-JSON-01**: Tool outputs valid JSON with version, timestamp, summary, files, and duplication sections
-- [ ] **OUT-JSON-02**: Tool includes per-function metrics with threshold levels in JSON
-- [ ] **OUT-JSON-03**: Tool includes clone group details with file locations in JSON
+- [x] **OUT-JSON-01**: Tool outputs valid JSON with version, timestamp, summary, files, and duplication sections
+- [x] **OUT-JSON-02**: Tool includes per-function metrics with threshold levels in JSON
+- [x] **OUT-JSON-03**: Tool includes clone group details with file locations in JSON
 
 ### Output: SARIF
 
@@ -128,11 +128,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### CI Integration
 
-- [ ] **CI-01**: Tool exits with code 0 when all checks pass
-- [ ] **CI-02**: Tool exits with code 1 when errors found (or health below threshold)
-- [ ] **CI-03**: Tool exits with code 2 when warnings found (if --fail-on warning)
-- [ ] **CI-04**: Tool exits with code 3 on configuration errors
-- [ ] **CI-05**: Tool exits with code 4 on parse errors
+- [x] **CI-01**: Tool exits with code 0 when all checks pass
+- [x] **CI-02**: Tool exits with code 1 when errors found (or health below threshold)
+- [x] **CI-03**: Tool exits with code 2 when warnings found (if --fail-on warning)
+- [x] **CI-04**: Tool exits with code 3 on configuration errors
+- [x] **CI-05**: Tool exits with code 4 on parse errors
 
 ### Performance & Distribution
 
@@ -184,76 +184,76 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CLI-01 | Phase 2 | Pending |
-| CLI-02 | Phase 2 | Pending |
-| CLI-03 | Phase 2 | Pending |
-| CLI-04 | Phase 2 | Pending |
-| CLI-05 | Phase 2 | Pending |
-| CLI-06 | Phase 2 | Pending |
+| CLI-01 | Phase 2 | Complete |
+| CLI-02 | Phase 2 | Complete |
+| CLI-03 | Phase 2 | Complete |
+| CLI-04 | Phase 2 | Complete |
+| CLI-05 | Phase 2 | Complete |
+| CLI-06 | Phase 2 | Complete |
 | CLI-07 | Phase 13 | Complete |
 | CLI-08 | Phase 13 | Complete |
-| CLI-09 | Phase 2 | Pending |
-| CLI-10 | Phase 2 | Pending |
-| CLI-11 | Phase 2 | Pending |
-| CLI-12 | Phase 2 | Pending |
-| CFG-01 | Phase 2 | Pending |
-| CFG-02 | Phase 2 | Pending |
-| CFG-03 | Phase 2 | Pending |
+| CLI-09 | Phase 2 | Complete |
+| CLI-10 | Phase 2 | Complete |
+| CLI-11 | Phase 2 | Complete |
+| CLI-12 | Phase 2 | Complete |
+| CFG-01 | Phase 2 | Complete |
+| CFG-02 | Phase 2 | Complete |
+| CFG-03 | Phase 2 | Complete |
 | CFG-04 | Phase 13 | Complete |
-| CFG-05 | Phase 2 | Pending |
-| CFG-06 | Phase 2 | Pending |
-| CFG-07 | Phase 2 | Pending |
-| PARSE-01 | Phase 3 | Pending |
-| PARSE-02 | Phase 3 | Pending |
-| PARSE-03 | Phase 3 | Pending |
-| PARSE-04 | Phase 3 | Pending |
-| PARSE-05 | Phase 3 | Pending |
-| PARSE-06 | Phase 3 | Pending |
-| CYCL-01 | Phase 4 | Pending |
-| CYCL-02 | Phase 4 | Pending |
-| CYCL-03 | Phase 4 | Pending |
-| CYCL-04 | Phase 4 | Pending |
-| CYCL-05 | Phase 4 | Pending |
-| CYCL-06 | Phase 4 | Pending |
-| CYCL-07 | Phase 4 | Pending |
-| CYCL-08 | Phase 4 | Pending |
+| CFG-05 | Phase 2 | Complete |
+| CFG-06 | Phase 2 | Complete |
+| CFG-07 | Phase 2 | Complete |
+| PARSE-01 | Phase 3 | Complete |
+| PARSE-02 | Phase 3 | Complete |
+| PARSE-03 | Phase 3 | Complete |
+| PARSE-04 | Phase 3 | Complete |
+| PARSE-05 | Phase 3 | Complete |
+| PARSE-06 | Phase 3 | Complete |
+| CYCL-01 | Phase 4 | Complete |
+| CYCL-02 | Phase 4 | Complete |
+| CYCL-03 | Phase 4 | Complete |
+| CYCL-04 | Phase 4 | Complete |
+| CYCL-05 | Phase 4 | Complete |
+| CYCL-06 | Phase 4 | Complete |
+| CYCL-07 | Phase 4 | Complete |
+| CYCL-08 | Phase 4 | Complete |
 | CYCL-09 | Phase 13 | Complete |
-| COGN-01 | Phase 5 | Pending |
-| COGN-02 | Phase 5 | Pending |
-| COGN-03 | Phase 5 | Pending |
-| COGN-04 | Phase 5 | Pending |
-| COGN-05 | Phase 5 | Pending |
-| COGN-06 | Phase 5 | Pending |
-| COGN-07 | Phase 5 | Pending |
-| COGN-08 | Phase 5 | Pending |
-| COGN-09 | Phase 5 | Pending |
-| HALT-01 | Phase 6 | Pending |
-| HALT-02 | Phase 6 | Pending |
-| HALT-03 | Phase 6 | Pending |
-| HALT-04 | Phase 6 | Pending |
-| HALT-05 | Phase 6 | Pending |
-| STRC-01 | Phase 6 | Pending |
-| STRC-02 | Phase 6 | Pending |
-| STRC-03 | Phase 6 | Pending |
-| STRC-04 | Phase 6 | Pending |
-| STRC-05 | Phase 6 | Pending |
-| STRC-06 | Phase 6 | Pending |
-| COMP-01 | Phase 7 | Pending |
-| COMP-02 | Phase 7 | Pending |
-| COMP-03 | Phase 7 | Pending |
-| COMP-04 | Phase 7 | Pending |
-| OUT-CON-01 | Phase 8 | Pending |
-| OUT-CON-02 | Phase 8 | Pending |
-| OUT-CON-03 | Phase 8 | Pending |
-| OUT-CON-04 | Phase 8 | Pending |
-| OUT-JSON-01 | Phase 8 | Pending |
-| OUT-JSON-02 | Phase 8 | Pending |
-| OUT-JSON-03 | Phase 8 | Pending |
-| CI-01 | Phase 8 | Pending |
-| CI-02 | Phase 8 | Pending |
-| CI-03 | Phase 8 | Pending |
-| CI-04 | Phase 8 | Pending |
-| CI-05 | Phase 8 | Pending |
+| COGN-01 | Phase 6 | Complete |
+| COGN-02 | Phase 6 | Complete |
+| COGN-03 | Phase 6 | Complete |
+| COGN-04 | Phase 6 | Complete |
+| COGN-05 | Phase 6 | Complete |
+| COGN-06 | Phase 6 | Complete |
+| COGN-07 | Phase 6 | Complete |
+| COGN-08 | Phase 6 | Complete |
+| COGN-09 | Phase 6 | Complete |
+| HALT-01 | Phase 7 | Complete |
+| HALT-02 | Phase 7 | Complete |
+| HALT-03 | Phase 7 | Complete |
+| HALT-04 | Phase 7 | Complete |
+| HALT-05 | Phase 7 | Complete |
+| STRC-01 | Phase 7 | Complete |
+| STRC-02 | Phase 7 | Complete |
+| STRC-03 | Phase 7 | Complete |
+| STRC-04 | Phase 7 | Complete |
+| STRC-05 | Phase 7 | Complete |
+| STRC-06 | Phase 7 | Complete |
+| COMP-01 | Phase 8 | Complete |
+| COMP-02 | Phase 8 | Complete |
+| COMP-03 | Phase 8 | Complete |
+| COMP-04 | Phase 8 | Complete |
+| OUT-CON-01 | Phase 5 | Complete |
+| OUT-CON-02 | Phase 5 | Complete |
+| OUT-CON-03 | Phase 5 | Complete |
+| OUT-CON-04 | Phase 5 | Complete |
+| OUT-JSON-01 | Phase 5 | Complete |
+| OUT-JSON-02 | Phase 5 | Complete |
+| OUT-JSON-03 | Phase 5 | Complete |
+| CI-01 | Phase 5 | Complete |
+| CI-02 | Phase 5 | Complete |
+| CI-03 | Phase 5 | Complete |
+| CI-04 | Phase 5 | Complete |
+| CI-05 | Phase 5 | Complete |
 | OUT-SARIF-01 | Phase 9 | Complete |
 | OUT-SARIF-02 | Phase 9 | Complete |
 | OUT-SARIF-03 | Phase 9 | Complete |
@@ -275,8 +275,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DIST-02 | Phase 12 | Complete |
 
 **Coverage:**
-- v1 requirements: 72 total
-- Mapped to phases: 72
+- v1 requirements: 89 total
+- Mapped to phases: 89
 - Unmapped: 0
 
 **Phase requirement counts:**
@@ -284,10 +284,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 - Phase 2: 19 requirements (CLI + Config)
 - Phase 3: 6 requirements (Parsing)
 - Phase 4: 9 requirements (Cyclomatic)
-- Phase 5: 9 requirements (Cognitive)
-- Phase 6: 11 requirements (Halstead + Structural)
-- Phase 7: 4 requirements (Composite)
-- Phase 8: 12 requirements (Console + JSON + CI)
+- Phase 5: 12 requirements (Console + JSON + CI)
+- Phase 6: 9 requirements (Cognitive)
+- Phase 7: 11 requirements (Halstead + Structural)
+- Phase 8: 4 requirements (Composite)
 - Phase 9: 4 requirements (SARIF)
 - Phase 10: 4 requirements (HTML)
 - Phase 11: 7 requirements (Duplication)
