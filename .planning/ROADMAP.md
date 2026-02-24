@@ -142,7 +142,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22
 | 12. Parallelization & Distribution | v1.0 | 2/2 | Complete | 2026-02-21 |
 | 13. Gap Closure — Pipeline Wiring | v1.0 | 3/3 | Complete | 2026-02-22 |
 | 14. Tech Debt Cleanup | v1.0 | 2/2 | Complete | 2026-02-23 |
-| 17. Project Setup and Parser Foundation | v0.8 | 0/3 | Not started | - |
+| 17. Project Setup and Parser Foundation | 1/3 | In Progress|  | - |
 | 18. Core Metrics Pipeline | v0.8 | 0/TBD | Not started | - |
 | 19. CLI, Config, and Output Formats | v0.8 | 0/TBD | Not started | - |
 | 20. Parallel Pipeline | v0.8 | 0/TBD | Not started | - |

@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 ## Current Position
 
 Phase: 17 of 22 (Project Setup and Parser Foundation)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-02-24 — v0.8 roadmap created (phases 17-22)
+Plan: 1 of 3 in current phase
+Status: Executing
+Last activity: 2026-02-24 — Completed 17-01 (Rust crate scaffold)
 
-Progress: [░░░░░░░░░░] 0% (v0.8 milestone)
+Progress: [█░░░░░░░░░] 5% (v0.8 milestone)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0 (v0.8)
-- Average duration: — (no data yet)
-- Total execution time: — (no data yet)
+- Total plans completed: 1 (v0.8)
+- Average duration: 3 min
+- Total execution time: 3 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 17 | 1/3 | 3 min | 3 min |
 
 **Recent Trend:**
-- Last 5 plans: —
-- Trend: No data yet
+- Last 5 plans: 17-01 (3 min)
+- Trend: Starting
 
 *Updated after each plan completion*
 
@@ -47,6 +47,8 @@ Recent decisions affecting v0.8:
 - Grammar version pinning required in Phase 17 — tree-sitter core + grammar crates must share same version range
 - Binary size optimized profile (`opt-level = "z"`, `lto = true`, `strip = true`) in Cargo.toml from Phase 17
 - cargo-zigbuild for Linux/macOS targets, native windows-latest runner for Windows — split CI matrix
+- 279 KB baseline binary size on macOS arm64 (Phase 17, stub only) — well under 5 MB target
+- Zero duplicate tree-sitter versions confirmed via cargo tree -d — no patching needed
 
 ### Pending Todos
 
@@ -60,9 +62,9 @@ Recent decisions affecting v0.8:
 
 ## Session Continuity
 
-Last session: 2026-02-24 (roadmapper)
-Stopped at: v0.8 roadmap written — ready to plan Phase 17
+Last session: 2026-02-24 (executor)
+Stopped at: Completed 17-01-PLAN.md — executing Phase 17
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-24 after v0.8 roadmap creation*
+*Last updated: 2026-02-24 after 17-01 plan completion*
