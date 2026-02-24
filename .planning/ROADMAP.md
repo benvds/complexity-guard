@@ -89,11 +89,12 @@ Plans:
   5. SARIF 2.1.0 output is accepted by GitHub Code Scanning without schema validation errors
   6. HTML report is self-contained (no external requests) with the same embedded JS/CSS as the Zig version
   7. Exit codes 0-4 are returned under the same conditions as the Zig binary (clean, warn, error, critical, fatal)
-**Plans**: 3 plans
+**Plans**: 4 plans
 Plans:
 - [ ] 19-01-PLAN.md — CLI args, config loading, merge semantics, and exit codes
 - [ ] 19-02-PLAN.md — Console (ESLint-style) and JSON output renderers
 - [ ] 19-03-PLAN.md — SARIF 2.1.0 and self-contained HTML output renderers
+- [ ] 19-04-PLAN.md — Documentation updates (Rust rewrite notes in README and docs)
 
 ### Phase 20: Parallel Pipeline
 **Goal**: File analysis runs in parallel across available CPU cores using rayon, directory scanning respects glob exclusions, output is always sorted by path regardless of completion order, and throughput matches or exceeds the Zig binary on representative fixtures.
