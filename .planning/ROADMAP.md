@@ -71,7 +71,11 @@ Plans:
   4. Structural metrics (function length, parameter count, nesting depth, file length, export count) match Zig output exactly
   5. Duplication clone groups (Type 1 and Type 2) match Zig output for cross-file fixture sets, with no re-parse pass required
   6. Composite health score matches Zig output within float tolerance for all fixture files
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 18-01-PLAN.md — Metrics module foundation with cyclomatic and structural metrics
+- [ ] 18-02-PLAN.md — Cognitive complexity (per-operator deviation) and Halstead metrics
+- [ ] 18-03-PLAN.md — Scoring, duplication detection, and analyze_file() wiring
 
 ### Phase 19: CLI, Config, and Output Formats
 **Goal**: The binary exposes an identical CLI interface to the Zig version, loads `.complexityguard.json` with CLI flags overriding config values, and produces all four output formats (console, JSON, SARIF 2.1.0, HTML) that match or are accepted by their respective consumers.
@@ -143,7 +147,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22
 | 13. Gap Closure — Pipeline Wiring | v1.0 | 3/3 | Complete | 2026-02-22 |
 | 14. Tech Debt Cleanup | v1.0 | 2/2 | Complete | 2026-02-23 |
 | 17. Project Setup and Parser Foundation | 3/3 | Complete    | 2026-02-24 | - |
-| 18. Core Metrics Pipeline | v0.8 | 0/TBD | Not started | - |
+| 18. Core Metrics Pipeline | v0.8 | 0/3 | Not started | - |
 | 19. CLI, Config, and Output Formats | v0.8 | 0/TBD | Not started | - |
 | 20. Parallel Pipeline | v0.8 | 0/TBD | Not started | - |
 | 21. Integration Testing and Behavioral Parity | v0.8 | 0/TBD | Not started | - |
