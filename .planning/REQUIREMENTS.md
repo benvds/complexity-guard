@@ -85,39 +85,39 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PARSE-01 | — | Pending |
-| PARSE-02 | — | Pending |
-| PARSE-03 | — | Pending |
-| PARSE-04 | — | Pending |
-| PARSE-05 | — | Pending |
-| METR-01 | — | Pending |
-| METR-02 | — | Pending |
-| METR-03 | — | Pending |
-| METR-04 | — | Pending |
-| METR-05 | — | Pending |
-| METR-06 | — | Pending |
-| CLI-01 | — | Pending |
-| CLI-02 | — | Pending |
-| CLI-03 | — | Pending |
-| OUT-01 | — | Pending |
-| OUT-02 | — | Pending |
-| OUT-03 | — | Pending |
-| OUT-04 | — | Pending |
-| OUT-05 | — | Pending |
-| PIPE-01 | — | Pending |
-| PIPE-02 | — | Pending |
-| PIPE-03 | — | Pending |
-| REL-01 | — | Pending |
-| REL-02 | — | Pending |
-| REL-03 | — | Pending |
-| REL-04 | — | Pending |
-| REL-05 | — | Pending |
+| PARSE-01 | Phase 17 | Pending |
+| PARSE-02 | Phase 17 | Pending |
+| PARSE-03 | Phase 17 | Pending |
+| PARSE-04 | Phase 17 | Pending |
+| PARSE-05 | Phase 17 | Pending |
+| METR-01 | Phase 18 | Pending |
+| METR-02 | Phase 18 | Pending |
+| METR-03 | Phase 18 | Pending |
+| METR-04 | Phase 18 | Pending |
+| METR-05 | Phase 18 | Pending |
+| METR-06 | Phase 18 | Pending |
+| CLI-01 | Phase 19 | Pending |
+| CLI-02 | Phase 19 | Pending |
+| CLI-03 | Phase 19 | Pending |
+| OUT-01 | Phase 19 | Pending |
+| OUT-02 | Phase 19 | Pending |
+| OUT-03 | Phase 19 | Pending |
+| OUT-04 | Phase 19 | Pending |
+| OUT-05 | Phase 19 | Pending |
+| PIPE-01 | Phase 20 | Pending |
+| PIPE-02 | Phase 20 | Pending |
+| PIPE-03 | Phase 20 | Pending |
+| REL-01 | Phase 22 | Pending |
+| REL-02 | Phase 22 | Pending |
+| REL-03 | Phase 22 | Pending |
+| REL-04 | Phase 22 | Pending |
+| REL-05 | Phase 22 | Pending |
 
 **Coverage:**
-- v0.8 requirements: 24 total
-- Mapped to phases: 0
-- Unmapped: 24
+- v0.8 requirements: 27 total
+- Mapped to phases: 27
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-24*
-*Last updated: 2026-02-24 after initial definition*
+*Last updated: 2026-02-24 after roadmap creation (traceability complete)*
