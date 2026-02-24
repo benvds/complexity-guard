@@ -13,7 +13,7 @@ Requirements for the Rust rewrite. Each maps to roadmap phases. Goal: 1:1 featur
 - [x] **PARSE-02**: Binary parses TSX files using tree-sitter-typescript
 - [x] **PARSE-03**: Binary parses JavaScript files using tree-sitter-javascript
 - [x] **PARSE-04**: Binary parses JSX files using tree-sitter-javascript
-- [ ] **PARSE-05**: Parser extracts function declarations with name, line, and column
+- [x] **PARSE-05**: Parser extracts function declarations with name, line, and column
 
 ### Metrics
 
@@ -89,7 +89,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PARSE-02 | Phase 17 | Complete |
 | PARSE-03 | Phase 17 | Complete |
 | PARSE-04 | Phase 17 | Complete |
-| PARSE-05 | Phase 17 | Pending |
+| PARSE-05 | Phase 17 | Complete |
 | METR-01 | Phase 18 | Pending |
 | METR-02 | Phase 18 | Pending |
 | METR-03 | Phase 18 | Pending |
