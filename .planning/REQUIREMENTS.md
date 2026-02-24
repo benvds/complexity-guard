@@ -32,8 +32,8 @@ Requirements for the Rust rewrite. Each maps to roadmap phases. Goal: 1:1 featur
 
 ### Output
 
-- [ ] **OUT-01**: Console output matches Zig ESLint-style format
-- [ ] **OUT-02**: JSON output matches Zig schema (field names, structure)
+- [x] **OUT-01**: Console output matches Zig ESLint-style format
+- [x] **OUT-02**: JSON output matches Zig schema (field names, structure)
 - [ ] **OUT-03**: SARIF 2.1.0 output accepted by GitHub Code Scanning
 - [ ] **OUT-04**: HTML report is self-contained with same embedded JS/CSS
 - [x] **OUT-05**: Exit codes 0-4 match Zig semantics
@@ -99,8 +99,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CLI-01 | Phase 19 | Complete |
 | CLI-02 | Phase 19 | Complete |
 | CLI-03 | Phase 19 | Complete |
-| OUT-01 | Phase 19 | Pending |
-| OUT-02 | Phase 19 | Pending |
+| OUT-01 | Phase 19 | Complete |
+| OUT-02 | Phase 19 | Complete |
 | OUT-03 | Phase 19 | Pending |
 | OUT-04 | Phase 19 | Pending |
 | OUT-05 | Phase 19 | Complete |
