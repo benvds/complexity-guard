@@ -118,7 +118,11 @@ Plans:
   2. Exit code parity is confirmed for scenarios that trigger each of codes 0, 1, 2, 3, and 4
   3. Cognitive complexity deviation (per-operator counting) is validated by a dedicated test comparing Rust and Zig output on the same fixture
   4. Float tolerance is explicitly defined and documented in tests for all Halstead metric fields
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 21-01-PLAN.md — Fix metric bugs: health score threshold, cognitive async_patterns, duplication JSON schema
+- [ ] 21-02-PLAN.md — Console format rewrite to Zig parity and function naming fix
+- [ ] 21-03-PLAN.md — Record baselines, add test deps, write integration test suite
 
 ### Phase 22: Cross-Compilation, CI, and Release
 **Goal**: The CI pipeline builds release binaries for all five target platforms, each binary executes correctly on a native runner, binary sizes are measured and documented, and a GitHub release with attached binaries can be triggered from a version tag.
@@ -158,7 +162,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22
 | 18. Core Metrics Pipeline | v0.8 | 3/3 | Complete | 2026-02-24 |
 | 19. CLI, Config, and Output Formats | 4/4 | Complete    | 2026-02-24 | - |
 | 20. Parallel Pipeline | 2/2 | Complete    | 2026-02-24 | - |
-| 21. Integration Testing and Behavioral Parity | v0.8 | 0/TBD | Not started | - |
+| 21. Integration Testing and Behavioral Parity | v0.8 | 0/3 | Not started | - |
 | 22. Cross-Compilation, CI, and Release | v0.8 | 0/TBD | Not started | - |
 
 ---
