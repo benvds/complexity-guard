@@ -4,6 +4,9 @@ zig-out/
 zig-cache/
 zig-pkg/
 
+# Rust build artifacts
+rust/target/
+
 # Object files
 *.o
 
