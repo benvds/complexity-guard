@@ -35,7 +35,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 
 **Milestone Goal:** Rewrite ComplexityGuard from Zig to Rust achieving 1:1 feature parity — same CLI interface, same output formats, same metrics, same exit codes — as a drop-in binary replacement.
 
-- [ ] **Phase 17: Project Setup and Parser Foundation** - Rust crate scaffolding, grammar version pinning, all four languages parsing against fixtures
+- [x] **Phase 17: Project Setup and Parser Foundation** - Rust crate scaffolding, grammar version pinning, all four languages parsing against fixtures (completed 2026-02-24)
 - [ ] **Phase 18: Core Metrics Pipeline** - All five metric families computing correct per-file output with JSON comparison against Zig v1.0
 - [ ] **Phase 19: CLI, Config, and Output Formats** - Full CLI interface, config loading, all four output formats with exit code parity
 - [ ] **Phase 20: Parallel Pipeline** - Rayon-based parallel file analysis with directory scanning and deterministic output ordering
@@ -142,7 +142,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22
 | 12. Parallelization & Distribution | v1.0 | 2/2 | Complete | 2026-02-21 |
 | 13. Gap Closure — Pipeline Wiring | v1.0 | 3/3 | Complete | 2026-02-22 |
 | 14. Tech Debt Cleanup | v1.0 | 2/2 | Complete | 2026-02-23 |
-| 17. Project Setup and Parser Foundation | 2/3 | In Progress|  | - |
+| 17. Project Setup and Parser Foundation | 3/3 | Complete   | 2026-02-24 | - |
 | 18. Core Metrics Pipeline | v0.8 | 0/TBD | Not started | - |
 | 19. CLI, Config, and Output Formats | v0.8 | 0/TBD | Not started | - |
 | 20. Parallel Pipeline | v0.8 | 0/TBD | Not started | - |
