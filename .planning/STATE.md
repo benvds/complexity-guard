@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-24)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** v0.8 Rust Rewrite — Phase 19: CLI, Config, and Output Formats (executing — plan 3/4 complete)
+**Current focus:** v0.8 Rust Rewrite — Phase 19 complete, moving to Phase 20: Parallel Pipeline
 
 ## Current Position
 
-Phase: 19 of 22 (CLI, Config, and Output Formats)
-Plan: 3 of 4 in current phase
-Status: Executing phase — plan 03 complete
-Last activity: 2026-02-24 — Phase 19 plan 03 complete (SARIF and HTML output renderers)
+Phase: 19 of 22 (CLI, Config, and Output Formats) — COMPLETE
+Plan: 4 of 4 in current phase
+Status: Phase 19 complete — moving to Phase 20
+Last activity: 2026-02-24 — Phase 19 plan 04 complete (Rust rewrite documentation notes)
 
-Progress: [████░░░░░░] 36% (v0.8 milestone)
+Progress: [████░░░░░░] 40% (v0.8 milestone)
 
 ## Performance Metrics
 
@@ -29,10 +29,10 @@ Progress: [████░░░░░░] 36% (v0.8 milestone)
 |-------|-------|-------|----------|
 | 17 | 3/3 | 10 min | 3 min |
 | 18 | 3/3 | 30 min | 10 min |
-| 19 | 3/4 | 18 min | 6 min |
+| 19 | 4/4 | 19 min | 5 min |
 
 **Recent Trend:**
-- Last 5 plans: 18-03 (15 min), 19-01 (6 min), 19-02 (6 min), 19-03 (6 min)
+- Last 5 plans: 19-01 (6 min), 19-02 (6 min), 19-03 (6 min), 19-04 (1 min)
 - Trend: Stable
 
 *Updated after each plan completion*
@@ -56,6 +56,8 @@ Recent decisions affecting v0.8:
 - [Phase 19-01]: clap derive #[command(version)] handles --version automatically; tempfile added as dev-dependency for discovery tests; fail_on 'none' override checked first in exit code priority; Config overlay in main.rs is field-by-field merge to preserve defaults
 - [Phase 19-02]: ResolvedConfig added to cli/config.rs as flat non-optional struct with resolve_config(); function_violations() reused between console and JSON renderers; summary status uses 'pass' (not 'ok') matching Zig JSON schema; quiet mode suppresses file sections but counts violations in summary
 - [Phase 19-03]: Hand-rolled SARIF structs with #[serde(rename)] per-field for all camelCase SARIF names; CSS/JS extracted verbatim from Zig html_output.zig; minijinja template uses {% if duplication %} conditional; test assertions use class="duplication-section" not CSS selector names
+- [Phase 19]: Phase 19 doc updates are minimal notes only — not a full rewrite; full doc update deferred to Phase 22 when Rust binary ships
+- [Phase 19]: Publication READMEs (publication/npm/) intentionally deferred to Phase 22 when Rust binary becomes official distribution
 
 ### Pending Todos
 
@@ -70,15 +72,15 @@ Recent decisions affecting v0.8:
 ## Session Continuity
 
 Last session: 2026-02-24 (execute-phase 19)
-Stopped at: Completed 19-03-PLAN.md — SARIF 2.1.0 output renderer, self-contained HTML report, all four format dispatch in main.rs
-Resume with: Continue `/gsd:execute-phase 19` (plan 04 remaining) then Phase 20-22.
+Stopped at: Completed 19-04-PLAN.md — Rust rewrite documentation notes added to README.md and docs pages; Phase 19 complete
+Resume with: Plan + execute Phase 20 (Parallel Pipeline)
 
 **Remaining phases to plan+execute:**
-- Phase 19: CLI, Config, Output Formats — IN PROGRESS (3/4 complete, plan 04 remaining)
+- Phase 19: CLI, Config, Output Formats — COMPLETE (4/4)
 - Phase 20: Parallel Pipeline — plan + execute
 - Phase 21: Integration Testing — plan + execute
 - Phase 22: Cross-Compilation, CI, Release — plan + execute
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-24 after Phase 19 plan 02 completion*
+*Last updated: 2026-02-24 after Phase 19 plan 04 completion (Phase 19 complete)*
