@@ -104,7 +104,10 @@ Plans:
   1. Running the binary against a directory recursively discovers all TS/TSX/JS/JSX files and excludes paths matching configured glob patterns
   2. Analysis of a multi-file fixture set completes faster with `--threads 4` than with `--threads 1`, demonstrating parallel speedup
   3. Output file ordering is identical across multiple runs of the same input regardless of CPU scheduling
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 20-01-PLAN.md — Pipeline module with file discovery and parallel analysis
+- [ ] 20-02-PLAN.md — Main.rs pipeline wiring, duplication integration, and documentation updates
 
 ### Phase 21: Integration Testing and Behavioral Parity
 **Goal**: A comprehensive integration test suite validates complete behavioral parity between the Rust binary and Zig v1.0 across all fixture files and all output formats, catching any metric deviations, float precision issues, serialization differences, or exit code discrepancies before release work begins.
@@ -154,7 +157,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22
 | 17. Project Setup and Parser Foundation | 3/3 | Complete    | 2026-02-24 | - |
 | 18. Core Metrics Pipeline | v0.8 | 3/3 | Complete | 2026-02-24 |
 | 19. CLI, Config, and Output Formats | 4/4 | Complete    | 2026-02-24 | - |
-| 20. Parallel Pipeline | v0.8 | 0/TBD | Not started | - |
+| 20. Parallel Pipeline | v0.8 | 0/2 | Not started | - |
 | 21. Integration Testing and Behavioral Parity | v0.8 | 0/TBD | Not started | - |
 | 22. Cross-Compilation, CI, and Release | v0.8 | 0/TBD | Not started | - |
 
