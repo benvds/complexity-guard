@@ -36,7 +36,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 **Milestone Goal:** Rewrite ComplexityGuard from Zig to Rust achieving 1:1 feature parity — same CLI interface, same output formats, same metrics, same exit codes — as a drop-in binary replacement.
 
 - [x] **Phase 17: Project Setup and Parser Foundation** - Rust crate scaffolding, grammar version pinning, all four languages parsing against fixtures (completed 2026-02-24)
-- [ ] **Phase 18: Core Metrics Pipeline** - All five metric families computing correct per-file output with JSON comparison against Zig v1.0
+- [x] **Phase 18: Core Metrics Pipeline** - All five metric families computing correct per-file output matching Zig v1.0 (completed 2026-02-24)
 - [ ] **Phase 19: CLI, Config, and Output Formats** - Full CLI interface, config loading, all four output formats with exit code parity
 - [ ] **Phase 20: Parallel Pipeline** - Rayon-based parallel file analysis with directory scanning and deterministic output ordering
 - [ ] **Phase 21: Integration Testing and Behavioral Parity** - Complete behavioral parity validated against Zig binary across all fixtures and output formats
@@ -147,7 +147,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22
 | 13. Gap Closure — Pipeline Wiring | v1.0 | 3/3 | Complete | 2026-02-22 |
 | 14. Tech Debt Cleanup | v1.0 | 2/2 | Complete | 2026-02-23 |
 | 17. Project Setup and Parser Foundation | 3/3 | Complete    | 2026-02-24 | - |
-| 18. Core Metrics Pipeline | v0.8 | 0/3 | Not started | - |
+| 18. Core Metrics Pipeline | v0.8 | 3/3 | Complete | 2026-02-24 |
 | 19. CLI, Config, and Output Formats | v0.8 | 0/TBD | Not started | - |
 | 20. Parallel Pipeline | v0.8 | 0/TBD | Not started | - |
 | 21. Integration Testing and Behavioral Parity | v0.8 | 0/TBD | Not started | - |
@@ -155,4 +155,4 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22
 
 ---
 *Roadmap created: 2026-02-14*
-*Last updated: 2026-02-24 after v0.8 milestone roadmap creation*
+*Last updated: 2026-02-24 after Phase 18 completion*
