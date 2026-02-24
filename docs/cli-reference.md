@@ -1,5 +1,7 @@
 # CLI Reference
 
+> **Note:** The Rust rewrite (in progress) accepts the same CLI flags documented here. No changes to the CLI interface.
+
 Complete reference for ComplexityGuard command-line interface, configuration options, and exit codes.
 
 ## Usage

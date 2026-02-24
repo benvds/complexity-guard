@@ -1,5 +1,7 @@
 # Examples
 
+> **Note:** All examples below work identically with the Rust binary (in progress). Output formats are the same.
+
 Real-world usage patterns, CI integration recipes, and configuration examples for ComplexityGuard.
 
 ## Basic Usage

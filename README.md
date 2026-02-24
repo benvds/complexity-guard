@@ -162,6 +162,16 @@ zig build run      # run the binary
 
 The build produces a single static binary at `zig-out/bin/complexity-guard`.
 
+## Rust Rewrite (In Progress)
+
+A Rust rewrite is underway targeting 1:1 feature parity with the Zig binary. The Rust binary accepts the same CLI flags and produces identical output formats. To build from the Rust source:
+
+```sh
+cd rust && cargo build --release
+```
+
+The Rust binary will replace the Zig binary in a future release. Until then, the Zig binary remains the official distribution.
+
 ## License
 
 [MIT](LICENSE)

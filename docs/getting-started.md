@@ -43,6 +43,8 @@ complexity-guard --version
 
 ### Building from Source
 
+> **Note:** A Rust rewrite is in progress. To build from Rust source: `cd rust && cargo build --release`. The CLI interface is identical.
+
 If you have Zig installed (0.14.0 or later), you can build from source:
 
 ```sh
