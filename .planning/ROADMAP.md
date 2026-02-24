@@ -54,7 +54,11 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
   3. `cargo tree -d` shows no duplicate tree-sitter dependency versions
   4. The release binary size is measured and recorded (baseline for tracking)
   5. At least one cross-compilation target (e.g. linux-x86_64-musl) builds successfully in CI
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 17-01-PLAN.md — Rust crate scaffolding with grammar dependencies, types, and release profile
+- [ ] 17-02-PLAN.md — Parser implementation with TDD against all four language fixtures
+- [ ] 17-03-PLAN.md — GitHub Actions CI with cross-compilation smoke test
 
 ### Phase 18: Core Metrics Pipeline
 **Goal**: All five metric families (cyclomatic, cognitive, Halstead, structural, duplication) produce per-file output that matches Zig v1.0 values for all fixture files, with JSON output enabling automated comparison and the per-file worker architecture already embedding tokenization so duplication needs no re-parse.
@@ -138,7 +142,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22
 | 12. Parallelization & Distribution | v1.0 | 2/2 | Complete | 2026-02-21 |
 | 13. Gap Closure — Pipeline Wiring | v1.0 | 3/3 | Complete | 2026-02-22 |
 | 14. Tech Debt Cleanup | v1.0 | 2/2 | Complete | 2026-02-23 |
-| 17. Project Setup and Parser Foundation | v0.8 | 0/TBD | Not started | - |
+| 17. Project Setup and Parser Foundation | v0.8 | 0/3 | Not started | - |
 | 18. Core Metrics Pipeline | v0.8 | 0/TBD | Not started | - |
 | 19. CLI, Config, and Output Formats | v0.8 | 0/TBD | Not started | - |
 | 20. Parallel Pipeline | v0.8 | 0/TBD | Not started | - |
