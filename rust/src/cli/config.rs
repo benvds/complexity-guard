@@ -93,6 +93,188 @@ pub struct OverrideConfig {
     pub analysis: Option<AnalysisConfig>,
 }
 
+/// Resolved (fully-defaulted, non-optional) configuration for use during analysis and output.
+///
+/// Created after merging defaults + config file + CLI args. Passed to renderers and workers.
+#[derive(Debug, Clone)]
+pub struct ResolvedConfig {
+    // Output
+    pub format: String,
+    pub output_file: Option<String>,
+    pub color: Option<bool>,
+    pub quiet: bool,
+    pub verbose: bool,
+    // Analysis
+    pub metrics: Vec<String>,
+    // Thresholds (warning and error levels per metric)
+    pub cyclomatic_warning: u32,
+    pub cyclomatic_error: u32,
+    pub cognitive_warning: u32,
+    pub cognitive_error: u32,
+    pub halstead_volume_warning: f64,
+    pub halstead_volume_error: f64,
+    pub halstead_difficulty_warning: f64,
+    pub halstead_difficulty_error: f64,
+    pub halstead_effort_warning: f64,
+    pub halstead_effort_error: f64,
+    pub halstead_bugs_warning: f64,
+    pub halstead_bugs_error: f64,
+    pub nesting_depth_warning: u32,
+    pub nesting_depth_error: u32,
+    pub line_count_warning: u32,
+    pub line_count_error: u32,
+    pub params_count_warning: u32,
+    pub params_count_error: u32,
+    // Threads
+    pub threads: u32,
+}
+
+impl Default for ResolvedConfig {
+    fn default() -> Self {
+        Self {
+            format: "console".to_string(),
+            output_file: None,
+            color: None,
+            quiet: false,
+            verbose: false,
+            metrics: vec![
+                "cyclomatic".to_string(),
+                "cognitive".to_string(),
+                "halstead".to_string(),
+                "nesting".to_string(),
+                "line_count".to_string(),
+                "params_count".to_string(),
+            ],
+            // Thresholds matching Zig defaults
+            cyclomatic_warning: 10,
+            cyclomatic_error: 20,
+            cognitive_warning: 15,
+            cognitive_error: 30,
+            halstead_volume_warning: 500.0,
+            halstead_volume_error: 1000.0,
+            halstead_difficulty_warning: 10.0,
+            halstead_difficulty_error: 20.0,
+            halstead_effort_warning: 5000.0,
+            halstead_effort_error: 10000.0,
+            halstead_bugs_warning: 0.5,
+            halstead_bugs_error: 1.0,
+            nesting_depth_warning: 3,
+            nesting_depth_error: 5,
+            line_count_warning: 25,
+            line_count_error: 50,
+            params_count_warning: 3,
+            params_count_error: 6,
+            threads: num_cpus(),
+        }
+    }
+}
+
+/// Returns number of available CPUs for default thread count.
+fn num_cpus() -> u32 {
+    std::thread::available_parallelism()
+        .map(|n| n.get() as u32)
+        .unwrap_or(1)
+}
+
+/// Resolves a merged Config into a ResolvedConfig with all defaults applied.
+pub fn resolve_config(config: &Config) -> ResolvedConfig {
+    let mut resolved = ResolvedConfig::default();
+
+    if let Some(output) = &config.output {
+        if let Some(fmt) = &output.format {
+            resolved.format = fmt.clone();
+        }
+        if let Some(file) = &output.file {
+            resolved.output_file = Some(file.clone());
+        }
+    }
+
+    if let Some(analysis) = &config.analysis {
+        if let Some(metrics) = &analysis.metrics {
+            resolved.metrics = metrics.clone();
+        }
+        if let Some(threads) = analysis.threads {
+            resolved.threads = threads;
+        }
+        if let Some(thresholds) = &analysis.thresholds {
+            if let Some(t) = &thresholds.cyclomatic {
+                if let Some(w) = t.warning {
+                    resolved.cyclomatic_warning = w;
+                }
+                if let Some(e) = t.error {
+                    resolved.cyclomatic_error = e;
+                }
+            }
+            if let Some(t) = &thresholds.cognitive {
+                if let Some(w) = t.warning {
+                    resolved.cognitive_warning = w;
+                }
+                if let Some(e) = t.error {
+                    resolved.cognitive_error = e;
+                }
+            }
+            if let Some(t) = &thresholds.halstead_volume {
+                if let Some(w) = t.warning {
+                    resolved.halstead_volume_warning = w as f64;
+                }
+                if let Some(e) = t.error {
+                    resolved.halstead_volume_error = e as f64;
+                }
+            }
+            if let Some(t) = &thresholds.halstead_difficulty {
+                if let Some(w) = t.warning {
+                    resolved.halstead_difficulty_warning = w as f64;
+                }
+                if let Some(e) = t.error {
+                    resolved.halstead_difficulty_error = e as f64;
+                }
+            }
+            if let Some(t) = &thresholds.halstead_effort {
+                if let Some(w) = t.warning {
+                    resolved.halstead_effort_warning = w as f64;
+                }
+                if let Some(e) = t.error {
+                    resolved.halstead_effort_error = e as f64;
+                }
+            }
+            if let Some(t) = &thresholds.halstead_bugs {
+                if let Some(w) = t.warning {
+                    resolved.halstead_bugs_warning = w as f64;
+                }
+                if let Some(e) = t.error {
+                    resolved.halstead_bugs_error = e as f64;
+                }
+            }
+            if let Some(t) = &thresholds.nesting_depth {
+                if let Some(w) = t.warning {
+                    resolved.nesting_depth_warning = w;
+                }
+                if let Some(e) = t.error {
+                    resolved.nesting_depth_error = e;
+                }
+            }
+            if let Some(t) = &thresholds.line_count {
+                if let Some(w) = t.warning {
+                    resolved.line_count_warning = w;
+                }
+                if let Some(e) = t.error {
+                    resolved.line_count_error = e;
+                }
+            }
+            if let Some(t) = &thresholds.params_count {
+                if let Some(w) = t.warning {
+                    resolved.params_count_warning = w;
+                }
+                if let Some(e) = t.error {
+                    resolved.params_count_error = e;
+                }
+            }
+        }
+    }
+
+    resolved
+}
+
 /// Returns a Config with sensible default values.
 ///
 /// Mirrors the Zig `defaults()` function exactly.
