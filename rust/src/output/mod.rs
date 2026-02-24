@@ -1,5 +1,6 @@
 pub mod console;
 pub mod exit_codes;
+pub mod json_output;
 
 // Placeholder re-exports for future output submodules (Plan 03):
 // pub mod sarif_output;
@@ -7,3 +8,4 @@ pub mod exit_codes;
 
 pub use console::render_console;
 pub use exit_codes::{determine_exit_code, ExitCode};
+pub use json_output::render_json;
