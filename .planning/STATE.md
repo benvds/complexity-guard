@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-24)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** v0.8 Rust Rewrite — Phase 20: Parallel Pipeline (plan 1 of 2 complete)
+**Current focus:** v0.8 Rust Rewrite — Phase 20: Parallel Pipeline COMPLETE (2/2); Phase 21: Integration Testing next
 
 ## Current Position
 
 Phase: 20 of 22 (Parallel Pipeline)
-Plan: 1 of 2 in current phase — 20-01 complete
-Status: Phase 20 in progress — 20-01 done, moving to 20-02
-Last activity: 2026-02-24 — Phase 20 plan 01 complete (pipeline module: discover + parallel)
+Plan: 2 of 2 in current phase — 20-01 and 20-02 complete
+Status: Phase 20 COMPLETE — both plans done; ready for Phase 21 Integration Testing
+Last activity: 2026-02-24 — Phase 20 plan 02 complete (main.rs pipeline wiring: end-to-end binary functional)
 
-Progress: [█████░░░░░] 44% (v0.8 milestone)
+Progress: [██████░░░░] 55% (v0.8 milestone)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8 (v0.8)
-- Average duration: 7 min
-- Total execution time: 49 min
+- Total plans completed: 9 (v0.8)
+- Average duration: 6 min
+- Total execution time: 52 min
 
 **By Phase:**
 
@@ -30,10 +30,10 @@ Progress: [█████░░░░░] 44% (v0.8 milestone)
 | 17 | 3/3 | 10 min | 3 min |
 | 18 | 3/3 | 30 min | 10 min |
 | 19 | 4/4 | 19 min | 5 min |
-| 20 | 1/2 | 3 min | 3 min |
+| 20 | 2/2 | 6 min | 3 min |
 
 **Recent Trend:**
-- Last 5 plans: 19-02 (6 min), 19-03 (6 min), 19-04 (1 min), 20-01 (3 min)
+- Last 5 plans: 19-03 (6 min), 19-04 (1 min), 20-01 (3 min), 20-02 (3 min)
 - Trend: Stable
 
 *Updated after each plan completion*
@@ -62,6 +62,9 @@ Recent decisions affecting v0.8:
 - [Phase 20-01]: Local rayon ThreadPoolBuilder used (not build_global()) to avoid test interference between concurrent test runs
 - [Phase 20-01]: EXCLUDED_DIRS constant matches Zig filter.zig exactly (10 entries); WalkDir filter_entry prunes dirs before descent
 - [Phase 20-01]: analyze_files_parallel() sorts by PathBuf::cmp for cross-platform deterministic ordering (PIPE-03)
+- [Phase 20-02]: build_analysis_config() maps ResolvedConfig flat thresholds into AnalysisConfig struct hierarchy in main.rs
+- [Phase 20-02]: Duplication gated on duplication_enabled && !no_duplication (post-parallel step in main.rs)
+- [Phase 20-02]: function_violations() reused from output::console to count violations for exit codes — no duplication of threshold logic
 
 ### Pending Todos
 
@@ -76,15 +79,15 @@ Recent decisions affecting v0.8:
 ## Session Continuity
 
 Last session: 2026-02-24 (execute-phase 20)
-Stopped at: Completed 20-01-PLAN.md — pipeline module with discover_files() and analyze_files_parallel(); 10 tests passing
-Resume with: Execute Phase 20 plan 02 (main.rs CLI integration)
+Stopped at: Completed 20-02-PLAN.md — full pipeline wiring in main.rs; binary analyzes real files end-to-end
+Resume with: Plan + Execute Phase 21 (Integration Testing)
 
 **Remaining phases to plan+execute:**
 - Phase 19: CLI, Config, Output Formats — COMPLETE (4/4)
-- Phase 20: Parallel Pipeline — IN PROGRESS (1/2 complete)
+- Phase 20: Parallel Pipeline — COMPLETE (2/2)
 - Phase 21: Integration Testing — plan + execute
 - Phase 22: Cross-Compilation, CI, Release — plan + execute
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-24 after Phase 20 plan 01 completion (pipeline module: discover + parallel)*
+*Last updated: 2026-02-24 after Phase 20 plan 02 completion (main.rs pipeline wiring: binary end-to-end functional)*
