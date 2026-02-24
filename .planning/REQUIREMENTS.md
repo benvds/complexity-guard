@@ -40,9 +40,9 @@ Requirements for the Rust rewrite. Each maps to roadmap phases. Goal: 1:1 featur
 
 ### Pipeline
 
-- [ ] **PIPE-01**: Recursive directory scanning with glob exclusion
-- [ ] **PIPE-02**: Parallel file analysis with configurable thread count
-- [ ] **PIPE-03**: Deterministic output ordering (sorted by path)
+- [x] **PIPE-01**: Recursive directory scanning with glob exclusion
+- [x] **PIPE-02**: Parallel file analysis with configurable thread count
+- [x] **PIPE-03**: Deterministic output ordering (sorted by path)
 
 ### Release
 
@@ -104,9 +104,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | OUT-03 | Phase 19 | Complete |
 | OUT-04 | Phase 19 | Complete |
 | OUT-05 | Phase 19 | Complete |
-| PIPE-01 | Phase 20 | Pending |
-| PIPE-02 | Phase 20 | Pending |
-| PIPE-03 | Phase 20 | Pending |
+| PIPE-01 | Phase 20 | Complete |
+| PIPE-02 | Phase 20 | Complete |
+| PIPE-03 | Phase 20 | Complete |
 | REL-01 | Phase 22 | Pending |
 | REL-02 | Phase 22 | Pending |
 | REL-03 | Phase 22 | Pending |

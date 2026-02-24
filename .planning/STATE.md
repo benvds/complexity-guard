@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-24)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** v0.8 Rust Rewrite — Phase 19 complete, moving to Phase 20: Parallel Pipeline
+**Current focus:** v0.8 Rust Rewrite — Phase 20: Parallel Pipeline (plan 1 of 2 complete)
 
 ## Current Position
 
-Phase: 19 of 22 (CLI, Config, and Output Formats) — COMPLETE
-Plan: 4 of 4 in current phase
-Status: Phase 19 complete — moving to Phase 20
-Last activity: 2026-02-24 — Phase 19 plan 04 complete (Rust rewrite documentation notes)
+Phase: 20 of 22 (Parallel Pipeline)
+Plan: 1 of 2 in current phase — 20-01 complete
+Status: Phase 20 in progress — 20-01 done, moving to 20-02
+Last activity: 2026-02-24 — Phase 20 plan 01 complete (pipeline module: discover + parallel)
 
-Progress: [████░░░░░░] 40% (v0.8 milestone)
+Progress: [█████░░░░░] 44% (v0.8 milestone)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7 (v0.8)
+- Total plans completed: 8 (v0.8)
 - Average duration: 7 min
-- Total execution time: 46 min
+- Total execution time: 49 min
 
 **By Phase:**
 
@@ -30,9 +30,10 @@ Progress: [████░░░░░░] 40% (v0.8 milestone)
 | 17 | 3/3 | 10 min | 3 min |
 | 18 | 3/3 | 30 min | 10 min |
 | 19 | 4/4 | 19 min | 5 min |
+| 20 | 1/2 | 3 min | 3 min |
 
 **Recent Trend:**
-- Last 5 plans: 19-01 (6 min), 19-02 (6 min), 19-03 (6 min), 19-04 (1 min)
+- Last 5 plans: 19-02 (6 min), 19-03 (6 min), 19-04 (1 min), 20-01 (3 min)
 - Trend: Stable
 
 *Updated after each plan completion*
@@ -58,6 +59,9 @@ Recent decisions affecting v0.8:
 - [Phase 19-03]: Hand-rolled SARIF structs with #[serde(rename)] per-field for all camelCase SARIF names; CSS/JS extracted verbatim from Zig html_output.zig; minijinja template uses {% if duplication %} conditional; test assertions use class="duplication-section" not CSS selector names
 - [Phase 19]: Phase 19 doc updates are minimal notes only — not a full rewrite; full doc update deferred to Phase 22 when Rust binary ships
 - [Phase 19]: Publication READMEs (publication/npm/) intentionally deferred to Phase 22 when Rust binary becomes official distribution
+- [Phase 20-01]: Local rayon ThreadPoolBuilder used (not build_global()) to avoid test interference between concurrent test runs
+- [Phase 20-01]: EXCLUDED_DIRS constant matches Zig filter.zig exactly (10 entries); WalkDir filter_entry prunes dirs before descent
+- [Phase 20-01]: analyze_files_parallel() sorts by PathBuf::cmp for cross-platform deterministic ordering (PIPE-03)
 
 ### Pending Todos
 
@@ -71,16 +75,16 @@ Recent decisions affecting v0.8:
 
 ## Session Continuity
 
-Last session: 2026-02-24 (execute-phase 19)
-Stopped at: Completed 19-04-PLAN.md — Rust rewrite documentation notes added to README.md and docs pages; Phase 19 complete
-Resume with: Plan + execute Phase 20 (Parallel Pipeline)
+Last session: 2026-02-24 (execute-phase 20)
+Stopped at: Completed 20-01-PLAN.md — pipeline module with discover_files() and analyze_files_parallel(); 10 tests passing
+Resume with: Execute Phase 20 plan 02 (main.rs CLI integration)
 
 **Remaining phases to plan+execute:**
 - Phase 19: CLI, Config, Output Formats — COMPLETE (4/4)
-- Phase 20: Parallel Pipeline — plan + execute
+- Phase 20: Parallel Pipeline — IN PROGRESS (1/2 complete)
 - Phase 21: Integration Testing — plan + execute
 - Phase 22: Cross-Compilation, CI, Release — plan + execute
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-24 after Phase 19 plan 04 completion (Phase 19 complete)*
+*Last updated: 2026-02-24 after Phase 20 plan 01 completion (pipeline module: discover + parallel)*
