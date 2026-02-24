@@ -43,7 +43,7 @@ complexity-guard --version
 
 ### Building from Source
 
-> **Note:** A Rust rewrite is in progress. To build from Rust source: `cd rust && cargo build --release`. The CLI interface is identical.
+> **Note:** A Rust rewrite is in progress (Phase 20 parallel pipeline complete). The Rust binary can now analyze directories end-to-end using rayon-based parallel analysis. To build from Rust source: `cd rust && cargo build --release`. The CLI interface is identical.
 
 If you have Zig installed (0.14.0 or later), you can build from source:
 

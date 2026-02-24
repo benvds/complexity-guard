@@ -100,6 +100,10 @@ Create a `.complexityguard.json` file in your project root to customize behavior
 - [HTML Reports](https://github.com/benvds/complexity-guard/blob/main/docs/examples.md#html-reports)
 - [Performance Benchmarks](https://github.com/benvds/complexity-guard/blob/main/docs/benchmarks.md)
 
+---
+
+**Rust Rewrite — Phase 20 (Parallel Pipeline) complete:** The Rust binary now discovers files and analyzes them in parallel using rayon, producing sorted deterministic output. Full directory analysis end-to-end is functional.
+
 ## License
 
 MIT

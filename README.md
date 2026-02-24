@@ -172,6 +172,8 @@ cd rust && cargo build --release
 
 The Rust binary will replace the Zig binary in a future release. Until then, the Zig binary remains the official distribution.
 
+**Phase 20 (Parallel Pipeline) complete:** The Rust binary now discovers files, analyzes them in parallel using rayon, and produces sorted deterministic output. Running `complexity-guard .` against a directory performs full end-to-end analysis across all supported file types (`.ts`, `.tsx`, `.js`, `.jsx`).
+
 ## License
 
 [MIT](LICENSE)

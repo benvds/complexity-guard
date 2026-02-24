@@ -1,6 +1,6 @@
 # Examples
 
-> **Note:** All examples below work identically with the Rust binary (in progress). Output formats are the same.
+> **Note:** All examples below work identically with the Rust binary (Phase 20 parallel pipeline complete). The Rust binary now supports directory analysis end-to-end. Output formats are the same.
 
 Real-world usage patterns, CI integration recipes, and configuration examples for ComplexityGuard.
 
