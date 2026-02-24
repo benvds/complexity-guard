@@ -1,6 +1,6 @@
 use clap::Parser;
 use complexity_guard::cli::{config_defaults, discover_config, merge_args_into_config, resolve_config, Args};
-use complexity_guard::output::{determine_exit_code, render_console, render_json, ExitCode};
+use complexity_guard::output::{determine_exit_code, render_console, render_html, render_json, render_sarif, ExitCode};
 
 fn main() {
     let args = Args::parse();
@@ -93,37 +93,55 @@ fn main() {
     let files: Vec<complexity_guard::types::FileAnalysisResult> = vec![];
     let elapsed_ms = start.elapsed().as_millis() as u64;
 
-    match resolved.format.as_str() {
-        "json" => {
-            match render_json(&files, None, &resolved, elapsed_ms) {
-                Ok(json) => println!("{}", json),
-                Err(e) => {
-                    eprintln!("Error rendering JSON output: {}", e);
-                    std::process::exit(ExitCode::ConfigError as i32);
-                }
-            }
-        }
+    // Render output in the requested format
+    let output_result: Result<Option<String>, anyhow::Error> = match resolved.format.as_str() {
+        "json" => render_json(&files, None, &resolved, elapsed_ms).map(Some),
+        "sarif" => render_sarif(&files, None, &resolved).map(Some),
+        "html" => render_html(&files, None, &resolved, elapsed_ms).map(Some),
         _ => {
             // console format (default) and unknown formats fall through to console
-            if resolved.format != "console" && !["sarif", "html"].contains(&resolved.format.as_str()) {
+            if resolved.format != "console" {
                 eprintln!(
                     "Warning: unknown format '{}', using console",
                     resolved.format
                 );
             }
-            if resolved.format == "console" {
+            if resolved.format == "console" || resolved.format != "console" {
                 // Show paths being analyzed when no actual analysis yet
                 let analyze_paths = if paths.is_empty() { vec![".".to_string()] } else { paths };
-                eprintln!(
-                    "complexity-guard v{} — analyzing {:?}",
-                    env!("CARGO_PKG_VERSION"),
-                    analyze_paths
-                );
+                if !resolved.quiet {
+                    eprintln!(
+                        "complexity-guard v{} — analyzing {:?}",
+                        env!("CARGO_PKG_VERSION"),
+                        analyze_paths
+                    );
+                }
             }
-            if let Err(e) = render_console(&files, None, &resolved, &mut std::io::stdout()) {
-                eprintln!("Error rendering console output: {}", e);
-                std::process::exit(ExitCode::ConfigError as i32);
+            match render_console(&files, None, &resolved, &mut std::io::stdout()) {
+                Ok(_) => Ok(None), // console writes directly to stdout
+                Err(e) => Err(e),
             }
+        }
+    };
+
+    match output_result {
+        Ok(Some(content)) => {
+            // Write to file if --output specified, otherwise stdout
+            if let Some(ref output_path) = resolved.output_file {
+                if let Err(e) = std::fs::write(output_path, &content) {
+                    eprintln!("Error writing output to {}: {}", output_path, e);
+                    std::process::exit(ExitCode::ConfigError as i32);
+                }
+            } else {
+                println!("{}", content);
+            }
+        }
+        Ok(None) => {
+            // Console format already wrote to stdout
+        }
+        Err(e) => {
+            eprintln!("Error rendering output: {}", e);
+            std::process::exit(ExitCode::ConfigError as i32);
         }
     }
 
