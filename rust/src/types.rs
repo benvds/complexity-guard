@@ -110,6 +110,46 @@ pub struct FileStructuralResult {
     pub export_count: u32,
 }
 
+/// Per-function cognitive complexity result.
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct CognitiveResult {
+    pub name: String,
+    pub complexity: u32,
+    pub start_line: usize,
+    pub end_line: usize,
+    pub start_col: usize,
+}
+
+/// Configuration for cognitive complexity calculation.
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct CognitiveConfig {
+    pub warning_threshold: u32,
+    pub error_threshold: u32,
+}
+
+impl Default for CognitiveConfig {
+    fn default() -> Self {
+        Self {
+            warning_threshold: 15,
+            error_threshold: 30,
+        }
+    }
+}
+
+/// Per-function Halstead metrics result.
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct HalsteadResult {
+    pub name: String,
+    pub volume: f64,
+    pub difficulty: f64,
+    pub effort: f64,
+    pub time: f64,
+    pub bugs: f64,
+    pub start_line: usize,
+    pub end_line: usize,
+    pub start_col: usize,
+}
+
 // TESTS
 
 #[cfg(test)]
@@ -127,5 +167,12 @@ mod tests {
         assert_eq!(config.switch_case_mode, SwitchCaseMode::Classic);
         assert_eq!(config.warning_threshold, 10);
         assert_eq!(config.error_threshold, 20);
+    }
+
+    #[test]
+    fn cognitive_config_default_matches_zig() {
+        let config = CognitiveConfig::default();
+        assert_eq!(config.warning_threshold, 15);
+        assert_eq!(config.error_threshold, 30);
     }
 }

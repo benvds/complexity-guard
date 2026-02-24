@@ -1,4 +1,6 @@
+pub mod cognitive;
 pub mod cyclomatic;
+pub mod halstead;
 pub mod structural;
 
 /// Function node types recognized by tree-sitter for TypeScript/JavaScript.
