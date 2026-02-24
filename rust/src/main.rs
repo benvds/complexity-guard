@@ -1,6 +1,12 @@
 use clap::Parser;
 use complexity_guard::cli::{config_defaults, discover_config, merge_args_into_config, resolve_config, Args};
+use complexity_guard::metrics::duplication::detect_duplication;
+use complexity_guard::output::console::{function_violations, Severity};
 use complexity_guard::output::{determine_exit_code, render_console, render_html, render_json, render_sarif, ExitCode};
+use complexity_guard::types::{
+    AnalysisConfig, CognitiveConfig, CyclomaticConfig, DuplicationConfig, DuplicationResult,
+    ScoringThresholds, ScoringWeights, Token,
+};
 
 fn main() {
     let args = Args::parse();
@@ -81,23 +87,104 @@ fn main() {
     resolved.quiet = args.quiet;
     resolved.verbose = args.verbose;
 
-    let paths: Vec<String> = args
-        .paths
-        .iter()
-        .map(|p| p.to_string_lossy().to_string())
-        .collect();
+    // Default to "." when no paths provided
+    let input_paths: Vec<std::path::PathBuf> = if args.paths.is_empty() {
+        vec![std::path::PathBuf::from(".")]
+    } else {
+        args.paths.clone()
+    };
 
-    // Placeholder: no actual file analysis yet (Phase 20 parallel pipeline)
-    // For now, render with empty results to demonstrate format dispatch
+    // Extract include/exclude patterns from merged config
+    let include_patterns: Vec<String> = config
+        .files
+        .as_ref()
+        .and_then(|f| f.include.clone())
+        .unwrap_or_default();
+    let exclude_patterns: Vec<String> = config
+        .files
+        .as_ref()
+        .and_then(|f| f.exclude.clone())
+        .unwrap_or_default();
+
+    // Discover files
+    let discovered = match complexity_guard::pipeline::discover_files(
+        &input_paths,
+        &include_patterns,
+        &exclude_patterns,
+    ) {
+        Ok(files) => files,
+        Err(e) => {
+            eprintln!("Error discovering files: {}", e);
+            std::process::exit(ExitCode::ConfigError as i32);
+        }
+    };
+
+    // Build AnalysisConfig from resolved config
+    let analysis_config = build_analysis_config(&config, &resolved);
+
+    // Parallel analysis
     let start = std::time::Instant::now();
-    let files: Vec<complexity_guard::types::FileAnalysisResult> = vec![];
+    let (files, has_parse_errors) = complexity_guard::pipeline::analyze_files_parallel(
+        &discovered,
+        &analysis_config,
+        resolved.threads,
+    );
     let elapsed_ms = start.elapsed().as_millis() as u64;
+
+    // Duplication detection (post-parallel, gated by flag)
+    let duplication_result: Option<DuplicationResult> = {
+        let dup_enabled = config
+            .analysis
+            .as_ref()
+            .and_then(|a| a.duplication_enabled)
+            .unwrap_or(false);
+        let no_dup = config
+            .analysis
+            .as_ref()
+            .and_then(|a| a.no_duplication)
+            .unwrap_or(false);
+
+        if dup_enabled && !no_dup {
+            let file_tokens: Vec<Vec<Token>> = files
+                .iter()
+                .enumerate()
+                .map(|(i, f)| {
+                    f.tokens
+                        .iter()
+                        .map(|t| Token {
+                            kind: t.kind.clone(),
+                            start_byte: t.start_byte,
+                            end_byte: t.end_byte,
+                            file_index: i,
+                        })
+                        .collect()
+                })
+                .collect();
+            Some(detect_duplication(&file_tokens, &analysis_config.duplication))
+        } else {
+            None
+        }
+    };
+
+    // Count violations for exit code
+    let (mut error_count, mut warning_count): (u32, u32) = (0, 0);
+    for file in &files {
+        for func in &file.functions {
+            let violations = function_violations(func, &resolved);
+            for v in &violations {
+                match v.severity {
+                    Severity::Error => error_count += 1,
+                    Severity::Warning => warning_count += 1,
+                }
+            }
+        }
+    }
 
     // Render output in the requested format
     let output_result: Result<Option<String>, anyhow::Error> = match resolved.format.as_str() {
-        "json" => render_json(&files, None, &resolved, elapsed_ms).map(Some),
-        "sarif" => render_sarif(&files, None, &resolved).map(Some),
-        "html" => render_html(&files, None, &resolved, elapsed_ms).map(Some),
+        "json" => render_json(&files, duplication_result.as_ref(), &resolved, elapsed_ms).map(Some),
+        "sarif" => render_sarif(&files, duplication_result.as_ref(), &resolved).map(Some),
+        "html" => render_html(&files, duplication_result.as_ref(), &resolved, elapsed_ms).map(Some),
         _ => {
             // console format (default) and unknown formats fall through to console
             if resolved.format != "console" {
@@ -106,18 +193,12 @@ fn main() {
                     resolved.format
                 );
             }
-            if resolved.format == "console" || resolved.format != "console" {
-                // Show paths being analyzed when no actual analysis yet
-                let analyze_paths = if paths.is_empty() { vec![".".to_string()] } else { paths };
-                if !resolved.quiet {
-                    eprintln!(
-                        "complexity-guard v{} — analyzing {:?}",
-                        env!("CARGO_PKG_VERSION"),
-                        analyze_paths
-                    );
-                }
-            }
-            match render_console(&files, None, &resolved, &mut std::io::stdout()) {
+            match render_console(
+                &files,
+                duplication_result.as_ref(),
+                &resolved,
+                &mut std::io::stdout(),
+            ) {
                 Ok(_) => Ok(None), // console writes directly to stdout
                 Err(e) => Err(e),
             }
@@ -145,14 +226,83 @@ fn main() {
         }
     }
 
-    // Determine exit code from stub results (no analysis yet)
+    // Determine exit code from actual analysis results
     let exit_code = determine_exit_code(
-        false, // has_parse_errors
-        0,     // error_count
-        0,     // warning_count
+        has_parse_errors,
+        error_count,
+        warning_count,
         args.fail_on.as_deref(),
-        false, // baseline_failed
+        false, // baseline enforcement deferred
     );
 
     std::process::exit(exit_code as i32);
+}
+
+/// Build an AnalysisConfig from the merged Config and ResolvedConfig.
+///
+/// Maps resolved threshold values to AnalysisConfig fields. Uses defaults
+/// where values are not specified in config.
+fn build_analysis_config(
+    config: &complexity_guard::cli::Config,
+    resolved: &complexity_guard::cli::ResolvedConfig,
+) -> AnalysisConfig {
+    let cyclomatic = CyclomaticConfig {
+        count_logical_operators: true,
+        count_nullish_coalescing: true,
+        count_optional_chaining: true,
+        count_ternary: true,
+        count_default_params: true,
+        switch_case_mode: complexity_guard::types::SwitchCaseMode::Classic,
+        warning_threshold: resolved.cyclomatic_warning,
+        error_threshold: resolved.cyclomatic_error,
+    };
+
+    let cognitive = CognitiveConfig {
+        warning_threshold: resolved.cognitive_warning,
+        error_threshold: resolved.cognitive_error,
+    };
+
+    let scoring_weights = if let Some(w) = &config.weights {
+        ScoringWeights {
+            cyclomatic: w.cyclomatic.unwrap_or(0.20),
+            cognitive: w.cognitive.unwrap_or(0.30),
+            halstead: w.halstead.unwrap_or(0.15),
+            structural: w.structural.unwrap_or(0.15),
+            duplication: w.duplication.unwrap_or(0.20),
+        }
+    } else {
+        ScoringWeights::default()
+    };
+
+    let scoring_thresholds = ScoringThresholds {
+        cyclomatic_warning: resolved.cyclomatic_warning as f64,
+        cyclomatic_error: resolved.cyclomatic_error as f64,
+        cognitive_warning: resolved.cognitive_warning as f64,
+        cognitive_error: resolved.cognitive_error as f64,
+        halstead_warning: resolved.halstead_volume_warning,
+        halstead_error: resolved.halstead_volume_error,
+        function_length_warning: resolved.line_count_warning as f64,
+        function_length_error: resolved.line_count_error as f64,
+        params_count_warning: resolved.params_count_warning as f64,
+        params_count_error: resolved.params_count_error as f64,
+        nesting_depth_warning: resolved.nesting_depth_warning as f64,
+        nesting_depth_error: resolved.nesting_depth_error as f64,
+    };
+
+    let duplication = DuplicationConfig {
+        min_tokens: 25,
+        enabled: config
+            .analysis
+            .as_ref()
+            .and_then(|a| a.duplication_enabled)
+            .unwrap_or(false),
+    };
+
+    AnalysisConfig {
+        cyclomatic,
+        cognitive,
+        scoring_weights,
+        scoring_thresholds,
+        duplication,
+    }
 }
