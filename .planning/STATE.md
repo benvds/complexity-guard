@@ -2,16 +2,17 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-23)
+See: .planning/PROJECT.md (updated 2026-02-24)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** v1.0 shipped — planning next milestone
+**Current focus:** v0.8 Rust Rewrite
 
 ## Current Position
 
-Milestone: v1.0 MVP — SHIPPED 2026-02-23
-Status: All 16 phases complete (54 plans), 89/89 requirements satisfied
-Last activity: 2026-02-23 - Milestone v1.0 archived
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-24 — Milestone v0.8 started
 
 ## Accumulated Context
 
@@ -27,17 +28,17 @@ Key decisions in PROJECT.md Key Decisions table.
 
 ### Known Technical Debt
 
-- Duplication re-parse approach causes significant overhead on large projects (800%+ on some codebases) — revisit in future milestone
+- Duplication re-parse approach causes significant overhead on large projects (800%+ on some codebases) — revisit in Rust implementation
 
 ### Blockers/Concerns
 
-(None — clean slate for next milestone)
+(None — clean slate for Rust rewrite)
 
 ## Session Continuity
 
-Last session: 2026-02-23 (complete-milestone)
-Stopped at: v1.0 milestone archived, ready for `/gsd:new-milestone`
+Last session: 2026-02-24 (new-milestone)
+Stopped at: Defining requirements for v0.8 Rust Rewrite
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-23*
+*Last updated: 2026-02-24*

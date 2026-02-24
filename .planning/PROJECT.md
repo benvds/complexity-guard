@@ -33,14 +33,25 @@ Deliver accurate, fast complexity analysis in a single binary that runs locally 
 
 ### Active
 
-(None — next milestone requirements defined via `/gsd:new-milestone`)
+## Current Milestone: v0.8 Rust Rewrite
+
+**Goal:** Rewrite ComplexityGuard from Zig to Rust for ecosystem maturity and language stability, achieving 1:1 feature parity as a drop-in binary replacement.
+
+**Target features:**
+- Rust implementation with tree-sitter-rs for TS/JS/TSX/JSX parsing
+- All five metric families (cyclomatic, cognitive, Halstead, structural, duplication)
+- All four output formats (console, JSON, SARIF 2.1.0, HTML)
+- Same CLI interface and configuration system
+- CI testing pipeline (GitHub Actions)
+- Cross-compilation to same target platforms
 
 ### Out of Scope
 
-- LSP server / editor integration — deferred to v1.x
-- Watch mode — deferred to v1.x
-- Baseline/diff mode — deferred to v1.x
-- Git blame integration — deferred to v1.x
+- LSP server / editor integration — deferred post-rewrite
+- Watch mode — deferred post-rewrite
+- Baseline/diff mode — deferred post-rewrite
+- Git blame integration — deferred post-rewrite
+- npm distribution packages — deferred to after Rust binary stabilizes
 - Vue SFC support — may add later based on demand
 - Type-checking or semantic analysis — syntax-only tool by design
 - Bug detection or security scanning — not a linter
@@ -82,4 +93,4 @@ CI/CD: GitHub Actions for testing and release automation.
 | Re-parse approach for duplication | Re-read files for tokenization after per-file metric analysis | ⚠️ Revisit — significant overhead on large projects (800%+ on some codebases) |
 
 ---
-*Last updated: 2026-02-23 after v1.0 milestone*
+*Last updated: 2026-02-24 after v0.8 milestone start*
