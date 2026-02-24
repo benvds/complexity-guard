@@ -220,7 +220,7 @@ fn classify_node(
 }
 
 /// Check if a node kind is a TypeScript type-only node that should be skipped.
-fn is_type_only_node(kind: &str) -> bool {
+pub fn is_type_only_node(kind: &str) -> bool {
     matches!(
         kind,
         "type_annotation"
