@@ -1,3 +1,4 @@
+# v0.8.0 baseline binary size: 279 KB (Phase 17, macOS arm64)
 [package]
 name = "complexity-guard"
 version = "0.8.0"
