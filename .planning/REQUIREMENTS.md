@@ -26,9 +26,9 @@ Requirements for the Rust rewrite. Each maps to roadmap phases. Goal: 1:1 featur
 
 ### CLI & Config
 
-- [ ] **CLI-01**: Same CLI flags as Zig binary (all options preserved)
-- [ ] **CLI-02**: `.complexityguard.json` config loading with same schema
-- [ ] **CLI-03**: CLI flags override config file values
+- [x] **CLI-01**: Same CLI flags as Zig binary (all options preserved)
+- [x] **CLI-02**: `.complexityguard.json` config loading with same schema
+- [x] **CLI-03**: CLI flags override config file values
 
 ### Output
 
@@ -36,7 +36,7 @@ Requirements for the Rust rewrite. Each maps to roadmap phases. Goal: 1:1 featur
 - [ ] **OUT-02**: JSON output matches Zig schema (field names, structure)
 - [ ] **OUT-03**: SARIF 2.1.0 output accepted by GitHub Code Scanning
 - [ ] **OUT-04**: HTML report is self-contained with same embedded JS/CSS
-- [ ] **OUT-05**: Exit codes 0-4 match Zig semantics
+- [x] **OUT-05**: Exit codes 0-4 match Zig semantics
 
 ### Pipeline
 
@@ -96,14 +96,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | METR-04 | Phase 18 | Pending |
 | METR-05 | Phase 18 | Pending |
 | METR-06 | Phase 18 | Pending |
-| CLI-01 | Phase 19 | Pending |
-| CLI-02 | Phase 19 | Pending |
-| CLI-03 | Phase 19 | Pending |
+| CLI-01 | Phase 19 | Complete |
+| CLI-02 | Phase 19 | Complete |
+| CLI-03 | Phase 19 | Complete |
 | OUT-01 | Phase 19 | Pending |
 | OUT-02 | Phase 19 | Pending |
 | OUT-03 | Phase 19 | Pending |
 | OUT-04 | Phase 19 | Pending |
-| OUT-05 | Phase 19 | Pending |
+| OUT-05 | Phase 19 | Complete |
 | PIPE-01 | Phase 20 | Pending |
 | PIPE-02 | Phase 20 | Pending |
 | PIPE-03 | Phase 20 | Pending |

@@ -153,7 +153,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22
 | 14. Tech Debt Cleanup | v1.0 | 2/2 | Complete | 2026-02-23 |
 | 17. Project Setup and Parser Foundation | 3/3 | Complete    | 2026-02-24 | - |
 | 18. Core Metrics Pipeline | v0.8 | 3/3 | Complete | 2026-02-24 |
-| 19. CLI, Config, and Output Formats | v0.8 | 0/TBD | Not started | - |
+| 19. CLI, Config, and Output Formats | 1/4 | In Progress|  | - |
 | 20. Parallel Pipeline | v0.8 | 0/TBD | Not started | - |
 | 21. Integration Testing and Behavioral Parity | v0.8 | 0/TBD | Not started | - |
 | 22. Cross-Compilation, CI, and Release | v0.8 | 0/TBD | Not started | - |

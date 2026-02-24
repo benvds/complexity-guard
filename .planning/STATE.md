@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-24)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** v0.8 Rust Rewrite — Phase 19: CLI, Config, and Output Formats (planned, ready to execute)
+**Current focus:** v0.8 Rust Rewrite — Phase 19: CLI, Config, and Output Formats (executing — plan 1/4 complete)
 
 ## Current Position
 
 Phase: 19 of 22 (CLI, Config, and Output Formats)
-Plan: 0 of 4 in current phase
-Status: Phase planned — ready to execute
-Last activity: 2026-02-24 — Phase 19 plans verified (4 plans, 4 waves)
+Plan: 1 of 4 in current phase
+Status: Executing phase — plan 01 complete
+Last activity: 2026-02-24 — Phase 19 plan 01 complete (CLI args, config, exit codes)
 
-Progress: [████░░░░░░] 33% (v0.8 milestone)
+Progress: [████░░░░░░] 36% (v0.8 milestone)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6 (v0.8)
+- Total plans completed: 7 (v0.8)
 - Average duration: 7 min
-- Total execution time: 40 min
+- Total execution time: 46 min
 
 **By Phase:**
 
@@ -29,10 +29,11 @@ Progress: [████░░░░░░] 33% (v0.8 milestone)
 |-------|-------|-------|----------|
 | 17 | 3/3 | 10 min | 3 min |
 | 18 | 3/3 | 30 min | 10 min |
+| 19 | 1/4 | 6 min | 6 min |
 
 **Recent Trend:**
-- Last 5 plans: 17-02 (5 min), 17-03 (2 min), 18-01 (5 min), 18-02 (10 min), 18-03 (15 min)
-- Trend: Increasing (metrics plans more complex than setup)
+- Last 5 plans: 18-01 (5 min), 18-02 (10 min), 18-03 (15 min), 19-01 (6 min)
+- Trend: Stable
 
 *Updated after each plan completion*
 
@@ -52,6 +53,7 @@ Recent decisions affecting v0.8:
 - Zero duplicate tree-sitter versions confirmed via cargo tree -d — no patching needed
 - Avoided serde-sarif in Phase 19 — hand-rolled SARIF structs with serde instead (per research recommendation)
 - Phase 19 doc updates deferred publication READMEs to Phase 22 (Rust binary not yet shipped)
+- [Phase 19]: clap derive #[command(version)] handles --version automatically; tempfile added as dev-dependency for discovery tests; fail_on 'none' override checked first in exit code priority; Config overlay in main.rs is field-by-field merge to preserve defaults
 
 ### Pending Todos
 
@@ -65,16 +67,16 @@ Recent decisions affecting v0.8:
 
 ## Session Continuity
 
-Last session: 2026-02-24 (new-milestone autonomous run)
-Stopped at: Phase 19 planned and verified — ready to execute. Context window filling up.
-Resume with: `/gsd:execute-phase 19` then continue `/gsd:plan-phase 20` → `/gsd:execute-phase 20` → etc. through Phase 22.
+Last session: 2026-02-24 (execute-phase 19)
+Stopped at: Completed 19-01-PLAN.md — CLI args, config, merge, discovery, exit codes, main.rs wired
+Resume with: Continue `/gsd:execute-phase 19` (plans 02-04 remaining) then Phase 20-22.
 
 **Remaining phases to plan+execute:**
-- Phase 19: CLI, Config, Output Formats — PLANNED, execute next
+- Phase 19: CLI, Config, Output Formats — IN PROGRESS (1/4 complete, plans 02-04 remaining)
 - Phase 20: Parallel Pipeline — plan + execute
 - Phase 21: Integration Testing — plan + execute
 - Phase 22: Cross-Compilation, CI, Release — plan + execute
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-24 after Phase 19 planning*
+*Last updated: 2026-02-24 after Phase 19 plan 01 completion*
