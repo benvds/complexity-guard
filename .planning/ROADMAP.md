@@ -91,9 +91,9 @@ Plans:
   7. Exit codes 0-4 are returned under the same conditions as the Zig binary (clean, warn, error, critical, fatal)
 **Plans**: 4 plans
 Plans:
-- [ ] 19-01-PLAN.md — CLI args, config loading, merge semantics, and exit codes
-- [ ] 19-02-PLAN.md — Console (ESLint-style) and JSON output renderers
-- [ ] 19-03-PLAN.md — SARIF 2.1.0 and self-contained HTML output renderers
+- [x] 19-01-PLAN.md — CLI args, config loading, merge semantics, and exit codes
+- [x] 19-02-PLAN.md — Console (ESLint-style) and JSON output renderers
+- [x] 19-03-PLAN.md — SARIF 2.1.0 and self-contained HTML output renderers
 - [ ] 19-04-PLAN.md — Documentation updates (Rust rewrite notes in README and docs)
 
 ### Phase 20: Parallel Pipeline
