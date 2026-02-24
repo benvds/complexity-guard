@@ -27,7 +27,8 @@ fn test_parse_typescript_simple_function() {
         .find(|f| f.name == "greet")
         .expect("should find 'greet' function");
     assert_eq!(greet.start_line, 5, "greet starts at line 5");
-    assert_eq!(greet.start_column, 0, "greet starts at column 0 (after export keyword on same line)");
+    // Column 7: tree-sitter function_declaration starts after "export " prefix
+    assert_eq!(greet.start_column, 7, "greet function_declaration starts at column 7");
 }
 
 #[test]
