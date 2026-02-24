@@ -94,7 +94,7 @@ Plans:
 - [x] 19-01-PLAN.md — CLI args, config loading, merge semantics, and exit codes
 - [x] 19-02-PLAN.md — Console (ESLint-style) and JSON output renderers
 - [x] 19-03-PLAN.md — SARIF 2.1.0 and self-contained HTML output renderers
-- [ ] 19-04-PLAN.md — Documentation updates (Rust rewrite notes in README and docs)
+- [x] 19-04-PLAN.md — Documentation updates (Rust rewrite notes in README and docs)
 
 ### Phase 20: Parallel Pipeline
 **Goal**: File analysis runs in parallel across available CPU cores using rayon, directory scanning respects glob exclusions, output is always sorted by path regardless of completion order, and throughput matches or exceeds the Zig binary on representative fixtures.
@@ -153,7 +153,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22
 | 14. Tech Debt Cleanup | v1.0 | 2/2 | Complete | 2026-02-23 |
 | 17. Project Setup and Parser Foundation | 3/3 | Complete    | 2026-02-24 | - |
 | 18. Core Metrics Pipeline | v0.8 | 3/3 | Complete | 2026-02-24 |
-| 19. CLI, Config, and Output Formats | 4/4 | Complete   | 2026-02-24 | - |
+| 19. CLI, Config, and Output Formats | 4/4 | Complete    | 2026-02-24 | - |
 | 20. Parallel Pipeline | v0.8 | 0/TBD | Not started | - |
 | 21. Integration Testing and Behavioral Parity | v0.8 | 0/TBD | Not started | - |
 | 22. Cross-Compilation, CI, and Release | v0.8 | 0/TBD | Not started | - |
