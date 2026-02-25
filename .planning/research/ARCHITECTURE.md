@@ -1,719 +1,474 @@
 # Architecture Research
 
-**Domain:** Static Code Analysis Tools (Complexity Metrics)
-**Researched:** 2026-02-14
-**Confidence:** MEDIUM
+**Domain:** Rust Rewrite of ComplexityGuard (Zig → Rust Static Analysis Binary)
+**Researched:** 2026-02-24
+**Confidence:** HIGH
 
 ## Standard Architecture
 
 ### System Overview
 
 ```
-┌────────────────────────────────────────────────────────────────────────┐
-│                          CLI Layer                                     │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                 │
-│  │ Arg Parser   │→ │ Config Loader│→ │ File Scanner │                 │
-│  └──────────────┘  └──────────────┘  └──────┬───────┘                 │
-├──────────────────────────────────────────────┼──────────────────────────┤
-│                    Orchestration Layer       │                         │
-│  ┌──────────────────────────────────────────┼──────────────────────┐   │
-│  │              Thread Pool Coordinator      │                      │   │
-│  │  ┌─────────────────────────────────────┐ │                      │   │
-│  │  │ Work Queue (file paths)             │ │                      │   │
-│  │  └─────────────────────────────────────┘ │                      │   │
-│  │                  │  │  │  │              │                      │   │
-│  └──────────────────┼──┼──┼──┼──────────────┘                      │   │
-├────────────────────┼──┼──┼──┼───────────────────────────────────────┤
-│  Analysis Pipeline  │  │  │  │  (per-file, parallel)                │
-│  ┌─────────────────▼──▼──▼──▼──────────────────────────────────┐   │
-│  │                    Per-File Analysis                         │   │
-│  │  ┌──────────┐   ┌────────────┐   ┌─────────────────────┐    │   │
-│  │  │ Parser   │ → │ AST Walker │ → │ Metric Collectors   │    │   │
-│  │  │(tree-    │   │ (Visitor)  │   │ (5 families)        │    │   │
-│  │  │ sitter)  │   └────────────┘   └──────────┬──────────┘    │   │
-│  │  └──────────┘                               │               │   │
-│  │                                              ▼               │   │
-│  │                                    ┌─────────────────┐      │   │
-│  │                                    │ File Results    │      │   │
-│  │                                    └────────┬────────┘      │   │
-│  └─────────────────────────────────────────────┼──────────────┘   │
-├────────────────────────────────────────────────┼──────────────────┤
-│            Cross-File Analysis Layer           ▼                 │
-│  ┌──────────────────────────────────────────────────────────┐    │
-│  │  Duplication Detector (Rabin-Karp)                       │    │
-│  │  - Tokenize all files                                    │    │
-│  │  - Build hash index across file results                  │    │
-│  │  - Match & verify clones                                 │    │
-│  └───────────────────────────────────┬──────────────────────┘    │
-├────────────────────────────────────────┼─────────────────────────┤
-│            Aggregation Layer           ▼                         │
-│  ┌──────────────────────────────────────────────────────────┐    │
-│  │  Composite Score Calculator                              │    │
-│  │  - Normalize metrics                                     │    │
-│  │  - Apply weights                                         │    │
-│  │  - Calculate health scores (file + project)              │    │
-│  └───────────────────────────────────┬──────────────────────┘    │
-├────────────────────────────────────────┼─────────────────────────┤
-│              Output Layer              ▼                         │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐            │
-│  │ Console  │ │  JSON    │ │  SARIF   │ │  HTML    │            │
-│  │ Formatter│ │Formatter │ │Formatter │ │Generator │            │
-│  └──────────┘ └──────────┘ └──────────┘ └──────────┘            │
-└────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                          CLI Layer (main.rs)                        │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐              │
+│  │  clap v4     │  │ Config Loader│  │  `init`      │              │
+│  │  (derive)    │→ │ serde_json   │→ │  subcommand  │              │
+│  └──────────────┘  └──────────────┘  └──────────────┘              │
+├─────────────────────────────────────────────────────────────────────┤
+│                     Discovery Layer                                  │
+│  ┌──────────────────────────────────────────────────────────────┐   │
+│  │  ignore::WalkBuilder (respects .gitignore, .ignore)          │   │
+│  │  glob pattern filter → Vec<PathBuf>                          │   │
+│  └──────────────────────────────────────────────────────────────┘   │
+├─────────────────────────────────────────────────────────────────────┤
+│                  Analysis Pipeline (rayon par_iter)                  │
+│  ┌────────────┐  ┌────────────┐  ┌───────────┐  ┌──────────────┐   │
+│  │  Parser    │→ │  Metrics   │→ │  Scoring  │→ │ FileResult   │   │
+│  │ tree-sitter│  │ cyclomatic │  │  sigmoid  │  │  (owned)     │   │
+│  │ per-thread │  │ cognitive  │  │ normalize │  │              │   │
+│  └────────────┘  │ halstead   │  └───────────┘  └──────────────┘   │
+│                  │ structural │                                      │
+│                  └────────────┘                                      │
+├─────────────────────────────────────────────────────────────────────┤
+│              Duplication Pass (sequential, cross-file)               │
+│  ┌──────────────────────────────────────────────────────────────┐   │
+│  │  Rabin-Karp rolling hash over token sequences                │   │
+│  │  HashMap<u64, Vec<TokenWindow>> → CloneGroups                │   │
+│  └──────────────────────────────────────────────────────────────┘   │
+├─────────────────────────────────────────────────────────────────────┤
+│                      Output Layer                                    │
+│  ┌────────────┐  ┌────────────┐  ┌────────────┐  ┌────────────┐    │
+│  │  console   │  │    JSON    │  │  SARIF 2.1 │  │    HTML    │    │
+│  │  (stderr / │  │ serde_json │  │ serde      │  │  (string   │    │
+│  │   stdout)  │  │ to_writer  │  │ derive     │  │  template) │    │
+│  └────────────┘  └────────────┘  └────────────┘  └────────────┘    │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Component Responsibilities
 
-| Component | Responsibility | Typical Implementation |
-|-----------|----------------|------------------------|
-| **CLI Layer** | Parse arguments, load config, discover files | Zig `std.process.args`, JSON parser for config, glob matching for file discovery |
-| **File Scanner** | Recursively find matching files, apply include/exclude patterns | Directory walking with pattern matching |
-| **Thread Pool Coordinator** | Distribute file analysis across worker threads | Zig `std.Thread.Pool`, work queue of file paths |
-| **Parser (tree-sitter)** | Convert source text to concrete syntax tree | C FFI to tree-sitter library, one parser instance per thread |
-| **AST Walker** | Traverse syntax tree nodes | Visitor pattern with callbacks for node types |
-| **Metric Collectors** | Compute individual metrics during AST walk | Independent collectors (cyclomatic, cognitive, Halstead, structural) run in single pass |
-| **Duplication Detector** | Find code clones across files | Rabin-Karp rolling hash on token sequences, runs after per-file analysis |
-| **Composite Score Calculator** | Combine weighted metrics into health score | Normalization + weighted sum formula |
-| **Output Formatters** | Serialize results to different formats | Template-based for HTML, structured serialization for JSON/SARIF |
+| Component | Responsibility | Rust Implementation |
+|-----------|---------------|---------------------|
+| `main.rs` | Entry point, wires pipeline stages | Thin orchestrator only |
+| `cli/args.rs` | CLI argument definitions | `#[derive(Parser)]` on `Cli` struct |
+| `cli/config.rs` | `.complexityguard.json` load/merge | `serde::Deserialize` on `Config` struct |
+| `discovery/mod.rs` | File walking, extension filter | `ignore::WalkBuilder` |
+| `parser/mod.rs` | Language selection, source → Tree | `tree_sitter::Parser` per rayon task |
+| `metrics/cyclomatic.rs` | McCabe cyclomatic complexity | AST node visitor, pure function |
+| `metrics/cognitive.rs` | SonarSource cognitive complexity | Recursive traversal with nesting state |
+| `metrics/halstead.rs` | Halstead volume/difficulty/effort/bugs | Operator/operand token counting |
+| `metrics/structural.rs` | Length, params, nesting depth, file stats | Single-pass AST walk |
+| `metrics/duplication.rs` | Rabin-Karp rolling hash, clone groups | Cross-file HashMap; called after parallel pass |
+| `metrics/scoring.rs` | Sigmoid normalization, composite score | Pure math, no allocations |
+| `output/console.rs` | Human-readable terminal output | `Write` to stdout/stderr |
+| `output/json.rs` | JSON serialization | `serde_json::to_writer_pretty` |
+| `output/sarif.rs` | SARIF 2.1.0 format | Typed structs with `#[derive(Serialize)]` |
+| `output/html.rs` | Self-contained HTML report | Inline template string substitution |
+| `types.rs` | Shared data structures | `#[derive(Debug, Clone, Serialize)]` |
 
 ## Recommended Project Structure
 
-Based on Zig conventions and the PRD specification:
-
 ```
-complexityguard/
-├── build.zig                     # Zig build script (dependencies, targets, tests)
-├── build.zig.zon                 # Package manifest (if using external Zig packages)
+complexity-guard/
+├── Cargo.toml              # workspace or single-crate manifest
+├── Cargo.lock
+├── build.rs                # NOT needed — tree-sitter language crates include precompiled C
 ├── src/
-│   ├── main.zig                  # Entry point, CLI orchestration
-│   ├── config.zig                # Config file parsing and validation
-│   │                             #   - ConfigLoader struct
-│   │                             #   - Default values
-│   │                             #   - JSON deserialization
-│   ├── scanner.zig               # File discovery and filtering
-│   │                             #   - FileScanner struct
-│   │                             #   - Glob pattern matching
-│   │                             #   - Include/exclude logic
-│   ├── parser.zig                # tree-sitter C FFI integration
-│   │                             #   - Parser struct (wraps TSParser*)
-│   │                             #   - Language initialization
-│   │                             #   - Error-tolerant parsing
-│   ├── ast/
-│   │   ├── walker.zig            # Generic AST traversal
-│   │   │                         #   - ASTVisitor trait/interface
-│   │   │                         #   - Depth-first traversal
-│   │   │                         #   - Node type dispatch
-│   │   └── types.zig             # AST node type mappings
-│   │                             #   - tree-sitter node → domain types
+│   ├── main.rs             # entry point: parse args → run pipeline → exit code
+│   ├── lib.rs              # optional: re-exports for integration tests
+│   ├── types.rs            # FunctionResult, FileResult, ProjectResult, ThresholdStatus
+│   ├── cli/
+│   │   ├── mod.rs
+│   │   ├── args.rs         # clap derive: Cli, Commands, AnalyzeArgs, InitArgs
+│   │   └── config.rs       # Config, ThresholdsConfig, WeightsConfig + JSON load/merge
+│   ├── discovery/
+│   │   └── mod.rs          # WalkBuilder setup, extension filter, glob exclude
+│   ├── parser/
+│   │   └── mod.rs          # select_language(), parse_source() → tree_sitter::Tree
 │   ├── metrics/
-│   │   ├── collector.zig         # Base collector interface
-│   │   │                         #   - MetricCollector trait
-│   │   │                         #   - Result aggregation
-│   │   ├── cyclomatic.zig        # McCabe cyclomatic complexity
-│   │   │                         #   - CyclomaticCollector
-│   │   │                         #   - Branch point detection
-│   │   ├── cognitive.zig         # SonarSource cognitive complexity
-│   │   │                         #   - CognitiveCollector
-│   │   │                         #   - Nesting tracker
-│   │   │                         #   - Boolean operator sequences
-│   │   ├── halstead.zig          # Halstead metrics
-│   │   │                         #   - HalsteadCollector
-│   │   │                         #   - Operator/operand classification
-│   │   │                         #   - Volume/difficulty/effort calculations
-│   │   ├── structural.zig        # Structural metrics
-│   │   │                         #   - StructuralCollector
-│   │   │                         #   - Function length, params, nesting depth
-│   │   ├── duplication.zig       # Rabin-Karp duplication detection
-│   │   │                         #   - DuplicationDetector
-│   │   │                         #   - Token hasher
-│   │   │                         #   - Clone group matching
-│   │   └── composite.zig         # Weighted health score
-│   │                             #   - CompositeCalculator
-│   │                             #   - Normalization functions
-│   │                             #   - Weight application
-│   ├── results/
-│   │   ├── types.zig             # Result data structures
-│   │   │                         #   - FunctionResult
-│   │   │                         #   - FileResult
-│   │   │                         #   - ProjectResult
-│   │   └── aggregator.zig        # Aggregate file results to project level
-│   ├── output/
-│   │   ├── console.zig           # Terminal formatter
-│   │   │                         #   - Color support detection
-│   │   │                         #   - Table rendering
-│   │   ├── json.zig              # JSON output
-│   │   │                         #   - JSON serialization
-│   │   ├── sarif.zig             # SARIF 2.1.0 output
-│   │   │                         #   - SARIF schema compliance
-│   │   │                         #   - Rule/result mapping
-│   │   └── html.zig              # HTML report generator
-│   │                             #   - Embedded CSS/JS
-│   │                             #   - Self-contained output
-│   └── thread_pool.zig           # Thread pool coordinator
-│                                 #   - WorkQueue
-│                                 #   - Result collection
-├── grammars/                     # tree-sitter grammar source
-│   ├── tree-sitter-typescript/   # Submodule or vendored C source
-│   ├── tree-sitter-tsx/
-│   ├── tree-sitter-javascript/
-│   └── tree-sitter-jsx/
-├── tests/
-│   ├── fixtures/                 # Test TypeScript/JavaScript files
-│   │   ├── cyclomatic/
-│   │   ├── cognitive/
-│   │   ├── halstead/
-│   │   └── duplication/
-│   ├── unit/
-│   │   ├── config_test.zig
-│   │   ├── cyclomatic_test.zig
-│   │   ├── cognitive_test.zig
-│   │   └── ...
-│   └── integration/
-│       └── e2e_test.zig          # Full pipeline tests
-└── README.md
+│   │   ├── mod.rs          # AnalysisResult, per-file orchestration
+│   │   ├── cyclomatic.rs   # analyze_file() → Vec<FunctionMetrics>
+│   │   ├── cognitive.rs    # analyze_functions() → Vec<u32>
+│   │   ├── halstead.rs     # analyze_functions() → Vec<HalsteadMetrics>
+│   │   ├── structural.rs   # analyze_functions() + analyze_file() structural
+│   │   ├── duplication.rs  # tokenize() + rabin_karp() + build_clone_groups()
+│   │   └── scoring.rs      # sigmoid_score(), compute_function_score(), compute_file_score()
+│   ├── pipeline/
+│   │   └── mod.rs          # rayon par_iter over file list → Vec<FileAnalysisResult>
+│   └── output/
+│       ├── mod.rs          # dispatch to format-specific renderer
+│       ├── console.rs
+│       ├── json.rs
+│       ├── sarif.rs
+│       └── html.rs
+└── tests/
+    ├── fixtures/           # same TS/JS fixture files from Zig version
+    │   ├── typescript/
+    │   └── javascript/
+    └── integration/        # end-to-end tests via process::Command
+        └── cli_tests.rs
 ```
 
 ### Structure Rationale
 
-- **Flat `src/` for core modules:** Zig convention — `config.zig`, `scanner.zig`, `parser.zig` at top level. These are single-responsibility modules.
-
-- **`metrics/` subdirectory:** Groups related metric collectors. Each is independent but shares a common `MetricCollector` interface defined in `collector.zig`.
-
-- **`ast/` subdirectory:** Separates generic AST traversal (`walker.zig`) from metric-specific logic. `types.zig` maps tree-sitter node types to domain enums.
-
-- **`results/` subdirectory:** Centralizes result data structures. Keeps domain models separate from metric calculation logic.
-
-- **`output/` subdirectory:** One file per output format. Each is self-contained and takes a `ProjectResult` as input.
-
-- **`grammars/` outside `src/`:** C code for tree-sitter grammars. These compile to object files linked during build. Not Zig source.
-
-- **`tests/fixtures/` separate from `tests/unit/`:** Fixtures are data, tests are code. Makes it clear what's a test input vs. test logic.
+- **`src/cli/`:** Isolates clap and serde_json config concerns. `args.rs` and `config.rs` are separate so arg parsing is testable without touching the filesystem.
+- **`src/discovery/`:** Wraps the `ignore` crate. The `ignore::WalkBuilder` respects `.gitignore` automatically — the Zig version implemented this manually. Single module, low churn.
+- **`src/parser/`:** Thin adapter over tree-sitter. Owns language selection (`ts`, `tsx`, `js`, `jsx`) and creates `Parser` instances. In Rust, `Parser` implements `Send + Sync` (confirmed in tree-sitter 0.26.x docs), so parsers can be moved into rayon closures.
+- **`src/metrics/`:** One file per metric family, matching the Zig structure exactly. Each exposes pure functions taking `&Node` and `&[u8]` (source). No shared mutable state.
+- **`src/pipeline/`:** Single module for the rayon parallel analysis. Replaces the Zig `std.Thread.Pool` + mutex pattern with `par_iter().map().collect()`. Much simpler — no explicit mutex, no arena-to-owned deep-copy.
+- **`src/output/`:** Renderer dispatch. JSON and SARIF use `#[derive(Serialize)]` structs, eliminating all hand-rolled serialization from the Zig version.
+- **`tests/integration/`:** CLI-level tests using `std::process::Command` — equivalent to Zig's UAT approach.
 
 ## Architectural Patterns
 
-### Pattern 1: Single-Pass Multi-Collector
+### Pattern 1: rayon par_iter Replaces Manual Thread Pool
 
-**What:** Run multiple metric collectors simultaneously during a single AST walk.
+**What:** The Zig implementation used `std.Thread.Pool` with a `WorkerContext` shared behind a `Mutex`. Worker threads computed metrics in per-worker arenas, then locked the mutex to deep-copy results to the shared allocator. This was ~150 lines of low-level thread coordination.
 
-**When to use:** When metrics are independent and can compute from the same traversal. Cyclomatic, cognitive, Halstead, and structural metrics all analyze the same AST without needing separate passes.
+**Rust equivalent:** `rayon`'s `par_iter` handles all of this. Each closure is independent, returns an owned `FileAnalysisResult`, and rayon collects into `Vec` safely.
 
-**Trade-offs:**
-- **Pro:** Dramatically faster than multiple passes (4x speedup from avoiding re-parsing and re-walking).
-- **Pro:** Simplifies code — one walker, multiple observers.
-- **Con:** Collectors must be stateless or manage their own state (can't assume exclusive AST access).
-- **Con:** Memory footprint is sum of all collectors' state.
+**When to use:** Always for the per-file analysis pass. Not appropriate for the duplication pass (cross-file state).
+
+**Trade-offs:** Rayon's thread pool is shared globally — cannot set a custom thread count trivially. Use `rayon::ThreadPoolBuilder::new().num_threads(n).build_global()` in `main` before the parallel pass if the user specifies `--threads N`.
 
 **Example:**
-```zig
-// ast/walker.zig
-pub const ASTWalker = struct {
-    collectors: []MetricCollector,
+```rust
+use rayon::prelude::*;
 
-    pub fn walk(self: *ASTWalker, node: TSNode) !void {
-        // Pre-order: notify all collectors before children
-        for (self.collectors) |*collector| {
-            try collector.visitNode(node);
-        }
-
-        // Recurse to children
-        var i: u32 = 0;
-        while (i < ts_node_child_count(node)) : (i += 1) {
-            try self.walk(ts_node_child(node, i));
-        }
-
-        // Post-order: notify collectors after children
-        for (self.collectors) |*collector| {
-            try collector.exitNode(node);
-        }
-    }
-};
-
-// metrics/collector.zig
-pub const MetricCollector = struct {
-    visitNode: *const fn(*MetricCollector, TSNode) anyerror!void,
-    exitNode: *const fn(*MetricCollector, TSNode) anyerror!void,
-    // ... implementation-specific fields
-};
+let results: Vec<FileAnalysisResult> = file_paths
+    .par_iter()
+    .filter_map(|path| analyze_file(path, &config).ok())
+    .collect();
 ```
 
-### Pattern 2: Two-Phase Analysis (Per-File → Cross-File)
+### Pattern 2: Tree-sitter Parser is Send + Sync in Rust (No Per-Thread Workaround Needed)
 
-**What:** Separate independent file analysis from cross-file analysis that requires all files' results.
+**What:** In the Zig implementation, `TSParser` was not thread-safe, so each worker thread created its own parser instance inside the worker function. The same requirement applies in Rust — create one `Parser` per rayon task, not a shared instance.
 
-**When to use:** Always for duplication detection. Rabin-Karp hashing needs to compare token sequences across files, which can't happen until all files are parsed.
+**Key difference from Zig:** Rust's tree-sitter crate (0.26.x) explicitly implements `Send` and `Sync` for `Parser`, `Tree`, and `Node`. This means you can create a `Parser` in a rayon closure without any `unsafe` tricks or thread-local storage.
 
-**Trade-offs:**
-- **Pro:** Per-file analysis parallelizes perfectly (embarrassingly parallel workload).
-- **Pro:** Cross-file phase can use aggregated data structures (global hash index).
-- **Con:** Requires materializing all per-file results in memory before cross-file phase.
-- **Con:** Two distinct pipeline stages complicate error handling.
-
-**Data flow:**
-```
-Phase 1 (parallel):
-  File 1 → Parse → Collect metrics → FileResult₁
-  File 2 → Parse → Collect metrics → FileResult₂
-  ...
-  File N → Parse → Collect metrics → FileResultₙ
-           ↓
-       [All FileResults in memory]
-           ↓
-Phase 2 (sequential or parallel over hash buckets):
-  Duplication Detector:
-    - Tokenize all FileResults
-    - Build hash index (hash → [file locations])
-    - Match hash collisions → CloneGroups
-           ↓
-       ProjectResult (includes duplication data)
-```
-
-**Implementation note:** FileResult must include enough information for duplication detection (token sequence or re-parseable source). Trade-off: store tokens (memory) vs. re-parse (CPU). For 10K files, storing tokens is acceptable.
-
-### Pattern 3: Thread-Pool Work Queue
-
-**What:** Distribute file analysis across worker threads using a shared work queue.
-
-**When to use:** Always for parallel file processing. Standard pattern for CPU-bound embarrassingly parallel tasks.
-
-**Trade-offs:**
-- **Pro:** Scales to CPU core count automatically.
-- **Pro:** Handles variable file sizes well (dynamic load balancing).
-- **Con:** Requires thread-safe result collection.
-- **Con:** Parser instances can't be shared across threads (tree-sitter parsers are not thread-safe).
+**Recommended pattern:** Create `Parser` at the top of each rayon closure, set the language, parse, then drop. Parser creation is cheap; grammar loading is cheap (language constants are static).
 
 **Example:**
-```zig
-// thread_pool.zig
-pub fn analyzeFiles(allocator: Allocator, files: [][]const u8, config: Config) !ProjectResult {
-    var pool = try std.Thread.Pool.init(.{
-        .allocator = allocator,
-        .n_jobs = config.threadCount,
-    });
-    defer pool.deinit();
+```rust
+let results: Vec<_> = file_paths
+    .par_iter()
+    .filter_map(|path| {
+        let mut parser = tree_sitter::Parser::new();
+        let lang = select_language(path)?;
+        parser.set_language(&lang).ok()?;
+        let source = std::fs::read_to_string(path).ok()?;
+        let tree = parser.parse(&source, None)?;
+        Some(compute_metrics(path, &source, &tree, &config))
+    })
+    .collect();
+```
 
-    var results = std.ArrayList(FileResult).init(allocator);
-    defer results.deinit();
+### Pattern 3: Owned Types Replace Arena Allocators
 
-    var mutex = std.Thread.Mutex{};
+**What:** Zig required explicit arena allocators for temporary computation (per-worker) and careful deep-copy to the long-lived allocator. In Rust, types are owned by default — `String` and `Vec<T>` are heap-allocated and move semantics prevent double-frees. There are no arena allocators needed.
 
-    for (files) |file_path| {
-        try pool.spawn(analyzeFile, .{
-            file_path,
-            config,
-            &results,
-            &mutex,
-        });
-    }
+**Translation table:**
 
-    pool.waitAndWork(); // Block until all work completes
+| Zig pattern | Rust equivalent |
+|-------------|-----------------|
+| `arena_alloc.dupe(u8, str)` | `str.to_string()` or `String::from(str)` |
+| `arena.alloc(T)` | `Box::new(T)` or just own the value |
+| `mutex.lock()` then `alloc.dupe(path)` | rayon closure returns owned `String` |
+| `defer arena.deinit()` | RAII drop — automatic |
+| `?T` optional fields | `Option<T>` — direct equivalent |
 
-    // Phase 2: Cross-file duplication detection
-    const duplication = try detectDuplication(allocator, results.items);
+**When to use:** Everywhere. Rust's ownership model eliminates the entire category of arena/deep-copy complexity.
 
-    return ProjectResult{
-        .files = results.toOwnedSlice(),
-        .duplication = duplication,
-    };
+### Pattern 4: serde Replaces Hand-Rolled JSON and Config Parsing
+
+**What:** The Zig implementation used a custom TOML dependency for config and hand-rolled `std.json` serialization for output. In Rust, `serde` + `serde_json` handle both.
+
+**Config loading:** Derive `Deserialize` on the `Config` struct. Use `Option<T>` fields for all optional config. Merge CLI overrides after deserialization with explicit precedence logic.
+
+**JSON output:** Derive `Serialize` on result types. Use `serde_json::to_writer_pretty` for `--format json`.
+
+**SARIF output:** Define SARIF structs with `#[derive(Serialize)]` and `#[serde(rename = "camelCase")]` where field names differ from Rust convention.
+
+**Trade-off:** `serde` adds ~200KB to binary size (per `min-sized-rust` guidance). Acceptable given the 5 MB budget and the elimination of ~800 lines of hand-rolled serialization code.
+
+**Example:**
+```rust
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct Config {
+    pub output: Option<OutputConfig>,
+    pub analysis: Option<AnalysisConfig>,
+    pub thresholds: Option<ThresholdsConfig>,
+    pub weights: Option<WeightsConfig>,
 }
 
-fn analyzeFile(
-    file_path: []const u8,
-    config: Config,
-    results: *std.ArrayList(FileResult),
-    mutex: *std.Thread.Mutex,
-) void {
-    // Each thread gets its own parser instance
-    var parser = Parser.init() catch return;
-    defer parser.deinit();
+// Load config:
+let config: Config = serde_json::from_str(&file_content)?;
+```
 
-    const result = parser.analyze(file_path, config) catch return;
+### Pattern 5: clap Derive Replaces Hand-Rolled CLI Parser
 
-    mutex.lock();
-    defer mutex.unlock();
-    results.append(result) catch return;
+**What:** The Zig version implemented its own arg parser (~400 lines) due to incompatibilities with available libraries. In Rust, `clap` v4 with derive macros is the standard.
+
+**Structure:** One `Cli` struct with a `Commands` enum for subcommands (`analyze` is the default, `init` generates config).
+
+**Example:**
+```rust
+#[derive(Parser)]
+#[command(name = "complexity-guard", version, about)]
+pub struct Cli {
+    #[command(subcommand)]
+    pub command: Option<Commands>,
+    #[command(flatten)]
+    pub analyze: AnalyzeArgs,  // default when no subcommand
+}
+
+#[derive(Subcommand)]
+pub enum Commands {
+    Init(InitArgs),
+}
+
+#[derive(Args)]
+pub struct AnalyzeArgs {
+    pub path: Option<PathBuf>,
+    #[arg(long, default_value = "console")]
+    pub format: String,
+    #[arg(long)]
+    pub threads: Option<usize>,
+    // ...
 }
 ```
 
-**Critical detail:** Each worker thread must have its own tree-sitter parser instance. Parsers are not thread-safe and cannot be shared.
+### Pattern 6: ignore Crate Replaces Manual Directory Walker
 
-### Pattern 4: Visitor Pattern for AST Traversal
+**What:** The Zig version implemented gitignore-aware walking manually. The `ignore` crate (extracted from ripgrep) provides this as a first-class feature.
 
-**What:** Use a visitor interface that metric collectors implement. The walker dispatches to visitors based on node type.
-
-**When to use:** When you have multiple different operations on the same tree structure (exactly this use case — different metrics on the same AST).
-
-**Trade-offs:**
-- **Pro:** Separates traversal logic from metric logic.
-- **Pro:** Easy to add new metrics (just implement the visitor interface).
-- **Pro:** Collectors can maintain their own state during traversal.
-- **Con:** Slightly more complex than direct tree walking in metric code.
-- **Con:** Dynamic dispatch overhead (negligible for this workload).
+**When to use:** Always for file discovery. Handles `.gitignore`, `.ignore`, global git excludes automatically.
 
 **Example:**
-```zig
-// metrics/cognitive.zig
-pub const CognitiveCollector = struct {
-    nesting_level: u32 = 0,
-    score: u32 = 0,
+```rust
+use ignore::WalkBuilder;
 
-    pub fn visitNode(self: *CognitiveCollector, node: TSNode) !void {
-        const node_type = ts_node_type(node);
+let walker = WalkBuilder::new(&root)
+    .hidden(false)           // include dot-files if needed
+    .git_ignore(true)        // respect .gitignore
+    .build();
 
-        if (isNestingIncrement(node_type)) {
-            self.nesting_level += 1;
-        }
-
-        if (isComplexityIncrement(node_type)) {
-            self.score += 1 + self.nesting_level;
-        }
-    }
-
-    pub fn exitNode(self: *CognitiveCollector, node: TSNode) !void {
-        const node_type = ts_node_type(node);
-
-        if (isNestingIncrement(node_type)) {
-            self.nesting_level -= 1;
-        }
-    }
-};
+let files: Vec<PathBuf> = walker
+    .filter_map(|e| e.ok())
+    .map(|e| e.path().to_path_buf())
+    .filter(|p| is_supported_extension(p))
+    .collect();
 ```
-
-### Pattern 5: Rabin-Karp Rolling Hash for Duplication
-
-**What:** Use a rolling hash function to efficiently detect duplicate token sequences of variable length.
-
-**When to use:** Always for duplication detection. Standard algorithm for substring matching.
-
-**Trade-offs:**
-- **Pro:** O(n) time complexity for hashing all windows in a file.
-- **Pro:** Can detect Type 1 (exact) and Type 2 (renamed identifiers) clones with token normalization.
-- **Con:** Hash collisions require verification step (compare actual tokens).
-- **Con:** Requires tuning hash function and modulus to minimize collisions.
-
-**Algorithm:**
-```
-1. Tokenize file (strip whitespace, comments)
-2. Normalize tokens for Type 2 clones:
-   - Replace identifiers with placeholder "ID"
-   - Replace literals with placeholder "LIT"
-3. Slide window of size W (e.g., 25 tokens) across token sequence
-4. For each window:
-   - Compute hash H = (t₀·B⁰ + t₁·B¹ + ... + tᵥ₋₁·Bᵂ⁻¹) mod M
-   - Store (H → file location) in global hash table
-5. After all files hashed, check for hash collisions:
-   - If H appears >1 time, verify token sequences match
-   - Merge overlapping matches into maximal clone groups
-```
-
-**Implementation detail:** Use a large prime for modulus M (e.g., 2³¹-1) and prime base B (e.g., 31) to minimize collisions. Pre-compute B^W for rolling updates.
 
 ## Data Flow
 
-### Request Flow (CLI Invocation)
+### Primary Analysis Flow
 
 ```
-User runs: complexityguard src/ --format json --fail-on error
-
-main.zig
+CLI args (clap)
     ↓
-1. Parse CLI args (std.process.args)
+Config merge: .complexityguard.json + CLI overrides
     ↓
-2. Load config (.complexityguard.json + CLI overrides)
+File discovery: ignore::WalkBuilder → Vec<PathBuf>
     ↓
-3. Scan files (src/ → apply include/exclude patterns)
+[rayon par_iter] For each PathBuf:
+    → create Parser, set language
+    → read source: fs::read_to_string()
+    → parse: parser.parse() → Tree
+    → cyclomatic::analyze(&tree, &source) → Vec<FunctionCyclomatic>
+    → cognitive::analyze(&tree, &source) → Vec<u32>
+    → halstead::analyze(&tree, &source) → Vec<HalsteadMetrics>
+    → structural::analyze(&tree, &source) → (Vec<FunctionStructural>, FileStructural)
+    → scoring::compute_function_scores() → Vec<f64>
+    → scoring::compute_file_score() → f64
+    → FileAnalysisResult (owned, no shared state)
+[end par_iter] → Vec<FileAnalysisResult>
     ↓
-   [List of file paths]
+Sort results by path (for deterministic output)
     ↓
-4. Initialize thread pool (n_jobs = CPU count or --threads value)
+[if duplication enabled, sequential pass]
+    → duplication::analyze_all(&file_results) → DuplicationResult
     ↓
-5. Spawn workers: for each file, enqueue analyzeFile task
+Output dispatch:
+    → console::render() / json::render() / sarif::render() / html::render()
     ↓
-    ┌─────────────────────────────────────────────────────┐
-    │         Worker Thread (per file)                    │
-    │                                                     │
-    │  a. Initialize parser (tree-sitter)                │
-    │  b. Parse source text → CST                        │
-    │  c. Walk CST with multi-collector visitor          │
-    │     - CyclomaticCollector                          │
-    │     - CognitiveCollector                           │
-    │     - HalsteadCollector                            │
-    │     - StructuralCollector                          │
-    │  d. Produce FileResult                             │
-    │  e. Append to shared results (mutex-protected)     │
-    └─────────────────────────────────────────────────────┘
-    ↓
-6. Wait for all workers to complete
-    ↓
-   [All FileResults collected]
-    ↓
-7. Run duplication detector (Phase 2)
-   - Tokenize all files
-   - Build Rabin-Karp hash index
-   - Find clone groups
-    ↓
-8. Aggregate results → ProjectResult
-   - Calculate composite scores per file
-   - Calculate project-level composite score
-    ↓
-9. Format output (JSON in this example)
-    ↓
-10. Write to stdout or file
-    ↓
-11. Determine exit code (0 if no errors, 1 if errors found)
-    ↓
-   Exit
+Exit code (0-4 based on violations and baseline)
 ```
 
-### State Management
+### Key Differences from Zig Data Flow
 
-No global mutable state. All state flows through function parameters:
+1. **No explicit allocator threading.** rayon closures return owned values; the collector (`collect::<Vec<_>>()`) handles aggregation. No mutex required.
 
-```
-main()
-  config: Config (immutable after load)
-  files: []const u8 (immutable list of paths)
-    ↓
-analyzeFiles(config, files) → ProjectResult
-  results: ArrayList(FileResult) (append-only, mutex-protected)
-    ↓
-analyzeFile(file_path, config) → FileResult
-  parser: Parser (thread-local)
-  collectors: [..]MetricCollector (thread-local)
-    ↓
-walker.walk(node, collectors)
-  (traversal state on call stack)
-```
+2. **Config merge is explicit field-by-field.** CLI args override config file values. The `Option<T>` pattern in both layers makes precedence clear: `cli_value.or(config_value).unwrap_or(default)`.
 
-**Why this works:**
-- Config is read-only after parsing (safe to share across threads)
-- Each thread has its own parser and collectors (no sharing)
-- Results are collected via mutex (thread-safe append)
-- Duplication detection runs after all threads complete (no concurrency)
+3. **Duplication still sequential.** Cross-file hash comparison requires global state (a `HashMap<u64, Vec<TokenWindow>>`). The Zig "re-parse approach" warning (800%+ overhead noted in PROJECT.md) should be addressed: tokenize during the parallel pass and store token sequences in `FileAnalysisResult`, then run the hash comparison sequentially on the aggregated token data.
 
-### Key Data Structures
-
-```zig
-// results/types.zig
-
-pub const MetricValue = struct {
-    value: f64,
-    threshold: enum { ok, warning, error },
-};
-
-pub const FunctionResult = struct {
-    name: []const u8,
-    start_line: u32,
-    end_line: u32,
-    cyclomatic: MetricValue,
-    cognitive: MetricValue,
-    halstead_volume: MetricValue,
-    halstead_difficulty: MetricValue,
-    halstead_effort: MetricValue,
-    halstead_bugs: MetricValue,
-    length: MetricValue,        // lines
-    param_count: MetricValue,
-    nesting_depth: MetricValue,
-};
-
-pub const FileResult = struct {
-    path: []const u8,
-    functions: []FunctionResult,
-    file_length: MetricValue,
-    export_count: MetricValue,
-    health_score: f64,          // 0-100
-    tokens: []Token,            // For duplication detection
-};
-
-pub const CloneGroup = struct {
-    token_count: u32,
-    instances: []CloneInstance,
-};
-
-pub const CloneInstance = struct {
-    file_path: []const u8,
-    start_line: u32,
-    end_line: u32,
-};
-
-pub const ProjectResult = struct {
-    files: []FileResult,
-    duplication: struct {
-        percentage: f64,
-        clone_groups: []CloneGroup,
-    },
-    health_score: f64,
-    summary: struct {
-        total_files: u32,
-        total_functions: u32,
-        error_count: u32,
-        warning_count: u32,
-    },
-};
-```
-
-## Scaling Considerations
-
-| Scale | Architecture Adjustments |
-|-------|--------------------------|
-| **0-1000 files** | Single-threaded is fine. Duplication detection memory footprint is negligible. |
-| **1000-10,000 files** | Use thread pool with n_jobs = CPU count. Duplication hash index ~10-50 MB. All results fit in memory. |
-| **10,000-100,000 files** | Memory becomes a concern. Consider streaming duplication detection (process hash buckets incrementally). May need to write intermediate results to disk. |
-| **100,000+ files** | Re-architect for distributed processing. Split files across machines. Aggregate results with a reduce step. Not a v1.0 target. |
-
-### Scaling Priorities
-
-1. **First bottleneck: Per-file parsing (CPU-bound)**
-   - **Symptom:** High CPU usage, low file throughput
-   - **Fix:** Increase thread count (--threads). Ensure thread count ≤ CPU cores to avoid context switching overhead.
-   - **Expected:** ComplexityGuard should saturate all CPU cores when analyzing large codebases.
-
-2. **Second bottleneck: Duplication detection (memory-bound)**
-   - **Symptom:** High memory usage during Phase 2, potential OOM on large codebases
-   - **Fix:** Stream hash index to disk for very large projects. Or: partition files into buckets, detect duplication within buckets first.
-   - **Expected:** For 10K files × 500 LOC avg × 25 tokens/LOC = ~125M tokens. Hash index with 25-token windows = ~125M entries × (8 bytes hash + 16 bytes location) ≈ 3 GB. Manageable but non-trivial.
-
-## Anti-Patterns
-
-### Anti-Pattern 1: Shared Parser Across Threads
-
-**What people do:** Initialize one tree-sitter parser globally and call it from multiple threads.
-
-**Why it's wrong:** tree-sitter parsers maintain internal state and are NOT thread-safe. Concurrent calls lead to memory corruption, segfaults, or wrong results.
-
-**Do this instead:** Each worker thread gets its own parser instance. Initialize in thread-local storage or pass as a parameter.
-
-```zig
-// WRONG
-var global_parser = Parser.init(); // Don't do this
-
-fn worker(file: []const u8) void {
-    global_parser.parse(file); // Race condition!
-}
-
-// RIGHT
-fn worker(file: []const u8) void {
-    var parser = Parser.init(); // Thread-local
-    defer parser.deinit();
-    parser.parse(file);
-}
-```
-
-### Anti-Pattern 2: Multiple AST Passes for Independent Metrics
-
-**What people do:** Walk the AST once per metric (5 separate passes for 5 metrics).
-
-**Why it's wrong:** Parses and re-walks the tree 5x unnecessarily. tree-sitter parsing is fast but not free. Re-walking wastes CPU cache.
-
-**Do this instead:** Use the multi-collector pattern (Pattern 1 above). All independent metrics collect in a single pass.
-
-### Anti-Pattern 3: Blocking I/O in Worker Threads
-
-**What people do:** Read file synchronously in worker thread, blocking on disk I/O.
-
-**Why it's wrong:** With many threads, this can cause thread pool starvation. Threads wait on disk instead of doing CPU work.
-
-**Do this instead:** For v1.0, synchronous I/O is acceptable (files are small, modern OSes cache aggressively). For v1.x with watch mode, use async I/O or a separate I/O thread pool.
-
-**When it matters:** Only on slow storage (network filesystems, spinning disks). On SSDs with OS page cache, this is negligible.
-
-### Anti-Pattern 4: Premature Optimization of Hash Function
-
-**What people do:** Spend time optimizing Rabin-Karp hash function before measuring whether it's a bottleneck.
-
-**Why it's wrong:** Duplication detection is Phase 2, which runs AFTER all parsing completes. Parsing is almost certainly the bottleneck (tree-sitter is doing syntax analysis, we're doing simple rolling hash).
-
-**Do this instead:** Use a simple, correct hash function first. Measure with real workloads. Optimize only if profiling shows it's >5% of total time.
-
-### Anti-Pattern 5: Storing Full Source Text in FileResult
-
-**What people do:** Include `source: []const u8` field in FileResult for later re-analysis.
-
-**Why it's wrong:** For 10K files × 10 KB avg source = 100 MB just for source text. We only need tokens for duplication detection, which are much smaller.
-
-**Do this instead:** Store only tokens in FileResult. If source is needed later (e.g., for blame integration in v1.x), re-read from disk on demand.
+4. **SARIF and JSON use typed structs.** No manual string-building. `serde_json::to_writer` handles escaping, ordering, and indentation.
 
 ## Integration Points
 
-### External Services
+### External Libraries
 
-| Service | Integration Pattern | Notes |
-|---------|---------------------|-------|
-| **tree-sitter (C library)** | C FFI via Zig's `@cImport` or manual extern declarations | Link tree-sitter-typescript.a and tree-sitter-javascript.a into binary. Initialize parsers with language grammars. |
-| **File system** | Zig `std.fs` for directory walking, file reading | Use `std.fs.cwd().openIterableDir()` for recursive traversal. Handle symlinks gracefully (skip or follow, configurable). |
-| **JSON parsing** | Zig `std.json` for config loading and output serialization | Deserialize `.complexityguard.json` into Config struct. Serialize ProjectResult to JSON. |
-| **SARIF schema** | Manual struct definition matching SARIF 2.1.0 spec | Define `SARIFReport`, `SARIFResult`, etc. structs. Serialize to JSON following schema. Validate with official SARIF schema validator in tests. |
+| Library | Version | Integration Point | Notes |
+|---------|---------|-------------------|-------|
+| `tree-sitter` | 0.26.x | `parser/mod.rs` | `Parser::new()`, `set_language()`, `parse()` |
+| `tree-sitter-typescript` | 0.23.x | `parser/mod.rs` | `LANGUAGE_TYPESCRIPT`, `LANGUAGE_TSX` constants |
+| `tree-sitter-javascript` | 0.25.x | `parser/mod.rs` | `LANGUAGE` constant |
+| `rayon` | 1.x | `pipeline/mod.rs` | `par_iter()` on `Vec<PathBuf>` |
+| `clap` | 4.x | `cli/args.rs` | `#[derive(Parser, Subcommand, Args)]` |
+| `serde` | 1.x | `types.rs`, `cli/config.rs`, `output/` | `#[derive(Serialize, Deserialize)]` |
+| `serde_json` | 1.x | `cli/config.rs`, `output/json.rs`, `output/sarif.rs` | `from_str()`, `to_writer_pretty()` |
+| `ignore` | 0.4.x | `discovery/mod.rs` | `WalkBuilder::new().build()` |
 
-### Internal Boundaries
+### Internal Module Boundaries
 
 | Boundary | Communication | Notes |
 |----------|---------------|-------|
-| **main.zig ↔ thread_pool.zig** | Function call with Config + file list → ProjectResult | main orchestrates, thread_pool executes analysis. |
-| **thread_pool.zig ↔ parser.zig** | Function call per file: parser.analyze(file, config) → FileResult | Parser encapsulates tree-sitter details. |
-| **parser.zig ↔ ast/walker.zig** | Parser creates walker, passes collectors, calls walker.walk() | Walker is generic, doesn't know about tree-sitter. |
-| **ast/walker.zig ↔ metrics/**.zig** | Walker calls collector.visitNode() / exitNode() callbacks | Visitor pattern. Metrics are observers. |
-| **metrics/duplication.zig ↔ results/** | Takes all FileResults, outputs CloneGroups | Duplication is special — needs cross-file view. |
-| **results/aggregator.zig ↔ output/**.zig** | Aggregator produces ProjectResult, output formatters consume it | Clean separation: aggregation logic vs. presentation logic. |
+| `cli/` → `pipeline/` | `Config` struct (cloned) + `Vec<PathBuf>` | Config is `Clone + Send + Sync` |
+| `pipeline/` → `metrics/*` | `&PathBuf`, `&[u8]` source, `&tree_sitter::Tree` | Pure function calls; no shared state |
+| `pipeline/` → `types.rs` | Returns `Vec<FileAnalysisResult>` | Owned types; rayon collects safely |
+| `metrics/duplication.rs` → `types.rs` | Takes `&[FileAnalysisResult]`, returns `DuplicationResult` | Sequential; called after par_iter |
+| `pipeline/` → `output/` | `&ProjectResult` (aggregate) + `&Config` | Output is read-only over results |
 
-## Build Order Implications
+### New vs Modified Components
 
-Suggested implementation order based on dependencies:
+| Component | Status | Change |
+|-----------|--------|--------|
+| `cli/args.rs` | Modified | clap derive replaces hand-rolled parser; same flags |
+| `cli/config.rs` | Modified | serde replaces toml crate; same JSON schema |
+| `discovery/mod.rs` | Modified | `ignore` crate replaces manual walker; same semantics |
+| `parser/mod.rs` | Modified | Rust tree-sitter API instead of C FFI; same language selection |
+| `metrics/cyclomatic.rs` | Modified | Same algorithm; Rust Node traversal API instead of C API |
+| `metrics/cognitive.rs` | Modified | Same algorithm; same |
+| `metrics/halstead.rs` | Modified | Same algorithm; same |
+| `metrics/structural.rs` | Modified | Same algorithm; same |
+| `metrics/scoring.rs` | Mostly unchanged | Pure math; direct translation |
+| `metrics/duplication.rs` | Modified | Same Rabin-Karp algorithm; address re-parse overhead |
+| `pipeline/mod.rs` | Replaced | rayon par_iter replaces `std.Thread.Pool` + Mutex |
+| `output/console.rs` | Modified | Same format; `termcolor` or raw ANSI codes |
+| `output/json.rs` | Replaced | `serde_json` replaces hand-rolled serializer |
+| `output/sarif.rs` | Replaced | `#[derive(Serialize)]` structs replace hand-rolled |
+| `output/html.rs` | Modified | Same template; string formatting instead of writer |
+| `types.rs` | Modified | Same shape; add `#[derive(Serialize, Clone, Debug)]` |
 
-### Phase 1: Foundation (no metric logic yet)
-1. **Config loading** (`config.zig`) — No dependencies. Pure JSON parsing.
-2. **File scanner** (`scanner.zig`) — Depends on Config. Filesystem + glob matching.
-3. **Parser integration** (`parser.zig`) — tree-sitter C FFI. Can test with dummy "just parse and return node count" logic.
+## Build Order for Incremental Development
 
-### Phase 2: Single Metric (prove the pipeline)
-4. **AST walker** (`ast/walker.zig`) — Depends on Parser. Generic visitor infrastructure.
-5. **Cyclomatic metric** (`metrics/cyclomatic.zig`) — Simplest metric. Proves walker works.
-6. **Result types** (`results/types.zig`) — Define FunctionResult, FileResult.
-7. **Console output** (`output/console.zig`) — Display cyclomatic results. Quick feedback loop.
+The recommended build order minimizes rework and enables testing at each stage:
 
-### Phase 3: Remaining Metrics (parallel work)
-8. **Cognitive metric** (`metrics/cognitive.zig`) — More complex than cyclomatic. Nesting tracking.
-9. **Halstead metric** (`metrics/halstead.zig`) — Independent of others. Token classification.
-10. **Structural metrics** (`metrics/structural.zig`) — Simple. Function length, params, nesting depth.
+1. **`types.rs`** — Define all data structures first. Every other module depends on these. Add `#[derive(Debug, Clone, Serialize, Deserialize)]` from the start.
 
-### Phase 4: Cross-File Analysis
-11. **Duplication detector** (`metrics/duplication.zig`) — Depends on FileResult including tokens. Rabin-Karp implementation.
+2. **`cli/args.rs` + `cli/config.rs`** — Get argument parsing and config loading working. Write unit tests for config merge precedence. Nothing else can proceed without knowing the config shape.
 
-### Phase 5: Aggregation & Scoring
-12. **Composite score** (`metrics/composite.zig`) — Depends on all metrics producing results. Normalization + weighting.
-13. **Results aggregator** (`results/aggregator.zig`) — Combines per-file into project-level. Calculates summary stats.
+3. **`discovery/mod.rs`** — File discovery using `ignore`. Integration-test with the fixture directory.
 
-### Phase 6: Output Formats
-14. **JSON output** (`output/json.zig`) — Straightforward serialization.
-15. **SARIF output** (`output/sarif.zig`) — Requires mapping metrics to SARIF schema.
-16. **HTML output** (`output/html.zig`) — Most complex. Templating, embedded CSS/JS.
+4. **`parser/mod.rs`** — Language selection and tree-sitter parsing. Verify all four languages (ts, tsx, js, jsx) parse without errors against fixtures.
 
-### Phase 7: Parallelization
-17. **Thread pool** (`thread_pool.zig`) — Last, because single-threaded version proves correctness first. Parallelization is optimization.
+5. **`metrics/cyclomatic.rs`** — Highest value metric; used as the primary traversal baseline for all other metrics. Once this works, the traversal pattern is established.
 
-**Rationale:** Build vertically (one metric end-to-end) before horizontally (all metrics). Proves the architecture early. Each phase delivers testable value.
+6. **`metrics/structural.rs`** — Simple single-pass metrics; validates function boundary detection that cognitive and halstead depend on.
+
+7. **`metrics/cognitive.rs`** — Depends on structural (nesting) patterns being correct.
+
+8. **`metrics/halstead.rs`** — Independent of cognitive; can develop in parallel. Token counting is self-contained.
+
+9. **`metrics/scoring.rs`** — Pure math; direct Zig → Rust translation. Test sigmoid values match.
+
+10. **`pipeline/mod.rs`** — Wire the parallel pass. At this point all metrics exist; verify par_iter produces correct per-file results.
+
+11. **`output/console.rs`** — Default output; needed for manual validation during development.
+
+12. **`output/json.rs` + `output/sarif.rs` + `output/html.rs`** — Remaining output formats. JSON and SARIF are mechanical serde derives.
+
+13. **`metrics/duplication.rs`** — Last metric because it requires the full per-file `Vec<FileAnalysisResult>` as input. Address the re-parse overhead by storing token sequences inside `FileAnalysisResult` during the parallel pass.
+
+14. **Integration tests + CI** — Verify exit codes, fixture-based output parity, cross-platform builds.
+
+## Anti-Patterns
+
+### Anti-Pattern 1: Sharing a Single Parser Across Rayon Threads
+
+**What people do:** Create one `tree_sitter::Parser`, wrap it in `Arc<Mutex<Parser>>`, and share it across rayon closures.
+
+**Why it's wrong:** Mutex contention on every file defeats the purpose of parallel processing. The tree-sitter C library underlying `Parser` is not designed for concurrent use on the same instance. Even with `Parser: Send + Sync`, the canonical pattern is one parser per task.
+
+**Do this instead:** Create `Parser::new()` at the start of each rayon closure. Parser initialization is cheap (~microseconds). Grammar loading is zero-cost (static constants).
+
+### Anti-Pattern 2: Re-Parsing Files for Duplication After the Parallel Pass
+
+**What people do:** Run the per-file metric analysis in parallel, then re-read and re-parse every file a second time just to tokenize for the duplication pass.
+
+**Why it's wrong:** This was identified in PROJECT.md as causing 800%+ overhead on large codebases. Two full file reads and two full parses per file doubles I/O and CPU time.
+
+**Do this instead:** Include tokenization (`Vec<Token>`) in `FileAnalysisResult` during the parallel pass. The tokens are computed from the already-parsed tree — no second parse needed. Pass the collected token sequences directly into `duplication::analyze_all()`.
+
+### Anti-Pattern 3: Using String Concatenation for JSON/SARIF Output
+
+**What people do:** Build JSON/SARIF by `format!()` or `write!()` string concatenation, either to avoid serde or to manually control field ordering.
+
+**Why it's wrong:** Manual JSON building is error-prone (escaping, special characters in function names), hard to maintain, and produces incorrect output when function names contain quotes or backslashes.
+
+**Do this instead:** Use `#[derive(Serialize)]` on all output types and `serde_json::to_writer_pretty`. The binary size cost (~200 KB) is well within the 5 MB budget.
+
+### Anti-Pattern 4: Trying to Use Zig's `?T` Optional Pattern for Incremental Phase Population
+
+**What people do:** Port the Zig `?T` optional fields directly (e.g., `cyclomatic: Option<u32>`) and populate them across multiple passes, mutating results in place.
+
+**Why it's wrong:** Mutation across multiple passes means results are partially initialized at various stages, which requires either `Arc<Mutex<T>>` or sequential code. This eliminates rayon's benefits.
+
+**Do this instead:** Compute all metrics in a single pass per file. The rayon closure reads the file, parses, runs all enabled metrics, and returns a complete `FileAnalysisResult`. No optional fields needed at the intermediate level. `Option<T>` is appropriate in output types where a metric may be disabled, not in intermediate computation.
+
+### Anti-Pattern 5: Calling `rayon::ThreadPoolBuilder::build_global()` Too Late
+
+**What people do:** Call `build_global()` after some rayon work has already started (e.g., inside a `par_iter` closure or after a `collect()`).
+
+**Why it's wrong:** The global thread pool initializes on first use. After initialization, `build_global()` returns an error.
+
+**Do this instead:** Configure the thread pool at the top of `main()`, immediately after parsing CLI args, before any parallel work:
+```rust
+if let Some(threads) = args.threads {
+    rayon::ThreadPoolBuilder::new()
+        .num_threads(threads)
+        .build_global()
+        .expect("Failed to initialize thread pool");
+}
+```
+
+## Binary Size Considerations
+
+The Zig version achieved 3.6-3.8 MB with `ReleaseSmall`. Rust has a larger baseline but can reach comparable sizes with tuning.
+
+Recommended `Cargo.toml` release profile:
+```toml
+[profile.release]
+opt-level = "z"       # optimize for size
+lto = "fat"           # whole-program optimization
+codegen-units = 1     # single unit for best LTO
+strip = true          # remove debug symbols
+panic = "abort"       # remove unwinding machinery (~20-50 KB savings)
+```
+
+For Linux targets, build with `x86_64-unknown-linux-musl` and `-C target-feature=+crt-static -C link-self-contained=yes` for a fully static binary. For macOS and Windows, the standard dynamic runtime linkage is acceptable and produces static-feeling binaries in practice.
+
+**Confidence note (MEDIUM):** Rust binaries with tree-sitter grammar crates included will likely exceed the Zig 3.6 MB baseline. Realistic estimate is 5-12 MB before stripping. The 5 MB constraint may need to be relaxed for the Rust version, or `upx` compression applied post-build. This requires empirical measurement during the build phase.
 
 ## Sources
 
-**Source confidence: MEDIUM-LOW**
-
-This architecture research is based on:
-
-1. **PRD specification** (provided project context) — HIGH confidence for project-specific details
-2. **Common static analysis tool patterns** (ESLint, SonarQube, oxlint, Rome/Biome architectures) — MEDIUM confidence based on training data, not verified with current sources
-3. **Zig project structure conventions** — MEDIUM-LOW confidence, could not verify with official Zig documentation due to tool restrictions
-4. **tree-sitter integration patterns** — MEDIUM-LOW confidence, could not verify with official tree-sitter documentation due to tool restrictions
-5. **Multi-pass analysis pipeline patterns** — MEDIUM confidence, standard pattern in compilers and analyzers
-6. **Thread pool patterns in Zig** — MEDIUM-LOW confidence based on Zig stdlib knowledge, not verified with current docs
-
-**Verification gaps:**
-- Zig project structure conventions not verified with current official docs
-- tree-sitter C API integration patterns not verified with current official docs
-- Zig `std.Thread.Pool` API details not verified (may have changed since training data)
-
-**Recommendations:**
-- Verify Zig stdlib Thread.Pool API in official docs before implementing Phase 7
-- Check tree-sitter C API documentation for parser thread-safety guarantees
-- Review existing Zig projects using tree-sitter for integration patterns (e.g., zls, zig-tree-sitter)
+- [tree-sitter Rust crate docs (0.26.x)](https://docs.rs/tree-sitter/latest/tree_sitter/struct.Parser.html) — confirmed `Parser: Send + Sync`
+- [tree-sitter-typescript crate (0.23.x)](https://docs.rs/tree-sitter-typescript/latest/tree_sitter_typescript/) — `LANGUAGE_TYPESCRIPT`, `LANGUAGE_TSX` constants
+- [tree-sitter-javascript crate (0.25.x)](https://docs.rs/tree-sitter-javascript/latest/tree_sitter_javascript/) — `LANGUAGE` constant
+- [rayon GitHub](https://github.com/rayon-rs/rayon) — par_iter, ThreadPoolBuilder, work-stealing
+- [rayon: Data Parallelism with Rust (Shuttle, 2024)](https://www.shuttle.dev/blog/2024/04/11/using-rayon-rust) — par_iter patterns, mutex contention pitfalls
+- [ignore crate docs](https://docs.rs/ignore/latest/ignore/struct.WalkBuilder.html) — WalkBuilder, gitignore support
+- [clap v4 derive docs](https://docs.rs/clap/latest/clap/_derive/_tutorial/index.html) — Parser, Subcommand, Args derive
+- [serde field attributes](https://serde.rs/field-attrs.html) — Option<T> deserialization, skip_serializing_if
+- [min-sized-rust guide](https://github.com/johnthagen/min-sized-rust) — opt-level z, LTO, strip, panic=abort
+- [Rust MUSL static binaries (2025)](https://raniz.blog/2025-02-06_rust-musl-malloc/) — musl crt-static, mimalloc performance
+- [Using Tree-sitter Parsers in Rust](https://rfdonnelly.github.io/posts/using-tree-sitter-parsers-in-rust/) — build.rs pattern (not needed for crate-based grammars)
+- [houseabsolute/actions-rust-cross](https://github.com/houseabsolute/actions-rust-cross) — GitHub Actions cross-compilation
 
 ---
-*Architecture research for: ComplexityGuard*
-*Researched: 2026-02-14*
+*Architecture research for: ComplexityGuard Rust rewrite (Zig → Rust, v0.8 milestone)*
+*Researched: 2026-02-24*

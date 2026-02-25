@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="generator" content="ComplexityGuard {{ tool_version }}">
+  <title>ComplexityGuard Report</title>
+  <style>
+{{ css }}
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>ComplexityGuard Report</h1>
+    <p>{{ files | length }} file{% if files | length != 1 %}s{% endif %} analyzed in {{ elapsed_ms }}ms</p>
+  </header>
+
+  <main>
+    <section class="dashboard">
+      <div class="score-panel">
+        <div class="health-score score-{{ project_score_class }}">{{ project_score_display }}</div>
+        <div class="dist-bar">
+          {% if total_files > 0 %}
+          {% if ok_pct > 0 %}<div class="dist-ok" style="width:{{ ok_pct }}%"></div>{% endif %}
+          {% if warn_pct > 0 %}<div class="dist-warning" style="width:{{ warn_pct }}%"></div>{% endif %}
+          {% if err_pct > 0 %}<div class="dist-error" style="width:{{ err_pct }}%"></div>{% endif %}
+          {% endif %}
+        </div>
+        <div class="dist-label"><span>{{ ok_count }} healthy</span><span>{{ warn_count }} warning</span><span>{{ err_count }} error</span></div>
+        <div class="summary-stats">Files: <strong>{{ total_files }}</strong> | Functions: <strong>{{ total_functions }}</strong> | Errors: <strong>{{ error_count }}</strong> | Warnings: <strong>{{ warning_count }}</strong></div>
+      </div>
+      <div class="hotspots-panel">
+        <h2>Top Hotspots</h2>
+        {% if hotspots | length == 0 %}
+        <div class="empty-hotspots">No functions found.</div>
+        {% else %}
+        <div class="hotspot-cards">
+          {% for h in hotspots %}
+          <div class="hotspot-card {{ h.color_class }}">
+            <h3>{{ h.name }}</h3>
+            <p class="hotspot-file">{{ h.file_path }}:{{ h.start_line }}</p>
+            <div class="hotspot-metrics">Cyclomatic: {{ h.cyclomatic }} | Cognitive: {{ h.cognitive }} | Halstead Vol: {{ h.halstead_volume_display }}</div>
+            <div class="hotspot-violations">
+              {% for v in h.violations %}
+              <span class="violation-tag{{ v.warning_class }}">{{ v.label }}</span>
+              {% endfor %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </section>
+
+    {% if files | length > 0 %}
+    <section class="file-table-section">
+      <h2>File Breakdown</h2>
+      <div class="file-grid" id="file-grid">
+        <div class="file-grid-header">
+          <span onclick="sortTable('file-grid', 0, 'str')">File Path</span>
+          <span onclick="sortTable('file-grid', 1, 'num')">Health Score</span>
+          <span onclick="sortTable('file-grid', 2, 'num')">Functions</span>
+          <span onclick="sortTable('file-grid', 3, 'str')">Worst Violation</span>
+        </div>
+        {% for file in files %}
+        <details class="file-row" data-file-id="{{ loop.index0 }}">
+          <summary>
+            <span class="file-path" data-value="{{ file.path }}">{{ file.path }}</span>
+            <span data-value="{{ file.score_raw }}"><span class="score-badge {{ file.score_class }}">{{ file.score_display }}</span></span>
+            <span data-value="{{ file.function_count }}">{{ file.function_count }}</span>
+            <span data-value="{{ file.worst_status }}"><span class="score-badge {{ file.worst_status }}">{{ file.worst_status }}</span></span>
+          </summary>
+          <div class="detail-inner">
+            {% if file.functions | length == 0 %}
+            <p style="color:var(--muted);font-size:0.8rem">No functions found in this file.</p>
+            {% else %}
+            <table class="fn-table">
+              <thead><tr>
+                <th>Function</th>
+                <th>Health</th>
+                <th>Cyclomatic</th>
+                <th>Cognitive</th>
+                <th>Halstead Vol</th>
+                <th>Lines</th>
+                <th>Params</th>
+                <th>Nesting</th>
+              </tr></thead>
+              <tbody>
+                {% for fn in file.functions %}
+                <tr>
+                  <td data-value="{{ fn.name }}">{{ fn.name }}</td>
+                  <td data-value="{{ fn.health_score_raw }}"><span class="score-badge {{ fn.health_class }}">{{ fn.health_display }}</span></td>
+                  <td data-value="{{ fn.cyclomatic }}">{{ fn.cyclomatic }}<div class="metric-bar"><div class="metric-bar__fill {{ fn.cyclomatic_class }}" style="width:{{ fn.cyclomatic_pct }}%"></div></div></td>
+                  <td data-value="{{ fn.cognitive }}">{{ fn.cognitive }}<div class="metric-bar"><div class="metric-bar__fill {{ fn.cognitive_class }}" style="width:{{ fn.cognitive_pct }}%"></div></div></td>
+                  <td data-value="{{ fn.halstead_volume_display }}">{{ fn.halstead_volume_display }}<div class="metric-bar"><div class="metric-bar__fill {{ fn.halstead_class }}" style="width:{{ fn.halstead_pct }}%"></div></div></td>
+                  <td data-value="{{ fn.function_length }}">{{ fn.function_length }}<div class="metric-bar"><div class="metric-bar__fill {{ fn.length_class }}" style="width:{{ fn.length_pct }}%"></div></div></td>
+                  <td data-value="{{ fn.params_count }}">{{ fn.params_count }}<div class="metric-bar"><div class="metric-bar__fill {{ fn.params_class }}" style="width:{{ fn.params_pct }}%"></div></div></td>
+                  <td data-value="{{ fn.nesting_depth }}">{{ fn.nesting_depth }}<div class="metric-bar"><div class="metric-bar__fill {{ fn.nesting_class }}" style="width:{{ fn.nesting_pct }}%"></div></div></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            {% endif %}
+          </div>
+        </details>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    {% if duplication %}
+    <section class="duplication-section">
+      <h2>Code Duplication</h2>
+      <div class="dup-project-summary">
+        Project duplication: <strong>{{ duplication.percentage_display }}%</strong>
+        ({{ duplication.cloned_tokens }} / {{ duplication.total_tokens }} tokens)
+        &mdash; {{ duplication.clone_group_count }} clone group{% if duplication.clone_group_count != 1 %}s{% endif %}
+      </div>
+      {% if duplication.clone_groups | length > 0 %}
+      <table class="clone-table" style="margin-top:0.75rem">
+        <thead><tr>
+          <th>Tokens</th>
+          <th>Instances</th>
+          <th>Locations</th>
+        </tr></thead>
+        <tbody>
+          {% for group in duplication.clone_groups %}
+          <tr>
+            <td>{{ group.token_count }}</td>
+            <td>{{ group.instance_count }}</td>
+            <td>{{ group.locations }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+    </section>
+    {% endif %}
+  </main>
+
+  <footer>
+    <div class="container">
+      Generated by ComplexityGuard {{ tool_version }} &mdash; <time>{{ timestamp }}</time>
+    </div>
+  </footer>
+</div>
+<script>
+{{ js }}
+</script>
+</body>
+</html>

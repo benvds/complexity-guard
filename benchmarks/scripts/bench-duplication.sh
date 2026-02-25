@@ -21,12 +21,12 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
 PROJECTS_DIR="$PROJECT_ROOT/benchmarks/projects"
-CG_BIN="$PROJECT_ROOT/zig-out/bin/complexity-guard"
+CG_BIN="$PROJECT_ROOT/target/release/complexity-guard"
 
 # Verify binary exists (or build it)
 if [[ ! -f "$CG_BIN" ]]; then
-    echo "Binary not found at $CG_BIN — building in ReleaseFast mode..."
-    (cd "$PROJECT_ROOT" && zig build -Doptimize=ReleaseFast)
+    echo "Binary not found at $CG_BIN — building in release mode..."
+    (cd "$PROJECT_ROOT" && cargo build --release)
 fi
 
 # Locate hyperfine

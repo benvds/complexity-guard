@@ -1,0 +1,58 @@
+{
+  "version": "0.8.0",
+  "summary": {
+    "files_analyzed": 1,
+    "total_functions": 2,
+    "warnings": 2,
+    "errors": 0,
+    "status": "warning",
+    "health_score": 79.43643525140624
+  },
+  "files": [
+    {
+      "path": "../tests/fixtures/javascript/callback_patterns.js",
+      "functions": [
+        {
+          "name": "processQueue",
+          "start_line": 5,
+          "end_line": 40,
+          "start_col": 0,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 18.094737505048094,
+          "halstead_difficulty": 0.5,
+          "halstead_effort": 9.047368752524047,
+          "halstead_bugs": 0.006031579168349364,
+          "nesting_depth": 0,
+          "line_count": 27,
+          "params_count": 3,
+          "health_score": 79.23538902094324,
+          "status": "warning"
+        },
+        {
+          "name": "processHighPriority",
+          "start_line": 42,
+          "end_line": 49,
+          "start_col": 0,
+          "cyclomatic": 2,
+          "cognitive": 1,
+          "halstead_volume": 62.907475208398566,
+          "halstead_difficulty": 3.4375,
+          "halstead_effort": 216.24444602887007,
+          "halstead_bugs": 0.02096915840279952,
+          "nesting_depth": 1,
+          "line_count": 4,
+          "params_count": 2,
+          "health_score": 79.63748148186922,
+          "status": "ok"
+        }
+      ],
+      "file_length": 34,
+      "export_count": 0
+    }
+  ],
+  "metadata": {
+    "thread_count": 10
+  },
+  "duplication": null
+}

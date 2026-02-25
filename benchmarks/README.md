@@ -6,7 +6,7 @@ TypeScript and JavaScript projects.
 
 ## Prerequisites
 
-- **Zig 0.15.2+** — for building ComplexityGuard in ReleaseFast mode
+- **Rust stable toolchain** — for building ComplexityGuard (`cargo build --release`)
 - **Node.js / npm** — FTA is auto-installed per benchmark run (no global install needed)
 - **[hyperfine](https://github.com/sharkdp/hyperfine)** — for statistical benchmarking
   ```sh
@@ -21,7 +21,7 @@ TypeScript and JavaScript projects.
 
 ## Quick Start
 
-Run the complete quick-suite benchmark in four commands:
+Run the complete quick-suite benchmark in three commands:
 
 ```sh
 # 1. Clone benchmark projects (10 projects, quick suite)
@@ -30,11 +30,7 @@ bash benchmarks/scripts/setup.sh --suite quick
 # 2. End-to-end hyperfine speed + memory benchmark (CG vs FTA)
 bash benchmarks/scripts/bench-quick.sh
 
-# 3. Subsystem timing benchmark (which pipeline stage takes the longest?)
-#    Note: requires zig build bench to succeed (see bench-subsystems.sh)
-bash benchmarks/scripts/bench-subsystems.sh   # from Plan 02
-
-# 4. Metric accuracy comparison (how well do CG and FTA agree on rankings?)
+# 3. Metric accuracy comparison (how well do CG and FTA agree on rankings?)
 bash benchmarks/scripts/compare-metrics.sh --suite quick
 ```
 
@@ -52,7 +48,6 @@ node benchmarks/scripts/summarize-results.mjs benchmarks/results/baseline-$(date
 | `bench-quick.sh` | End-to-end hyperfine benchmark, quick suite (10 projects) | `results/*/`*`-quick.json`* |
 | `bench-full.sh` | End-to-end hyperfine benchmark, all 76 projects | `results/*/`*`-full.json`* |
 | `bench-stress.sh` | Hyperfine benchmark, massive repos (vscode, typescript) | `results/*/`*`-stress.json`* |
-| `bench-subsystems.sh` | Zig subsystem timing: parse, cyclomatic, cognitive, halstead, structural | `results/*/`*`-subsystems.json`* |
 | `compare-metrics.sh [--suite ...]` | Run both tools, compare per-file metrics with tolerance bands | `results/*/metric-accuracy.json` |
 | `compare-metrics.mjs <cg> <fta> <proj>` | Per-project metric comparison (called by compare-metrics.sh) | JSON to stdout |
 | `summarize-results.mjs <results-dir>` | Aggregate hyperfine + accuracy results into markdown tables | Markdown to stdout |
@@ -78,7 +73,6 @@ benchmarks/results/
     got-quick.json              # hyperfine JSON: CG vs FTA timings for got
     ...
     vscode-quick.json           # hyperfine JSON: CG vs FTA timings for vscode
-    zod-subsystems.json         # Zig subsystem timing breakdown for zod
     metric-accuracy.json        # CG vs FTA metric comparison across all projects
 ```
 
@@ -182,14 +176,12 @@ writes `system-info.json` (subsequent scripts skip if the file already exists).
 - **< 1.0**: CG is faster than FTA
 - **= 1.0**: Equal performance
 
-**Why FTA is currently faster:** CG is single-threaded; FTA uses multi-threaded Rust
-for I/O. Phase 12 will add parallel file processing to CG. See `docs/benchmarks.md`
-for analysis of where CG spends its time.
+**CG with parallel analysis:** CG uses rayon for parallel file processing (the default). It is 1.5-3.1x faster than FTA across the quick suite. Pass --threads 1 for single-threaded baseline comparison.
 
 ### Memory (Memory Ratio)
 
 Memory ratio = `FTA RSS / CG RSS`. FTA requires a Node.js runtime (V8 overhead) and
-SWC compiled via WebAssembly. CG has no runtime — it's a native Zig binary.
+SWC compiled via WebAssembly. CG has no runtime — it's a native Rust binary.
 
 - Smaller projects: FTA uses ~2x more memory (V8 baseline cost)
 - Large projects: memory converges (file content dominates V8 overhead)
@@ -215,20 +207,13 @@ within the tolerance band (25% for cyclomatic, 30% for halstead, 20% for line co
 - Halstead in particular diverges because SWC and tree-sitter classify operator/operand
   tokens differently (e.g., type annotations, template literals)
 
-### Subsystem Breakdown
+## Adding New Benchmark Runs
 
-`bench-subsystems.sh` measures which pipeline stage takes the longest in CG:
-parse, file I/O, cyclomatic analysis, cognitive analysis, halstead, structural,
-health score, and JSON serialization. This identifies where optimization will have
-the most impact for Phase 12.
-
-## Adding New Benchmark Runs (for Phase 11/12 Before/After Comparison)
-
-When Phase 11 (duplication detection) or Phase 12 (parallelization) is complete,
-run the benchmarks again using a new timestamped directory:
+After making performance-affecting changes, run the benchmarks again using
+a new timestamped directory:
 
 ```sh
-# After Phase 11 or 12 changes are merged:
+# After performance-affecting changes are merged:
 bash benchmarks/scripts/setup.sh --suite quick
 bash benchmarks/scripts/bench-quick.sh
 bash benchmarks/scripts/compare-metrics.sh --suite quick
@@ -249,7 +234,7 @@ before/after comparison without format conversion.
 
 ## Project Sources
 
-Benchmark projects are defined in `benchmarks/public-projects.json`. Each entry
+Benchmark projects are defined in `tests/public-projects.json`. Each entry
 specifies a Git URL and tag for reproducible cloning. Projects span the full size
 range of real-world TypeScript/JavaScript codebases:
 

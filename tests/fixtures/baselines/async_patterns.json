@@ -1,0 +1,41 @@
+{
+  "version": "0.8.0",
+  "summary": {
+    "files_analyzed": 1,
+    "total_functions": 1,
+    "warnings": 1,
+    "errors": 0,
+    "status": "warning",
+    "health_score": 60.816639860626225
+  },
+  "files": [
+    {
+      "path": "../tests/fixtures/typescript/async_patterns.ts",
+      "functions": [
+        {
+          "name": "fetchUserData",
+          "start_line": 5,
+          "end_line": 36,
+          "start_col": 7,
+          "cyclomatic": 4,
+          "cognitive": 15,
+          "halstead_volume": 205.13385445731566,
+          "halstead_difficulty": 7.233333333333334,
+          "halstead_effort": 1483.80154724125,
+          "halstead_bugs": 0.06837795148577189,
+          "nesting_depth": 2,
+          "line_count": 19,
+          "params_count": 2,
+          "health_score": 60.816639860626225,
+          "status": "warning"
+        }
+      ],
+      "file_length": 23,
+      "export_count": 1
+    }
+  ],
+  "metadata": {
+    "thread_count": 10
+  },
+  "duplication": null
+}

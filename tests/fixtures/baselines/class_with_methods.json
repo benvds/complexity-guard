@@ -1,0 +1,92 @@
+{
+  "version": "0.8.0",
+  "summary": {
+    "files_analyzed": 1,
+    "total_functions": 4,
+    "warnings": 0,
+    "errors": 0,
+    "status": "pass",
+    "health_score": 79.61463749233083
+  },
+  "files": [
+    {
+      "path": "../tests/fixtures/typescript/class_with_methods.ts",
+      "functions": [
+        {
+          "name": "UserService.constructor",
+          "start_line": 8,
+          "end_line": 8,
+          "start_col": 2,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 82.7292505646025,
+          "status": "ok"
+        },
+        {
+          "name": "UserService.findById",
+          "start_line": 10,
+          "end_line": 20,
+          "start_col": 2,
+          "cyclomatic": 4,
+          "cognitive": 3,
+          "halstead_volume": 120.0,
+          "halstead_difficulty": 6.0,
+          "halstead_effort": 720.0,
+          "halstead_bugs": 0.04,
+          "nesting_depth": 1,
+          "line_count": 7,
+          "params_count": 1,
+          "health_score": 76.88864480800719,
+          "status": "ok"
+        },
+        {
+          "name": "UserService.updateEmail",
+          "start_line": 22,
+          "end_line": 33,
+          "start_col": 2,
+          "cyclomatic": 3,
+          "cognitive": 2,
+          "halstead_volume": 137.6075250475963,
+          "halstead_difficulty": 7.2,
+          "halstead_effort": 990.7741803426935,
+          "halstead_bugs": 0.04586917501586544,
+          "nesting_depth": 1,
+          "line_count": 8,
+          "params_count": 2,
+          "health_score": 77.37765077225761,
+          "status": "ok"
+        },
+        {
+          "name": "UserService.isValidEmail",
+          "start_line": 35,
+          "end_line": 37,
+          "start_col": 2,
+          "cyclomatic": 2,
+          "cognitive": 1,
+          "halstead_volume": 12.0,
+          "halstead_difficulty": 2.0,
+          "halstead_effort": 24.0,
+          "halstead_bugs": 0.004,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 81.46300382445604,
+          "status": "ok"
+        }
+      ],
+      "file_length": 29,
+      "export_count": 1
+    }
+  ],
+  "metadata": {
+    "thread_count": 10
+  },
+  "duplication": null
+}

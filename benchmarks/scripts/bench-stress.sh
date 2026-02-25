@@ -15,8 +15,6 @@
 #
 # Note: Stress suite uses reduced runs (5) and warmup (1) due to massive repo size.
 #       Each hyperfine invocation has a 5-minute timeout to prevent runaway processes.
-#       ComplexityGuard is currently single-threaded (Phase 12 will add parallelization).
-#       These results document the single-threaded baseline for before/after comparison.
 
 set -euo pipefail
 
@@ -99,9 +97,9 @@ fi
 echo "hyperfine: $HYPERFINE ($("$HYPERFINE" --version))"
 
 # Build CG in ReleaseFast mode
-echo "Building ComplexityGuard in ReleaseFast mode..."
-(cd "$PROJECT_ROOT" && zig build -Doptimize=ReleaseFast)
-CG_BIN="$PROJECT_ROOT/zig-out/bin/complexity-guard"
+echo "Building ComplexityGuard in release mode..."
+(cd "$PROJECT_ROOT" && cargo build --release)
+CG_BIN="$PROJECT_ROOT/target/release/complexity-guard"
 echo "CG binary: $CG_BIN ($("$CG_BIN" --version 2>&1 || true))"
 
 # Auto-install FTA into temp dir
@@ -122,8 +120,6 @@ echo "Results dir: $RESULTS_DIR"
 
 # Stress suite: only the 3 massive repos
 # Note: Uses fewer runs and warmup than quick/full due to repo size.
-# Note: ComplexityGuard is single-threaded at this baseline. Phase 12 will add
-#       parallelization — rerun this suite after Phase 12 for before/after comparison.
 STRESS_SUITE=(vscode typescript effect)
 PROJECTS_DIR="$PROJECT_ROOT/benchmarks/projects"
 
@@ -144,7 +140,6 @@ echo ""
 echo "=== ComplexityGuard vs FTA Stress-Test Suite Benchmark ==="
 echo "Projects available: $CLONED_COUNT / ${#STRESS_SUITE[@]}"
 echo "Warmup runs: 1 | Benchmark runs: 5 | Timeout: 5 minutes per invocation"
-echo "Limitation: CG is single-threaded (no parallelization until Phase 12)"
 echo ""
 
 declare -A CG_MEAN
@@ -190,7 +185,6 @@ done
 
 # Print summary table
 echo "=== Summary: Mean Wall-Clock Time (ms) ==="
-echo "(Single-threaded CG baseline — Phase 12 parallelization will improve this)"
 printf "%-15s %12s %12s %10s\n" "Project" "CG (ms)" "FTA (ms)" "Ratio"
 printf "%-15s %12s %12s %10s\n" "-------" "-------" "--------" "-----"
 for project in "${STRESS_SUITE[@]}"; do
@@ -204,6 +198,3 @@ done
 
 echo ""
 echo "Results saved to: $RESULTS_DIR"
-echo ""
-echo "Phase 12 note: After parallelization is implemented, rerun this script to"
-echo "  measure speedup. Compare $RESULTS_DIR/*-stress.json files."

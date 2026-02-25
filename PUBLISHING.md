@@ -41,23 +41,32 @@ The `scripts/publish.sh` script publishes all npm packages from your local machi
 
 ### Building binaries locally
 
-Cross-compile for all platforms:
+Cross-compile for all platforms using cargo-zigbuild (for musl targets) or native cargo:
 
 ```sh
-zig build -Dtarget=aarch64-macos -Doptimize=ReleaseSafe
-cp zig-out/bin/complexity-guard npm/darwin-arm64/
+# Install cargo-zigbuild for Linux musl targets
+pip3 install ziglang
+cargo install --locked cargo-zigbuild
 
-zig build -Dtarget=x86_64-macos -Doptimize=ReleaseSafe
-cp zig-out/bin/complexity-guard npm/darwin-x64/
+# Linux x86_64 (musl static binary)
+cargo zigbuild --release --target x86_64-unknown-linux-musl
+cp target/x86_64-unknown-linux-musl/release/complexity-guard publication/npm/packages/linux-x64/
 
-zig build -Dtarget=aarch64-linux -Doptimize=ReleaseSafe
-cp zig-out/bin/complexity-guard npm/linux-arm64/
+# Linux ARM64 (musl static binary)
+cargo zigbuild --release --target aarch64-unknown-linux-musl
+cp target/aarch64-unknown-linux-musl/release/complexity-guard publication/npm/packages/linux-arm64/
 
-zig build -Dtarget=x86_64-linux -Doptimize=ReleaseSafe
-cp zig-out/bin/complexity-guard npm/linux-x64/
+# macOS ARM64
+cargo build --release --target aarch64-apple-darwin
+cp target/aarch64-apple-darwin/release/complexity-guard publication/npm/packages/darwin-arm64/
 
-zig build -Dtarget=x86_64-windows -Doptimize=ReleaseSafe
-cp zig-out/bin/complexity-guard.exe npm/windows-x64/
+# macOS x86_64
+cargo build --release --target x86_64-apple-darwin
+cp target/x86_64-apple-darwin/release/complexity-guard publication/npm/packages/darwin-x64/
+
+# Windows x86_64 (build on Windows or via cross-compilation)
+cargo build --release --target x86_64-pc-windows-msvc
+cp target/x86_64-pc-windows-msvc/release/complexity-guard.exe publication/npm/packages/windows-x64/
 ```
 
 ### Dry run

@@ -1,8 +1,5 @@
-# Zig build artifacts
-zig-out/
-.zig-cache/
-zig-cache/
-zig-pkg/
+# Rust build artifacts
+/target/
 
 # Object files
 *.o
@@ -26,10 +23,3 @@ Thumbs.db
 # npm platform binaries (placed by release workflow)
 publication/npm/packages/*/complexity-guard
 publication/npm/packages/*/complexity-guard.exe
-
-# Benchmark cloned projects (large, ephemeral)
-benchmarks/projects/*/
-!benchmarks/projects/.gitkeep
-
-# Test repos cloned for memory/stress testing
-tests/repos/

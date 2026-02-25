@@ -1,329 +1,224 @@
 # Project Research Summary
 
-**Project:** ComplexityGuard
-**Domain:** Static Code Complexity Analysis Tool (TypeScript/JavaScript)
-**Researched:** 2026-02-14
-**Confidence:** MEDIUM-HIGH
+**Project:** ComplexityGuard — Zig to Rust Rewrite (v0.8 milestone)
+**Domain:** Static Analysis CLI Binary — Zig to Rust port with 1:1 feature parity
+**Researched:** 2026-02-24
+**Confidence:** HIGH
 
 ## Executive Summary
 
-ComplexityGuard is a static analysis tool for TypeScript/JavaScript codebases that measures code complexity through multiple metrics (cyclomatic, cognitive, Halstead, structural) and duplication detection. The recommended approach combines Zig as the implementation language (for single-binary deployment and performance) with tree-sitter for parsing (for error-tolerant, incremental parsing). This stack is prescribed by the PRD and well-validated by similar tools in the ecosystem.
+ComplexityGuard v1.0 is a mature Zig-based static binary that analyzes TypeScript/JavaScript complexity across five metric families (cyclomatic, cognitive, Halstead, structural, duplication) with four output formats and full CI integration. The Rust rewrite is a drop-in binary replacement — same CLI flags, same JSON schema, same exit codes, same metrics — with no new features until parity is confirmed. The research confirms this is a well-understood problem with direct Rust equivalents for every Zig component: tree-sitter's official Rust crates provide the same C library through safe bindings, rayon replaces the hand-rolled thread pool, serde eliminates all hand-rolled serialization, and clap reduces 400+ lines of arg parsing to a derive-annotated struct.
 
-The key architectural insight is to use a two-phase analysis pipeline: parallel per-file metric collection (embarrassingly parallel, scales with CPU cores) followed by cross-file duplication detection (requires global hash index). This structure supports the performance target of < 1 second for 10,000 files while providing comprehensive analysis. The tool must output multiple formats (console, JSON, SARIF, HTML) to serve different use cases: developer workflow, CI/CD integration, GitHub Code Scanning, and stakeholder reporting.
+The recommended approach is a strict sequential build order: establish types and parsing first, then implement metrics one-by-one with output parity tests against the Zig binary, then wire parallel analysis, then outputs, and finally cross-compilation and CI. This order is dictated by dependency structure — every metric depends on the parsing pipeline, duplication detection depends on all other metrics being complete, and the pipeline architecture must be designed correctly from the start to avoid the single most dangerous pitfall: reproducing the Zig codebase's documented 800%+ re-parse overhead for duplication detection. Designing the pipeline to tokenize during the first parse pass is a foundational decision that cannot be retrofitted cheaply.
 
-Critical risks center on tree-sitter integration complexity (memory management across the Zig/C boundary, AST node type assumptions that break on grammar updates) and metric correctness (particularly cognitive complexity nesting tracking and Rabin-Karp hash collisions in duplication detection). These risks are well-understood with clear mitigation strategies: comprehensive test fixtures, memory sanitizers, reference implementation comparison (SonarQube, PMD CPD), and SARIF validation. The MVP already has most core metrics implemented; the gap is production-readiness features (configurable thresholds, file ignore patterns, function-level reporting, exit codes).
+The main risks are: (1) tree-sitter grammar version mismatches causing compile errors that are confusing to diagnose; (2) the binary size target of 5 MB being tighter for Rust than it was for Zig — realistic estimates put the optimized binary at 5–8 MB, making the 5 MB constraint aspirational rather than guaranteed without UPX compression; (3) cross-compilation being meaningfully more complex in Rust than Zig, requiring a split CI matrix (cargo-zigbuild for Linux/macOS, native runners for Windows). All three risks have clear mitigations and should be addressed in Phase 1 before any metric code is written.
+
+---
 
 ## Key Findings
 
 ### Recommended Stack
 
-Zig + tree-sitter is the optimal choice for this domain. Zig provides single-binary deployment (zero dependencies), excellent C interop for tree-sitter integration, fast compile times, and cross-compilation from any host to all targets. Tree-sitter offers battle-tested TypeScript/JavaScript grammars, error-tolerant parsing (critical for real-world code), and incremental parsing support for future LSP/watch mode features.
+The stack is entirely stable-channel Rust with no nightly features required. The core parse-analyze-output pipeline maps to well-maintained crates with multi-year track records. Every major Zig component has a direct idiomatic Rust replacement, and several replacements are improvements (serde over hand-rolled JSON, clap over hand-rolled arg parsing).
 
 **Core technologies:**
-- **Zig 0.14.x**: Implementation language — single static binary output, C ABI compatibility, explicit memory management without GC overhead
-- **tree-sitter 0.24.x**: Parser framework — proven TS/TSX/JS/JSX grammars, error-tolerant parsing, incremental parsing capability
-- **tree-sitter-typescript**: TypeScript + TSX grammars — official grammar maintained by tree-sitter org, covers modern TypeScript syntax
-- **Zig stdlib**: JSON (config/output), threading (parallel analysis), filesystem (directory walking) — built-in capabilities, no external dependencies
+- **Rust 1.80+ (stable):** Implementation language — required minimum for rayon 1.11; no nightly features needed
+- **tree-sitter 0.26.5 + tree-sitter-typescript 0.23.2 + tree-sitter-javascript 0.25.0:** Parsing — official Rust bindings for the same C grammars used in the Zig version; `Parser` is `Send + Sync`
+- **clap 4.5.x (derive):** CLI interface — replaces 400-line hand-rolled Zig parser with a struct and annotations
+- **serde 1.x + serde_json 1.x:** JSON serialization and config loading — replaces all hand-rolled JSON code
+- **rayon 1.11.0:** Parallel file analysis — replaces custom `std.Thread.Pool` + Mutex with `par_iter()`
+- **ignore 0.4.x:** Directory traversal — replaces manual `.gitignore` logic with ripgrep's battle-tested walker
+- **serde-sarif 0.8.x:** SARIF 2.1.0 output — only typed SARIF crate for Rust; pre-1.0, validate output against GitHub schema
+- **thiserror 2.x + anyhow 1.x:** Error handling — typed errors in library code, ergonomic propagation at CLI boundary
+- **owo-colors 4.x:** Terminal color output — zero-allocation ANSI, respects `NO_COLOR`
+- **cargo-zigbuild 0.21.x (Linux/macOS) + native GHA runners (Windows):** Cross-compilation — no Docker required for Linux/macOS targets
 
-**Supporting libraries (all built-in or vendored):**
-- zig-tree-sitter for idiomatic Zig wrappers (optional, evaluate vs raw C interop)
-- std.Thread for thread pool parallelism
-- std.json for config loading and JSON/SARIF output
-- std.fs for file discovery and glob matching
+**What not to use:** tokio/async (workload is CPU-bound, not I/O-bound), askama (one template — use `include_str!`), nightly Rust, regex for parsing, `cross` tool (requires Docker), `log`/`env_logger` (this is a CLI, not a server).
 
 ### Expected Features
 
-The feature landscape divides into three categories: table stakes (must-have), differentiators (competitive advantage), and anti-features (explicitly avoid).
+The feature set is frozen at Zig v1.0 parity for this milestone. All 15 features have direct Rust crate equivalents with LOW or MEDIUM port complexity — there is no feature that requires architectural invention.
 
-**Must have (table stakes):**
-- Cyclomatic complexity — industry standard, universally expected
-- Configurable thresholds — per-metric warning/error limits via config file
-- Multi-file recursive analysis — essential for real codebases
-- JSON output — required for CI/CD integration
-- Exit code on threshold violation — CI pipelines need build failures
-- Function-level reporting — users need to know which functions are complex
-- File ignore patterns — exclude node_modules, build artifacts
-- Console output — developer workflow in terminal
-- File paths in results — locate problematic code
+**Must have (1:1 parity — v0.8):**
+- Cyclomatic, cognitive, Halstead, and structural metric computation — hand-rolled AST traversal, ports cleanly to recursive Rust functions on `tree_sitter::Node`
+- Duplication detection (Rabin-Karp, Type 1 and 2 clone groups) — most algorithmically complex; must reproduce same tokenization normalization exactly
+- Health score (sigmoid normalization) — pure `f64` math; direct translation
+- Console, JSON, SARIF 2.1.0, and HTML output formats — all four; JSON parity is byte-level
+- CLI flags and `.complexityguard.json` config — identical interface; clap + serde replace all hand-rolled parsing
+- Parallel file analysis and file discovery — rayon + ignore crate
+- Exit codes 0–4 — exact same semantics as Zig binary
 
-**Should have (competitive differentiators):**
-- Sub-second performance on large codebases — < 1 second for 10K files (key selling point)
-- Zero dependencies binary — download and run, no npm/pip install
-- Cognitive complexity — more accurate than cyclomatic for human understanding (already implemented)
-- SARIF output — GitHub Code Scanning integration (already implemented)
-- HTML report generation — visual reports for stakeholders (already implemented)
-- Halstead metrics — rare in fast tools (already implemented)
-- Structural metrics — nesting depth, parameter count (already implemented)
-- Cross-platform single binary — Linux/Mac/Windows without runtime
+**Should have (v0.9 improvements, after parity confirmed):**
+- Fix duplication re-parse overhead — single-pass tokenization shared between Halstead and duplication passes (800%+ performance improvement)
+- Binary size validation — confirm optimized Rust binary meets 5 MB constraint or document revised limit
 
-**Defer (v2+):**
-- Historical trend tracking — track complexity changes over time
-- Incremental analysis — git diff integration, only analyze changed files
-- Duplication detection at scale — only if performance target maintained
-- Language expansion — Python, Go, Rust tree-sitter grammars
-- IDE extension protocol — LSP-style integration when community requests
-- Auto-fix/refactoring — explicitly anti-feature, out of scope
+**Defer (post-rewrite):**
+- Watch mode, LSP server, baseline/diff mode, npm distribution update — all explicitly deferred in PROJECT.md
+- New metrics, plugin API, type-aware semantic analysis — out of scope; strict feature freeze during rewrite
 
-**Anti-features (do NOT build):**
-- Auto-fix/refactoring suggestions — complex, often wrong, focus on measurement not prescription
-- Built-in code formatting — out of scope, Prettier/ESLint handle this
-- Language-agnostic analysis beyond JS/TS — each language needs dedicated support
-- Cloud-hosted SaaS platform — operational complexity, privacy concerns
-- Real-time IDE integration — provide CLI/JSON for others to consume
-- Plugin architecture — API surface, versioning overhead
+**Critical behavioral differences to preserve exactly:**
+- Cognitive complexity counts each `&&`/`||`/`??` operator as +1 separately — documented ComplexityGuard deviation from SonarSource's spec; tests will fail if not replicated
+- Duplication identifier normalization — replace identifiers with sentinel "V" for Type 2 clones; must match exactly
+- Float serialization precision — Halstead floats may differ in last digits between Zig and serde_json; add tolerance in comparison tests
 
 ### Architecture Approach
 
-The standard architecture for static analysis tools applies: CLI layer (arg parsing, config loading, file discovery) → orchestration layer (thread pool coordinator) → analysis pipeline (per-file parallel + cross-file sequential) → aggregation → output formatting. The critical pattern is single-pass multi-collector: run all independent metrics (cyclomatic, cognitive, Halstead, structural) simultaneously during one AST walk, avoiding redundant parsing.
+The architecture is a classic linear pipeline: CLI args → config merge → file discovery → parallel per-file analysis → sequential duplication pass → output dispatch → exit code. Every stage is a separate module. The key architectural improvement over Zig is that rayon's work-stealing replaces ~150 lines of explicit thread pool management, and Rust's ownership model eliminates the arena-to-owned deep-copy problem that made the Zig parallel pipeline complex.
 
 **Major components:**
-1. **CLI Layer** (config.zig, scanner.zig) — Parse arguments, load .complexityguard.json, discover files with glob patterns
-2. **Thread Pool Coordinator** (thread_pool.zig) — Distribute file analysis across workers, each thread has its own parser instance
-3. **Parser Integration** (parser.zig) — C FFI to tree-sitter, wraps TSParser*, handles memory cleanup
-4. **AST Walker** (ast/walker.zig) — Generic visitor pattern, dispatches to metric collectors on each node
-5. **Metric Collectors** (metrics/*.zig) — Independent collectors for cyclomatic, cognitive, Halstead, structural, composite score
-6. **Duplication Detector** (metrics/duplication.zig) — Phase 2, Rabin-Karp rolling hash across all file results
-7. **Output Formatters** (output/*.zig) — Console, JSON, SARIF, HTML — each consumes ProjectResult
+1. **`cli/` (args.rs + config.rs):** clap derive for CLI, serde_json for `.complexityguard.json` load/merge with explicit CLI-overrides-config precedence
+2. **`discovery/mod.rs`:** `ignore::WalkBuilder` — respects `.gitignore` automatically; produces `Vec<PathBuf>`
+3. **`parser/mod.rs`:** Thin tree-sitter adapter — language selection per extension, one `Parser` created per rayon task (not shared)
+4. **`metrics/` (one file per metric family):** Pure functions taking `&Node` and `&[u8]`; no shared mutable state; all metrics run in a single tree traversal per file
+5. **`pipeline/mod.rs`:** `rayon par_iter` over file list — each closure creates its own Parser, runs all metrics, returns owned `FileAnalysisResult` including token sequences for duplication
+6. **`metrics/duplication.rs`:** Sequential cross-file Rabin-Karp hash pass over token sequences collected during the parallel pass — no re-parse
+7. **`output/` (console, json, sarif, html):** Renderer dispatch — JSON and SARIF via serde derives, HTML via `include_str!` embedded template, console via owo-colors
 
-**Key patterns:**
-- **Single-pass multi-collector**: All metrics collect in one AST traversal (4x speedup vs separate passes)
-- **Two-phase analysis**: Per-file parallel → cross-file duplication sequential (memory efficiency)
-- **Thread-pool work queue**: Dynamic load balancing, scales to CPU core count
-- **Visitor pattern**: Metric collectors implement visitNode/exitNode callbacks
-- **Arena allocators**: Per-file memory, bulk free after analysis completes
+**Recommended build order:** `types.rs` → CLI → discovery → parser → cyclomatic → structural → cognitive → halstead → scoring → pipeline → console → JSON/SARIF/HTML → duplication → integration tests + CI. This order minimizes rework and enables testing at each stage.
 
 ### Critical Pitfalls
 
-1. **Incorrect tree-sitter node type assumptions** — Complexity metrics miss edge cases or double-count due to AST structure assumptions. Mitigation: generate and inspect parse trees for edge cases (ternary operators, switch statements, async/await), build comprehensive test fixtures covering all TypeScript syntax variants.
+1. **tree-sitter grammar version mismatch** — Grammar crates each declare their own `tree-sitter` dependency; Cargo may resolve two incompatible versions, causing a confusing compile error: "expected `tree_sitter::Language`, found a different `tree_sitter::Language`". Prevention: run `cargo tree -d` before adding grammar crates; pin all grammar and core crates to the same version range. Address in Phase 1 before writing any metric code.
 
-2. **Boolean operator miscounting in cyclomatic/cognitive complexity** — Logical operators (&&, ||, ??) counted incorrectly. Cyclomatic counts each operator, cognitive groups same-operator sequences. Mitigation: track operator sequences explicitly, test with `a && b && c` (3 cyclomatic, 1 cognitive) vs `a && b || c` (3 cyclomatic, 2 cognitive), verify against SonarQube.
+2. **Duplication re-parse overhead reproduced from Zig** — The Zig implementation re-reads and re-parses every file a second time for duplication tokenization, causing 800%+ overhead. Naively porting this reproduces the flaw. Prevention: design the per-file worker to return `(MetricResults, Vec<Token>)` — tokenize during the first parse, store tokens in `FileAnalysisResult`, run the duplication hash pass on the collected token sequences. This is a foundational pipeline decision; retrofitting it is expensive. Address in Phase 2 before any metric implementation.
 
-3. **Zig memory management in tree-sitter integration** — Memory leaks or use-after-free at Zig/C boundary. Tree-sitter uses manual memory management (malloc/free), Zig uses explicit allocators. Mitigation: use `defer ts_tree_delete(tree)` immediately after parsing, wrap tree-sitter objects in Zig structs with deinit() methods, run with AddressSanitizer during development.
+3. **Binary size balloons without explicit size profile** — Default `cargo build --release` with three grammar crates and serde produces 15–25 MB binaries. Prevention: add the size-optimized `[profile.release]` configuration (`opt-level = "z"`, `lto = true`, `codegen-units = 1`, `strip = true`, `panic = "abort"`) to `Cargo.toml` immediately in Phase 1. Measure binary size at the end of every phase.
 
-4. **Rabin-Karp hash collisions in duplication detection** — False positives or false negatives due to poor hash function or missing verification. Mitigation: use large prime modulus (2^61 - 1), always verify matches token-by-token after hash match, test against PMD CPD on known codebases.
+4. **`tree_sitter::Node` lifetime prevents cross-stage caching** — `Node` cannot outlive the `Tree` it came from and is not `Send`. Any attempt to store nodes in structs or pass them to other pipeline stages causes lifetime compile errors. Prevention: extract all needed data (metrics, tokens, line numbers) into owned Rust types within the same scope as `Tree`; never store or return `Node`. Address in Phase 1 when designing `ParseResult`.
 
-5. **SARIF schema validation failures** — Output rejected by GitHub Code Scanning due to missing required fields or incorrect schema. Mitigation: use official SARIF validator (@microsoft/sarif-multitool) in CI, convert tree-sitter 0-indexed positions to SARIF 1-indexed, test with GitHub upload API.
+5. **Cross-compilation more complex than Zig** — cargo-zigbuild does not support Windows targets and does not support static glibc linking. Prevention: use cargo-zigbuild only for Linux musl and macOS targets; build Windows binaries on `windows-latest` GitHub Actions runners natively. Design the CI matrix for this split approach from the start.
 
-6. **Nesting depth tracking errors in cognitive complexity** — Incorrect scores due to improper push/pop on entering/exiting nested structures. Mitigation: use explicit nesting stack or pass nesting_level parameter in recursive walks, test edge cases (ternary inside loop inside if), compare against SonarQube reference implementation.
-
-7. **Cross-platform path handling** — File scanner breaks on Windows due to hardcoded Unix path separators. Mitigation: always use std.fs.path.join() for path construction, normalize with std.fs.path.resolve(), run CI on Windows/Linux/macOS.
-
-8. **Thread pool deadlocks** — Tool hangs on large codebases due to lock contention or work queue starvation. Mitigation: use separate allocators per thread, batch result collection (merge at end), limit thread pool size to min(cpu_count, max_open_files/10), test with varying thread counts (1-128).
-
-9. **Ignoring tree-sitter error nodes** — Crashes or incorrect metrics when encountering syntax errors. Mitigation: check ts_node_has_error() at start of each visitor, decide on error handling policy (skip or best-effort), report parse errors separately in output.
-
-10. **Halstead metrics operator/operand misclassification** — Incorrect volume/difficulty/effort due to token misclassification. Mitigation: explicitly enumerate every tree-sitter node type as operator/operand/neither, create lookup table, test against hand-calculated examples.
+---
 
 ## Implications for Roadmap
 
-Based on combined research, a vertical-slice approach is optimal: build end-to-end pipeline with one metric first (proves architecture), then add remaining metrics (parallel work), then cross-file analysis, then parallelization. This matches the architecture's dependency structure and allows early validation.
+Based on combined research, the Rust rewrite should proceed in six phases that sequence from foundational infrastructure through feature parity to release validation.
 
-### Phase 1: Foundation & Parser Integration
-**Rationale:** Core infrastructure before metric logic. Establish correct tree-sitter integration patterns (memory management, error handling) before building complexity metrics on top. Critical pitfalls (memory leaks, cross-platform paths, error nodes) must be addressed here.
+### Phase 1: Project Setup and Parser Foundation
 
-**Delivers:** CLI argument parsing, config file loading, file scanner with glob patterns, tree-sitter parser integration with proper memory cleanup, basic test infrastructure
+**Rationale:** All other work depends on this. Three pitfalls (grammar version mismatch, binary size, Node lifetime, build.rs cross-compile) must be resolved before any metric code exists — they are cheapest to fix here. The types and parser are the foundation every other module imports.
+**Delivers:** Compiling Rust crate with correct grammar versions, size-optimized release profile, all four languages (ts/tsx/js/jsx) parsing without errors against fixture files, `ParseResult` returning only owned data, baseline binary size measurement, cross-compile to at least one non-native target confirmed in CI.
+**Addresses:** All P1 infrastructure features (project skeleton, type definitions)
+**Avoids:** Grammar version mismatch (Pitfall 1), binary size bloat (Pitfall 3), Node lifetime errors (Pitfall 4), build.rs cross-compile failure (Pitfall 9 from PITFALLS.md)
+**Research flag:** Standard patterns — no additional research needed.
 
-**Addresses:**
-- Config loading (table stakes)
-- Multi-file recursive analysis (table stakes)
-- File ignore patterns (table stakes)
-- Cross-platform support (differentiator)
+### Phase 2: Core Metrics Pipeline (Single-File, Sequential)
 
-**Avoids:**
-- Pitfall 3 (Zig/tree-sitter memory management) — establish cleanup patterns early
-- Pitfall 7 (cross-platform paths) — use std.fs.path from start
-- Pitfall 10 (ignoring error nodes) — handle parse errors explicitly
+**Rationale:** Implement all five metric families for a single file with sequential processing before introducing parallelism. Isolates metric correctness from concurrency concerns. The pipeline architecture must embed tokenization in the per-file worker here — retrofitting it into Phase 4 is expensive. Cyclomatic first (simplest, establishes traversal pattern); duplication last (most complex, depends on token streams from all other metrics).
+**Delivers:** Correct per-file output for all five metrics matching Zig v1.0 behavior, with JSON output for automated comparison. Cognitive complexity deviation from SonarSource replicated exactly. Float tolerance established for Halstead metrics. Duplication Rabin-Karp implementation with correct Type 1 and 2 normalization. Per-file worker returns `(MetricResults, Vec<Token>)` — pipeline architecture set correctly.
+**Uses:** tree-sitter 0.26.x traversal API, serde_json for comparison output, FxHashMap from rustc-hash for duplication hash index
+**Implements:** `metrics/` module family, `output/json.rs` for test validation
+**Avoids:** Duplication re-parse overhead (Pitfall 2 — foundational pipeline decision made here), HashMap performance trap (Pitfall 10 from PITFALLS.md)
+**Research flag:** Standard patterns for cyclomatic/structural/Halstead/scoring. Cognitive complexity deviation and duplication Type 1/2 normalization need exact match validation against Zig binary output.
 
-**Research flags:** Standard patterns, skip phase-level research. Zig stdlib and tree-sitter C API are well-documented.
+### Phase 3: CLI, Config, and Output Formats
 
-### Phase 2: Single Metric Vertical Slice
-**Rationale:** Prove the analysis pipeline end-to-end with cyclomatic complexity (simplest metric). This validates AST walker design, visitor pattern, result data structures, and console output before adding complexity. Fast feedback loop for architecture validation.
+**Rationale:** Once metrics produce correct output, wire up the full CLI interface and all four output formats. clap + serde make this mechanical, but it requires complete metric type definitions from Phase 2 to be stable. SARIF output needs schema validation against GitHub Code Scanning.
+**Delivers:** Identical CLI flag interface to Zig binary, `.complexityguard.json` config loading with CLI override precedence, all four output formats (console, JSON, SARIF 2.1.0, HTML) producing correct output. Exit codes 0–4 matching Zig semantics exactly.
+**Uses:** clap 4.5.x derive, serde + serde_json, serde-sarif 0.8.x, owo-colors, `include_str!` for HTML template
+**Implements:** `cli/`, `output/` modules
+**Avoids:** CLI flag name changes, JSON field name drift, float formatting differences in output
+**Research flag:** Standard patterns. serde-sarif is pre-1.0 — if it proves unstable during implementation, fall back to hand-rolled SARIF structs with `serde_json::json!`.
 
-**Delivers:** AST walker with visitor pattern, cyclomatic complexity collector, FunctionResult/FileResult data structures, console output formatter
+### Phase 4: Parallel Pipeline
 
-**Addresses:**
-- Cyclomatic complexity (table stakes, already implemented)
-- Console output (table stakes, already implemented)
-- Function-level reporting (table stakes, currently missing line numbers)
+**Rationale:** Parallelism is added after single-file correctness is established. Introducing rayon before metrics are correct mixes concurrency bugs with correctness bugs. The key constraint is that `Parser` must be created per rayon task — thread contention on a shared parser defeats parallelism.
+**Delivers:** Full parallel file analysis with linear speedup with thread count, deterministic output (sorted by path), `--threads N` support, throughput matching or exceeding Zig binary. Duplication sequential pass operating over token sequences collected in the parallel pass (no re-parse).
+**Uses:** rayon 1.11.0 `par_iter`, `ThreadPoolBuilder` for `--threads` support, ignore 0.4.x for directory walking
+**Implements:** `pipeline/mod.rs`, `discovery/mod.rs`
+**Avoids:** Parser thread contention (Pitfall 3 from PITFALLS.md — per-closure Parser creation), `Arc<Mutex<Vec>>` anti-pattern
+**Research flag:** Standard patterns — rayon par_iter is well-documented. Validate with `hyperfine` that parallel speedup is linear.
 
-**Avoids:**
-- Pitfall 1 (incorrect node type assumptions) — comprehensive test fixtures
-- Pitfall 2 (boolean operator miscounting) — operator sequence tracking
+### Phase 5: Integration Testing and Behavioral Parity Validation
 
-**Research flags:** Skip phase research. Cyclomatic complexity is well-documented (McCabe's original paper), visitor pattern is standard.
+**Rationale:** Before cross-compilation and release work, verify complete behavioral parity with the Zig v1.0 binary. This is the quality gate for the v0.8 milestone. Fixture-based output comparison catches metric deviations, float precision issues, and serialization differences before they reach users.
+**Delivers:** Integration test suite using `std::process::Command` against fixture files (reused from Zig version), output parity confirmed for all formats, exit code parity confirmed, cognitive complexity deviation validated, duplication clone group ordering normalized in tests.
+**Implements:** `tests/integration/cli_tests.rs`
+**Avoids:** JSON field name changes, cognitive complexity miscounting, float serialization divergence reaching users
+**Research flag:** Standard patterns — `process::Command`-based integration tests are idiomatic Rust.
 
-### Phase 3: Remaining Core Metrics
-**Rationale:** Once pipeline is proven, add cognitive, Halstead, and structural metrics in parallel. All are independent and use the same walker infrastructure. Cognitive complexity is the most complex (nesting tracking), so prioritize testing there.
+### Phase 6: Cross-Compilation, CI, and Release
 
-**Delivers:** Cognitive complexity collector, Halstead metrics collector, structural metrics collector (nesting depth, parameter count, function length), composite health score calculator
-
-**Addresses:**
-- Cognitive complexity (differentiator, already implemented, needs validation)
-- Halstead metrics (differentiator, already implemented, needs validation)
-- Structural metrics (differentiator, already implemented, needs validation)
-- Configurable thresholds (table stakes, currently missing)
-
-**Avoids:**
-- Pitfall 6 (nesting depth tracking) — explicit stack management, test against SonarQube
-- Pitfall 8 (Halstead misclassification) — operator/operand lookup table
-- Pitfall 2 (boolean operators) — different rules for cyclomatic vs cognitive
-
-**Research flags:** Moderate research needed for cognitive complexity. SonarSource whitepaper is authoritative but has controversial edge cases (arrow function nesting). Consider `/gsd:research-phase` for cognitive complexity specification details.
-
-### Phase 4: Output Formats
-**Rationale:** With metrics proven correct, add remaining output formats for different use cases. JSON and SARIF are critical for CI/CD and GitHub integration. HTML provides stakeholder value. Each format is independent.
-
-**Delivers:** JSON output formatter, SARIF 2.1.0 output formatter, HTML report generator with embedded CSS/JS, exit code logic based on thresholds
-
-**Addresses:**
-- JSON output (table stakes, already implemented)
-- SARIF output (differentiator, already implemented)
-- HTML reports (differentiator, already implemented)
-- Exit code on threshold violation (table stakes, currently missing)
-
-**Avoids:**
-- Pitfall 5 (SARIF validation failures) — use official validator in CI, test GitHub upload
-- SARIF 0-indexed vs 1-indexed line numbers (integration gotcha)
-
-**Research flags:** Skip phase research for JSON/HTML. SARIF may need specification review if validation fails. GitHub Code Scanning has undocumented requirements; use trial-and-error with test uploads.
-
-### Phase 5: Duplication Detection
-**Rationale:** Cross-file analysis requires all per-file results in memory, so must come after core metrics are stable. Rabin-Karp algorithm is well-documented but tuning hash parameters for acceptable collision rate requires experimentation.
-
-**Delivers:** Rabin-Karp rolling hash implementation, token normalization for Type 2 clones, CloneGroup detection and reporting, duplication percentage calculation
-
-**Addresses:**
-- Duplication detection (differentiator, planned for v1.x)
-
-**Avoids:**
-- Pitfall 4 (Rabin-Karp collisions) — large prime modulus, token verification, benchmark against PMD CPD
-- Performance conflict with < 1s target — may need sampling or opt-in flag for large codebases
-
-**Research flags:** Needs research. Rabin-Karp basics are standard, but optimal hash parameters, window sizes, and token normalization strategy for TypeScript/JavaScript are domain-specific. Consider `/gsd:research-phase` for duplication detection algorithms and PMD CPD comparison.
-
-### Phase 6: Parallelization & Performance
-**Rationale:** Last, because single-threaded version proves correctness first. Parallelization is optimization. Thread pool introduces concurrency bugs (deadlocks, race conditions, allocator contention) that are much harder to debug if metrics are also buggy.
-
-**Delivers:** Thread pool coordinator with work queue, per-thread parser instances, mutex-protected result collection, performance benchmarking, thread count configuration
-
-**Addresses:**
-- Sub-second performance target (differentiator, < 1 second for 10K files)
-- Thread pool parallelism (implied by performance target)
-
-**Avoids:**
-- Pitfall 9 (thread pool deadlocks) — separate allocators per thread, batch result collection
-- Shared parser across threads (anti-pattern) — each thread gets own parser instance
-- Lock contention on result collection — use thread-local accumulators, merge at end
-
-**Research flags:** Skip phase research. Zig std.Thread.Pool is documented. Verify API details when implementing, but pattern is standard (work queue + worker threads).
-
-### Phase 7: Production Hardening (v1.x)
-**Rationale:** After v1.0 launch with core features, add polish and convenience features based on user feedback.
-
-**Delivers:** Historical trend tracking (baseline comparison), incremental analysis (git diff mode), watch mode (re-run on file changes), aggregate project-level metrics, custom output templates
-
-**Addresses:**
-- Historical trend tracking (planned v1.x)
-- Incremental analysis (planned v1.x)
-- Watch mode (planned v1.x)
-
-**Research flags:** Needs research for git integration. Historical tracking and watch mode are standard patterns, but git diff integration and LSP-style file watching have domain-specific considerations. Defer research until post-v1.0.
+**Rationale:** Establish the complete release matrix only after feature parity and test coverage are confirmed. Cross-compilation in Rust requires a split strategy (cargo-zigbuild for Linux/macOS, native runners for Windows) that is more complex than Zig's approach — finalizing this in a dedicated phase keeps it from blocking earlier phases.
+**Delivers:** Release binaries for all six targets (linux-x64-musl, linux-arm64-musl, macos-x64, macos-arm64, windows-x64, windows-arm64), binary size validated with actual measurement (not assumption), each target binary confirmed to execute on a native runner, CI caching configured (sccache or actions/cache).
+**Uses:** cargo-zigbuild 0.21.x, GitHub Actions matrix, `windows-latest` native runners
+**Avoids:** cargo-zigbuild Windows cross-compile failure (Pitfall 5), static glibc linking attempt, macOS strip failure on Linux cross-compile
+**Research flag:** Standard patterns for cargo-zigbuild Linux/macOS targets and native Windows runners. Binary size may require UPX if 5 MB cannot be achieved — measure first, decide after.
 
 ### Phase Ordering Rationale
 
-- **Phase 1 before 2**: Cannot collect metrics without parser infrastructure. Memory management patterns must be correct before building on top.
-- **Phase 2 before 3**: Prove pipeline with simplest metric (cyclomatic) before adding complex metrics (cognitive with nesting tracking).
-- **Phase 3 before 4**: Output formats need stable metrics to serialize. Don't format incorrect data.
-- **Phase 4 before 5**: Duplication detection produces additional results that need formatting. SARIF can include duplication findings.
-- **Phase 5 before 6**: Parallelization is optimization, correctness first. Duplication detector needs correct sequential version before optimizing.
-- **Phase 6 before 7**: Performance target must be met before adding convenience features. Watch mode is meaningless if analysis is slow.
-
-This ordering matches the architecture's build order (Foundation → Single Metric → Remaining Metrics → Cross-File → Parallelization) and the feature priority matrix (P1 table stakes → P2 differentiators → P3 future). Each phase delivers testable value and reduces risk incrementally.
+- **Infrastructure before metrics:** Grammar version mismatches and release profile must be resolved in Phase 1; discovering them in Phase 3 means three phases of compounding technical debt.
+- **Sequential before parallel:** Metric correctness bugs and concurrency bugs are impossible to distinguish when both are present; Phase 2 single-file work isolates correctness.
+- **Tokenization architecture in Phase 2, not Phase 4:** The duplication re-parse flaw is a pipeline architecture decision — if the per-file worker does not return token sequences, Phase 4 cannot add them without restructuring every metric module.
+- **CLI and outputs after metrics are stable:** clap and serde work is mechanical once type definitions are finalized; changing `FileAnalysisResult` fields after serde derives are in place means regenerating derive impls throughout.
+- **Parity validation before release:** Phase 5 before Phase 6 ensures cross-compilation effort is spent on a correct binary.
 
 ### Research Flags
 
-**Phases likely needing deeper research during planning:**
-- **Phase 3 (Cognitive Complexity)**: SonarSource specification has controversial edge cases (arrow function nesting, optional chaining). May need `/gsd:research-phase` to clarify handling of functional-style TypeScript code.
-- **Phase 5 (Duplication Detection)**: Rabin-Karp parameter tuning (hash modulus, window size), token normalization strategy for TypeScript. Recommend `/gsd:research-phase` to study PMD CPD algorithm and compare against SonarQube duplication.
-- **Phase 7 (Git Integration)**: Historical tracking and incremental analysis need git diff API research. Defer until post-v1.0, but flag for research when starting phase.
+Phases needing deeper research during planning:
+- **Phase 6 (Cross-compilation):** Binary size target of 5 MB may not be achievable without UPX — empirical measurement required before committing to the constraint. If cargo-zigbuild behavior for specific targets has changed since research date, re-verify.
+- **Phase 3 (SARIF):** serde-sarif 0.8.x is pre-1.0. If it is missing required SARIF 2.1.0 fields or has breaking changes between minor versions, a fallback plan (hand-rolled serde structs) should be designed before the phase begins.
 
-**Phases with standard patterns (skip phase-level research):**
-- **Phase 1 (Foundation)**: Zig stdlib APIs, tree-sitter C FFI — well-documented, training data sufficient
-- **Phase 2 (Cyclomatic Complexity)**: McCabe's algorithm is textbook material, no ambiguity
-- **Phase 4 (Output Formats)**: JSON serialization is trivial, SARIF schema is public (trial-and-error with GitHub is acceptable), HTML templating is standard
-- **Phase 6 (Parallelization)**: Thread pool pattern is standard, Zig documentation covers std.Thread.Pool
+Phases with standard patterns (skip additional research):
+- **Phase 1:** tree-sitter Rust crate patterns are extensively documented; grammar version pinning procedure is clear from the tree-sitter issue tracker.
+- **Phase 2:** All five metric algorithms are already implemented in Zig — porting is translation, not design. FxHashMap usage is a drop-in replacement.
+- **Phase 3:** clap derive and serde derive are industry-standard with comprehensive documentation.
+- **Phase 4:** rayon par_iter pattern is well-documented; per-closure Parser creation is the canonical approach.
+- **Phase 5:** `process::Command` integration tests are idiomatic Rust with clear patterns.
+
+---
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | Zig and tree-sitter are prescribed by PRD. Both are mature, well-documented. Training data from January 2025 is recent enough for stability. Version compatibility understood. |
-| Features | MEDIUM-HIGH | Feature landscape based on competitor analysis (SonarQube, ESLint, CodeClimate, Lizard, radon, plato). Core features stable across ecosystem. Edge cases (cognitive complexity nesting rules) need validation. |
-| Architecture | MEDIUM | Common patterns for static analysis tools. Single-pass multi-collector, two-phase analysis, thread pool are standard. Zig-specific details (std.Thread.Pool API) not verified with current docs but pattern is sound. |
-| Pitfalls | MEDIUM | Based on domain knowledge from similar tools and tree-sitter integration patterns. Memory management, nesting tracking, hash collisions are known issues. Zig 0.14.x specifics not verified with current documentation. |
+| Stack | HIGH | All crates verified via docs.rs and crates.io; versions confirmed; alternatives considered and rejected with explicit rationale. No nightly required. |
+| Features | HIGH | Feature set is fixed at Zig v1.0 parity; all port complexities assessed against direct Zig source; behavioral differences (cognitive deviation, float formatting, duplication normalization) documented with prevention strategies. |
+| Architecture | HIGH | Module structure and data flow are direct translations of the known Zig architecture; rayon and serde patterns are well-documented with code examples; build order derived from explicit dependency analysis. |
+| Pitfalls | HIGH | 11 pitfalls documented with code examples; most verified against official docs, tree-sitter issue tracker (issue #3095 confirmed), and direct Zig source inspection; grammar version mismatch, cargo-zigbuild limitations, and Node lifetime constraints all have authoritative sources. |
 
-**Overall confidence:** MEDIUM-HIGH
-
-The stack and feature research is solid (prescribed stack, well-researched features). Architecture and pitfalls are sound in principle but have verification gaps (Zig stdlib API details, tree-sitter grammar node types for TypeScript 5.x syntax). These gaps are acceptable because:
-1. Patterns are standard and proven in similar tools (zls, oxlint, Biome)
-2. Verification can happen during implementation (test-driven development catches API mismatches early)
-3. PRD already validates the high-level approach (complexity metrics, tree-sitter, Zig)
+**Overall confidence: HIGH**
 
 ### Gaps to Address
 
-**During Phase 1 (Foundation):**
-- Verify Zig 0.14.x std.Thread.Pool API with official documentation (training data may be outdated)
-- Confirm tree-sitter C API thread-safety guarantees (each thread needs own parser — verify this is still true)
-- Test cross-platform build on Windows CI immediately (don't assume path handling works)
+- **Binary size under 5 MB:** The Zig binary achieved 3.6–3.8 MB with ReleaseSmall. Realistic Rust estimates with three grammar crates are 5–8 MB after full optimization. The 5 MB constraint may need to be updated to 8 MB, or UPX compression applied for distribution. Measure empirically at end of Phase 1 and set the constraint based on actual measurement, not assumption.
 
-**During Phase 2 (Metrics):**
-- Generate comprehensive tree-sitter parse trees for TypeScript 5.x syntax (decorators, const type parameters, satisfies operator) to validate node type assumptions
-- Compare cyclomatic complexity scores against ESLint `complexity` rule on 1000+ function corpus to validate correctness
+- **serde-sarif stability:** serde-sarif 0.8.x is pre-1.0. The SARIF output module should validate its JSON against the SARIF 2.1.0 schema in integration tests. Fallback plan: hand-roll SARIF structs with `serde_json::json!` macros if the crate proves problematic.
 
-**During Phase 3 (Cognitive Complexity):**
-- Resolve arrow function nesting controversy: follow SonarSource spec strictly or make configurable? Decision impacts functional-style TypeScript codebases significantly. Consider user research or default to "relaxed" mode.
+- **Cognitive complexity deviation replication:** ComplexityGuard's per-operator `&&`/`||`/`??` counting deviates from SonarSource's spec. This deviation must be replicated exactly or all cognitive complexity tests fail. Requires explicit cross-validation tests comparing Rust output to Zig output on the same fixtures.
 
-**During Phase 4 (SARIF):**
-- Upload test SARIF to GitHub Code Scanning to discover undocumented requirements beyond SARIF 2.1.0 spec. Documentation lags reality for GitHub-specific constraints (5000 result limit, 10 MB file size).
+- **Float serialization precision alignment:** `serde_json` and Zig's `std.json.Stringify` may format `f64` values differently in the last digit. Halstead metrics (`volume`, `difficulty`, `effort`) will be affected. Integration tests should use floating-point tolerance rather than byte-exact comparison for these fields.
 
-**During Phase 5 (Duplication):**
-- Benchmark Rabin-Karp hash function collision rate with large TypeScript codebase (e.g., VS Code, TypeScript compiler itself). Tune modulus and window size based on empirical results.
-- Decide on duplication detection performance trade-off: is it opt-in flag (`--check-duplication`) or always-on? < 1s target may not be achievable with full duplication on 10K files.
-
-**Post-v1.0:**
-- Language expansion (Python, Go, Rust) requires separate tree-sitter grammar research per language. Defer until JavaScript/TypeScript is proven.
-- Historical tracking needs git repository integration research (libgit2 bindings? shell out to git CLI?). Not critical for v1.0.
+---
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- **PRD specification** (provided project context) — stack choices (Zig + tree-sitter), metric definitions, performance targets, output formats
-- **FEATURES.md research** (own work) — competitor analysis (SonarQube, ESLint, CodeClimate, Lizard, radon, plato) based on training data
-- **STACK.md research** (own work) — Zig language documentation, tree-sitter documentation, version compatibility from training data
+- [docs.rs/tree-sitter 0.26.5](https://docs.rs/tree-sitter/latest/tree_sitter/) — Parser Send+Sync, Tree/Node lifetime constraints, parse API
+- [docs.rs/tree-sitter-typescript 0.23.2](https://docs.rs/tree-sitter-typescript/latest/tree_sitter_typescript/) — LANGUAGE_TYPESCRIPT, LANGUAGE_TSX constants confirmed
+- [crates.io/tree-sitter-javascript 0.25.0](https://crates.io/crates/tree-sitter-javascript) — LANGUAGE constant, JSX support confirmed
+- [crates.io/clap 4.5.60](https://crates.io/crates/clap) — derive API, current version confirmed
+- [crates.io/serde_json 1.0.149](https://crates.io/crates/serde_json) — current version confirmed
+- [docs.rs/rayon 1.11.0](https://docs.rs/crate/rayon/latest) — rustc 1.80 requirement, par_iter patterns
+- [docs.rs/serde-sarif 0.8.0](https://docs.rs/serde-sarif/latest/serde_sarif/) — SARIF 2.1.0 support, TypedBuilder pattern
+- [github.com/rust-cross/cargo-zigbuild README](https://github.com/rust-cross/cargo-zigbuild/blob/main/README.md) — Windows NOT supported limitation confirmed
+- [github.com/johnthagen/min-sized-rust](https://github.com/johnthagen/min-sized-rust) — opt-level=z, LTO, strip, panic=abort techniques
+- [nnethercote.github.io — Rust Performance Book: Hashing](https://nnethercote.github.io/perf-book/hashing.html) — FxHashMap recommendation
+- [github.com/rust-lang/rustc-hash](https://github.com/rust-lang/rustc-hash) — FxHashMap implementation
+- [doc.rust-lang.org/nomicon — FFI Unwinding](https://doc.rust-lang.org/nomicon/ffi.html) — panic across FFI boundary UB
+- [tree-sitter/tree-sitter#3095](https://github.com/tree-sitter/tree-sitter/issues/3095) — grammar version mismatch details confirmed
+- [cargo-zigbuild issue #231](https://github.com/rust-cross/cargo-zigbuild/issues/231) — static glibc unsupported confirmed
+- ComplexityGuard Zig source (direct code inspection) — re-parse architecture flaw, cognitive complexity deviation, duplication normalization
 
 ### Secondary (MEDIUM confidence)
-- **ARCHITECTURE.md research** (own work) — common static analysis tool patterns (ESLint, SonarQube, oxlint, Biome architectures) inferred from training data
-- **PITFALLS.md research** (own work) — domain knowledge from code analysis tool development, tree-sitter integration patterns, Zig memory management
-- **Zig project structure conventions** — training data from Zig community, not verified with official 2026 documentation
-- **tree-sitter grammar details** — training data from tree-sitter documentation, node types may have changed for TypeScript 5.x support
-
-### Tertiary (LOW confidence)
-- **Cognitive complexity specification edge cases** — SonarSource whitepaper is authoritative but arrow function nesting rules are controversial. Community interpretation varies.
-- **GitHub Code Scanning SARIF requirements** — official SARIF 2.1.0 spec is public, but GitHub has undocumented constraints discovered through trial-and-error
-- **Rabin-Karp parameters for TypeScript** — general algorithm is well-known, but optimal window size and hash modulus for this domain are empirical
-
-**Verification gaps:**
-- Zig 0.14.x stdlib API details not verified (std.Thread.Pool, std.fs.path, std.json) — may have changed since training data (January 2025)
-- tree-sitter-typescript grammar node types for TypeScript 5.x — decorators, const type parameters, satisfies operator may introduce new node types
-- GitHub Code Scanning SARIF ingestion limits — documentation lags implementation, actual limits unknown without testing
-
-**Mitigation:**
-- Phase 1: Verify Zig APIs with official docs during implementation
-- Phase 2: Generate parse trees for edge cases with `tree-sitter parse` CLI
-- Phase 4: Test SARIF upload with GitHub API in CI
-- All phases: Test-driven development catches API mismatches early
+- [rfdonnelly.github.io — Using Tree-sitter Parsers in Rust](https://rfdonnelly.github.io/posts/using-tree-sitter-parsers-in-rust/) — build.rs + cc crate pattern
+- [manishearth.github.io — Arenas in Rust](https://manishearth.github.io/blog/2021/03/15/arenas-in-rust/) — arena allocator friction patterns
+- [gaultier.github.io — Lessons from a successful Rust rewrite](https://gaultier.github.io/blog/lessons_learned_from_a_successful_rust_rewrite.html) — C FFI friction, arena patterns in rewrites
+- [gendignoux.com — Making a parallel Rust workload 10x faster](https://gendignoux.com/blog/2024/11/18/rust-rayon-optimized.html) — Rayon parallelism pitfalls
+- [shuttle.dev — Data Parallelism with Rayon](https://www.shuttle.dev/blog/2024/04/11/using-rayon-rust) — par_iter patterns, mutex contention
+- [actually.fyi — Zig Makes Rust Cross-compilation Just Work](https://actually.fyi/posts/zig-makes-rust-cross-compilation-just-work/) — Zig vs Rust cross-compile comparison
+- GitHub Actions documentation — native runner matrix strategy for Windows MSVC targets
 
 ---
-
-*Research completed: 2026-02-14*
+*Research completed: 2026-02-24*
 *Ready for roadmap: yes*

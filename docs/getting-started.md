@@ -20,38 +20,37 @@ complexity-guard --version
 
 ### Direct Download
 
-1. Visit the [GitHub releases page](https://github.com/benvds/complexity-guard/releases)
-2. Download the binary for your platform:
-   - `complexity-guard-linux-x64` for Linux
-   - `complexity-guard-macos-arm64` for macOS (Apple Silicon)
-   - `complexity-guard-macos-x64` for macOS (Intel)
-   - `complexity-guard-windows-x64.exe` for Windows
-3. Make the binary executable (macOS/Linux):
+1. Visit the [GitHub Releases page](https://github.com/benvds/complexity-guard/releases)
+2. Download the archive for your platform:
+   - `complexity-guard-linux-x86_64-musl.tar.gz` — Linux x86_64
+   - `complexity-guard-linux-aarch64-musl.tar.gz` — Linux ARM64
+   - `complexity-guard-macos-x86_64.tar.gz` — macOS Intel
+   - `complexity-guard-macos-aarch64.tar.gz` — macOS Apple Silicon
+   - `complexity-guard-windows-x86_64.zip` — Windows x64
+3. Extract and install (macOS/Linux):
    ```sh
+   tar xzf complexity-guard-*.tar.gz
    chmod +x complexity-guard
-   ```
-4. Move it to a directory in your PATH:
-   ```sh
-   # macOS/Linux
    sudo mv complexity-guard /usr/local/bin/
 
-   # Or add to your home bin directory
+   # Or install to your home bin directory
    mkdir -p ~/bin
    mv complexity-guard ~/bin/
    # Add ~/bin to PATH in your shell profile if needed
    ```
+4. On Windows: extract the `.zip` and place `complexity-guard.exe` somewhere on your PATH.
 
 ### Building from Source
 
-If you have Zig installed (0.14.0 or later), you can build from source:
+Requires [Rust](https://www.rust-lang.org/) (stable toolchain):
 
 ```sh
 git clone https://github.com/benvds/complexity-guard.git
 cd complexity-guard
-zig build
+cargo build --release
 ```
 
-The binary will be at `zig-out/bin/complexity-guard`. You can run it directly or add it to your PATH.
+The binary will be at `target/release/complexity-guard`. Add it to your PATH or run it directly.
 
 ## Your First Analysis
 

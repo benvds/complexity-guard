@@ -1,0 +1,41 @@
+{
+  "version": "0.8.0",
+  "summary": {
+    "files_analyzed": 1,
+    "total_functions": 1,
+    "warnings": 0,
+    "errors": 0,
+    "status": "pass",
+    "health_score": 82.71258735483062
+  },
+  "files": [
+    {
+      "path": "../tests/fixtures/typescript/simple_function.ts",
+      "functions": [
+        {
+          "name": "greet",
+          "start_line": 5,
+          "end_line": 7,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 2.0,
+          "halstead_difficulty": 0.5,
+          "halstead_effort": 1.0,
+          "halstead_bugs": 0.0006666666666666666,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 82.71258735483062,
+          "status": "ok"
+        }
+      ],
+      "file_length": 2,
+      "export_count": 1
+    }
+  ],
+  "metadata": {
+    "thread_count": 10
+  },
+  "duplication": null
+}

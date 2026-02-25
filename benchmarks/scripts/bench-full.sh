@@ -99,9 +99,9 @@ fi
 echo "hyperfine: $HYPERFINE ($("$HYPERFINE" --version))"
 
 # Build CG in ReleaseFast mode
-echo "Building ComplexityGuard in ReleaseFast mode..."
-(cd "$PROJECT_ROOT" && zig build -Doptimize=ReleaseFast)
-CG_BIN="$PROJECT_ROOT/zig-out/bin/complexity-guard"
+echo "Building ComplexityGuard in release mode..."
+(cd "$PROJECT_ROOT" && cargo build --release)
+CG_BIN="$PROJECT_ROOT/target/release/complexity-guard"
 echo "CG binary: $CG_BIN ($("$CG_BIN" --version 2>&1 || true))"
 
 # Auto-install FTA into temp dir

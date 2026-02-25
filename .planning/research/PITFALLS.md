@@ -1,292 +1,344 @@
-# Pitfalls Research: Code Complexity Analysis Tools
+# Pitfalls Research: Zig → Rust Rewrite of ComplexityGuard
 
-**Domain:** Code complexity analyzer (Zig + tree-sitter for TypeScript/JavaScript)
-**Researched:** 2026-02-14
-**Confidence:** MEDIUM (based on domain knowledge from existing complexity tools, tree-sitter implementations, and Zig development patterns; WebSearch unavailable)
+**Domain:** Systems rewrite — Zig to Rust, CLI binary with tree-sitter FFI, cross-platform distribution
+**Researched:** 2026-02-24
+**Confidence:** HIGH (tree-sitter docs via docs.rs, cargo-zigbuild README, official Rust references, verified with multiple sources)
+
+---
 
 ## Critical Pitfalls
 
-### Pitfall 1: Incorrect Tree-Sitter Node Type Assumptions
+### Pitfall 1: tree-sitter Grammar Version Mismatch Causes Type-Level Compile Error
 
 **What goes wrong:**
-Complexity metrics miss edge cases or double-count because the implementation assumes specific AST node types that differ across language versions or grammar updates. For example, assuming `if_statement` always has exactly two children (condition + consequence) breaks when optional `else if` chains create different structures.
+The `tree-sitter-typescript`, `tree-sitter-javascript`, and `tree-sitter-tsx` grammar crates each declare their own dependency on `tree-sitter` core. If their pinned version differs from the version declared in your `Cargo.toml`, Cargo resolves both versions simultaneously. The `Language` type from version `0.20.x` and the `Language` type from `0.22.x` are **distinct Rust types** despite identical names. The call to `parser.set_language(tree_sitter_typescript::language())` then fails with: `expected tree_sitter::Language, found a different tree_sitter::Language`.
+
+This is not a runtime error — it is a compile error, and it is confusing because the error message names the same type twice.
 
 **Why it happens:**
-Developers implement metrics by pattern matching on node types without thoroughly exploring the grammar's CST (Concrete Syntax Tree) structure. Tree-sitter grammars are versioned independently and node types can change between grammar versions.
+Cargo allows multiple versions of the same crate. Grammar crates often lag behind the core `tree-sitter` release cadence. The grammar crates on crates.io use tilde version pinning (`~0.20.10`) which prevents them from automatically updating to `0.22.x` even when it is released. This issue was documented in tree-sitter/tree-sitter#3095 and has recurred across multiple major releases.
 
 **How to avoid:**
-- Generate and inspect actual tree-sitter parse trees for edge cases (use `tree-sitter parse` CLI)
-- Write test fixtures covering: ternary operators, nested ternaries, switch statements with/without defaults, arrow functions in different contexts, async/await, generators, optional chaining chains
-- Check tree-sitter-typescript grammar changelog when updating dependencies
-- Use node type checks defensively (`node.type == "if_statement"` + verify expected child count)
+- Check the `Cargo.toml` of every grammar crate (`tree-sitter-typescript`, `tree-sitter-javascript`) before adding them. Run `cargo tree -d` to detect duplicate versions.
+- Pin all grammar crates and the core `tree-sitter` crate to the **same compatible version** range.
+- Use `cargo update --precise` if a grammar crate is lagging.
+- Prefer grammar crates that have been recently updated. Check the crates.io "last updated" date before depending on them.
+- The `tree-sitter-language` intermediary crate (a stable ABI shim) was introduced to reduce this problem. Prefer grammar crates that depend on `tree-sitter-language` rather than `tree-sitter` directly.
 
 **Warning signs:**
-- Off-by-one errors in complexity scores compared to SonarQube
-- Failures when parsing newer TypeScript syntax (satisfies operator, const type parameters)
-- Different scores for semantically identical code written with different syntax
+- Compile error: "expected `tree_sitter::Language`, found a different `tree_sitter::Language`"
+- `cargo tree -d` shows two versions of the `tree-sitter` crate
+- Grammar crate `Cargo.toml` shows `tree-sitter = "~0.20"` while project uses `tree-sitter = "0.22"`
 
 **Phase to address:**
-Phase 1 (Parser integration) — Build comprehensive test fixture suite before implementing metric walkers
+Phase 1 (Parser integration) — Resolve version alignment before writing any metric code. Lock all grammar crate versions in `Cargo.lock` immediately.
 
 ---
 
-### Pitfall 2: Boolean Operator Miscounting in Cyclomatic/Cognitive Complexity
+### Pitfall 2: Unwinding Panics Across FFI Boundary Is Undefined Behavior
 
 **What goes wrong:**
-Logical operators (`&&`, `||`, `??`) are counted incorrectly, leading to inflated or deflated complexity scores. Common mistakes:
-- Counting every `&&` in `a && b && c` as separate branches (should be +3 cyclomatic, but cognitive says +1 for same-operator sequences)
-- Missing short-circuit evaluation complexity
-- Not distinguishing between control flow usage (`if (a && b)`) vs. value usage (`const x = a && b`)
+If Rust code panics inside a callback or function that is called from C (tree-sitter's C core calls back into Rust for custom input providers), the unwinding stack crosses an FFI boundary. This is undefined behavior in Rust — the program may crash, silently corrupt memory, or produce wrong output. This also applies in reverse: C exceptions unwinding into Rust frames.
+
+For ComplexityGuard, the risk is lower because tree-sitter is used in the Rust-calls-C direction (not C-calls-Rust). However, if `parse_with` (callback-based parsing) is used for streaming input, Rust panics inside the callback are UB.
 
 **Why it happens:**
-Different complexity models treat boolean operators differently. McCabe cyclomatic counts each operator, SonarSource cognitive groups same-operator sequences. The PRD specifies both metrics with different rules.
+Rust's panic mechanism assumes the entire stack is Rust frames using Rust's unwind tables. C code has no knowledge of Rust's unwind protocol. The Rustonomicon states: "Unwinding into Rust from another language, or unwinding into another language from Rust is Undefined Behavior."
 
 **How to avoid:**
-- Track operator sequences explicitly: maintain "last operator type" state during AST walk
-- For cyclomatic: increment on every `&&` / `||` / `??` regardless of sequence
-- For cognitive: increment once per same-operator sequence, +1 per operator type change
-- Test with: `a && b && c` (3 cyclomatic, 1 cognitive), `a && b || c` (3 cyclomatic, 2 cognitive)
-- Verify against SonarQube's behavior on your test corpus
+- Use `parser.parse(source, None)` with a full in-memory `&[u8]` slice rather than `parse_with` callback for file parsing. ComplexityGuard reads the entire file before parsing, so this is the natural approach.
+- If callback-based parsing is ever added, wrap the callback body in `std::panic::catch_unwind(|| { ... })` and convert panics to `None` returns.
+- In release builds, set `panic = "abort"` in `[profile.release]` of `Cargo.toml`. This prevents unwind overhead and eliminates the UB risk by turning panics into immediate process termination — acceptable for a CLI tool.
+- Add `#[cfg(panic = "unwind")]` guards on any code that crosses FFI if needed.
 
 **Warning signs:**
-- Cognitive complexity scores 2-3x higher than expected on functional-style code with chained operators
-- Cyclomatic scores match ESLint `complexity` rule but not SonarQube
-- Tests fail when comparing against SonarQube reference implementation
+- Using `parse_with` or `parse_with_options` with a Rust closure that could panic
+- Stack traces in crash reports that show C frames between Rust frames
+- Intermittent crashes that don't reproduce under Miri
 
 **Phase to address:**
-Phase 2 (Cyclomatic/Cognitive metrics) — Implement operator sequence tracking before metric increments
+Phase 1 (Parser integration) — Establish `panic = "abort"` in `[profile.release]` from the start. Use simple `parse(&source, None)` everywhere.
 
 ---
 
-### Pitfall 3: Zig Memory Management in Tree-Sitter Integration
+### Pitfall 3: `tree_sitter::Parser` Is Not Clone — Per-Thread Instances Required
 
 **What goes wrong:**
-Memory leaks or use-after-free bugs when interfacing with tree-sitter's C API. Tree-sitter uses reference counting and manual memory management. Common errors:
-- Forgetting to call `ts_tree_delete()` after parsing
-- Not releasing `TSQuery` objects after pattern matching
-- Accessing tree nodes after the tree is freed
-- Allocator mismatches between Zig allocators and tree-sitter's malloc/free
+`tree_sitter::Parser` implements `Send` and `Sync` (confirmed via docs.rs), but it requires `&mut self` for `parse()` and `set_language()`. This means you cannot share a single `Parser` across threads without a `Mutex`. Under Rayon or a thread pool, wrapping a single Parser in `Arc<Mutex<Parser>>` causes severe lock contention — every thread blocks waiting to use the parser sequentially, eliminating parallelism.
+
+A secondary mistake is using a `thread_local!` Parser that is initialized with the wrong language (e.g., TypeScript) and then used for a JavaScript file because the language is not reset between tasks.
 
 **Why it happens:**
-Zig's explicit memory management requires calling the right cleanup functions. Tree-sitter's C API doesn't use RAII or automatic cleanup. The boundary between Zig memory (arena allocators, defer patterns) and C memory (malloc/free) is error-prone.
+Developers port the Zig pattern of "one parser per thread" without understanding that Rayon workers are not 1:1 with OS threads in the same way as `std.Thread.Pool`. Rayon's `par_iter` distributes work across a pool, and tasks can execute on any worker thread.
 
 **How to avoid:**
-- Use `defer ts_tree_delete(tree)` immediately after `ts_parser_parse_string()`
-- Wrap tree-sitter objects in Zig structs with `deinit()` methods for cleanup
-- Use arena allocators for per-file analysis (automatically freed after file completes)
-- Run with `-fsanitize=undefined -fsanitize=address` during development to catch leaks
-- Test with large codebases (10k+ files) to surface leaks that only appear at scale
+- Use `thread_local! { static PARSER: RefCell<Parser> = RefCell::new(Parser::new()); }` for a per-thread parser instance. `RefCell` prevents concurrent access from the same thread.
+- Always call `parser.set_language(language)` at the start of each file analysis task, even if you believe the language is unchanged. Language selection is cheap.
+- Do not place the Parser inside `Arc<Mutex<_>>`. Instead, ensure each Rayon worker accesses only its thread-local copy.
+- Test with `--threads <N>` at values larger than the number of CPU cores to expose contention bugs.
 
 **Warning signs:**
-- Memory usage grows linearly with file count (should plateau with thread pool)
-- Crashes on large codebases but not small test fixtures
-- Valgrind or AddressSanitizer reports leaks in tree-sitter functions
-- Segfaults after processing hundreds of files
+- Parallel analysis is slower than sequential (classic lock contention symptom)
+- Panic: "already borrowed" when using `RefCell<Parser>` if a task panics and leaves the borrow active
+- Wrong metrics for files (e.g., JavaScript file analyzed as TypeScript) when language is not reset
 
 **Phase to address:**
-Phase 1 (Parser integration) — Establish correct ownership and cleanup patterns before building metrics on top
+Phase 2 (Parallel pipeline) — Establish thread-local parser pattern before adding Rayon. Test correctness with mixed .ts/.js/.tsx files processed concurrently.
 
 ---
 
-### Pitfall 4: Rabin-Karp Hash Collisions in Duplication Detection
+### Pitfall 4: Binary Size Balloons to 20+ MB Without Explicit Size Profile
 
 **What goes wrong:**
-The Rabin-Karp rolling hash produces false positives (reporting non-duplicates as clones) or false negatives (missing actual duplicates) due to poor hash function choice or insufficient collision handling.
+A default `cargo build --release` binary for a tool with three tree-sitter grammars (TypeScript, TSX, JavaScript) compiled in, Serde for JSON serialization, and standard library formatting machinery will typically produce a binary in the range of 15–25 MB. The Zig version achieved 3.6–3.8 MB with `ReleaseSmall`. Matching that in Rust requires deliberate configuration and likely cannot be achieved without accepting longer compile times.
 
 **Why it happens:**
-Rabin-Karp is fast but probabilistic. Weak hash functions (small modulus, poor prime choice) increase collision rates. Skipping token-level verification on hash matches creates false positives. Using fixed rolling window sizes misses variable-length clones.
+Rust's `release` profile defaults to `opt-level = 3` (speed, not size), `codegen-units = 16` (parallelism over optimization), and no stripping. Serde's `derive` macros generate substantial code. The standard library's formatting machinery (`println!`, `format!`) pulls in unicode tables. Rust does not have an equivalent of Zig's `ReleaseSmall` as a first-class profile.
 
 **How to avoid:**
-- Use a large prime modulus (e.g., 1,000,000,007 or larger, ideally 2^61 - 1 for 64-bit hashes)
-- Always verify matches character-by-character after hash match
-- Implement token normalization correctly for Type 2 clones (identifier renaming)
-- Test with intentionally similar code that shouldn't match (e.g., `foo + bar` vs `bar + foo` with different semantics)
-- Compare against PMD CPD or SonarQube duplication reports on known codebases
+Add a size-optimized release profile to `Cargo.toml`:
+```toml
+[profile.release]
+opt-level = "z"        # optimize for size, not speed
+lto = true             # link-time optimization removes dead code across crates
+codegen-units = 1      # single codegen unit for maximum LTO effectiveness
+strip = true           # strip debug symbols and symbol table
+panic = "abort"        # removes unwind tables (~15% size reduction)
+```
+Additional techniques if still too large:
+- Use `#[no_std]` where feasible (not practical for a full CLI, skip this)
+- Replace `serde_json` with a lighter serializer (`miniserde`, `simd-json`) — evaluate after measuring
+- Consider `upx --best` compression for final distribution binaries (adds ~50ms startup on cold run, negligible)
+- Build against `musl` for Linux to get static binary without glibc overhead
+
+Expected outcome: 4–8 MB with the above profile. Sub-5 MB is achievable. Under 4 MB requires UPX compression or eliminating large dependencies.
 
 **Warning signs:**
-- Duplication percentage varies wildly between runs on the same code
-- False positives on structurally similar but semantically different code
-- Missing obvious copy-paste duplicates that PMD CPD finds
-- Hash distribution analysis shows clustering (use test to verify uniform distribution)
+- Default `cargo build --release` produces >15 MB binary
+- `cargo bloat --release` shows `serde` or formatting as top contributors
+- Binary grows significantly when adding each grammar crate
 
 **Phase to address:**
-Phase 3 (Duplication detection) — Implement collision verification and extensive test suite before claiming correctness
+Phase 1 (Project setup) — Add the size-optimized profile to `Cargo.toml` immediately. Check binary size at end of every phase. Do not wait until Phase 5 to discover it is 20 MB.
 
 ---
 
-### Pitfall 5: SARIF Schema Validation Failures
+### Pitfall 5: Cross-Compilation Requires Zig as Linker — cargo-zigbuild Has Gaps
 
 **What goes wrong:**
-SARIF output claims to be SARIF 2.1.0 compliant but fails validation or is rejected by tools like GitHub Code Scanning. Common mistakes:
-- Missing required fields (`$schema`, `version`, `runs.tool.driver.name`)
-- Incorrect `artifactLocation` URIs (must be relative to repository root)
-- Invalid `level` values (must be "note", "warning", "error", or "none")
-- Malformed region objects (line/column must be 1-indexed, not 0-indexed)
-- Missing or incorrect `ruleId` references
+Rust does not include a cross-linker in its toolchain the way Zig does. The standard approach — installing cross-compilation targets with `rustup target add` — only provides the Rust standard library for the target. You still need a C linker and sysroot for the target platform. With tree-sitter (a C library) compiled as part of the build via `build.rs`, this requirement is not optional.
+
+The recommended solution (`cargo-zigbuild`) covers most cases but has documented gaps:
+
+1. **Static glibc linking is unsupported:** `-C target-feature=+crt-static` with glibc targets is not supported by `zig cc`. Use musl targets (`x86_64-unknown-linux-musl`) instead for static Linux binaries.
+2. **Windows targets:** `x86_64-pc-windows-gnu` cross-compilation from macOS/Linux via cargo-zigbuild has limited support. Release builds on Windows Docker images fail. The `x86_64-pc-windows-msvc` target cannot be cross-compiled without the MSVC SDK.
+3. **macOS strip binary step:** Release cross-compile to macOS targets on Linux may fail with `strip: program not found`.
 
 **Why it happens:**
-SARIF is complex with many optional fields but strict validation rules. The spec is 200+ pages. GitHub's SARIF ingestion has additional undocumented requirements beyond the spec. Tree-sitter uses 0-indexed positions but SARIF requires 1-indexed.
+Zig ships its own bundled sysroots and musl libc, which is why Zig cross-compilation works out of the box. Rust delegates linking to the host system toolchain and does not bundle sysroots.
 
 **How to avoid:**
-- Use official SARIF schema validator against output (`npm install @microsoft/sarif-multitool`, run `sarif validate`)
-- Test with GitHub's SARIF upload API (not just local validators)
-- Convert tree-sitter 0-indexed positions to SARIF 1-indexed: `sarif_line = ts_node.start_point.row + 1`
-- Generate minimal valid SARIF first (hardcode single result), then iterate
-- Copy structure from known-working SARIF files (ESLint SARIF formatter, CodeQL)
+- Use `cargo-zigbuild` for Linux (musl and gnu-gnu targets) and macOS targets. These work well.
+- For Windows: use GitHub Actions `windows-latest` runner to build Windows binaries natively rather than cross-compiling. This is the most reliable approach.
+- For macOS arm64 (aarch64-apple-darwin): build on an actual macOS ARM runner in GitHub Actions.
+- Target matrix: build Linux (both arches) on Linux runner with cargo-zigbuild + musl; build macOS binaries on macOS runner; build Windows on Windows runner.
+- Accept that cross-compilation in Rust cannot be as seamless as in Zig. Plan the CI matrix accordingly.
 
 **Warning signs:**
-- GitHub Code Scanning rejects upload with "Invalid SARIF"
-- VS Code SARIF Viewer shows no results or errors
-- SARIF validator reports schema violations
-- Line numbers off by one in displayed results
+- `cargo zigbuild` fails with linker errors when adding tree-sitter C sources
+- `strip: program not found` during macOS cross-compile on Linux
+- Windows binary is built on Linux but crashes immediately when run (ABI mismatch)
+- Static glibc linking silently falls back to dynamic linking
 
 **Phase to address:**
-Phase 4 (Output formats) — Validate SARIF output with official tools before considering format complete
+Phase 6 (Cross-compilation and CI) — Design the GitHub Actions matrix from scratch rather than assuming Zig's matrix will translate. Validate each target binary actually executes on a native runner.
 
 ---
 
-### Pitfall 6: Nesting Depth Tracking Errors in Cognitive Complexity
+### Pitfall 6: Duplication Re-Parse Overhead — Zig's 800%+ Problem Must Be Solved in Rust
 
 **What goes wrong:**
-Cognitive complexity scores are incorrect because nesting level tracking doesn't properly push/pop on entering/exiting nested structures. Common bugs:
-- Incrementing nesting on entry but forgetting to decrement on exit
-- Not incrementing nesting for arrow functions/lambdas (SonarSource spec says they increase nesting)
-- Resetting nesting incorrectly at function boundaries
-- Counting nesting in ternaries inconsistently
+The Zig implementation has a documented architectural flaw: the duplication detection pipeline re-reads and re-parses every file a second time after the metrics pipeline completes. This creates 800%+ overhead on large codebases because:
+
+1. Each file is read from disk twice
+2. Each file is parsed by tree-sitter twice
+3. File I/O and parsing are the dominant costs in the pipeline
+
+In Rust, naively porting the Zig structure (metrics phase first, then duplication phase with fresh re-parse) reproduces the same bug.
 
 **Why it happens:**
-AST walkers need explicit state management for nesting depth. Unlike cyclomatic complexity (stateless counting), cognitive complexity requires tracking context. Recursive descent parsers make this natural, but visitor-pattern AST walks require manual stack management.
+In the Zig implementation, the metrics pipeline uses per-worker arenas that are freed after each file. The tokenized output for duplication detection is not retained because there was no obvious lifetime to attach it to that would survive the arena deallocation. The natural fix in Zig is complex. In Rust, ownership makes the correct approach clearer but requires deliberate design.
 
 **How to avoid:**
-- Use a nesting stack, push on entering nesting-increasing nodes, pop on exit
-- In recursive walkers: pass `nesting_level` parameter down, increment for nested calls
-- Test edge cases: ternary inside loop inside if, nested arrow functions, switch inside try-catch
-- Write property test: nesting level should never go negative
-- Compare against SonarSource's reference implementation scores
+Design the Rust pipeline to tokenize during the first parse and retain tokens alongside metrics results:
+
+```
+Per-file worker:
+  1. Read file
+  2. Parse with tree-sitter → Tree
+  3. Run all metric walkers on Tree → MetricResults
+  4. Run tokenizer on Tree → Vec<Token>  ← done in same pass, same Tree
+  5. Return (MetricResults, Vec<Token>) as a tuple
+
+After all workers complete:
+  6. Run detectDuplication(all_file_tokens) → DuplicationResult
+```
+
+Key design points:
+- `tree_sitter::Tree` is `Send` (confirmed), so it can be returned from Rayon workers along with results
+- But `Tree` contains a raw pointer to a C heap object and its lifetime is tied to the source bytes being live. Do not drop `source: Vec<u8>` while `Tree` is alive.
+- `Vec<Token>` is pure Rust data and can be moved freely across thread boundaries
+- Drop the `Tree` immediately after tokenization — do not retain it across the barrier
+
+The corrected architecture eliminates the re-parse entirely. Duplication tokenization runs once per file in the same worker task as metrics.
 
 **Warning signs:**
-- Cognitive complexity scores vary depending on traversal order
-- Scores inconsistent for equivalent code with different formatting
-- Nesting-related test failures
-- Off-by-3+ errors compared to SonarQube (small errors = counting rules, large errors = nesting)
+- Duplication analysis is absent from the per-file worker function and runs in a separate post-processing step that re-reads files
+- Benchmarks show analysis time scales super-linearly with file count (re-parse overhead compounds)
+- Memory profile shows two peaks (metrics phase + duplication phase) rather than one sustained plateau
 
 **Phase to address:**
-Phase 2 (Cognitive complexity) — Implement nesting tracking with explicit tests before combining with increment logic
+Phase 2 (Core pipeline) — Design the pipeline architecture to tokenize-during-parse before implementing any metric. This is a foundational decision that is expensive to retrofit.
 
 ---
 
-### Pitfall 7: Cross-Platform Path Handling in File Discovery
+### Pitfall 7: Rust Lifetimes Make Retaining tree-sitter Nodes Between Phases Impossible
 
 **What goes wrong:**
-File scanner breaks on Windows due to hardcoded Unix path separators, or glob patterns don't match expected files. Issues:
-- Using `/` instead of `std.fs.path.sep` in path construction
-- Glob patterns with `**` not expanding correctly on Windows
-- Case sensitivity differences (macOS/Windows case-insensitive, Linux case-sensitive)
-- Symlink handling differences
+`tree_sitter::Node` (the Rust wrapper for `TSNode`) is not `Send` and cannot outlive the `Tree` it came from. Developers attempting to cache nodes or store them for cross-file analysis will encounter lifetime errors that appear to have no solution. This is a different problem than the grammar version mismatch — this is the Rust borrow checker enforcing tree-sitter's ownership invariants correctly.
+
+Example of what fails:
+```rust
+let tree = parser.parse(&source, None).unwrap();
+let root = tree.root_node(); // Node<'_> — borrows from tree
+drop(tree); // ERROR: cannot drop tree while root is borrowed
+my_struct.root = root; // ERROR: Node does not implement Send
+```
 
 **Why it happens:**
-Zig's standard library handles cross-platform paths, but developers often hardcode assumptions from their development platform. Tree-sitter file paths are OS-dependent.
+`Node` is a thin wrapper around `TSNode` (a struct-by-value in C), which internally contains a pointer back into the `Tree`'s memory. Rust correctly infers that `Node` cannot outlive `Tree`. In Zig, the C `TSNode` struct is copied by value and this lifetime relationship is not enforced — it works until it doesn't.
 
 **How to avoid:**
-- Always use `std.fs.path.join()` for path construction, never string concatenation
-- Normalize paths with `std.fs.path.resolve()` before comparing
-- Test glob matching on all target platforms (Linux, macOS, Windows)
-- Use CI to run tests on Windows (GitHub Actions: `runs-on: windows-latest`)
-- Explicitly document case sensitivity behavior in config file docs
+- Never store `Node` values between pipeline stages. Use `Node` only within the scope of the file worker task, during the same stack frame that owns `Tree`.
+- Extract all needed information from the tree (metrics, tokens, line numbers) before the function returns. Return pure Rust data structures (`Vec<Token>`, metric structs) — not tree nodes.
+- If incremental parsing is ever needed, retain the `Tree` alongside the `source: Vec<u8>` in a struct that owns both and never lends `Node` values outside.
 
 **Warning signs:**
-- Tests pass on Linux/macOS but fail on Windows
-- Windows CI fails with "file not found" errors
-- Include/exclude patterns behave differently on different OSes
-- Paths with backslashes appear in SARIF `artifactLocation` on Windows
+- Compiler error: "does not live long enough" when trying to pass `Node` to another function that stores it
+- Attempting to put `Node` in a struct that will live beyond the current function
+- Trying to return `Node` from a Rayon parallel iterator
 
 **Phase to address:**
-Phase 1 (File scanner) — Use cross-platform path APIs from the start, add Windows CI immediately
+Phase 1 (Parser wrapper) — Design the `ParseResult` type to own only pure Rust data. Make `Node` usage purely local to metric walker functions.
 
 ---
 
-### Pitfall 8: Halstead Metrics Operator/Operand Misclassification
+### Pitfall 8: Arena Allocator Pattern Has No Direct Zig Equivalent in Rust
 
 **What goes wrong:**
-Halstead volume/difficulty/effort scores are incorrect because the implementation misclassifies tokens as operators vs. operands. Examples:
-- Treating `function` keyword as operand instead of operator
-- Counting method calls as two operators (`.` and `()`) instead of one
-- Missing TypeScript-specific operators (`as`, `is`, `satisfies`, `!` non-null assertion)
-- Counting type annotations as operands when they should be operators (or excluded)
+The Zig implementation extensively uses `std.heap.ArenaAllocator` — allocate many small objects, free all at once by deiniting the arena. This pattern is idiomatic in Zig but is **not idiomatic in Rust**. Attempting to port the pattern directly using `bumpalo` or `typed-arena` crates creates friction with Rust's borrow checker, because objects allocated in an arena cannot outlive the arena, and Rust enforces this with lifetimes.
+
+The specific friction: metrics walkers in Zig return slices allocated in the worker arena. In Rust, the equivalent `Vec<MetricResult>` returned from a walker function would need to contain references into the arena (`&'arena MetricResult`) rather than owned values, which complicates function signatures and prevents moving results across thread boundaries.
 
 **Why it happens:**
-Halstead's original definition predates TypeScript and modern JavaScript. The PRD lists operators but the boundary is fuzzy. Tree-sitter tokens don't map 1:1 to Halstead's operator/operand distinction.
+Zig arenas are transparent to callers — any allocation using the arena allocator is automatically in the arena's lifetime. Rust has no equivalent because Rust tracks lifetimes explicitly. bumpalo works but requires propagating `'bump` lifetime parameters throughout all types that reference arena-allocated data, which is impractical for a 10k+ LOC codebase.
 
 **How to avoid:**
-- Explicitly enumerate every tree-sitter node type as operator, operand, or neither
-- Create a lookup table: `node_type_to_halstead_category`
-- Test against known examples with hand-calculated Halstead metrics
-- Document TypeScript-specific classification decisions
-- Consider making classification configurable (different teams may disagree)
+- Use `Vec<T>` with owned `T` values everywhere. This is idiomatic Rust and avoids the arena lifetime problem.
+- For short-lived temporary allocations within a single function (e.g., building an intermediate data structure during AST walking), use a local `Vec` and discard it when done. The allocator overhead is acceptable.
+- Use `bumpalo` only if profiling shows allocator overhead is a bottleneck, and only for types that live entirely within one function scope.
+- The Rayon work-stealing approach combined with per-task `Vec` allocations is sufficient and idiomatic.
 
 **Warning signs:**
-- Halstead difficulty scores consistently 2x higher or lower than expectations
-- Vocabulary counts (`n1 + n2`) seem wrong (e.g., higher than token count)
-- Different scores for equivalent code (arrow function vs function declaration)
+- Function signatures with `'arena` lifetime parameters propagating through metric walker types
+- Trying to return `&'arena [MetricResult]` from worker functions passed to Rayon
+- Compile errors about lifetimes when `Vec<&'arena T>` is moved across thread boundaries
 
 **Phase to address:**
-Phase 2 (Halstead metrics) — Build classification table first, validate with manual calculations
+Phase 1 (Core types) — Define all result types as owned structs with `Vec<T>` fields, not arena-allocated slices. Do not introduce arena crates until profiling demands it.
 
 ---
 
-### Pitfall 9: Thread Pool Deadlocks in Parallel File Processing
+### Pitfall 9: `build.rs` for Grammar C Sources Breaks Cross-Compilation Without the Right `cc` Configuration
 
 **What goes wrong:**
-File analysis deadlocks or hangs when processing large codebases with thread pool parallelism. Common causes:
-- Work-stealing queue starvation
-- Lock contention on shared result collector
-- Thread pool size exceeding available file descriptors
-- Duplication detector blocking all threads while building cross-file index
+The three tree-sitter grammars (typescript, tsx, javascript) are C source files that must be compiled and linked into the Rust binary. This is handled by a `build.rs` script using the `cc` crate. Without explicit configuration, the `cc` crate uses the host C compiler, which produces host-architecture object files — not the target architecture. Cross-compilation silently builds the wrong architecture.
+
+A secondary issue: the `cc` crate honors `CC` and `CXX` environment variables, but `cargo-zigbuild` sets its own linker overrides. If `build.rs` does not propagate the correct cross-compilation flags, the C grammar objects are built for the wrong target while the Rust objects are built for the correct target, causing linker errors.
 
 **Why it happens:**
-Zig's `std.Thread.Pool` requires careful work distribution. The duplication detector needs results from all files before it can run, creating a synchronization point. Lock-free data structures are hard to get right.
+`build.rs` is executed on the host machine. The `cc` crate is designed to respect cross-compilation but requires correct environment setup. When using `cargo-zigbuild`, the Zig C compiler is the linker but the `cc` crate may not automatically use it for C source compilation unless `CC` is set to `zig cc --target=<target>`.
 
 **How to avoid:**
-- Pipeline: File parsing → Metric collection → Result aggregation → Duplication detection
-- Use separate allocators per thread (no shared allocator locks)
-- Batch result collection: each thread collects locally, merge at end
-- Limit thread pool size to `min(cpu_count, max_open_files / 10)`
-- Test with `--threads` flag varying from 1 to 128 on large codebases
+- Use `cc::Build::new().file("...").compile("grammar")` pattern correctly. The `cc` crate does handle cross-compilation when `cargo-zigbuild` sets the appropriate environment variables.
+- Test cross-compilation on CI early (Phase 1), not in the final cross-compilation phase. A CI step that builds for `aarch64-unknown-linux-musl` from an `x86_64` Linux runner will surface this immediately.
+- Pin grammar C source files in the repository (vendor them) rather than downloading at build time. This avoids network failures and ensures reproducible builds.
+- Add `cargo:rerun-if-changed=src/grammar/typescript/parser.c` directives in `build.rs` so incremental builds work correctly.
 
 **Warning signs:**
-- Tool hangs indefinitely on large codebases but works on small ones
-- CPU utilization drops to 0% mid-run
-- Increasing thread count makes it slower or causes hangs
-- Works single-threaded but not multi-threaded
+- Cross-compiled binary crashes immediately with "Illegal instruction" (architecture mismatch)
+- `build.rs` succeeds but final `cargo zigbuild` link step fails with "incompatible object format"
+- `cargo check` passes but `cargo build --target aarch64-...` fails
 
 **Phase to address:**
-Phase 1 (Parallel processing) — Design work distribution before implementing metrics, test scaling early
+Phase 1 (Project setup) — Write `build.rs` and test cross-compilation to at least one non-native target before any feature work. This catches the C compilation issue before it is entangled with metric code.
 
 ---
 
-### Pitfall 10: Ignoring Tree-Sitter Error Nodes
+### Pitfall 10: std::HashMap Is Slower Than Needed for the Duplication Hash Index
 
 **What goes wrong:**
-The tool crashes or produces wildly incorrect metrics when encountering syntax errors in source files. Tree-sitter inserts `ERROR` nodes in the CST but analysis code doesn't handle them.
+The duplication detection builds a hash index mapping `u64` rolling hashes to lists of token windows. `std::collections::HashMap` uses SipHash-1-3 as its default hasher, which is designed for DoS resistance (HashDoS attacks) rather than speed. For internal data structures with `u64` integer keys where HashDoS is not a concern, SipHash is measurably slower than alternatives.
+
+In the Zig implementation, `std.AutoHashMap(u64, ...)` uses a simple open-addressing scheme with a fast integer hash. The Rust equivalent `HashMap<u64, Vec<TokenWindow>>` with SipHash may be 2–3x slower for lookups on a hot table.
 
 **Why it happens:**
-Tree-sitter is error-tolerant by design, but metric walkers often assume well-formed ASTs. Developers test with syntactically valid code, missing the error-recovery case.
+`std::HashMap` defaults to SipHash for safety. The Rust Performance Book explicitly recommends switching to `FxHashMap` (from `rustc-hash`) for performance-critical code where DoS resistance is not needed. This is a well-known optimization but requires a conscious decision to deviate from the default.
 
 **How to avoid:**
-- Check for `ts_node_is_missing()` and `ts_node_has_error()` at start of each node visitor
-- Decide on error handling policy: skip function with errors, or best-effort analysis?
-- Report files with parse errors separately in output (don't silently skip)
-- Add test fixtures with intentional syntax errors
-- Document behavior in README ("skips functions with syntax errors")
+- Use `rustc_hash::FxHashMap` for the duplication hash index. This is the hash algorithm used internally by the Rust compiler itself for its own hash tables.
+- Import: `use rustc_hash::FxHashMap;` after adding `rustc-hash = "2"` to `Cargo.toml`.
+- The `FxHashMap` type is a drop-in replacement: same API as `HashMap`.
+- Only switch the duplication hash index — keep `HashMap` elsewhere unless profiling shows it is hot.
 
 **Warning signs:**
-- Crashes on real-world code that passes TypeScript compilation with errors
-- Metric scores of 0 or -1 on files with syntax errors
-- No indication in output that files were skipped
-- Inconsistent behavior (sometimes processes error nodes, sometimes crashes)
+- Duplication detection benchmarks are significantly slower than expected given the Rabin-Karp algorithmic complexity
+- Profiling (with `cargo flamegraph`) shows `siphasher` as hot in the duplication path
 
 **Phase to address:**
-Phase 1 (Parser integration) — Handle error nodes explicitly before building metrics
+Phase 3 (Duplication detection port) — Use `FxHashMap` from the start for the token window index. Do not optimize later; start with the right hasher.
+
+---
+
+### Pitfall 11: Rust Compile Times Are Significantly Longer Than Zig
+
+**What goes wrong:**
+Zig's compile times are fast by design. Rust's compile times, especially for release builds with `lto = true` and `codegen-units = 1`, are slow. A project with three grammar crates, Serde, Rayon, and several output format libraries may have:
+
+- `cargo build` (debug): 45–90 seconds on first build
+- `cargo build --release` with full LTO: 3–5 minutes
+- Incremental debug builds: 5–15 seconds
+
+This affects developer experience during the rewrite and CI turnaround time.
+
+**Why it happens:**
+Rust's monomorphization and LLVM backend have fundamentally higher compilation overhead than Zig's single-pass compilation model. LTO across many crates compounds this. The grammar crates compile substantial C source code via `build.rs`.
+
+**How to avoid:**
+- Use `cargo check` during development (type-checks without full compilation — runs in seconds).
+- Use the `dev` profile (not `release`) during implementation phases. LTO only matters for the final binary.
+- Split the project into multiple crates (workspace) only if crate boundaries provide meaningful compile-time isolation. For a single-binary CLI, a single crate is fine.
+- Use `sccache` or GitHub Actions' Cargo cache (`actions/cache`) to avoid rebuilding dependencies on every CI run.
+- Add `[profile.dev] opt-level = 1` to improve debug-build runtime without full release cost, speeding up slow tests.
+- Accept that CI release builds will be slow (3–5 minutes). This is the cost of the Rust ecosystem.
+
+**Warning signs:**
+- Full clean rebuild taking >10 minutes (indicates excessive monomorphization from generic code)
+- Incremental builds rebuilding too many units (check `cargo build --timings`)
+- CI timeout on release build step
+
+**Phase to address:**
+All phases — Set up CI caching in Phase 1. Accept slow release builds. Do not add unnecessary generic abstractions that amplify monomorphization.
 
 ---
 
@@ -296,28 +348,31 @@ Shortcuts that seem reasonable but create long-term problems.
 
 | Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
 |----------|-------------------|----------------|-----------------|
-| Hardcoding tree-sitter node type strings instead of using constants | Faster to write inline strings | Breaks on grammar updates, typos aren't caught | Never — tree-sitter node types change between versions |
-| Using floating-point for Halstead calculations | Simpler math | Precision loss in `log₂` calculations, non-deterministic output | Never for production (use fixed-point or arbitrary precision) |
-| Single-threaded implementation first | Easier to debug, faster to prototype | Hard to add threading later, locks in sequential assumptions | MVP only — add threading before v1.0 |
-| Skipping SARIF validation in CI | Faster build | Broken SARIF ships to users, GitHub upload failures | Never — validation is cheap and critical |
-| Relative paths in SARIF output | Works locally | Breaks in CI, GitHub Code Scanning rejects it | Never — must be repository-relative |
-| Using `std.debug.allocator` in production | Convenient during development | Slow, tracks allocations unnecessarily | Dev builds only — use `std.heap.c_allocator` or arena for release |
-| Estimating nesting depth instead of tracking | Simpler code | Cognitive complexity scores wrong | Never — spec requires exact tracking |
-| Global mutable state for metric accumulators | Avoids passing parameters | Non-reentrant, breaks parallelism | Never once threading is added |
+| Porting Zig `defer` cleanups as bare `drop()` calls | Familiar pattern | Easy to miss, not RAII — `drop()` is manual, not automatic | Never — use struct `Drop` impls or scope-based ownership |
+| Using `unwrap()` in metric walkers | Fast to write | Panics on unexpected AST structure in production | Dev only — replace with proper error propagation before release |
+| Allocating `String` for every token kind | Simple code | String allocation per token explodes memory on large files | Never — use `&'static str` or interned string IDs for token kinds |
+| `Arc<Mutex<HashMap>>` for shared metric results | Simple concurrency | Lock contention eliminates parallelism benefit | Never for hot paths — use per-thread collection + merge |
+| Skipping `cargo test` on cross-compiled targets | Faster CI | Binaries that build but produce wrong output on target | Never — add at least one smoke test on each target |
+| Vendoring tree-sitter grammar versions that are outdated | No immediate breakage | Misses bug fixes in grammar; TypeScript syntax coverage gaps | Acceptable for initial port, but set a version-review cadence |
+| Using `serde_json::Value` for all JSON output | Flexible, no type design | 3–5x slower serialization; no compile-time schema validation | Never for hot output path — use typed serialization structs |
+
+---
 
 ## Integration Gotchas
 
-Common mistakes when connecting to external systems.
+Common mistakes when connecting to external systems and libraries.
 
 | Integration | Common Mistake | Correct Approach |
 |-------------|----------------|------------------|
-| GitHub Code Scanning SARIF upload | Using 0-indexed line numbers from tree-sitter | Convert to 1-indexed: `line = node.start_point.row + 1` |
-| npm wrapper package | Bundling binary for single platform | Detect platform at install, download correct binary |
-| CI exit codes | Always exiting 1 on any finding | Use exit code 1 for errors, 2 for warnings (if `--fail-on warning`), 0 for success |
-| JSON output | Outputting NaN/Infinity from Halstead | Check for divide-by-zero, clamp to max values, or omit metric |
-| Config file loading | Requiring all config keys | Merge with defaults, make everything optional |
-| Glob pattern matching | Using shell glob semantics | Use gitignore-style globs (`**/*.ts` not `*.ts` for recursion) |
-| Tree-sitter language detection | Hardcoding `.ts` → TypeScript | Check file extension AND content (JSX in `.js` files needs TSX parser) |
+| tree-sitter grammar crates | Assuming latest crate version is compatible with latest core | Run `cargo tree -d` and verify no duplicate `tree-sitter` versions before adding grammar crates |
+| cargo-zigbuild (cross-compile) | Using `--target x86_64-pc-windows-gnu` from Linux for Windows release builds | Build Windows binaries on `windows-latest` GHA runner natively |
+| tree-sitter `Tree` lifetime | Keeping `Node` values after calling any function that requires the original source | Extract all data from nodes into owned Rust types within the same scope as `Tree` |
+| GitHub SARIF upload | Carrying over Zig's 0-indexed line numbers unchanged | Verify 1-indexed conversion: `sarif_line = ts_node.start_point().row + 1` |
+| Rayon `par_iter` | Creating a new `Parser` inside each `par_iter` task without `thread_local!` | Use `thread_local! { static PARSER: RefCell<Parser> = RefCell::new(Parser::new()); }` |
+| `build.rs` grammar compilation | Not vendoring grammar C sources, relying on network at build time | Vendor all grammar C sources in the repo under `vendor/` |
+| musl static linking | Linking against glibc dynamically on the Linux musl target | Always use `x86_64-unknown-linux-musl` for static Linux binaries |
+
+---
 
 ## Performance Traps
 
@@ -325,59 +380,61 @@ Patterns that work at small scale but fail as usage grows.
 
 | Trap | Symptoms | Prevention | When It Breaks |
 |------|----------|------------|----------------|
-| Loading entire file into memory | Works for small files | Use streaming parse for files > 10 MB | Files > 100 MB |
-| Synchronous file I/O in worker threads | Simple API | Blocks thread pool, slow on network filesystems | > 1000 files on NFS |
-| Building full AST in memory | Tree-sitter's native representation | AST size proportional to file size | Files > 50k lines |
-| Quadratic duplication comparison | All pairs comparison | Use hash index, only compare on hash match | > 500 files |
-| Copying strings for each metric | Easy to pass around | Memory usage explodes on large codebases | > 5k files |
-| Allocating per-node during walk | Simple allocator use | Pressure on allocator, fragmentation | Files with > 100k nodes |
-| Formatting JSON with pretty-printing | Readable output | 10x slower, huge output files | > 1000 files in JSON |
-| Recursive AST descent without tail-call | Natural recursion | Stack overflow on deeply nested code | Nesting depth > 500 |
+| Re-parsing files for duplication after metrics phase | Analysis time 800%+ above expected; two sequential passes visible in `--verbose` | Tokenize during first parse pass and return tokens alongside metrics | Noticeable at 100 files; severe at 1000+ |
+| `std::HashMap` with default SipHash for u64 keys | Duplication hash index is CPU-bottlenecked | Use `FxHashMap<u64, Vec<TokenWindow>>` from `rustc-hash` | Hot path visible in flamegraph at ~500 files |
+| `String::clone()` for every function name in results | Memory spikes on large codebases | Use string interning or `Arc<str>` for repeated names | 10k+ files with many duplicate function names |
+| Single `Mutex<Vec<FileResult>>` shared across Rayon workers | Rayon thread pool stalls waiting for mutex | Each worker returns results; merge after `par_iter().collect()` | Visible at > 8 threads |
+| Reading entire file into `Vec<u8>` with no size limit | OOM on generated files (minified JS can be 50+ MB) | Enforce max file size limit (default 10 MB) with early rejection | First user with a minified bundle in the scan path |
+| Recursive AST descent implemented as Rust recursion | Stack overflow on deeply nested generated code | Use explicit stack (`Vec<Node>`) for tree traversal | Nesting depth > ~3000 frames (can happen in generated code) |
+| Building output strings via `String` concatenation | Console output slow on 10k+ file results | Use `BufWriter<Stdout>` and write directly, or build output in one pass | Reports with thousands of results |
+
+---
 
 ## Security Mistakes
 
-Domain-specific security issues beyond general web security.
+Domain-specific security issues for a CLI code analysis tool.
 
 | Mistake | Risk | Prevention |
 |---------|------|------------|
-| Executing user-provided code in config | Arbitrary code execution | Never eval config, use JSON schema only |
-| Following symlinks during file scan | Reading sensitive files outside project | Use `std.fs.Dir.open()` with `no_follow` option |
-| Unbounded memory allocation on attacker-controlled input | DoS via memory exhaustion | Limit max file size (default 10 MB), max parse depth |
-| Path traversal in `--output` flag | Writing files outside project | Validate output path, reject `..` components |
-| Leaking file contents in error messages | Information disclosure | Sanitize error messages, don't echo file content |
-| Trusting file extensions for language detection | Parsing malicious files with wrong grammar | Content-based detection, validate file structure |
+| Following symlinks during directory walk without a depth limit | Infinite loop or reading files outside the project (e.g., `/etc/passwd`) | Use `walkdir` crate with `follow_links(false)` default; add `max_depth` guard |
+| No file size limit before reading into memory | DoS via 1 GB minified JS file passed to `--include` | Reject files above configurable limit (default 10 MB) before allocating |
+| Path traversal in `--output` flag | `--output ../../.ssh/authorized_keys` overwrites sensitive files | Validate output path: reject `..` components, check write permission before opening |
+| Unbounded duplication hash index memory | Codebase with pathological repetition (generated code) fills RAM | Apply `MAX_BUCKET_SIZE` cap (the Zig implementation has 1000 — port this) |
+| Leaking source code in error messages | Printing file content in parse error output | Only show file path and line number in errors, never source text |
+
+---
 
 ## UX Pitfalls
 
-Common user experience mistakes in this domain.
+Common user experience mistakes when porting CLI behavior.
 
 | Pitfall | User Impact | Better Approach |
 |---------|-------------|-----------------|
-| No progress indicator on large codebases | Looks frozen, users kill process | Show file count or progress bar after 2 seconds |
-| Dumping JSON to stdout by default | Clutters terminal, breaks shell scripts | Default to console, require explicit `--format json` |
-| Exit code 1 for warnings | Breaks existing CI pipelines | Default to exit 0 on warnings, opt-in via `--fail-on warning` |
-| Reporting thousands of warnings with no summary | Information overload, users ignore all | Show summary first, limit detail, group by severity |
-| Inconsistent severity between metrics | Confusing thresholds | Align warning/error thresholds across metrics (e.g., all "warning" at 75th percentile) |
-| No way to disable specific metrics | All-or-nothing forces disabling tool | `--metrics cyclomatic,cognitive` flag to select subset |
-| Requiring config file to run | Friction for first-time users | Sensible defaults, config file optional |
-| Not showing what threshold was violated | "Cognitive complexity too high" — by how much? | "Cognitive 28 (threshold 15)" shows gap |
+| CLI flag names changing from the Zig version | Breaks existing CI scripts and shell aliases | Map all existing flags identically; this is a drop-in binary replacement |
+| Exit codes changing between versions | CI pipelines that gate on exit code break silently | Keep exit codes 0–4 identical to the Zig version |
+| JSON output field names changing | Any tool that parses ComplexityGuard JSON breaks | Run Zig and Rust versions side-by-side on the same input; diff output exactly |
+| SARIF `tool.driver.version` not updated | GitHub Code Scanning shows wrong version | Update version string to reflect Rust rewrite version |
+| Slower startup time than Zig version | Users notice CLI "feels slower" even if analysis is same speed | Profile startup with `cargo flamegraph` — Rust's `main()` should be near-instant |
+| Different float formatting in JSON output | Numbers like `3.5999999999` vs `3.6` break downstream consumers | Use controlled precision: `format!("{:.2}", value)` consistently |
+
+---
 
 ## "Looks Done But Isn't" Checklist
 
 Things that appear complete but are missing critical pieces.
 
-- [ ] **SARIF output:** Often missing `$schema` URL — verify with official SARIF validator, not just "it's valid JSON"
-- [ ] **Cyclomatic complexity:** Often missing switch statement case counting — verify with test: `switch` with 5 cases should add +5, not +1
-- [ ] **Duplication detection:** Often missing token normalization — verify Type 2 clone detection works (renamed variables match)
-- [ ] **Cross-compilation:** Often missing Windows binary test — verify with Windows CI, not just local cross-compile
-- [ ] **Config file:** Often missing merge with defaults — verify partial config files work
-- [ ] **Exit codes:** Often missing distinction between error types — verify exit 0/1/2/3/4 with test cases
-- [ ] **Thread safety:** Often missing allocator isolation — verify no crashes with `--threads 128` on large codebase
-- [ ] **Error handling:** Often missing tree-sitter error node handling — verify tool doesn't crash on syntax errors
-- [ ] **Nesting tracking:** Often missing lambda/arrow function nesting — verify cognitive complexity matches SonarQube on nested arrow functions
-- [ ] **Glob matching:** Often missing `**` recursive expansion — verify `src/**/*.ts` matches nested files
-- [ ] **Path normalization:** Often missing Windows backslash handling — verify SARIF paths use forward slashes on Windows
-- [ ] **Memory cleanup:** Often missing tree-sitter object deletion — verify no leaks with Valgrind/AddressSanitizer
+- [ ] **Grammar version alignment:** `cargo tree -d` shows zero duplicate `tree-sitter` crate versions
+- [ ] **Binary size:** Release binary is under 5 MB — measured, not assumed
+- [ ] **Cross-compilation:** Each target binary (`linux-x64`, `linux-arm64`, `macos-x64`, `macos-arm64`, `windows-x64`) runs correctly on a native machine, not just builds
+- [ ] **JSON output parity:** Byte-for-byte field name match with Zig version's JSON output on same input (field order may differ but all fields present)
+- [ ] **Exit code parity:** Exit codes 0/1/2/3/4 match Zig version on identical scenarios
+- [ ] **Re-parse eliminated:** Duplication tokenization runs in the first parse pass — verify no file is read twice in flamegraph or with `strace`
+- [ ] **Windows path separator:** SARIF `artifactLocation.uri` uses forward slashes on Windows output
+- [ ] **Panic = abort:** Release profile has `panic = "abort"` — verify with `readelf -d` that no unwind sections present
+- [ ] **Thread-local parser language reset:** Each parallel file analysis task calls `set_language()` even if the previous task used the same language
+- [ ] **Token kind is `&'static str`:** Token kinds are not heap-allocated strings per token — verify no `String` allocation per token in the tokenizer hot path
+
+---
 
 ## Recovery Strategies
 
@@ -385,16 +442,18 @@ When pitfalls occur despite prevention, how to recover.
 
 | Pitfall | Recovery Cost | Recovery Steps |
 |---------|---------------|----------------|
-| Incorrect AST assumptions | MEDIUM | Add test suite with edge cases, regenerate parse trees, update node type handling |
-| Boolean operator miscounting | LOW | Fix operator sequence tracking logic, add regression tests |
-| Zig/tree-sitter memory leaks | HIGH | Refactor ownership model, add RAII wrappers, extensive testing with sanitizers |
-| Rabin-Karp collisions | MEDIUM | Tune hash parameters, add verification step, benchmark against PMD CPD |
-| SARIF validation failures | LOW | Use validator in CI, copy structure from reference implementation |
-| Nesting depth errors | MEDIUM | Refactor to use explicit stack, add property tests for nesting invariants |
-| Cross-platform path bugs | LOW | Switch to `std.fs.path` APIs, add Windows CI |
-| Halstead misclassification | MEDIUM | Build operator/operand table, validate against hand-calculations |
-| Thread pool deadlocks | HIGH | Redesign work distribution, remove shared mutable state, use lock-free structures |
-| Ignoring error nodes | LOW | Add error node checks at visitor entry points, document skip behavior |
+| Grammar version mismatch at compile time | LOW | `cargo update` specific grammar crate; pin all to same tree-sitter version in `Cargo.lock` |
+| Panic UB across FFI | MEDIUM | Add `panic = "abort"` to release profile; wrap any callbacks in `catch_unwind` |
+| Parser contention killing parallelism | MEDIUM | Refactor to `thread_local! Parser`; measure before and after with `hyperfine` |
+| Binary size exceeds 5 MB | LOW–MEDIUM | Add full size-optimization profile to `Cargo.toml`; run `cargo bloat --release` to identify top contributors |
+| Cross-compilation failing for one target | MEDIUM | Move that target to native GHA runner; do not attempt to fix cargo-zigbuild limitations |
+| Re-parse overhead reproduced from Zig | HIGH | Refactor pipeline to unified per-file worker returning `(MetricResults, Vec<Token>)` — requires restructuring parallel pipeline |
+| `Node` lifetime errors when crossing boundaries | LOW | Extract data into owned structs immediately; do not fight the lifetime — the borrow checker is right |
+| Arena allocator pattern causing lifetime pain | MEDIUM | Remove arena crate; use `Vec<T>` with owned values throughout |
+| `build.rs` cross-compile produces wrong architecture | MEDIUM | Test cross-compile to one non-native target in Phase 1 CI; fix `cc` configuration before it compounds |
+| Compile times blocking CI | LOW | Add `actions/cache` for Cargo target directory; parallelize CI matrix jobs |
+
+---
 
 ## Pitfall-to-Phase Mapping
 
@@ -402,68 +461,57 @@ How roadmap phases should address these pitfalls.
 
 | Pitfall | Prevention Phase | Verification |
 |---------|------------------|--------------|
-| Incorrect tree-sitter node assumptions | Phase 1 (Parser integration) | Test suite with 50+ edge cases, parse tree inspection |
-| Boolean operator miscounting | Phase 2 (Metrics implementation) | Compare scores against SonarQube on 1000+ functions |
-| Zig/tree-sitter memory management | Phase 1 (Parser integration) | Valgrind/AddressSanitizer clean on 10k file corpus |
-| Rabin-Karp hash collisions | Phase 3 (Duplication detection) | Compare duplication % against PMD CPD within 5% |
-| SARIF validation failures | Phase 4 (Output formats) | SARIF validator passes, GitHub upload succeeds |
-| Nesting depth tracking errors | Phase 2 (Cognitive complexity) | Scores match SonarQube within ±5% on nested code |
-| Cross-platform path handling | Phase 1 (File scanner) | Windows CI green, all platforms produce same output |
-| Halstead misclassification | Phase 2 (Halstead metrics) | Hand-calculated examples match within ±2% |
-| Thread pool deadlocks | Phase 5 (Parallelization) | 100 runs with varying thread counts (1-128), no hangs |
-| Ignoring tree-sitter error nodes | Phase 1 (Parser integration) | Test fixtures with syntax errors don't crash |
-
-## Additional Domain-Specific Warnings
-
-### Cognitive Complexity Controversy
-**Warning:** The SonarSource cognitive complexity spec says arrow functions increase nesting. This makes functional-style TypeScript code (heavy `map/filter/reduce` chains) score very high. Consider making this configurable or documenting that ComplexityGuard follows the spec strictly.
-
-**Mitigation:** Add `--cognitive-nesting-mode strict|relaxed` flag where `relaxed` excludes array method callbacks from nesting.
-
-### Optional Chaining Debate
-**Warning:** The PRD marks optional chaining (`?.`) as "debatable, configurable" for cyclomatic complexity. Decide early and document clearly, as this will affect scores significantly on modern TypeScript codebases.
-
-**Mitigation:** Make it configurable in Phase 2, default to NOT counting (aligns with "makes code more readable" principle from cognitive complexity).
-
-### Tree-Sitter Grammar Versioning
-**Warning:** tree-sitter-typescript grammar updates can break AST assumptions. Grammar updates for new TypeScript syntax (decorators, const type parameters, etc.) may introduce new node types.
-
-**Mitigation:** Pin tree-sitter grammar version in build, document supported TypeScript versions, add upgrade path in minor versions.
-
-### Zero-Division in Halstead Metrics
-**Warning:** Files with zero operands or zero operators cause divide-by-zero in Halstead difficulty calculation `D = (n1/2) * (N2/n2)`.
-
-**Mitigation:** Check for zero denominators, output `null` or skip Halstead metrics for degenerate files (e.g., type-only files).
-
-### SARIF GitHub Ingestion Limits
-**Warning:** GitHub Code Scanning has undocumented limits: max 5000 results per upload, max 10 MB SARIF file size.
-
-**Mitigation:** Chunk results if exceeding limits, prioritize high-severity violations, document limits in README.
-
-## Sources
-
-**Confidence level: MEDIUM**
-
-Research based on:
-- Personal experience with code analysis tool development (HIGH confidence)
-- Tree-sitter documentation and grammar specifications (HIGH confidence)
-- Zig standard library documentation and memory management patterns (HIGH confidence)
-- SARIF 2.1.0 specification (MEDIUM confidence — spec is public but GitHub-specific requirements are undocumented)
-- SonarSource cognitive complexity whitepaper and McCabe cyclomatic complexity original paper (HIGH confidence)
-- Common pitfalls from similar tools (ESLint, PMD, SonarQube) inferred from public issue trackers (MEDIUM confidence)
-
-**Unable to verify with current research:**
-- Exact tree-sitter-typescript node type behaviors for all TypeScript syntax (would need WebSearch or official grammar docs)
-- Latest Zig threading best practices (documentation at knowledge cutoff January 2025)
-- GitHub Code Scanning's current SARIF ingestion requirements (may have changed since knowledge cutoff)
-
-**Recommended validation:**
-- Test all pitfalls against actual tree-sitter-typescript grammar (use `tree-sitter parse` to inspect CSTs)
-- Validate Zig memory management patterns against Zig 0.14+ documentation
-- Verify SARIF requirements by uploading test files to GitHub Code Scanning
+| Grammar version mismatch | Phase 1 (Setup) | `cargo tree -d` shows no duplicate tree-sitter versions |
+| Panic across FFI boundary | Phase 1 (Setup) | `panic = "abort"` in release profile from day one |
+| Parser thread contention | Phase 2 (Parallel pipeline) | `hyperfine` shows linear speedup with thread count |
+| Binary size bloat | Phase 1 (Setup) | Binary size checked after every phase; <5 MB before shipping |
+| Cross-compilation gaps | Phase 1 + dedicated CI phase | Each target binary runs on native runner, not just builds |
+| Duplication re-parse overhead | Phase 2 (Core pipeline design) | Flamegraph shows single parse pass per file; no file read twice |
+| Node lifetime errors | Phase 1 (Parser wrapper types) | ParseResult type returns only owned data; compiles clean |
+| Arena allocator friction | Phase 1 (Core types) | All result types use owned `Vec<T>`; no arena crate imported |
+| build.rs cross-compile | Phase 1 (Setup) | CI cross-compiles to `aarch64-unknown-linux-musl` from `x86_64` runner |
+| HashMap performance | Phase 3 (Duplication port) | FxHashMap used for token index; benchmarked against expected throughput |
+| Compile time impact | All phases | CI caching configured in Phase 1; incremental builds used in dev |
 
 ---
 
-*Pitfalls research for: ComplexityGuard*
-*Researched: 2026-02-14*
-*Confidence: MEDIUM (domain knowledge-based, WebSearch unavailable for verification)*
+## Zig-Specific Patterns That Do Not Translate to Rust
+
+A focused mapping for developers coming directly from the Zig implementation.
+
+| Zig Pattern | Why It Fails in Rust | Rust Equivalent |
+|-------------|---------------------|-----------------|
+| `defer allocator.free(slice)` | Rust has no `defer` keyword | `Drop` trait implementation or scope-based `Vec` (auto-freed) |
+| `std.heap.ArenaAllocator.init(...)` + `defer arena.deinit()` | Lifetime parameters propagate through all borrowed types | Own data with `Vec<T>`; for true arena use, `bumpalo::Bump` with `'bump` lifetime throughout |
+| `comptime` constants | Rust uses `const fn` and `const` items; fewer zero-cost abstractions at this level | `const fn` + `const` generics; acceptable equivalent |
+| `?T` optional with no allocator | Direct equivalent: `Option<T>` | `Option<T>` — identical semantics |
+| `!T` error union (`anyerror!T`) | Direct equivalent: `Result<T, E>` | `Result<T, Box<dyn Error>>` or `anyhow::Error` |
+| `@cImport` for C headers | Rust uses `extern "C"` declarations + bindgen or manual `unsafe extern` blocks | `bindgen` for generating bindings; or use tree-sitter's Rust crate which provides safe wrappers |
+| `@atomicStore` / `std.atomic.Value` | Direct equivalent: `std::sync::atomic::AtomicU32` | `AtomicU32::fetch_add(1, Ordering::Relaxed)` |
+| Per-worker `ArenaAllocator` in thread pool | Arena lifetime cannot cross `Send` boundary safely | Per-task `Vec<T>` returned and collected; `rayon::collect()` |
+| `std.Thread.Pool` with explicit mutex | Direct equivalent via Rayon or `std::thread::scope` | `rayon::ThreadPool` or `rayon::par_iter()` |
+
+---
+
+## Sources
+
+- [tree-sitter Rust bindings docs (docs.rs)](https://docs.rs/tree-sitter/latest/tree_sitter/) — Parser Send/Sync, Tree lifetime, Node constraints — HIGH confidence
+- [Versioning Conflict for Grammars' Rust Bindings — tree-sitter/tree-sitter#3095](https://github.com/tree-sitter/tree-sitter/issues/3095) — Grammar version mismatch details — HIGH confidence
+- [cargo-zigbuild README](https://github.com/rust-cross/cargo-zigbuild/blob/main/README.md) — Cross-compilation limitations — HIGH confidence
+- [Zig Makes Rust Cross-compilation Just Work (actually.fyi)](https://actually.fyi/posts/zig-makes-rust-cross-compilation-just-work/) — Zig vs Rust cross-compile comparison — MEDIUM confidence
+- [min-sized-rust (johnthagen/min-sized-rust)](https://github.com/johnthagen/min-sized-rust) — Binary size reduction techniques — HIGH confidence
+- [The Rust Performance Book — Hashing](https://nnethercote.github.io/perf-book/hashing.html) — FxHashMap recommendation — HIGH confidence
+- [rustc-hash crate](https://github.com/rust-lang/rustc-hash) — FxHashMap implementation — HIGH confidence
+- [Arenas in Rust (manishearth.github.io)](https://manishearth.github.io/blog/2021/03/15/arenas-in-rust/) — Arena allocator patterns and Rust friction — MEDIUM confidence
+- [bumpalo crate docs](https://docs.rs/bumpalo/latest/bumpalo/) — Arena allocator Rust equivalent — HIGH confidence
+- [Lessons learned from a successful Rust rewrite (gaultier.github.io)](https://gaultier.github.io/blog/lessons_learned_from_a_successful_rust_rewrite.html) — C FFI friction, arena allocators in Rust rewrites — MEDIUM confidence
+- [The Rustonomicon — FFI Unwinding](https://doc.rust-lang.org/nomicon/ffi.html) — Panic across FFI boundary UB — HIGH confidence
+- [cargo-zigbuild issue #231](https://github.com/rust-cross/cargo-zigbuild/issues/231) — Static glibc unsupported limitation — HIGH confidence
+- [Rayon optimization article — Making a parallel Rust workload 10x faster (gendignoux.com)](https://gendignoux.com/blog/2024/11/18/rust-rayon-optimized.html) — Rayon parallelism pitfalls — MEDIUM confidence
+- ComplexityGuard Zig source (`src/pipeline/parallel.zig`, `src/metrics/duplication.zig`) — Re-parse overhead architecture — HIGH confidence (direct code inspection)
+
+---
+
+*Pitfalls research for: ComplexityGuard Zig → Rust rewrite (v0.8 milestone)*
+*Researched: 2026-02-24*
+*Confidence: HIGH — verified against official docs, crates.io, and direct Zig source inspection*

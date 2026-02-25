@@ -1,6 +1,6 @@
 # ComplexityGuard
 
-Fast complexity analysis for TypeScript/JavaScript — single static binary, zero dependencies.
+Fast complexity analysis for TypeScript/JavaScript — single static binary built with Rust, zero dependencies.
 
 ## Quick Start
 
@@ -10,12 +10,21 @@ Install ComplexityGuard:
 # npm (global install)
 npm install -g complexity-guard
 
-# Direct download (all platforms)
-# Download the binary for your platform from GitHub releases:
+# Direct download (Rust binary — all platforms)
+# Download the archive for your platform from GitHub Releases:
 # https://github.com/benvds/complexity-guard/releases
-# Then make it executable and add to your PATH:
+#
+# Available platforms:
+#   complexity-guard-linux-x86_64-musl.tar.gz    (Linux x86_64)
+#   complexity-guard-linux-aarch64-musl.tar.gz   (Linux ARM64)
+#   complexity-guard-macos-x86_64.tar.gz         (macOS Intel)
+#   complexity-guard-macos-aarch64.tar.gz        (macOS Apple Silicon)
+#   complexity-guard-windows-x86_64.zip          (Windows x64)
+#
+# Extract and install (macOS/Linux):
+tar xzf complexity-guard-*.tar.gz
 chmod +x complexity-guard
-mv complexity-guard /usr/local/bin/
+sudo mv complexity-guard /usr/local/bin/
 ```
 
 Run analysis on your codebase:
@@ -35,14 +44,12 @@ complexity-guard --init src/
 ```
 src/auth/login.ts
   42:0  ✓  ok  Function 'validateCredentials' cyclomatic 3 cognitive 2
-  67:0  ⚠  warning  Function 'processLoginFlow' cyclomatic 12 cognitive 18
-              [halstead vol 843 diff 14.1 effort 11886] [length 34 params 3 depth 4]
-  89:2  ✗  error  Method 'handleComplexAuthFlow' cyclomatic 25 cognitive 32
-              [halstead vol 1244 diff 18.6 effort 23135 bugs 0.41] [length 62 params 4 depth 6]
+  67:0  ⚠  warning  Function 'processLoginFlow' cyclomatic 12 cognitive 18 [halstead vol 843] [length 34] [params 3] [depth 4]
+  89:2  ✗  error  Function 'handleComplexAuthFlow' cyclomatic 25 cognitive 32 [halstead vol 1244] [length 62] [params 4] [depth 6]
 
 Analyzed 12 files, 47 functions
-Found 3 warnings, 1 errors
 Health: 73
+Found 3 warnings, 1 errors
 
 Top cyclomatic hotspots:
   1. handleComplexAuthFlow (src/auth/login.ts:89) complexity 25
@@ -152,15 +159,17 @@ See the [CLI Reference](docs/cli-reference.md) for complete configuration option
 
 ## Building from Source
 
-Requires [Zig](https://ziglang.org/) 0.14.0 or later:
+Requires [Rust](https://www.rust-lang.org/) (stable toolchain):
 
 ```sh
-zig build          # build binary to zig-out/bin/complexity-guard
-zig build test     # run all tests
-zig build run      # run the binary
+cargo build --release
 ```
 
-The build produces a single static binary at `zig-out/bin/complexity-guard`.
+The binary will be at `target/release/complexity-guard`. Add it to your PATH or run it directly.
+
+## Binary Sizes
+
+Binary sizes are measured in CI on every release. See the [latest GitHub Release](https://github.com/benvds/complexity-guard/releases/latest) for measured binary sizes per platform.
 
 ## License
 

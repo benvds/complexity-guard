@@ -7,7 +7,7 @@
 # Prerequisites:
 #   - Run setup.sh --suite <suite> first to clone projects
 #   - node/npm must be available for FTA auto-install
-#   - Zig must be available for CG ReleaseFast build
+#   - Rust toolchain must be available for cargo build
 #
 # Output:
 #   benchmarks/results/baseline-YYYY-MM-DD/metric-accuracy.json
@@ -45,9 +45,9 @@ echo "Suite: $SUITE"
 echo ""
 
 # Build CG in ReleaseFast mode
-echo "Building ComplexityGuard in ReleaseFast mode..."
-(cd "$PROJECT_ROOT" && zig build -Doptimize=ReleaseFast)
-CG_BIN="$PROJECT_ROOT/zig-out/bin/complexity-guard"
+echo "Building ComplexityGuard in release mode..."
+(cd "$PROJECT_ROOT" && cargo build --release)
+CG_BIN="$PROJECT_ROOT/target/release/complexity-guard"
 echo "CG binary: $CG_BIN ($("$CG_BIN" --version 2>&1 || true))"
 
 # Auto-install FTA into temp dir
@@ -81,7 +81,7 @@ case "$SUITE" in
       echo "Error: jq required for full suite project list" >&2
       exit 1
     fi
-    PROJECTS_JSON="$PROJECT_ROOT/benchmarks/public-projects.json"
+    PROJECTS_JSON="$PROJECT_ROOT/tests/public-projects.json"
     if [[ ! -f "$PROJECTS_JSON" ]]; then
       echo "Error: $PROJECTS_JSON not found" >&2
       exit 1
