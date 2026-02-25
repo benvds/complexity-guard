@@ -176,6 +176,60 @@ mod tests {
     }
 
     #[test]
+    fn extract_function_name_named_function() {
+        let language: tree_sitter::Language =
+            tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into();
+        let mut parser = tree_sitter::Parser::new();
+        parser.set_language(&language).unwrap();
+        let source = b"function myFunc() { return 1; }";
+        let tree = parser.parse(source, None).unwrap();
+        let root = tree.root_node();
+        let func_node = root.child(0).unwrap(); // function_declaration
+        let name = extract_function_name(&func_node, source);
+        assert_eq!(name, "myFunc");
+    }
+
+    #[test]
+    fn extract_function_name_anonymous_arrow() {
+        let language: tree_sitter::Language =
+            tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into();
+        let mut parser = tree_sitter::Parser::new();
+        parser.set_language(&language).unwrap();
+        // A bare arrow function node returns <anonymous>; naming context is resolved by cyclomatic walker
+        let source = b"const f = () => 1;";
+        let tree = parser.parse(source, None).unwrap();
+        let root = tree.root_node();
+        // Walk to find the arrow_function node
+        let lex_decl = root.child(0).unwrap(); // lexical_declaration
+        let var_decl = lex_decl.child(1).unwrap(); // variable_declarator
+        let arrow = var_decl.child_by_field_name("value").unwrap(); // arrow_function
+        assert_eq!(arrow.kind(), "arrow_function");
+        let name = extract_function_name(&arrow, source);
+        // extract_function_name alone returns <anonymous> for arrow functions
+        assert_eq!(name, "<anonymous>");
+    }
+
+    #[test]
+    fn analyze_file_naming_edge_cases() {
+        let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../tests/fixtures/naming-edge-cases.ts");
+        let config = AnalysisConfig::default();
+        let result = analyze_file(&fixture_path, &config).unwrap();
+
+        let names: Vec<&str> = result.functions.iter().map(|f| f.name.as_str()).collect();
+
+        assert!(names.contains(&"myFunc"), "Should find myFunc: {:?}", names);
+        assert!(names.contains(&"handler"), "Should find handler: {:?}", names);
+        assert!(names.contains(&"Foo.bar"), "Should find Foo.bar: {:?}", names);
+        assert!(names.contains(&"Foo.baz"), "Should find Foo.baz: {:?}", names);
+        assert!(names.contains(&"process"), "Should find process: {:?}", names);
+        assert!(names.contains(&"map callback"), "Should find 'map callback': {:?}", names);
+        assert!(names.contains(&"forEach callback"), "Should find 'forEach callback': {:?}", names);
+        assert!(names.contains(&"click handler"), "Should find 'click handler': {:?}", names);
+        assert!(names.contains(&"default export"), "Should find 'default export': {:?}", names);
+    }
+
+    #[test]
     fn is_function_node_recognizes_all_types() {
         assert!(is_function_node("function_declaration"));
         assert!(is_function_node("function"));

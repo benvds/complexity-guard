@@ -16,9 +16,33 @@ pub fn analyze_functions(
 }
 
 /// Name context passed from parent nodes to resolve anonymous function names.
+///
+/// Mirrors the Zig FunctionContext struct, supporting class, object key,
+/// callback, and default export naming patterns.
+#[derive(Clone)]
 struct NameContext {
+    /// Variable name (for `const x = () => {}` patterns)
     name: String,
+    /// Class name (for `class Foo { bar() {} }` → "Foo.bar")
     class_name: Option<String>,
+    /// Object literal key (for `{ handler: () => {} }` → "handler")
+    object_key: Option<String>,
+    /// Call expression method name (for `arr.map(() => {})` → "map callback")
+    call_name: Option<String>,
+    /// Whether inside a `export default function() {}` → "default export"
+    is_default_export: bool,
+}
+
+impl NameContext {
+    fn from_name(name: &str) -> Self {
+        NameContext {
+            name: name.to_string(),
+            class_name: None,
+            object_key: None,
+            call_name: None,
+            is_default_export: false,
+        }
+    }
 }
 
 fn walk_and_analyze(
@@ -33,14 +57,40 @@ fn walk_and_analyze(
     if is_function_node(kind) {
         let mut name = crate::metrics::extract_function_name(&node, source);
 
-        // Apply parent context naming (variable_declarator -> arrow, class -> method)
+        // Apply parent context naming priorities (matching Zig priority order)
         if let Some(ctx) = parent_ctx {
+            // Priority 1: class method → "ClassName.methodName"
             if let Some(ref class_name) = ctx.class_name {
-                // Class method: "ClassName.methodName"
                 if kind == "method_definition" && name != "<anonymous>" {
                     name = format!("{}.{}", class_name, name);
                 }
-            } else if name == "<anonymous>" && !ctx.name.is_empty() {
+            }
+
+            // Priority 2: object key → use key name for anonymous arrow/function
+            if let Some(ref key) = ctx.object_key {
+                if name == "<anonymous>" || kind == "arrow_function" {
+                    name = key.clone();
+                }
+            }
+
+            // Priority 3: callback naming → "callee callback" or "event handler"
+            if let Some(ref call_name) = ctx.call_name {
+                if name == "<anonymous>" || kind == "arrow_function" {
+                    if call_name.ends_with(" handler") {
+                        name = call_name.clone();
+                    } else {
+                        name = format!("{} callback", call_name);
+                    }
+                }
+            }
+
+            // Priority 4: default export → "default export"
+            if ctx.is_default_export && name == "<anonymous>" {
+                name = "default export".to_string();
+            }
+
+            // Priority 5: variable name (from variable_declarator)
+            if name == "<anonymous>" && !ctx.name.is_empty() && ctx.name != "<anonymous>" {
                 name = ctx.name.clone();
             }
         }
@@ -67,10 +117,7 @@ fn walk_and_analyze(
     if kind == "variable_declarator" {
         if let Some(name_node) = node.child_by_field_name("name") {
             if let Ok(text) = name_node.utf8_text(source) {
-                child_ctx = Some(NameContext {
-                    name: text.to_string(),
-                    class_name: None,
-                });
+                child_ctx = Some(NameContext::from_name(text));
             }
         }
     } else if kind == "class_declaration" || kind == "class" {
@@ -89,13 +136,114 @@ fn walk_and_analyze(
         child_ctx = Some(NameContext {
             name: "<anonymous>".to_string(),
             class_name: Some(class_name),
+            object_key: None,
+            call_name: None,
+            is_default_export: false,
         });
-    } else if kind == "class_body" || kind == "arguments" {
-        // Pass through parent context
+    } else if kind == "class_body" {
+        // Pass through parent context (class context needed for method naming)
         if let Some(ctx) = parent_ctx {
+            child_ctx = Some(ctx.clone());
+        }
+    } else if kind == "arguments" {
+        // Pass call context into arguments (contains callback arrow functions)
+        if let Some(ctx) = parent_ctx {
+            child_ctx = Some(ctx.clone());
+        }
+    } else if kind == "pair" {
+        // Object literal: `{ handler: () => {} }` — key becomes the function name
+        if let Some(key_node) = node.child(0) {
+            let key_kind = key_node.kind();
+            if key_kind == "property_identifier" || key_kind == "string" || key_kind == "identifier" {
+                if let Ok(key_text) = key_node.utf8_text(source) {
+                    // Strip quotes from string keys
+                    let key = if key_text.starts_with('"') || key_text.starts_with('\'') {
+                        &key_text[1..key_text.len() - 1]
+                    } else {
+                        key_text
+                    };
+                    child_ctx = Some(NameContext {
+                        name: "<anonymous>".to_string(),
+                        class_name: None,
+                        object_key: Some(key.to_string()),
+                        call_name: None,
+                        is_default_export: false,
+                    });
+                }
+            }
+        }
+    } else if kind == "call_expression" {
+        // Track callee for callback naming: `arr.map(() => {})` → "map callback"
+        if let Some(callee) = node.child(0) {
+            let callee_kind = callee.kind();
+            if callee_kind == "identifier" {
+                // Simple identifier: `map(...)`, `forEach(...)`, `addEventListener(...)`
+                if let Ok(callee_name) = callee.utf8_text(source) {
+                    if callee_name == "addEventListener" {
+                        let event_name = extract_event_name(&node, source);
+                        let call_name = if let Some(ev) = event_name {
+                            format!("{} handler", ev)
+                        } else {
+                            "addEventListener handler".to_string()
+                        };
+                        child_ctx = Some(NameContext {
+                            name: "<anonymous>".to_string(),
+                            class_name: None,
+                            object_key: None,
+                            call_name: Some(call_name),
+                            is_default_export: false,
+                        });
+                    } else {
+                        child_ctx = Some(NameContext {
+                            name: "<anonymous>".to_string(),
+                            class_name: None,
+                            object_key: None,
+                            call_name: Some(callee_name.to_string()),
+                            is_default_export: false,
+                        });
+                    }
+                }
+            } else if callee_kind == "member_expression" {
+                // Member expression: `arr.map`, `obj.forEach`, `document.addEventListener`
+                if let Some(method_name) = get_last_member_segment(&callee, source) {
+                    if method_name == "addEventListener" {
+                        let event_name = extract_event_name(&node, source);
+                        let call_name = if let Some(ev) = event_name {
+                            format!("{} handler", ev)
+                        } else {
+                            "addEventListener handler".to_string()
+                        };
+                        child_ctx = Some(NameContext {
+                            name: "<anonymous>".to_string(),
+                            class_name: None,
+                            object_key: None,
+                            call_name: Some(call_name),
+                            is_default_export: false,
+                        });
+                    } else {
+                        child_ctx = Some(NameContext {
+                            name: "<anonymous>".to_string(),
+                            class_name: None,
+                            object_key: None,
+                            call_name: Some(method_name),
+                            is_default_export: false,
+                        });
+                    }
+                }
+            }
+        }
+    } else if kind == "export_statement" {
+        // Check for `export default function() {}` → "default export"
+        let is_default = (0..node.child_count() as u32)
+            .filter_map(|i| node.child(i))
+            .any(|c| c.kind() == "default");
+        if is_default {
             child_ctx = Some(NameContext {
-                name: ctx.name.clone(),
-                class_name: ctx.class_name.clone(),
+                name: "<anonymous>".to_string(),
+                class_name: None,
+                object_key: None,
+                call_name: None,
+                is_default_export: true,
             });
         }
     }
@@ -111,6 +259,52 @@ fn walk_and_analyze(
             );
         }
     }
+}
+
+/// Extract the event name from the first string argument of a call_expression.
+///
+/// For `document.addEventListener("click", ...)` returns `Some("click")`.
+fn extract_event_name(call_node: &tree_sitter::Node, source: &[u8]) -> Option<String> {
+    // Find the `arguments` child
+    for i in 0..call_node.child_count() as u32 {
+        if let Some(args) = call_node.child(i) {
+            if args.kind() == "arguments" {
+                // Look for first string literal in arguments
+                for j in 0..args.child_count() as u32 {
+                    if let Some(arg) = args.child(j) {
+                        if arg.kind() == "string" {
+                            if let Ok(text) = arg.utf8_text(source) {
+                                // Strip surrounding quotes
+                                if text.len() >= 2 {
+                                    return Some(text[1..text.len() - 1].to_string());
+                                }
+                            }
+                        }
+                    }
+                }
+                break;
+            }
+        }
+    }
+    None
+}
+
+/// Extract the last identifier segment from a member_expression node.
+///
+/// For `arr.map` returns `Some("map")`. For `obj.foo.bar` returns `Some("bar")`.
+fn get_last_member_segment(node: &tree_sitter::Node, source: &[u8]) -> Option<String> {
+    let mut last: Option<String> = None;
+    for i in 0..node.child_count() as u32 {
+        if let Some(child) = node.child(i) {
+            let ct = child.kind();
+            if ct == "property_identifier" || ct == "identifier" {
+                if let Ok(text) = child.utf8_text(source) {
+                    last = Some(text.to_string());
+                }
+            }
+        }
+    }
+    last
 }
 
 /// Calculate cyclomatic complexity for a function node.
@@ -348,5 +542,40 @@ function test(x: string): number {
 
         // Modified mode: base 1 + 1 for the switch = 2
         assert_eq!(results[0].complexity, 2);
+    }
+
+    #[test]
+    fn naming_edge_cases_fixture() {
+        let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../tests/fixtures/naming-edge-cases.ts");
+        let source = std::fs::read_to_string(&fixture_path).unwrap();
+        let config = CyclomaticConfig::default();
+        let results = parse_and_analyze(&source, &config);
+
+        let names: Vec<&str> = results.iter().map(|r| r.name.as_str()).collect();
+
+        // Basic named function
+        assert!(names.contains(&"myFunc"), "Should find myFunc: {:?}", names);
+
+        // Variable-assigned arrow
+        assert!(names.contains(&"handler"), "Should find handler: {:?}", names);
+
+        // Class methods
+        assert!(names.contains(&"Foo.bar"), "Should find Foo.bar: {:?}", names);
+        assert!(names.contains(&"Foo.baz"), "Should find Foo.baz: {:?}", names);
+
+        // Object literal methods (key name extraction)
+        // { handler: () => {} } → key "handler" conflicts with top-level handler; check "process"
+        assert!(names.contains(&"process"), "Should find process (shorthand method): {:?}", names);
+
+        // Array method callbacks
+        assert!(names.contains(&"map callback"), "Should find 'map callback': {:?}", names);
+        assert!(names.contains(&"forEach callback"), "Should find 'forEach callback': {:?}", names);
+
+        // Event handler
+        assert!(names.contains(&"click handler"), "Should find 'click handler': {:?}", names);
+
+        // Default export
+        assert!(names.contains(&"default export"), "Should find 'default export': {:?}", names);
     }
 }
