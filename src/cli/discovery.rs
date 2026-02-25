@@ -159,8 +159,14 @@ mod tests {
         let path = write_temp_config(&dir, "config.json", json);
 
         let config = load_config_file(&path).unwrap();
-        assert_eq!(config.output.as_ref().unwrap().format, Some("sarif".to_string()));
-        assert_eq!(config.output.as_ref().unwrap().file, Some("out.sarif".to_string()));
+        assert_eq!(
+            config.output.as_ref().unwrap().format,
+            Some("sarif".to_string())
+        );
+        assert_eq!(
+            config.output.as_ref().unwrap().file,
+            Some("out.sarif".to_string())
+        );
         assert_eq!(config.analysis.as_ref().unwrap().threads, Some(8));
         assert_eq!(config.analysis.as_ref().unwrap().no_duplication, Some(true));
         assert_eq!(

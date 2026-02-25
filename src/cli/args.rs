@@ -155,7 +155,8 @@ mod tests {
 
     #[test]
     fn test_parse_config_short() {
-        let args = Args::try_parse_from(["complexityguard", "-c", ".complexityguard.json"]).unwrap();
+        let args =
+            Args::try_parse_from(["complexityguard", "-c", ".complexityguard.json"]).unwrap();
         assert_eq!(args.config, Some(".complexityguard.json".to_string()));
     }
 
@@ -193,14 +194,14 @@ mod tests {
 
     #[test]
     fn test_parse_positional_paths() {
-        let args =
-            Args::try_parse_from(["complexityguard", "src/", "lib/"]).unwrap();
+        let args = Args::try_parse_from(["complexityguard", "src/", "lib/"]).unwrap();
         assert_eq!(args.paths.len(), 2);
     }
 
     #[test]
     fn test_parse_baseline() {
-        let args = Args::try_parse_from(["complexityguard", "--baseline", "baseline.json"]).unwrap();
+        let args =
+            Args::try_parse_from(["complexityguard", "--baseline", "baseline.json"]).unwrap();
         assert_eq!(args.baseline, Some("baseline.json".to_string()));
     }
 

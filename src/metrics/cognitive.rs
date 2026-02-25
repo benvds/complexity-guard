@@ -352,13 +352,7 @@ fn visit_if_as_continuation_with_arrows(
     for i in 0..node.child_count() as u32 {
         if let Some(child) = node.child(i) {
             if child.kind() == "else_clause" {
-                visit_else_clause_with_arrows(
-                    child,
-                    source,
-                    complexity,
-                    nesting,
-                    function_name,
-                );
+                visit_else_clause_with_arrows(child, source, complexity, nesting, function_name);
             }
         }
     }
@@ -607,8 +601,7 @@ mod tests {
     use std::path::Path;
 
     fn parse_and_analyze(source: &str) -> Vec<CognitiveResult> {
-        let language: tree_sitter::Language =
-            tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into();
+        let language: tree_sitter::Language = tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into();
         let mut parser = tree_sitter::Parser::new();
         parser.set_language(&language).unwrap();
         let tree = parser.parse(source.as_bytes(), None).unwrap();
@@ -616,10 +609,7 @@ mod tests {
         analyze_functions(root, source.as_bytes())
     }
 
-    fn find_by_name<'a>(
-        results: &'a [CognitiveResult],
-        name: &str,
-    ) -> Option<&'a CognitiveResult> {
+    fn find_by_name<'a>(results: &'a [CognitiveResult], name: &str) -> Option<&'a CognitiveResult> {
         results.iter().find(|r| r.name == name)
     }
 
@@ -632,26 +622,19 @@ mod tests {
 
         assert_eq!(find_by_name(&results, "baseline").unwrap().complexity, 0);
         assert_eq!(find_by_name(&results, "singleIf").unwrap().complexity, 1);
-        assert_eq!(
-            find_by_name(&results, "ifElseChain").unwrap().complexity,
-            4
-        );
+        assert_eq!(find_by_name(&results, "ifElseChain").unwrap().complexity, 4);
         assert_eq!(
             find_by_name(&results, "nestedIfInLoop").unwrap().complexity,
             6
         );
+        assert_eq!(find_by_name(&results, "logicalOps").unwrap().complexity, 3);
         assert_eq!(
-            find_by_name(&results, "logicalOps").unwrap().complexity,
-            3
-        );
-        assert_eq!(
-            find_by_name(&results, "mixedLogicalOps").unwrap().complexity,
+            find_by_name(&results, "mixedLogicalOps")
+                .unwrap()
+                .complexity,
             4
         );
-        assert_eq!(
-            find_by_name(&results, "factorial").unwrap().complexity,
-            2
-        );
+        assert_eq!(find_by_name(&results, "factorial").unwrap().complexity, 2);
         assert_eq!(
             find_by_name(&results, "topLevelArrow").unwrap().complexity,
             1
@@ -661,13 +644,12 @@ mod tests {
             3
         );
         assert_eq!(
-            find_by_name(&results, "switchStatement").unwrap().complexity,
+            find_by_name(&results, "switchStatement")
+                .unwrap()
+                .complexity,
             1
         );
-        assert_eq!(
-            find_by_name(&results, "tryCatch").unwrap().complexity,
-            1
-        );
+        assert_eq!(find_by_name(&results, "tryCatch").unwrap().complexity, 1);
         assert_eq!(
             find_by_name(&results, "ternaryNested").unwrap().complexity,
             3
@@ -686,10 +668,7 @@ mod tests {
             find_by_name(&results, "labeledBreak").unwrap().complexity,
             7
         );
-        assert_eq!(
-            find_by_name(&results, "noIncrement").unwrap().complexity,
-            0
-        );
+        assert_eq!(find_by_name(&results, "noIncrement").unwrap().complexity, 0);
     }
 
     #[test]

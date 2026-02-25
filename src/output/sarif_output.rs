@@ -358,7 +358,9 @@ pub fn render_sarif(
                     rule_id: rule_id_static(rule_id_str),
                     rule_index: rule_id_to_index(rule_id_str),
                     level: severity_to_level(&violation.severity),
-                    message: SarifOwnedMessage { text: violation.message },
+                    message: SarifOwnedMessage {
+                        text: violation.message,
+                    },
                     locations: vec![SarifLocation {
                         physical_location: SarifPhysicalLocation {
                             artifact_location: SarifArtifactLocation { uri: uri.clone() },
@@ -440,7 +442,11 @@ pub fn render_sarif(
                         },
                     },
                 }],
-                related_locations: if related.is_empty() { None } else { Some(related) },
+                related_locations: if related.is_empty() {
+                    None
+                } else {
+                    Some(related)
+                },
             });
         }
     }
@@ -511,8 +517,8 @@ mod tests {
             start_line: 5,
             end_line: 50,
             start_col: 0,
-            cyclomatic: 25, // Exceeds error threshold of 20
-            cognitive: 20,  // Exceeds warning threshold of 15
+            cyclomatic: 25,          // Exceeds error threshold of 20
+            cognitive: 20,           // Exceeds warning threshold of 15
             halstead_volume: 1100.0, // Exceeds error threshold of 1000
             halstead_difficulty: 2.0,
             halstead_effort: 100.0,
@@ -541,7 +547,10 @@ mod tests {
         let output = render_sarif(&files, None, &config).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&output).unwrap();
         let schema = parsed["$schema"].as_str().unwrap();
-        assert!(schema.contains("sarif-schema-2.1.0.json"), "expected SARIF schema URL, got: {schema}");
+        assert!(
+            schema.contains("sarif-schema-2.1.0.json"),
+            "expected SARIF schema URL, got: {schema}"
+        );
     }
 
     #[test]
@@ -569,7 +578,9 @@ mod tests {
         let config = ResolvedConfig::default();
         let output = render_sarif(&files, None, &config).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&output).unwrap();
-        let rules = parsed["runs"][0]["tool"]["driver"]["rules"].as_array().unwrap();
+        let rules = parsed["runs"][0]["tool"]["driver"]["rules"]
+            .as_array()
+            .unwrap();
         let rule_ids: Vec<&str> = rules.iter().map(|r| r["id"].as_str().unwrap()).collect();
         assert_eq!(rule_ids[0], "complexity-guard/cyclomatic");
         assert_eq!(rule_ids[1], "complexity-guard/cognitive");
@@ -590,36 +601,75 @@ mod tests {
         let config = ResolvedConfig::default();
         let output = render_sarif(&files, None, &config).unwrap();
         // Driver camelCase fields
-        assert!(output.contains("\"informationUri\""), "expected informationUri in output");
+        assert!(
+            output.contains("\"informationUri\""),
+            "expected informationUri in output"
+        );
         // Rule camelCase fields
-        assert!(output.contains("\"shortDescription\""), "expected shortDescription in output");
-        assert!(output.contains("\"fullDescription\""), "expected fullDescription in output");
+        assert!(
+            output.contains("\"shortDescription\""),
+            "expected shortDescription in output"
+        );
+        assert!(
+            output.contains("\"fullDescription\""),
+            "expected fullDescription in output"
+        );
         assert!(output.contains("\"helpUri\""), "expected helpUri in output");
-        assert!(output.contains("\"defaultConfiguration\""), "expected defaultConfiguration in output");
+        assert!(
+            output.contains("\"defaultConfiguration\""),
+            "expected defaultConfiguration in output"
+        );
     }
 
     #[test]
     fn sarif_output_generates_results_for_threshold_violations() {
-        let files = vec![make_file("src/complex.ts", vec![make_func_with_violation()])];
+        let files = vec![make_file(
+            "src/complex.ts",
+            vec![make_func_with_violation()],
+        )];
         let config = ResolvedConfig::default();
         let output = render_sarif(&files, None, &config).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&output).unwrap();
         let results = parsed["runs"][0]["results"].as_array().unwrap();
         // Should have at least cyclomatic, cognitive, and halstead-volume violations
-        assert!(!results.is_empty(), "expected at least one SARIF result for threshold violations");
-        let rule_ids: Vec<&str> = results.iter().map(|r| r["ruleId"].as_str().unwrap()).collect();
-        assert!(rule_ids.contains(&"complexity-guard/cyclomatic"), "expected cyclomatic violation");
-        assert!(rule_ids.contains(&"complexity-guard/cognitive"), "expected cognitive violation");
-        assert!(rule_ids.contains(&"complexity-guard/halstead-volume"), "expected halstead-volume violation");
+        assert!(
+            !results.is_empty(),
+            "expected at least one SARIF result for threshold violations"
+        );
+        let rule_ids: Vec<&str> = results
+            .iter()
+            .map(|r| r["ruleId"].as_str().unwrap())
+            .collect();
+        assert!(
+            rule_ids.contains(&"complexity-guard/cyclomatic"),
+            "expected cyclomatic violation"
+        );
+        assert!(
+            rule_ids.contains(&"complexity-guard/cognitive"),
+            "expected cognitive violation"
+        );
+        assert!(
+            rule_ids.contains(&"complexity-guard/halstead-volume"),
+            "expected halstead-volume violation"
+        );
     }
 
     #[test]
     fn sarif_results_have_camelcase_location_fields() {
-        let files = vec![make_file("src/complex.ts", vec![make_func_with_violation()])];
+        let files = vec![make_file(
+            "src/complex.ts",
+            vec![make_func_with_violation()],
+        )];
         let config = ResolvedConfig::default();
         let output = render_sarif(&files, None, &config).unwrap();
-        assert!(output.contains("\"physicalLocation\""), "expected physicalLocation");
-        assert!(output.contains("\"artifactLocation\""), "expected artifactLocation");
+        assert!(
+            output.contains("\"physicalLocation\""),
+            "expected physicalLocation"
+        );
+        assert!(
+            output.contains("\"artifactLocation\""),
+            "expected artifactLocation"
+        );
         assert!(output.contains("\"startLine\""), "expected startLine");
         assert!(output.contains("\"startColumn\""), "expected startColumn");
         assert!(output.contains("\"endLine\""), "expected endLine");
@@ -639,7 +689,10 @@ mod tests {
 
     #[test]
     fn sarif_result_level_matches_severity() {
-        let files = vec![make_file("src/complex.ts", vec![make_func_with_violation()])];
+        let files = vec![make_file(
+            "src/complex.ts",
+            vec![make_func_with_violation()],
+        )];
         let config = ResolvedConfig::default();
         let output = render_sarif(&files, None, &config).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&output).unwrap();

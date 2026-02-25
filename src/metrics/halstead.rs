@@ -102,10 +102,7 @@ fn walk_and_analyze(
 
 /// Calculate Halstead metrics for a function node.
 /// Returns (volume, difficulty, effort, time, bugs).
-fn calculate_halstead<'a>(
-    node: &tree_sitter::Node,
-    source: &'a [u8],
-) -> (f64, f64, f64, f64, f64) {
+fn calculate_halstead<'a>(node: &tree_sitter::Node, source: &'a [u8]) -> (f64, f64, f64, f64, f64) {
     let mut operators: FxHashMap<&'a str, u32> = FxHashMap::default();
     let mut operands: FxHashMap<&'a str, u32> = FxHashMap::default();
     let mut n1_total: u32 = 0;
@@ -297,7 +294,12 @@ fn is_operand_token(kind: &str) -> bool {
 }
 
 /// Compute Halstead derived metrics from base counts.
-fn compute_halstead_metrics(n1: u32, n2: u32, n1_total: u32, n2_total: u32) -> (f64, f64, f64, f64, f64) {
+fn compute_halstead_metrics(
+    n1: u32,
+    n2: u32,
+    n1_total: u32,
+    n2_total: u32,
+) -> (f64, f64, f64, f64, f64) {
     let vocabulary = n1 + n2;
     let length = n1_total + n2_total;
 
@@ -326,8 +328,7 @@ mod tests {
     use std::path::Path;
 
     fn parse_and_analyze(source: &str) -> Vec<HalsteadResult> {
-        let language: tree_sitter::Language =
-            tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into();
+        let language: tree_sitter::Language = tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into();
         let mut parser = tree_sitter::Parser::new();
         parser.set_language(&language).unwrap();
         let tree = parser.parse(source.as_bytes(), None).unwrap();
@@ -335,10 +336,7 @@ mod tests {
         analyze_functions(root, source.as_bytes())
     }
 
-    fn find_by_name<'a>(
-        results: &'a [HalsteadResult],
-        name: &str,
-    ) -> Option<&'a HalsteadResult> {
+    fn find_by_name<'a>(results: &'a [HalsteadResult], name: &str) -> Option<&'a HalsteadResult> {
         results.iter().find(|r| r.name == name)
     }
 
@@ -425,6 +423,10 @@ mod tests {
         let source = std::fs::read_to_string(&fixture_path).unwrap();
         let results = parse_and_analyze(&source);
         let r = find_by_name(&results, "withTypeAnnotations").unwrap();
-        assert_float_eq(r.volume, 8.0, "TS type annotations should not inflate volume");
+        assert_float_eq(
+            r.volume,
+            8.0,
+            "TS type annotations should not inflate volume",
+        );
     }
 }

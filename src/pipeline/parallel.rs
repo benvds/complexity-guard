@@ -58,7 +58,10 @@ mod tests {
         let (results, has_errors) = analyze_files_parallel(&paths, &config, 1);
 
         assert_eq!(results.len(), 1, "should return one result");
-        assert!(!has_errors, "simple fixture should not produce parse errors");
+        assert!(
+            !has_errors,
+            "simple fixture should not produce parse errors"
+        );
 
         let result = &results[0];
         assert_eq!(result.functions.len(), 1);
@@ -102,9 +105,16 @@ mod tests {
         let (results1, _) = analyze_files_parallel(&paths, &config, 4);
         let (results2, _) = analyze_files_parallel(&paths, &config, 4);
 
-        assert_eq!(results1.len(), results2.len(), "both runs should return same count");
+        assert_eq!(
+            results1.len(),
+            results2.len(),
+            "both runs should return same count"
+        );
         for (r1, r2) in results1.iter().zip(results2.iter()) {
-            assert_eq!(r1.path, r2.path, "paths should be in identical order across runs");
+            assert_eq!(
+                r1.path, r2.path,
+                "paths should be in identical order across runs"
+            );
         }
     }
 
@@ -118,7 +128,10 @@ mod tests {
         let config = AnalysisConfig::default();
         let (results, has_errors) = analyze_files_parallel(&paths, &config, 2);
 
-        assert!(has_errors, "unsupported file should trigger parse error flag");
+        assert!(
+            has_errors,
+            "unsupported file should trigger parse error flag"
+        );
         // The valid .ts file should still produce a result
         assert_eq!(results.len(), 1, "valid file should still be analyzed");
         let name = results[0]

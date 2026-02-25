@@ -7,9 +7,7 @@ pub mod structural;
 
 use std::path::Path;
 
-use crate::types::{
-    AnalysisConfig, FileAnalysisResult, FunctionAnalysisResult, ParseError,
-};
+use crate::types::{AnalysisConfig, FileAnalysisResult, FunctionAnalysisResult, ParseError};
 
 /// Function node types recognized by tree-sitter for TypeScript/JavaScript.
 ///
@@ -100,9 +98,21 @@ pub fn analyze_file(
 
     // All walkers discover functions in the same DFS order
     let func_count = cyclomatic_results.len();
-    assert_eq!(cognitive_results.len(), func_count, "cognitive and cyclomatic function counts must match");
-    assert_eq!(halstead_results.len(), func_count, "halstead and cyclomatic function counts must match");
-    assert_eq!(structural_results.len(), func_count, "structural and cyclomatic function counts must match");
+    assert_eq!(
+        cognitive_results.len(),
+        func_count,
+        "cognitive and cyclomatic function counts must match"
+    );
+    assert_eq!(
+        halstead_results.len(),
+        func_count,
+        "halstead and cyclomatic function counts must match"
+    );
+    assert_eq!(
+        structural_results.len(),
+        func_count,
+        "structural and cyclomatic function counts must match"
+    );
 
     // Merge per-function results and compute health scores
     let mut functions = Vec::with_capacity(func_count);
@@ -181,8 +191,7 @@ mod tests {
 
     #[test]
     fn extract_function_name_named_function() {
-        let language: tree_sitter::Language =
-            tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into();
+        let language: tree_sitter::Language = tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into();
         let mut parser = tree_sitter::Parser::new();
         parser.set_language(&language).unwrap();
         let source = b"function myFunc() { return 1; }";
@@ -195,8 +204,7 @@ mod tests {
 
     #[test]
     fn extract_function_name_anonymous_arrow() {
-        let language: tree_sitter::Language =
-            tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into();
+        let language: tree_sitter::Language = tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into();
         let mut parser = tree_sitter::Parser::new();
         parser.set_language(&language).unwrap();
         // A bare arrow function node returns <anonymous>; naming context is resolved by cyclomatic walker
@@ -215,22 +223,54 @@ mod tests {
 
     #[test]
     fn analyze_file_naming_edge_cases() {
-        let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("tests/fixtures/naming-edge-cases.ts");
+        let fixture_path =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/naming-edge-cases.ts");
         let config = AnalysisConfig::default();
         let result = analyze_file(&fixture_path, &config).unwrap();
 
         let names: Vec<&str> = result.functions.iter().map(|f| f.name.as_str()).collect();
 
         assert!(names.contains(&"myFunc"), "Should find myFunc: {:?}", names);
-        assert!(names.contains(&"handler"), "Should find handler: {:?}", names);
-        assert!(names.contains(&"Foo.bar"), "Should find Foo.bar: {:?}", names);
-        assert!(names.contains(&"Foo.baz"), "Should find Foo.baz: {:?}", names);
-        assert!(names.contains(&"process"), "Should find process: {:?}", names);
-        assert!(names.contains(&"map callback"), "Should find 'map callback': {:?}", names);
-        assert!(names.contains(&"forEach callback"), "Should find 'forEach callback': {:?}", names);
-        assert!(names.contains(&"click handler"), "Should find 'click handler': {:?}", names);
-        assert!(names.contains(&"default export"), "Should find 'default export': {:?}", names);
+        assert!(
+            names.contains(&"handler"),
+            "Should find handler: {:?}",
+            names
+        );
+        assert!(
+            names.contains(&"Foo.bar"),
+            "Should find Foo.bar: {:?}",
+            names
+        );
+        assert!(
+            names.contains(&"Foo.baz"),
+            "Should find Foo.baz: {:?}",
+            names
+        );
+        assert!(
+            names.contains(&"process"),
+            "Should find process: {:?}",
+            names
+        );
+        assert!(
+            names.contains(&"map callback"),
+            "Should find 'map callback': {:?}",
+            names
+        );
+        assert!(
+            names.contains(&"forEach callback"),
+            "Should find 'forEach callback': {:?}",
+            names
+        );
+        assert!(
+            names.contains(&"click handler"),
+            "Should find 'click handler': {:?}",
+            names
+        );
+        assert!(
+            names.contains(&"default export"),
+            "Should find 'default export': {:?}",
+            names
+        );
     }
 
     #[test]
@@ -279,7 +319,11 @@ mod tests {
         assert_float_eq(greet.halstead_volume, 2.0, "greet halstead_volume");
         assert_float_eq(greet.halstead_difficulty, 0.5, "greet halstead_difficulty");
         assert_float_eq(greet.halstead_effort, 1.0, "greet halstead_effort");
-        assert_float_eq(greet.halstead_bugs, 0.0006666666666666666, "greet halstead_bugs");
+        assert_float_eq(
+            greet.halstead_bugs,
+            0.0006666666666666666,
+            "greet halstead_bugs",
+        );
         assert_eq!(greet.function_length, 1);
         assert_eq!(greet.params_count, 1);
         assert_eq!(greet.nesting_depth, 0);
@@ -366,7 +410,11 @@ mod tests {
         let find = |name: &str| result.functions.iter().find(|f| f.name == name);
 
         let r = find("simpleAssignment").unwrap();
-        assert_float_eq(r.halstead_volume, 18.094737505048094, "simpleAssignment volume");
+        assert_float_eq(
+            r.halstead_volume,
+            18.094737505048094,
+            "simpleAssignment volume",
+        );
 
         let r = find("withTypeAnnotations").unwrap();
         assert_float_eq(r.halstead_volume, 8.0, "withTypeAnnotations volume");

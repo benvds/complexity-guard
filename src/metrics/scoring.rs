@@ -58,11 +58,7 @@ pub fn compute_function_score(
         thresholds.params_count_warning,
         thresholds.params_count_error,
     );
-    let par_score = sigmoid_score(
-        params_count as f64,
-        thresholds.params_count_warning,
-        par_k,
-    );
+    let par_score = sigmoid_score(params_count as f64, thresholds.params_count_warning, par_k);
 
     let nest_k = compute_steepness(
         thresholds.nesting_depth_warning,
@@ -153,15 +149,27 @@ mod tests {
     fn sigmoid_score_at_error_is_about_20() {
         let k = compute_steepness(10.0, 20.0);
         let score = sigmoid_score(20.0, 10.0, k);
-        assert!((score - 20.0).abs() < 0.5, "sigmoid at error should be ~20, got {}", score);
+        assert!(
+            (score - 20.0).abs() < 0.5,
+            "sigmoid at error should be ~20, got {}",
+            score
+        );
     }
 
     #[test]
     fn sigmoid_score_below_warning_is_high() {
         let k = compute_steepness(10.0, 20.0);
         let score = sigmoid_score(0.0, 10.0, k);
-        assert!(score > 75.0, "sigmoid below warning should be >75, got {}", score);
-        assert!(score <= 100.0, "sigmoid should not exceed 100, got {}", score);
+        assert!(
+            score > 75.0,
+            "sigmoid below warning should be >75, got {}",
+            score
+        );
+        assert!(
+            score <= 100.0,
+            "sigmoid should not exceed 100, got {}",
+            score
+        );
     }
 
     #[test]
@@ -236,7 +244,11 @@ mod tests {
         let weights = ScoringWeights::default();
         let thresholds = ScoringThresholds::default();
         let score = compute_function_score(1, 0, 2.0, 1, 1, 0, &weights, &thresholds);
-        assert!(score > 70.0, "low complexity should yield high score, got {}", score);
+        assert!(
+            score > 70.0,
+            "low complexity should yield high score, got {}",
+            score
+        );
         assert!(score <= 100.0, "score should not exceed 100, got {}", score);
     }
 
@@ -246,7 +258,11 @@ mod tests {
         let thresholds = ScoringThresholds::default();
         // All metrics at their warning thresholds
         let score = compute_function_score(10, 15, 500.0, 30, 4, 3, &weights, &thresholds);
-        assert!((score - 50.0).abs() < 5.0, "at warning thresholds, score should be ~50, got {}", score);
+        assert!(
+            (score - 50.0).abs() < 5.0,
+            "at warning thresholds, score should be ~50, got {}",
+            score
+        );
     }
 
     #[test]
@@ -261,7 +277,11 @@ mod tests {
         let thresholds = ScoringThresholds::default();
         let score = compute_function_score(5, 3, 100.0, 10, 2, 1, &weights, &thresholds);
         // Should use equal weights fallback
-        assert!(score > 0.0 && score <= 100.0, "zero weights fallback should produce valid score, got {}", score);
+        assert!(
+            score > 0.0 && score <= 100.0,
+            "zero weights fallback should produce valid score, got {}",
+            score
+        );
     }
 
     #[test]
@@ -275,6 +295,10 @@ mod tests {
         };
         let thresholds = ScoringThresholds::default();
         let score = compute_function_score(5, 3, 100.0, 10, 2, 1, &weights, &thresholds);
-        assert!(score > 0.0 && score <= 100.0, "partial zero weights should produce valid score, got {}", score);
+        assert!(
+            score > 0.0 && score <= 100.0,
+            "partial zero weights should produce valid score, got {}",
+            score
+        );
     }
 }

@@ -56,11 +56,8 @@ fn walk_and_analyze(
         for i in 0..node.child_count() as u32 {
             if let Some(child) = node.child(i) {
                 if child.kind() == "statement_block" {
-                    function_length = count_logical_lines(
-                        source,
-                        child.start_byte(),
-                        child.end_byte(),
-                    );
+                    function_length =
+                        count_logical_lines(source, child.start_byte(), child.end_byte());
                     nesting_depth = max_nesting_depth(child);
                     break;
                 }
@@ -297,8 +294,7 @@ mod tests {
     use std::path::Path;
 
     fn parse_ts(source: &str) -> (tree_sitter::Tree, Vec<u8>) {
-        let language: tree_sitter::Language =
-            tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into();
+        let language: tree_sitter::Language = tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into();
         let mut parser = tree_sitter::Parser::new();
         parser.set_language(&language).unwrap();
         let bytes = source.as_bytes().to_vec();

@@ -95,19 +95,17 @@ pub fn discover_files(
 
     for path in paths {
         if path.is_dir() {
-            let walker = WalkDir::new(path)
-                .into_iter()
-                .filter_entry(|e| {
-                    // Prune excluded directory names early to avoid descending into them.
-                    if e.file_type().is_dir() {
-                        if let Some(name) = e.file_name().to_str() {
-                            if EXCLUDED_DIRS.contains(&name) {
-                                return false;
-                            }
+            let walker = WalkDir::new(path).into_iter().filter_entry(|e| {
+                // Prune excluded directory names early to avoid descending into them.
+                if e.file_type().is_dir() {
+                    if let Some(name) = e.file_name().to_str() {
+                        if EXCLUDED_DIRS.contains(&name) {
+                            return false;
                         }
                     }
-                    true
-                });
+                }
+                true
+            });
 
             for entry in walker.filter_map(|e| e.ok()) {
                 if entry.file_type().is_file() {
@@ -175,8 +173,8 @@ mod tests {
 
     #[test]
     fn test_discover_files_fixture_dir() {
-        let fixture_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("tests/fixtures/typescript");
+        let fixture_dir =
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/typescript");
 
         let paths = vec![fixture_dir];
         let files = discover_files(&paths, &[], &[]).unwrap();
@@ -204,8 +202,14 @@ mod tests {
             .iter()
             .filter_map(|f| f.file_name().and_then(|n| n.to_str()))
             .collect();
-        assert!(names.contains(&"simple_function.ts"), "should find simple_function.ts");
-        assert!(names.contains(&"cyclomatic_cases.ts"), "should find cyclomatic_cases.ts");
+        assert!(
+            names.contains(&"simple_function.ts"),
+            "should find simple_function.ts"
+        );
+        assert!(
+            names.contains(&"cyclomatic_cases.ts"),
+            "should find cyclomatic_cases.ts"
+        );
     }
 
     #[test]
@@ -222,8 +226,8 @@ mod tests {
 
     #[test]
     fn test_discover_files_exclude_pattern() {
-        let fixture_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("tests/fixtures/typescript");
+        let fixture_dir =
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/typescript");
 
         let paths = vec![fixture_dir];
         let exclude = vec!["**/*_cases.ts".to_string()];
@@ -244,6 +248,9 @@ mod tests {
             .iter()
             .filter_map(|f| f.file_name().and_then(|n| n.to_str()))
             .collect();
-        assert!(names.contains(&"simple_function.ts"), "simple_function.ts should still be included");
+        assert!(
+            names.contains(&"simple_function.ts"),
+            "simple_function.ts should still be included"
+        );
     }
 }

@@ -17,7 +17,10 @@ fn test_parse_typescript_simple_function() {
     let result = parse_file(&path).expect("should parse TypeScript file");
 
     assert!(!result.error, "fixture should parse without errors");
-    assert!(!result.functions.is_empty(), "should find at least one function");
+    assert!(
+        !result.functions.is_empty(),
+        "should find at least one function"
+    );
 
     // Should find the "greet" function at line 5
     let greet = result
@@ -27,7 +30,10 @@ fn test_parse_typescript_simple_function() {
         .expect("should find 'greet' function");
     assert_eq!(greet.start_line, 5, "greet starts at line 5");
     // Column 7: tree-sitter function_declaration starts after "export " prefix
-    assert_eq!(greet.start_column, 7, "greet function_declaration starts at column 7");
+    assert_eq!(
+        greet.start_column, 7,
+        "greet function_declaration starts at column 7"
+    );
 }
 
 #[test]
@@ -137,7 +143,10 @@ fn test_parse_typescript_class_with_methods() {
 fn test_unsupported_extension_returns_error() {
     let path = Path::new("test.py");
     let result = parse_file(path);
-    assert!(result.is_err(), "should return error for unsupported extension");
+    assert!(
+        result.is_err(),
+        "should return error for unsupported extension"
+    );
     match result.unwrap_err() {
         ParseError::UnsupportedExtension(ext) => assert_eq!(ext, "py"),
         other => panic!("expected UnsupportedExtension, got: {:?}", other),

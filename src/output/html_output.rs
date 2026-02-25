@@ -32,7 +32,11 @@ fn metric_pct(value: f64, error_threshold: f64) -> f64 {
         return 0.0;
     }
     let pct = value / error_threshold * 100.0;
-    if pct > 100.0 { 100.0 } else { pct }
+    if pct > 100.0 {
+        100.0
+    } else {
+        pct
+    }
 }
 
 /// Map a value to a CSS class based on warning/error thresholds.
@@ -106,7 +110,11 @@ fn worst_status_for_file(file: &FileAnalysisResult, config: &ResolvedConfig) -> 
             }
         }
     }
-    if has_warning { "warning" } else { "ok" }
+    if has_warning {
+        "warning"
+    } else {
+        "ok"
+    }
 }
 
 /// Render a self-contained HTML report.
@@ -182,7 +190,11 @@ pub fn render_html(
             all_funcs.push((file, func));
         }
     }
-    all_funcs.sort_by(|a, b| a.1.health_score.partial_cmp(&b.1.health_score).unwrap_or(std::cmp::Ordering::Equal));
+    all_funcs.sort_by(|a, b| {
+        a.1.health_score
+            .partial_cmp(&b.1.health_score)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
     let hotspots: Vec<minijinja::Value> = all_funcs
         .iter()
         .take(5)
@@ -200,10 +212,18 @@ pub fn render_html(
                     let label = match v.rule_id.as_str() {
                         "complexity-guard/cyclomatic" => format!("cyclomatic {}", func.cyclomatic),
                         "complexity-guard/cognitive" => format!("cognitive {}", func.cognitive),
-                        "complexity-guard/halstead-volume" => format!("halstead vol {:.0}", func.halstead_volume),
-                        "complexity-guard/halstead-difficulty" => format!("halstead diff {:.1}", func.halstead_difficulty),
-                        "complexity-guard/halstead-effort" => format!("halstead effort {:.0}", func.halstead_effort),
-                        "complexity-guard/halstead-bugs" => format!("halstead bugs {:.3}", func.halstead_bugs),
+                        "complexity-guard/halstead-volume" => {
+                            format!("halstead vol {:.0}", func.halstead_volume)
+                        }
+                        "complexity-guard/halstead-difficulty" => {
+                            format!("halstead diff {:.1}", func.halstead_difficulty)
+                        }
+                        "complexity-guard/halstead-effort" => {
+                            format!("halstead effort {:.0}", func.halstead_effort)
+                        }
+                        "complexity-guard/halstead-bugs" => {
+                            format!("halstead bugs {:.3}", func.halstead_bugs)
+                        }
                         "complexity-guard/line-count" => format!("length {}", func.function_length),
                         "complexity-guard/param-count" => format!("params {}", func.params_count),
                         "complexity-guard/nesting-depth" => format!("depth {}", func.nesting_depth),
@@ -262,7 +282,12 @@ pub fn render_html(
                     .instances
                     .iter()
                     .take(3)
-                    .map(|inst| format!("file:{} L{}-{}", inst.file_index, inst.start_line, inst.end_line))
+                    .map(|inst| {
+                        format!(
+                            "file:{} L{}-{}",
+                            inst.file_index, inst.start_line, inst.end_line
+                        )
+                    })
                     .collect::<Vec<_>>()
                     .join(", ");
                 context! {
@@ -319,7 +344,9 @@ pub fn render_html(
 mod tests {
     use super::*;
     use crate::cli::ResolvedConfig;
-    use crate::types::{CloneGroup, CloneInstance, DuplicationResult, FileAnalysisResult, FunctionAnalysisResult};
+    use crate::types::{
+        CloneGroup, CloneInstance, DuplicationResult, FileAnalysisResult, FunctionAnalysisResult,
+    };
     use std::path::PathBuf;
 
     fn make_file(path: &str, functions: Vec<FunctionAnalysisResult>) -> FileAnalysisResult {
@@ -358,8 +385,20 @@ mod tests {
         DuplicationResult {
             clone_groups: vec![CloneGroup {
                 instances: vec![
-                    CloneInstance { file_index: 0, start_token: 0, end_token: 30, start_line: 1, end_line: 10 },
-                    CloneInstance { file_index: 1, start_token: 0, end_token: 30, start_line: 5, end_line: 15 },
+                    CloneInstance {
+                        file_index: 0,
+                        start_token: 0,
+                        end_token: 30,
+                        start_line: 1,
+                        end_line: 10,
+                    },
+                    CloneInstance {
+                        file_index: 1,
+                        start_token: 0,
+                        end_token: 30,
+                        start_line: 5,
+                        end_line: 15,
+                    },
                 ],
                 token_count: 30,
             }],
@@ -383,7 +422,10 @@ mod tests {
         let config = ResolvedConfig::default();
         let output = render_html(&files, None, &config, 10).unwrap();
         assert!(output.contains("<style>"), "expected <style> block");
-        assert!(output.contains("prefers-color-scheme"), "expected CSS content (prefers-color-scheme)");
+        assert!(
+            output.contains("prefers-color-scheme"),
+            "expected CSS content (prefers-color-scheme)"
+        );
     }
 
     #[test]
@@ -392,7 +434,10 @@ mod tests {
         let config = ResolvedConfig::default();
         let output = render_html(&files, None, &config, 10).unwrap();
         assert!(output.contains("<script>"), "expected <script> block");
-        assert!(output.contains("sortTable"), "expected JS content (sortTable)");
+        assert!(
+            output.contains("sortTable"),
+            "expected JS content (sortTable)"
+        );
     }
 
     #[test]
@@ -454,7 +499,10 @@ mod tests {
         let files = vec![make_file("src/mymodule.ts", vec![make_func()])];
         let config = ResolvedConfig::default();
         let output = render_html(&files, None, &config, 10).unwrap();
-        assert!(output.contains("src/mymodule.ts"), "expected file path in output");
+        assert!(
+            output.contains("src/mymodule.ts"),
+            "expected file path in output"
+        );
     }
 
     #[test]
@@ -462,7 +510,10 @@ mod tests {
         let files = vec![make_file("src/foo.ts", vec![make_func()])];
         let config = ResolvedConfig::default();
         let output = render_html(&files, None, &config, 10).unwrap();
-        assert!(output.contains("myFunction"), "expected function name in output");
+        assert!(
+            output.contains("myFunction"),
+            "expected function name in output"
+        );
     }
 
     #[test]
@@ -470,6 +521,9 @@ mod tests {
         let files: Vec<FileAnalysisResult> = vec![];
         let config = ResolvedConfig::default();
         let output = render_html(&files, None, &config, 10).unwrap();
-        assert!(output.contains("ComplexityGuard"), "expected ComplexityGuard in output");
+        assert!(
+            output.contains("ComplexityGuard"),
+            "expected ComplexityGuard in output"
+        );
     }
 }

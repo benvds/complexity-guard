@@ -130,10 +130,7 @@ mod tests {
         let args = parse_args(&["complexityguard", "--no-duplication"]);
         merge_args_into_config(&args, &mut config);
 
-        assert_eq!(
-            config.analysis.as_ref().unwrap().no_duplication,
-            Some(true)
-        );
+        assert_eq!(config.analysis.as_ref().unwrap().no_duplication, Some(true));
     }
 
     #[test]
@@ -206,7 +203,10 @@ mod tests {
         merge_args_into_config(&args, &mut config);
 
         let metrics = config.analysis.as_ref().unwrap().metrics.as_ref().unwrap();
-        assert_eq!(metrics, &vec!["cyclomatic".to_string(), "cognitive".to_string()]);
+        assert_eq!(
+            metrics,
+            &vec!["cyclomatic".to_string(), "cognitive".to_string()]
+        );
     }
 
     #[test]
@@ -216,6 +216,9 @@ mod tests {
         merge_args_into_config(&args, &mut config);
 
         let metrics = config.analysis.as_ref().unwrap().metrics.as_ref().unwrap();
-        assert_eq!(metrics, &vec!["cyclomatic".to_string(), "cognitive".to_string()]);
+        assert_eq!(
+            metrics,
+            &vec!["cyclomatic".to_string(), "cognitive".to_string()]
+        );
     }
 }

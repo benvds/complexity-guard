@@ -41,6 +41,7 @@ jobs:
         run: cargo build --release
 
       - name: Print binary size
+        shell: bash
         run: ls -lh target/release/complexity-guard
 
       - name: Run binary
@@ -113,6 +114,7 @@ jobs:
         run: cargo build --release --target ${{ matrix.target }}
 
       - name: Print binary size
+        shell: bash
         run: ls -lh target/${{ matrix.target }}/release/complexity-guard${{ matrix.ext }}
 
       - name: Verify binary (--version)

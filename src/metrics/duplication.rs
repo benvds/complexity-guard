@@ -23,11 +23,7 @@ pub fn tokenize_tree(root: tree_sitter::Node, source: &[u8]) -> Vec<Token> {
 }
 
 /// Recursively collect normalized tokens from an AST node.
-fn tokenize_node(
-    node: tree_sitter::Node,
-    source: &[u8],
-    tokens: &mut Vec<Token>,
-) {
+fn tokenize_node(node: tree_sitter::Node, source: &[u8], tokens: &mut Vec<Token>) {
     let kind = node.kind();
 
     // Skip entire TypeScript type annotation subtrees
@@ -72,7 +68,9 @@ fn is_skipped_kind(kind: &str) -> bool {
 /// Returns `&'static str` since all inputs come from tree-sitter (static grammar strings).
 fn normalize_kind(kind: &'static str) -> &'static str {
     match kind {
-        "identifier" | "property_identifier" | "shorthand_property_identifier"
+        "identifier"
+        | "property_identifier"
+        | "shorthand_property_identifier"
         | "shorthand_property_identifier_pattern" => "V",
         other => other,
     }
@@ -305,8 +303,7 @@ mod tests {
     use std::path::Path;
 
     fn parse_to_tokens(source: &str) -> Vec<Token> {
-        let language: tree_sitter::Language =
-            tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into();
+        let language: tree_sitter::Language = tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into();
         let mut parser = tree_sitter::Parser::new();
         parser.set_language(&language).unwrap();
         let tree = parser.parse(source.as_bytes(), None).unwrap();
@@ -317,7 +314,10 @@ mod tests {
     fn tokenize_produces_tokens() {
         let source = "function add(a: number, b: number): number { return a + b; }";
         let tokens = parse_to_tokens(source);
-        assert!(tokens.len() > 0, "should produce tokens from a real function");
+        assert!(
+            tokens.len() > 0,
+            "should produce tokens from a real function"
+        );
     }
 
     #[test]
@@ -344,7 +344,10 @@ function greet(name: string): string {
         let tokens = parse_to_tokens(source);
         // No raw "identifier" kind should remain
         for tok in &tokens {
-            assert_ne!(tok.kind, "identifier", "identifier should be normalized to V");
+            assert_ne!(
+                tok.kind, "identifier",
+                "identifier should be normalized to V"
+            );
         }
         // At least one "V" token
         assert!(tokens.iter().any(|t| t.kind == "V"), "should have V tokens");
@@ -493,7 +496,10 @@ function processItemData(input: string): string {
         // All identifiers should be normalized to "V"
         for tok in &tokens {
             assert_ne!(tok.kind, "identifier", "identifiers should be normalized");
-            assert_ne!(tok.kind, "property_identifier", "property_identifiers should be normalized");
+            assert_ne!(
+                tok.kind, "property_identifier",
+                "property_identifiers should be normalized"
+            );
         }
         // Should have at least some "V" tokens
         assert!(tokens.iter().any(|t| t.kind == "V"), "should have V tokens");

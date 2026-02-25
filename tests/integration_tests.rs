@@ -44,7 +44,8 @@ fn load_baseline(name: &str) -> Value {
     let path = baseline_path(name);
     let content = std::fs::read_to_string(&path)
         .unwrap_or_else(|e| panic!("failed to read baseline {}: {}", path.display(), e));
-    serde_json::from_str(&content).unwrap_or_else(|e| panic!("failed to parse baseline {}: {}", name, e))
+    serde_json::from_str(&content)
+        .unwrap_or_else(|e| panic!("failed to parse baseline {}: {}", name, e))
 }
 
 /// Run the binary with --format json --no-color against a fixture file.
@@ -57,8 +58,12 @@ fn run_json(fixture: &str) -> Value {
         .output()
         .unwrap();
     let stdout = String::from_utf8(output.stdout).unwrap();
-    serde_json::from_str(&stdout)
-        .unwrap_or_else(|e| panic!("failed to parse JSON output for {}: {}\nstdout: {}", fixture, e, stdout))
+    serde_json::from_str(&stdout).unwrap_or_else(|e| {
+        panic!(
+            "failed to parse JSON output for {}: {}\nstdout: {}",
+            fixture, e, stdout
+        )
+    })
 }
 
 /// Assert two floats are equal within the given tolerance.
@@ -78,52 +83,84 @@ fn assert_float_eq(actual: f64, expected: f64, tol: f64, context: &str) {
 fn compare_function(actual_fn: &Value, baseline_fn: &Value, label: &str) {
     assert_eq!(
         actual_fn["name"], baseline_fn["name"],
-        "{}: name mismatch", label
+        "{}: name mismatch",
+        label
     );
     assert_eq!(
         actual_fn["start_line"], baseline_fn["start_line"],
-        "{}: start_line mismatch", label
+        "{}: start_line mismatch",
+        label
     );
     assert_eq!(
         actual_fn["start_col"], baseline_fn["start_col"],
-        "{}: start_col mismatch", label
+        "{}: start_col mismatch",
+        label
     );
     assert_eq!(
         actual_fn["cyclomatic"], baseline_fn["cyclomatic"],
-        "{}: cyclomatic mismatch", label
+        "{}: cyclomatic mismatch",
+        label
     );
     assert_eq!(
         actual_fn["cognitive"], baseline_fn["cognitive"],
-        "{}: cognitive mismatch", label
+        "{}: cognitive mismatch",
+        label
     );
     assert_eq!(
         actual_fn["nesting_depth"], baseline_fn["nesting_depth"],
-        "{}: nesting_depth mismatch", label
+        "{}: nesting_depth mismatch",
+        label
     );
     assert_eq!(
         actual_fn["line_count"], baseline_fn["line_count"],
-        "{}: line_count mismatch", label
+        "{}: line_count mismatch",
+        label
     );
     assert_eq!(
         actual_fn["params_count"], baseline_fn["params_count"],
-        "{}: params_count mismatch", label
+        "{}: params_count mismatch",
+        label
     );
     assert_eq!(
         actual_fn["status"], baseline_fn["status"],
-        "{}: status mismatch", label
+        "{}: status mismatch",
+        label
     );
 
     // Float fields with tolerance
-    let fields_halstead = ["halstead_volume", "halstead_difficulty", "halstead_effort", "halstead_bugs"];
+    let fields_halstead = [
+        "halstead_volume",
+        "halstead_difficulty",
+        "halstead_effort",
+        "halstead_bugs",
+    ];
     for field in &fields_halstead {
-        let actual_val = actual_fn[field].as_f64().unwrap_or_else(|| panic!("{}: {} is not f64", label, field));
-        let expected_val = baseline_fn[field].as_f64().unwrap_or_else(|| panic!("{}: baseline {} is not f64", label, field));
-        assert_float_eq(actual_val, expected_val, HALSTEAD_TOL, &format!("{}.{}", label, field));
+        let actual_val = actual_fn[field]
+            .as_f64()
+            .unwrap_or_else(|| panic!("{}: {} is not f64", label, field));
+        let expected_val = baseline_fn[field]
+            .as_f64()
+            .unwrap_or_else(|| panic!("{}: baseline {} is not f64", label, field));
+        assert_float_eq(
+            actual_val,
+            expected_val,
+            HALSTEAD_TOL,
+            &format!("{}.{}", label, field),
+        );
     }
 
-    let actual_health = actual_fn["health_score"].as_f64().unwrap_or_else(|| panic!("{}: health_score is not f64", label));
-    let expected_health = baseline_fn["health_score"].as_f64().unwrap_or_else(|| panic!("{}: baseline health_score is not f64", label));
-    assert_float_eq(actual_health, expected_health, SCORE_TOL, &format!("{}.health_score", label));
+    let actual_health = actual_fn["health_score"]
+        .as_f64()
+        .unwrap_or_else(|| panic!("{}: health_score is not f64", label));
+    let expected_health = baseline_fn["health_score"]
+        .as_f64()
+        .unwrap_or_else(|| panic!("{}: baseline health_score is not f64", label));
+    assert_float_eq(
+        actual_health,
+        expected_health,
+        SCORE_TOL,
+        &format!("{}.health_score", label),
+    );
 }
 
 /// Compare a fixture's full JSON output against a committed baseline.
@@ -137,36 +174,48 @@ fn compare_fixture(fixture_relative: &str, baseline_name: &str) {
     // Summary fields
     assert_eq!(
         actual["summary"]["files_analyzed"], baseline["summary"]["files_analyzed"],
-        "{}: summary.files_analyzed mismatch", baseline_name
+        "{}: summary.files_analyzed mismatch",
+        baseline_name
     );
     assert_eq!(
         actual["summary"]["total_functions"], baseline["summary"]["total_functions"],
-        "{}: summary.total_functions mismatch", baseline_name
+        "{}: summary.total_functions mismatch",
+        baseline_name
     );
     assert_eq!(
         actual["summary"]["warnings"], baseline["summary"]["warnings"],
-        "{}: summary.warnings mismatch", baseline_name
+        "{}: summary.warnings mismatch",
+        baseline_name
     );
     assert_eq!(
         actual["summary"]["errors"], baseline["summary"]["errors"],
-        "{}: summary.errors mismatch", baseline_name
+        "{}: summary.errors mismatch",
+        baseline_name
     );
     assert_eq!(
         actual["summary"]["status"], baseline["summary"]["status"],
-        "{}: summary.status mismatch", baseline_name
+        "{}: summary.status mismatch",
+        baseline_name
     );
 
     let actual_health = actual["summary"]["health_score"].as_f64().unwrap();
     let expected_health = baseline["summary"]["health_score"].as_f64().unwrap();
-    assert_float_eq(actual_health, expected_health, SCORE_TOL, &format!("{}: summary.health_score", baseline_name));
+    assert_float_eq(
+        actual_health,
+        expected_health,
+        SCORE_TOL,
+        &format!("{}: summary.health_score", baseline_name),
+    );
 
     // Per-function comparison for first file
     let actual_fns = actual["files"][0]["functions"].as_array().unwrap();
     let baseline_fns = baseline["files"][0]["functions"].as_array().unwrap();
 
     assert_eq!(
-        actual_fns.len(), baseline_fns.len(),
-        "{}: function count mismatch", baseline_name
+        actual_fns.len(),
+        baseline_fns.len(),
+        "{}: function count mismatch",
+        baseline_name
     );
 
     for (i, (actual_fn, baseline_fn)) in actual_fns.iter().zip(baseline_fns.iter()).enumerate() {
@@ -211,7 +260,10 @@ fn test_baseline_async_patterns() {
 
 #[test]
 fn test_baseline_class_with_methods() {
-    compare_fixture("typescript/class_with_methods.ts", "class_with_methods.json");
+    compare_fixture(
+        "typescript/class_with_methods.ts",
+        "class_with_methods.json",
+    );
 }
 
 #[test]
@@ -226,7 +278,10 @@ fn test_baseline_react_component() {
 
 #[test]
 fn test_baseline_express_middleware() {
-    compare_fixture("javascript/express_middleware.js", "express_middleware.json");
+    compare_fixture(
+        "javascript/express_middleware.js",
+        "express_middleware.json",
+    );
 }
 
 #[test]
@@ -352,10 +407,20 @@ fn test_format_json_flag() {
         .unwrap();
     assert!(output.status.success());
     let stdout = String::from_utf8(output.stdout).unwrap();
-    let parsed: Value = serde_json::from_str(&stdout).expect("--format json should produce valid JSON");
-    assert!(parsed["version"].is_string(), "JSON output should have version field");
-    assert!(parsed["summary"].is_object(), "JSON output should have summary field");
-    assert!(parsed["files"].is_array(), "JSON output should have files array");
+    let parsed: Value =
+        serde_json::from_str(&stdout).expect("--format json should produce valid JSON");
+    assert!(
+        parsed["version"].is_string(),
+        "JSON output should have version field"
+    );
+    assert!(
+        parsed["summary"].is_object(),
+        "JSON output should have summary field"
+    );
+    assert!(
+        parsed["files"].is_array(),
+        "JSON output should have files array"
+    );
 }
 
 #[test]
@@ -366,7 +431,8 @@ fn test_format_sarif_flag() {
         .output()
         .unwrap();
     let stdout = String::from_utf8(output.stdout).unwrap();
-    let parsed: Value = serde_json::from_str(&stdout).expect("--format sarif should produce valid JSON");
+    let parsed: Value =
+        serde_json::from_str(&stdout).expect("--format sarif should produce valid JSON");
     assert!(
         parsed["$schema"].as_str().unwrap_or("").contains("sarif"),
         "SARIF output should have $schema containing 'sarif'"
@@ -408,7 +474,8 @@ fn test_config_file_loading_lowers_threshold() {
         .arg(fixture_path("typescript/cyclomatic_cases.ts"))
         .output()
         .unwrap();
-    let low_json: Value = serde_json::from_str(&String::from_utf8(output_low.stdout).unwrap()).unwrap();
+    let low_json: Value =
+        serde_json::from_str(&String::from_utf8(output_low.stdout).unwrap()).unwrap();
     let warnings_low = low_json["summary"]["warnings"].as_u64().unwrap();
 
     let output_default = cargo_bin()
@@ -416,7 +483,8 @@ fn test_config_file_loading_lowers_threshold() {
         .arg(fixture_path("typescript/cyclomatic_cases.ts"))
         .output()
         .unwrap();
-    let default_json: Value = serde_json::from_str(&String::from_utf8(output_default.stdout).unwrap()).unwrap();
+    let default_json: Value =
+        serde_json::from_str(&String::from_utf8(output_default.stdout).unwrap()).unwrap();
     let warnings_default = default_json["summary"]["warnings"].as_u64().unwrap();
 
     assert!(
@@ -441,7 +509,8 @@ fn test_cli_format_overrides_config_format() {
         .output()
         .unwrap();
     let stdout = String::from_utf8(output.stdout).unwrap();
-    let parsed: Value = serde_json::from_str(&stdout).expect("CLI --format sarif should override config format=json");
+    let parsed: Value = serde_json::from_str(&stdout)
+        .expect("CLI --format sarif should override config format=json");
     assert!(
         parsed["$schema"].as_str().unwrap_or("").contains("sarif"),
         "CLI --format sarif must override config format=json, got $schema: {:?}",
@@ -474,12 +543,23 @@ fn test_sarif_structure() {
     // tool.driver
     let driver = &sarif["runs"][0]["tool"]["driver"];
     assert!(driver.is_object(), "runs[0].tool.driver must be an object");
-    assert_eq!(driver["name"], "ComplexityGuard", "tool.driver.name must be 'ComplexityGuard'");
-    assert!(driver["version"].is_string(), "tool.driver.version must be a string");
+    assert_eq!(
+        driver["name"], "ComplexityGuard",
+        "tool.driver.name must be 'ComplexityGuard'"
+    );
+    assert!(
+        driver["version"].is_string(),
+        "tool.driver.version must be a string"
+    );
 
     // results array
-    let results = sarif["runs"][0]["results"].as_array().expect("runs[0].results must be an array");
-    assert!(!results.is_empty(), "complex_nested.ts should produce at least one SARIF result");
+    let results = sarif["runs"][0]["results"]
+        .as_array()
+        .expect("runs[0].results must be an array");
+    assert!(
+        !results.is_empty(),
+        "complex_nested.ts should produce at least one SARIF result"
+    );
 
     // Each result has required fields
     for (i, result) in results.iter().enumerate() {
@@ -499,8 +579,14 @@ fn test_sarif_structure() {
             "result[{}].message.text must be a string",
             i
         );
-        let locations = result["locations"].as_array().expect(&format!("result[{}].locations must be array", i));
-        assert!(!locations.is_empty(), "result[{}].locations must not be empty", i);
+        let locations = result["locations"]
+            .as_array()
+            .expect(&format!("result[{}].locations must be array", i));
+        assert!(
+            !locations.is_empty(),
+            "result[{}].locations must not be empty",
+            i
+        );
         assert!(
             locations[0]["physicalLocation"]["artifactLocation"]["uri"].is_string(),
             "result[{}].locations[0].physicalLocation.artifactLocation.uri must exist",
@@ -550,7 +636,8 @@ fn test_directory_scan_multiple_files() {
         .output()
         .unwrap();
     let stdout = String::from_utf8(output.stdout).unwrap();
-    let parsed: Value = serde_json::from_str(&stdout).expect("directory scan should produce valid JSON");
+    let parsed: Value =
+        serde_json::from_str(&stdout).expect("directory scan should produce valid JSON");
 
     let files_analyzed = parsed["summary"]["files_analyzed"].as_u64().unwrap();
     assert!(
@@ -615,18 +702,19 @@ fn test_threads_flag_produces_correct_results() {
         output_threads1.status.success(),
         "--threads 1 should succeed"
     );
-    let json1: Value = serde_json::from_str(&String::from_utf8(output_threads1.stdout).unwrap()).unwrap();
+    let json1: Value =
+        serde_json::from_str(&String::from_utf8(output_threads1.stdout).unwrap()).unwrap();
 
     let output_default = cargo_bin()
         .args(["--format", "json", "--no-color"])
         .arg(fixture_path("typescript/simple_function.ts"))
         .output()
         .unwrap();
-    let json_default: Value = serde_json::from_str(&String::from_utf8(output_default.stdout).unwrap()).unwrap();
+    let json_default: Value =
+        serde_json::from_str(&String::from_utf8(output_default.stdout).unwrap()).unwrap();
 
     assert_eq!(
-        json1["summary"]["total_functions"],
-        json_default["summary"]["total_functions"],
+        json1["summary"]["total_functions"], json_default["summary"]["total_functions"],
         "--threads 1 should count same total_functions as default"
     );
     assert_eq!(
@@ -649,7 +737,8 @@ fn test_duplication_flag_enables_analysis() {
         .output()
         .unwrap();
     let stdout = String::from_utf8(output.stdout).unwrap();
-    let parsed: Value = serde_json::from_str(&stdout).expect("duplication scan should produce valid JSON");
+    let parsed: Value =
+        serde_json::from_str(&stdout).expect("duplication scan should produce valid JSON");
 
     assert!(
         !parsed["duplication"].is_null(),

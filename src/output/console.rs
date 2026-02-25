@@ -44,7 +44,10 @@ pub fn should_use_color(force_color: Option<bool>) -> bool {
 }
 
 /// Computes all violations for a function against the resolved thresholds.
-pub fn function_violations(func: &FunctionAnalysisResult, config: &ResolvedConfig) -> Vec<Violation> {
+pub fn function_violations(
+    func: &FunctionAnalysisResult,
+    config: &ResolvedConfig,
+) -> Vec<Violation> {
     let mut violations: Vec<Violation> = Vec::new();
 
     // Cyclomatic complexity
@@ -336,7 +339,10 @@ fn render_function_line(
         let pos_str = position.dimmed().to_string();
         let (sym_colored, sev_colored) = match &worst {
             None => (symbol.green().to_string(), severity_str.green().to_string()),
-            Some(Severity::Warning) => (symbol.yellow().to_string(), severity_str.yellow().to_string()),
+            Some(Severity::Warning) => (
+                symbol.yellow().to_string(),
+                severity_str.yellow().to_string(),
+            ),
             Some(Severity::Error) => (symbol.red().to_string(), severity_str.red().to_string()),
         };
         format!("  {pos_str}  {sym_colored}  {sev_colored}  Function '{name}' cyclomatic {cyc} cognitive {cog}",
@@ -420,8 +426,14 @@ pub fn render_console(
             health_count += 1;
 
             let violations = function_violations(func, config);
-            let func_warnings: u32 = violations.iter().filter(|v| v.severity == Severity::Warning).count() as u32;
-            let func_errors: u32 = violations.iter().filter(|v| v.severity == Severity::Error).count() as u32;
+            let func_warnings: u32 = violations
+                .iter()
+                .filter(|v| v.severity == Severity::Warning)
+                .count() as u32;
+            let func_errors: u32 = violations
+                .iter()
+                .filter(|v| v.severity == Severity::Error)
+                .count() as u32;
             total_warnings += func_warnings;
             total_errors += func_errors;
             file_violations_count.0 += func_warnings;
@@ -446,7 +458,8 @@ pub fn render_console(
             };
 
             if show {
-                let line = render_function_line(func, &violations, config, use_color, config.verbose);
+                let line =
+                    render_function_line(func, &violations, config, use_color, config.verbose);
                 file_lines.push(line);
                 file_has_output = true;
             }
@@ -474,7 +487,10 @@ pub fn render_console(
 
     // Summary section
     let file_count = files.len();
-    writeln!(writer, "Analyzed {file_count} files, {total_functions} functions")?;
+    writeln!(
+        writer,
+        "Analyzed {file_count} files, {total_functions} functions"
+    )?;
 
     // Health score (integer, no decimal — matching Zig format)
     if health_count > 0 {
@@ -496,7 +512,10 @@ pub fn render_console(
 
     // Warning/error counts (only shown when there are some)
     if total_warnings > 0 || total_errors > 0 {
-        writeln!(writer, "Found {total_warnings} warnings, {total_errors} errors")?;
+        writeln!(
+            writer,
+            "Found {total_warnings} warnings, {total_errors} errors"
+        )?;
     }
 
     // Duplication section (if present)
@@ -505,44 +524,69 @@ pub fn render_console(
     }
 
     // Top cyclomatic hotspots (top 5, cyclomatic > 1)
-    let mut cycl_hotspots: Vec<_> = hotspot_items.iter()
-        .filter(|h| h.cyclomatic > 1)
-        .collect();
+    let mut cycl_hotspots: Vec<_> = hotspot_items.iter().filter(|h| h.cyclomatic > 1).collect();
     if !cycl_hotspots.is_empty() {
         cycl_hotspots.sort_by(|a, b| b.cyclomatic.cmp(&a.cyclomatic));
         let top_count = cycl_hotspots.len().min(5);
         writeln!(writer)?;
         writeln!(writer, "Top cyclomatic hotspots:")?;
         for (idx, h) in cycl_hotspots[..top_count].iter().enumerate() {
-            writeln!(writer, "  {}. {} ({}:{}) complexity {}", idx + 1, h.name, h.path, h.line, h.cyclomatic)?;
+            writeln!(
+                writer,
+                "  {}. {} ({}:{}) complexity {}",
+                idx + 1,
+                h.name,
+                h.path,
+                h.line,
+                h.cyclomatic
+            )?;
         }
     }
 
     // Top cognitive hotspots (top 5, cognitive > 0)
-    let mut cog_hotspots: Vec<_> = hotspot_items.iter()
-        .filter(|h| h.cognitive > 0)
-        .collect();
+    let mut cog_hotspots: Vec<_> = hotspot_items.iter().filter(|h| h.cognitive > 0).collect();
     if !cog_hotspots.is_empty() {
         cog_hotspots.sort_by(|a, b| b.cognitive.cmp(&a.cognitive));
         let top_count = cog_hotspots.len().min(5);
         writeln!(writer)?;
         writeln!(writer, "Top cognitive hotspots:")?;
         for (idx, h) in cog_hotspots[..top_count].iter().enumerate() {
-            writeln!(writer, "  {}. {} ({}:{}) complexity {}", idx + 1, h.name, h.path, h.line, h.cognitive)?;
+            writeln!(
+                writer,
+                "  {}. {} ({}:{}) complexity {}",
+                idx + 1,
+                h.name,
+                h.path,
+                h.line,
+                h.cognitive
+            )?;
         }
     }
 
     // Top halstead volume hotspots (top 5, volume > 0)
-    let mut hal_hotspots: Vec<_> = hotspot_items.iter()
+    let mut hal_hotspots: Vec<_> = hotspot_items
+        .iter()
         .filter(|h| h.halstead_volume > 0.0)
         .collect();
     if !hal_hotspots.is_empty() {
-        hal_hotspots.sort_by(|a, b| b.halstead_volume.partial_cmp(&a.halstead_volume).unwrap_or(std::cmp::Ordering::Equal));
+        hal_hotspots.sort_by(|a, b| {
+            b.halstead_volume
+                .partial_cmp(&a.halstead_volume)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
         let top_count = hal_hotspots.len().min(5);
         writeln!(writer)?;
         writeln!(writer, "Top Halstead volume hotspots:")?;
         for (idx, h) in hal_hotspots[..top_count].iter().enumerate() {
-            writeln!(writer, "  {}. {} ({}:{}) volume {:.0}", idx + 1, h.name, h.path, h.line, h.halstead_volume)?;
+            writeln!(
+                writer,
+                "  {}. {} ({}:{}) volume {:.0}",
+                idx + 1,
+                h.name,
+                h.path,
+                h.line,
+                h.halstead_volume
+            )?;
         }
     }
 
@@ -562,14 +606,20 @@ fn render_verdict(
 ) -> anyhow::Result<()> {
     let total = error_count + warning_count;
     if error_count > 0 {
-        let msg = format!("✗ {} problems ({} errors, {} warnings)", total, error_count, warning_count);
+        let msg = format!(
+            "✗ {} problems ({} errors, {} warnings)",
+            total, error_count, warning_count
+        );
         if use_color {
             writeln!(writer, "{}", msg.red())?;
         } else {
             writeln!(writer, "{msg}")?;
         }
     } else if warning_count > 0 {
-        let msg = format!("⚠ {} problems (0 errors, {} warnings)", warning_count, warning_count);
+        let msg = format!(
+            "⚠ {} problems (0 errors, {} warnings)",
+            warning_count, warning_count
+        );
         if use_color {
             writeln!(writer, "{}", msg.yellow())?;
         } else {
@@ -591,8 +641,8 @@ fn render_verdict(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::path::PathBuf;
     use crate::types::FileAnalysisResult;
+    use std::path::PathBuf;
 
     fn make_func(
         name: &str,
@@ -646,13 +696,22 @@ mod tests {
         render_console(&[file], None, &config, &mut buf).unwrap();
         let output = String::from_utf8(buf).unwrap();
 
-        assert!(output.contains("src/example.ts"), "Should contain file path");
+        assert!(
+            output.contains("src/example.ts"),
+            "Should contain file path"
+        );
         assert!(output.contains("10:0"), "Should contain line:col");
         assert!(output.contains("warning"), "Should contain severity");
         assert!(output.contains("⚠"), "Should contain warning symbol");
         assert!(output.contains("myFunc"), "Should contain function name");
-        assert!(output.contains("cyclomatic 12"), "Should contain cyclomatic value");
-        assert!(output.contains("cognitive 5"), "Should contain cognitive value");
+        assert!(
+            output.contains("cyclomatic 12"),
+            "Should contain cyclomatic value"
+        );
+        assert!(
+            output.contains("cognitive 5"),
+            "Should contain cognitive value"
+        );
     }
 
     #[test]
@@ -667,12 +726,20 @@ mod tests {
 
         // The file section (before the blank line after it) should have exactly one indented line
         // that contains the function info with both metrics
-        assert!(output.contains("  25:0"), "Should have position indented line");
+        assert!(
+            output.contains("  25:0"),
+            "Should have position indented line"
+        );
         let indented_lines: Vec<&str> = output.lines().filter(|l| l.starts_with("  ")).collect();
         // All indented function lines are in the file section (hotspot lines are also indented)
         // Key test: the file section line contains BOTH cyclomatic and cognitive on one line
-        let has_combined_line = output.lines().any(|l| l.contains("bigFunc") && l.contains("cyclomatic") && l.contains("cognitive"));
-        assert!(has_combined_line, "Should have single combined line with cyclomatic and cognitive");
+        let has_combined_line = output
+            .lines()
+            .any(|l| l.contains("bigFunc") && l.contains("cyclomatic") && l.contains("cognitive"));
+        assert!(
+            has_combined_line,
+            "Should have single combined line with cyclomatic and cognitive"
+        );
         let _ = indented_lines; // used for documentation purposes
     }
 
@@ -688,7 +755,10 @@ mod tests {
 
         assert!(output.contains("error"), "Should contain error severity");
         assert!(output.contains("✗"), "Should contain error symbol");
-        assert!(output.contains("cyclomatic 25"), "Should contain cyclomatic value");
+        assert!(
+            output.contains("cyclomatic 25"),
+            "Should contain cyclomatic value"
+        );
     }
 
     #[test]
@@ -703,7 +773,10 @@ mod tests {
         let output = String::from_utf8(buf).unwrap();
 
         // Should show error symbol since cognitive 30 >= error threshold 25
-        assert!(output.contains("✗"), "Should show error symbol for worst severity");
+        assert!(
+            output.contains("✗"),
+            "Should show error symbol for worst severity"
+        );
         assert!(output.contains("error"), "Should show error severity text");
     }
 
@@ -718,7 +791,10 @@ mod tests {
         render_console(&[file], None, &config, &mut buf).unwrap();
         let output = String::from_utf8(buf).unwrap();
 
-        assert!(output.contains("Analyzed 1 files, 3 functions"), "Should show analyzed count");
+        assert!(
+            output.contains("Analyzed 1 files, 3 functions"),
+            "Should show analyzed count"
+        );
         assert!(output.contains("Found"), "Should show found line");
         assert!(output.contains("warnings"), "Should show warnings");
         assert!(output.contains("errors"), "Should show errors");
@@ -736,8 +812,14 @@ mod tests {
 
         assert!(output.contains("Health:"), "Should show health label");
         // Should be integer format (no decimal point in health value)
-        assert!(output.contains("Health: 85"), "Should show integer health score");
-        assert!(!output.contains("Health: 85."), "Health score should not have decimal");
+        assert!(
+            output.contains("Health: 85"),
+            "Should show integer health score"
+        );
+        assert!(
+            !output.contains("Health: 85."),
+            "Health score should not have decimal"
+        );
     }
 
     #[test]
@@ -751,7 +833,10 @@ mod tests {
         render_console(&[file], None, &config, &mut buf).unwrap();
         let output = String::from_utf8(buf).unwrap();
 
-        assert!(output.contains("Analyzed 1 files, 3 functions"), "Should show analyzed line");
+        assert!(
+            output.contains("Analyzed 1 files, 3 functions"),
+            "Should show analyzed line"
+        );
     }
 
     #[test]
@@ -765,9 +850,15 @@ mod tests {
         let output = String::from_utf8(buf).unwrap();
 
         // Quiet mode suppresses warning-only file sections
-        assert!(!output.contains("src/test.ts"), "Quiet mode should suppress the file section for warning-only files");
+        assert!(
+            !output.contains("src/test.ts"),
+            "Quiet mode should suppress the file section for warning-only files"
+        );
         // In quiet mode, only verdict is shown
-        assert!(!output.contains("Analyzed"), "Quiet mode should not show analyzed summary");
+        assert!(
+            !output.contains("Analyzed"),
+            "Quiet mode should not show analyzed summary"
+        );
     }
 
     #[test]
@@ -781,8 +872,14 @@ mod tests {
         let output = String::from_utf8(buf).unwrap();
 
         assert!(output.contains("✓"), "Verbose mode should show ok symbol");
-        assert!(output.contains("ok"), "Verbose mode should show ok functions");
-        assert!(output.contains("simpleFunc"), "Verbose mode should show function name");
+        assert!(
+            output.contains("ok"),
+            "Verbose mode should show ok functions"
+        );
+        assert!(
+            output.contains("simpleFunc"),
+            "Verbose mode should show function name"
+        );
     }
 
     #[test]
@@ -798,7 +895,10 @@ mod tests {
         // File section header should NOT appear since no violations
         // (hotspot sections use format "(path:line)" so a standalone "src/clean.ts\n" line won't appear)
         let file_header_line = output.lines().any(|l| l == "src/clean.ts");
-        assert!(!file_header_line, "File with no violations should not appear as a file section header");
+        assert!(
+            !file_header_line,
+            "File with no violations should not appear as a file section header"
+        );
     }
 
     #[test]
@@ -810,7 +910,10 @@ mod tests {
         render_console(&[file], None, &config, &mut buf).unwrap();
         let output = String::from_utf8(buf).unwrap();
 
-        assert!(output.contains("✓ No problems found"), "Should show no problems verdict");
+        assert!(
+            output.contains("✓ No problems found"),
+            "Should show no problems verdict"
+        );
     }
 
     #[test]
@@ -841,7 +944,10 @@ mod tests {
         let func = make_func("f", 1, 25, 0, 40.0);
         let config = default_config();
         let violations = function_violations(&func, &config);
-        let cyc_violations: Vec<_> = violations.iter().filter(|v| v.rule_id.contains("cyclomatic")).collect();
+        let cyc_violations: Vec<_> = violations
+            .iter()
+            .filter(|v| v.rule_id.contains("cyclomatic"))
+            .collect();
         assert_eq!(cyc_violations.len(), 1);
         assert_eq!(cyc_violations[0].severity, Severity::Error);
     }
@@ -851,7 +957,10 @@ mod tests {
         let func = make_func("f", 1, 3, 3, 95.0);
         let config = default_config();
         let violations = function_violations(&func, &config);
-        assert!(violations.is_empty(), "Should have no violations for low complexity");
+        assert!(
+            violations.is_empty(),
+            "Should have no violations for low complexity"
+        );
     }
 
     #[test]
@@ -862,7 +971,8 @@ mod tests {
     #[test]
     fn test_function_status_warning() {
         let v = Violation {
-            line: 1, col: 0,
+            line: 1,
+            col: 0,
             severity: Severity::Warning,
             message: "test".to_string(),
             rule_id: "test".to_string(),
@@ -873,7 +983,8 @@ mod tests {
     #[test]
     fn test_function_status_error() {
         let v = Violation {
-            line: 1, col: 0,
+            line: 1,
+            col: 0,
             severity: Severity::Error,
             message: "test".to_string(),
             rule_id: "test".to_string(),
@@ -892,7 +1003,10 @@ mod tests {
         render_console(&[file1, file2], None, &config, &mut buf).unwrap();
         let output = String::from_utf8(buf).unwrap();
 
-        assert!(output.contains("Analyzed 2 files, 2 functions"), "Should show 2 files and 2 functions");
+        assert!(
+            output.contains("Analyzed 2 files, 2 functions"),
+            "Should show 2 files and 2 functions"
+        );
     }
 
     #[test]

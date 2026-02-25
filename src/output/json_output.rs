@@ -150,8 +150,14 @@ pub fn render_json(
                     total_health += func.health_score;
 
                     let violations = function_violations(func, config);
-                    let func_warnings = violations.iter().filter(|v| v.severity == Severity::Warning).count() as u32;
-                    let func_errors = violations.iter().filter(|v| v.severity == Severity::Error).count() as u32;
+                    let func_warnings = violations
+                        .iter()
+                        .filter(|v| v.severity == Severity::Warning)
+                        .count() as u32;
+                    let func_errors = violations
+                        .iter()
+                        .filter(|v| v.severity == Severity::Error)
+                        .count() as u32;
                     total_warnings += func_warnings;
                     total_errors += func_errors;
 
@@ -264,8 +270,7 @@ pub fn render_json(
                 } else {
                     0.0
                 };
-                let status =
-                    duplication_status(pct, DUP_FILE_WARNING, DUP_FILE_ERROR);
+                let status = duplication_status(pct, DUP_FILE_WARNING, DUP_FILE_ERROR);
                 JsonDuplicationFileInfo {
                     path: f.path.to_string_lossy().to_string(),
                     total_tokens: total,
@@ -318,8 +323,8 @@ pub fn render_json(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::path::PathBuf;
     use crate::types::{FileAnalysisResult, FunctionAnalysisResult};
+    use std::path::PathBuf;
 
     fn make_func(
         name: &str,
@@ -377,7 +382,10 @@ mod tests {
         assert!(parsed["summary"].is_object(), "summary field missing");
         assert!(parsed["files"].is_array(), "files field missing");
         assert!(parsed["metadata"].is_object(), "metadata field missing");
-        assert!(parsed["duplication"].is_null(), "duplication should be null");
+        assert!(
+            parsed["duplication"].is_null(),
+            "duplication should be null"
+        );
 
         // Summary fields
         let summary = &parsed["summary"];
@@ -428,11 +436,19 @@ mod tests {
         let json_str = render_json(&[file], None, &config, 10).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&json_str).unwrap();
 
-        let func_status = parsed["files"][0]["functions"][0]["status"].as_str().unwrap();
-        assert_eq!(func_status, "ok", "Function below thresholds should have status ok");
+        let func_status = parsed["files"][0]["functions"][0]["status"]
+            .as_str()
+            .unwrap();
+        assert_eq!(
+            func_status, "ok",
+            "Function below thresholds should have status ok"
+        );
 
         let summary_status = parsed["summary"]["status"].as_str().unwrap();
-        assert_eq!(summary_status, "pass", "Summary with no violations should be pass");
+        assert_eq!(
+            summary_status, "pass",
+            "Summary with no violations should be pass"
+        );
     }
 
     #[test]
@@ -444,7 +460,9 @@ mod tests {
         let json_str = render_json(&[file], None, &config, 10).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&json_str).unwrap();
 
-        let func_status = parsed["files"][0]["functions"][0]["status"].as_str().unwrap();
+        let func_status = parsed["files"][0]["functions"][0]["status"]
+            .as_str()
+            .unwrap();
         assert_eq!(func_status, "warning");
 
         let summary_status = parsed["summary"]["status"].as_str().unwrap();
@@ -460,7 +478,9 @@ mod tests {
         let json_str = render_json(&[file], None, &config, 10).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&json_str).unwrap();
 
-        let func_status = parsed["files"][0]["functions"][0]["status"].as_str().unwrap();
+        let func_status = parsed["files"][0]["functions"][0]["status"]
+            .as_str()
+            .unwrap();
         assert_eq!(func_status, "error");
 
         let summary_status = parsed["summary"]["status"].as_str().unwrap();
@@ -490,7 +510,10 @@ mod tests {
         let json_str = render_json(&[file], None, &config, 5).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&json_str).unwrap();
 
-        assert!(parsed["duplication"].is_null(), "duplication should be null when not provided");
+        assert!(
+            parsed["duplication"].is_null(),
+            "duplication should be null when not provided"
+        );
     }
 
     #[test]
@@ -509,9 +532,15 @@ mod tests {
         let parsed: serde_json::Value = serde_json::from_str(&json_str).unwrap();
 
         // Verify Zig schema fields are present
-        assert!(!parsed["duplication"].is_null(), "duplication should be present");
+        assert!(
+            !parsed["duplication"].is_null(),
+            "duplication should be present"
+        );
         let dup_obj = &parsed["duplication"];
-        assert!(dup_obj["enabled"].as_bool().unwrap(), "enabled must be true");
+        assert!(
+            dup_obj["enabled"].as_bool().unwrap(),
+            "enabled must be true"
+        );
         assert_eq!(
             dup_obj["project_duplication_pct"].as_f64().unwrap(),
             15.0,
@@ -522,15 +551,18 @@ mod tests {
             "error",
             "15% duplication should be error status (threshold=5%)"
         );
-        assert!(dup_obj["clone_groups"].is_array(), "clone_groups must be array");
+        assert!(
+            dup_obj["clone_groups"].is_array(),
+            "clone_groups must be array"
+        );
         assert!(dup_obj["files"].is_array(), "files must be array");
     }
 
     #[test]
     fn test_render_json_duplication_schema_field_names() {
         // Verifies the Zig schema field names are present (not the old Rust schema names).
-        use crate::types::{CloneGroup, CloneInstance, DuplicationResult};
         use crate::types::Token;
+        use crate::types::{CloneGroup, CloneInstance, DuplicationResult};
         let token = Token {
             kind: "identifier",
             kind_hash: 0,
@@ -570,35 +602,68 @@ mod tests {
 
         // Zig schema fields must be present
         assert!(dup_obj["enabled"].is_boolean(), "enabled field missing");
-        assert!(dup_obj["project_duplication_pct"].is_number(), "project_duplication_pct missing");
-        assert!(dup_obj["project_status"].is_string(), "project_status missing");
+        assert!(
+            dup_obj["project_duplication_pct"].is_number(),
+            "project_duplication_pct missing"
+        );
+        assert!(
+            dup_obj["project_status"].is_string(),
+            "project_status missing"
+        );
         assert!(dup_obj["clone_groups"].is_array(), "clone_groups missing");
         assert!(dup_obj["files"].is_array(), "files missing");
 
         // Old Rust schema fields must NOT be present
-        assert!(dup_obj["total_tokens"].is_null(), "total_tokens is old Rust schema — should not be present");
-        assert!(dup_obj["cloned_tokens"].is_null(), "cloned_tokens is old Rust schema — should not be present");
-        assert!(dup_obj["duplication_percentage"].is_null(), "duplication_percentage is old Rust schema — should not be present");
+        assert!(
+            dup_obj["total_tokens"].is_null(),
+            "total_tokens is old Rust schema — should not be present"
+        );
+        assert!(
+            dup_obj["cloned_tokens"].is_null(),
+            "cloned_tokens is old Rust schema — should not be present"
+        );
+        assert!(
+            dup_obj["duplication_percentage"].is_null(),
+            "duplication_percentage is old Rust schema — should not be present"
+        );
 
         // Clone group structure: token_count + locations
         let group = &dup_obj["clone_groups"][0];
         assert!(group["token_count"].is_number(), "token_count missing");
         assert!(group["locations"].is_array(), "locations missing");
         // Old schema uses instances — must not be present
-        assert!(group["instances"].is_null(), "instances is old Rust schema — should not be present");
+        assert!(
+            group["instances"].is_null(),
+            "instances is old Rust schema — should not be present"
+        );
 
         // Location structure: file, start_line, end_line
         let location = &group["locations"][0];
         assert!(location["file"].is_string(), "location.file missing");
-        assert!(location["start_line"].is_number(), "location.start_line missing");
-        assert!(location["end_line"].is_number(), "location.end_line missing");
+        assert!(
+            location["start_line"].is_number(),
+            "location.start_line missing"
+        );
+        assert!(
+            location["end_line"].is_number(),
+            "location.end_line missing"
+        );
 
         // Per-file array structure: path, total_tokens, cloned_tokens, duplication_pct, status
         let file_info = &dup_obj["files"][0];
         assert!(file_info["path"].is_string(), "file_info.path missing");
-        assert!(file_info["total_tokens"].is_number(), "file_info.total_tokens missing");
-        assert!(file_info["cloned_tokens"].is_number(), "file_info.cloned_tokens missing");
-        assert!(file_info["duplication_pct"].is_number(), "file_info.duplication_pct missing");
+        assert!(
+            file_info["total_tokens"].is_number(),
+            "file_info.total_tokens missing"
+        );
+        assert!(
+            file_info["cloned_tokens"].is_number(),
+            "file_info.cloned_tokens missing"
+        );
+        assert!(
+            file_info["duplication_pct"].is_number(),
+            "file_info.duplication_pct missing"
+        );
         assert!(file_info["status"].is_string(), "file_info.status missing");
     }
 
@@ -614,7 +679,10 @@ mod tests {
         // Should be a reasonable Unix timestamp (after 2024-01-01 = 1704067200)
         assert!(ts > 1704067200, "timestamp should be a valid Unix epoch");
         // Should not be too far in the future (before 2050)
-        assert!(ts < 2524608000, "timestamp should not be unreasonably far in the future");
+        assert!(
+            ts < 2524608000,
+            "timestamp should not be unreasonably far in the future"
+        );
     }
 
     #[test]

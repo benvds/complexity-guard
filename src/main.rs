@@ -1,8 +1,12 @@
 use clap::Parser;
-use complexity_guard::cli::{config_defaults, discover_config, merge_args_into_config, resolve_config, Args};
+use complexity_guard::cli::{
+    config_defaults, discover_config, merge_args_into_config, resolve_config, Args,
+};
 use complexity_guard::metrics::duplication::detect_duplication;
 use complexity_guard::output::console::{function_violations, Severity};
-use complexity_guard::output::{determine_exit_code, render_console, render_html, render_json, render_sarif, ExitCode};
+use complexity_guard::output::{
+    determine_exit_code, render_console, render_html, render_json, render_sarif, ExitCode,
+};
 use complexity_guard::types::{
     AnalysisConfig, CognitiveConfig, CyclomaticConfig, DuplicationConfig, DuplicationResult,
     ScoringThresholds, ScoringWeights,
@@ -146,7 +150,10 @@ fn main() {
 
         if dup_enabled && !no_dup {
             let file_tokens: Vec<&[_]> = files.iter().map(|f| f.tokens.as_slice()).collect();
-            Some(detect_duplication(&file_tokens, &analysis_config.duplication))
+            Some(detect_duplication(
+                &file_tokens,
+                &analysis_config.duplication,
+            ))
         } else {
             None
         }

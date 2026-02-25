@@ -154,7 +154,8 @@ fn walk_and_analyze(
         // Object literal: `{ handler: () => {} }` — key becomes the function name
         if let Some(key_node) = node.child(0) {
             let key_kind = key_node.kind();
-            if key_kind == "property_identifier" || key_kind == "string" || key_kind == "identifier" {
+            if key_kind == "property_identifier" || key_kind == "string" || key_kind == "identifier"
+            {
                 if let Ok(key_text) = key_node.utf8_text(source) {
                     // Strip quotes from string keys
                     let key = if key_text.starts_with('"') || key_text.starts_with('\'') {
@@ -309,11 +310,7 @@ fn get_last_member_segment(node: &tree_sitter::Node, source: &[u8]) -> Option<St
 
 /// Calculate cyclomatic complexity for a function node.
 /// Base complexity is 1 plus the number of decision points.
-fn calculate_complexity(
-    node: &tree_sitter::Node,
-    config: &CyclomaticConfig,
-    source: &[u8],
-) -> u32 {
+fn calculate_complexity(node: &tree_sitter::Node, config: &CyclomaticConfig, source: &[u8]) -> u32 {
     // Look for statement_block child (function body)
     for i in 0..node.child_count() as u32 {
         if let Some(child) = node.child(i) {
@@ -329,11 +326,7 @@ fn calculate_complexity(
 /// Count decision points in an AST subtree.
 ///
 /// Stops recursion at nested function boundaries.
-fn count_decision_points(
-    node: tree_sitter::Node,
-    config: &CyclomaticConfig,
-    source: &[u8],
-) -> u32 {
+fn count_decision_points(node: tree_sitter::Node, config: &CyclomaticConfig, source: &[u8]) -> u32 {
     let kind = node.kind();
     let mut count: u32 = 0;
 
@@ -429,8 +422,7 @@ mod tests {
     use std::path::Path;
 
     fn parse_and_analyze(source: &str, config: &CyclomaticConfig) -> Vec<CyclomaticResult> {
-        let language: tree_sitter::Language =
-            tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into();
+        let language: tree_sitter::Language = tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into();
         let mut parser = tree_sitter::Parser::new();
         parser.set_language(&language).unwrap();
         let tree = parser.parse(source.as_bytes(), None).unwrap();
@@ -494,10 +486,7 @@ mod tests {
                 .complexity,
             2
         );
-        assert_eq!(
-            find_by_name(&results, "arrowFunc").unwrap().complexity,
-            2
-        );
+        assert_eq!(find_by_name(&results, "arrowFunc").unwrap().complexity, 2);
         assert_eq!(
             find_by_name(&results, "complexLogical").unwrap().complexity,
             5
@@ -546,8 +535,8 @@ function test(x: string): number {
 
     #[test]
     fn naming_edge_cases_fixture() {
-        let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("tests/fixtures/naming-edge-cases.ts");
+        let fixture_path =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/naming-edge-cases.ts");
         let source = std::fs::read_to_string(&fixture_path).unwrap();
         let config = CyclomaticConfig::default();
         let results = parse_and_analyze(&source, &config);
@@ -558,24 +547,56 @@ function test(x: string): number {
         assert!(names.contains(&"myFunc"), "Should find myFunc: {:?}", names);
 
         // Variable-assigned arrow
-        assert!(names.contains(&"handler"), "Should find handler: {:?}", names);
+        assert!(
+            names.contains(&"handler"),
+            "Should find handler: {:?}",
+            names
+        );
 
         // Class methods
-        assert!(names.contains(&"Foo.bar"), "Should find Foo.bar: {:?}", names);
-        assert!(names.contains(&"Foo.baz"), "Should find Foo.baz: {:?}", names);
+        assert!(
+            names.contains(&"Foo.bar"),
+            "Should find Foo.bar: {:?}",
+            names
+        );
+        assert!(
+            names.contains(&"Foo.baz"),
+            "Should find Foo.baz: {:?}",
+            names
+        );
 
         // Object literal methods (key name extraction)
         // { handler: () => {} } → key "handler" conflicts with top-level handler; check "process"
-        assert!(names.contains(&"process"), "Should find process (shorthand method): {:?}", names);
+        assert!(
+            names.contains(&"process"),
+            "Should find process (shorthand method): {:?}",
+            names
+        );
 
         // Array method callbacks
-        assert!(names.contains(&"map callback"), "Should find 'map callback': {:?}", names);
-        assert!(names.contains(&"forEach callback"), "Should find 'forEach callback': {:?}", names);
+        assert!(
+            names.contains(&"map callback"),
+            "Should find 'map callback': {:?}",
+            names
+        );
+        assert!(
+            names.contains(&"forEach callback"),
+            "Should find 'forEach callback': {:?}",
+            names
+        );
 
         // Event handler
-        assert!(names.contains(&"click handler"), "Should find 'click handler': {:?}", names);
+        assert!(
+            names.contains(&"click handler"),
+            "Should find 'click handler': {:?}",
+            names
+        );
 
         // Default export
-        assert!(names.contains(&"default export"), "Should find 'default export': {:?}", names);
+        assert!(
+            names.contains(&"default export"),
+            "Should find 'default export': {:?}",
+            names
+        );
     }
 }
