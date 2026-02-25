@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-24)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** v0.8 Rust Rewrite — Phase 22: Cross-Compilation, CI, Release — IN PROGRESS (1/4 complete)
+**Current focus:** v0.8 Rust Rewrite — Phase 22: Cross-Compilation, CI, Release — IN PROGRESS (2/3 complete)
 
 ## Current Position
 
 Phase: 22 of 22 (Cross-Compilation, CI, and Release) — IN PROGRESS
-Plan: 1 of 4 in phase 22 — plan 01 complete
-Status: Phase 22-01 COMPLETE — 5-target cross-compilation matrix in rust-ci.yml
-Last activity: 2026-02-25 — Phase 22 plan 01 complete (CI cross-compilation matrix: linux-x86_64-musl, linux-aarch64-musl, macos-aarch64, macos-x86_64, windows-x86_64)
+Plan: 2 of 3 in phase 22 — plan 02 complete
+Status: Phase 22-02 COMPLETE — tag-triggered rust-release.yml + release.sh Cargo.toml update
+Last activity: 2026-02-25 — Phase 22 plan 02 complete (rust-release.yml 3-job pipeline: validate/build/release with softprops/action-gh-release@v2; release.sh reads version from rust/Cargo.toml)
 
 Progress: [█████████░] 75% (v0.8 milestone)
 
@@ -32,11 +32,11 @@ Progress: [█████████░] 75% (v0.8 milestone)
 | 19 | 4/4 | 19 min | 5 min |
 | 20 | 2/2 | 6 min | 3 min |
 | 21 | 4/4 | 45 min | 11 min |
-| 22 | 1/4 | 1 min | 1 min |
+| 22 | 2/3 | 2 min | 1 min |
 
 **Recent Trend:**
-- Last 5 plans: 21-02 (27 min), 21-03 (4 min), 21-04 (2 min), 22-01 (1 min)
-- Trend: Fast (22-01 was single-file YAML change, verified with Python YAML parser)
+- Last 5 plans: 21-03 (4 min), 21-04 (2 min), 22-01 (1 min), 22-02 (1 min)
+- Trend: Fast (infra/config YAML changes with Python verification)
 
 *Updated after each plan completion*
 
@@ -79,6 +79,8 @@ Recent decisions affecting v0.8:
 - [Phase 22-01]: can_test: false only for linux-aarch64-musl — aarch64 binary cannot execute on x86_64 ubuntu-latest runner (no free arm64 Linux runners on GitHub)
 - [Phase 22-01]: RUSTFLAGS crt-static applied conditionally via matrix.target expression for Windows-only static CRT (avoids extra step)
 - [Phase 22-01]: ext matrix field (empty string vs .exe) handles Windows binary suffix consistently across ls and --version steps
+- [Phase 22]: rust-release.yml is a SEPARATE workflow from the Zig release.yml — they coexist for parallel Zig/Rust release paths
+- [Phase 22]: release.sh now uses rust/Cargo.toml as single source of truth for version — replaces src/main.zig grep/sed
 
 ### Pending Todos
 
@@ -93,8 +95,8 @@ Recent decisions affecting v0.8:
 ## Session Continuity
 
 Last session: 2026-02-25 (execute-phase 22)
-Stopped at: Completed 22-01-PLAN.md — 5-target cross-compilation matrix in rust-ci.yml
-Resume with: Execute Phase 22 plan 02 (rust-release.yml for GitHub releases)
+Stopped at: Completed 22-02-PLAN.md — rust-release.yml tag-triggered workflow + release.sh Cargo.toml update
+Resume with: Execute Phase 22 plan 03 (documentation updates)
 
 **Remaining phases to execute:**
 - Phase 19: CLI, Config, Output Formats — COMPLETE (4/4)
@@ -104,12 +106,11 @@ Resume with: Execute Phase 22 plan 02 (rust-release.yml for GitHub releases)
   - 21-02: Console format rewrite (Zig ESLint-style) + function naming — COMPLETE
   - 21-03: Integration test baselines (29 tests, 12 baselines) — COMPLETE
   - 21-04: Exit code 4 documentation test + gap closure — COMPLETE
-- Phase 22: Cross-Compilation, CI, Release — IN PROGRESS (1/4)
+- Phase 22: Cross-Compilation, CI, Release — IN PROGRESS (2/3)
   - 22-01: CI cross-compilation matrix (5 targets) — COMPLETE
-  - 22-02: rust-release.yml (GitHub release workflow) — TODO
+  - 22-02: rust-release.yml (GitHub release workflow) — COMPLETE
   - 22-03: Documentation updates — TODO
-  - 22-04: Publication README updates — TODO
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-25 after Phase 22 plan 01 completion (5-target cross-compilation CI matrix — rust-ci.yml extended with linux-x86_64-musl, linux-aarch64-musl, macos-aarch64, macos-x86_64, windows-x86_64)*
+*Last updated: 2026-02-25 after Phase 22 plan 02 completion (rust-release.yml 3-job pipeline with softprops/action-gh-release@v2; release.sh reads version from rust/Cargo.toml)*
