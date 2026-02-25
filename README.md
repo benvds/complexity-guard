@@ -35,14 +35,12 @@ complexity-guard --init src/
 ```
 src/auth/login.ts
   42:0  ✓  ok  Function 'validateCredentials' cyclomatic 3 cognitive 2
-  67:0  ⚠  warning  Function 'processLoginFlow' cyclomatic 12 cognitive 18
-              [halstead vol 843 diff 14.1 effort 11886] [length 34 params 3 depth 4]
-  89:2  ✗  error  Method 'handleComplexAuthFlow' cyclomatic 25 cognitive 32
-              [halstead vol 1244 diff 18.6 effort 23135 bugs 0.41] [length 62 params 4 depth 6]
+  67:0  ⚠  warning  Function 'processLoginFlow' cyclomatic 12 cognitive 18 [halstead vol 843] [length 34] [params 3] [depth 4]
+  89:2  ✗  error  Function 'handleComplexAuthFlow' cyclomatic 25 cognitive 32 [halstead vol 1244] [length 62] [params 4] [depth 6]
 
 Analyzed 12 files, 47 functions
-Found 3 warnings, 1 errors
 Health: 73
+Found 3 warnings, 1 errors
 
 Top cyclomatic hotspots:
   1. handleComplexAuthFlow (src/auth/login.ts:89) complexity 25

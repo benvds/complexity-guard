@@ -29,16 +29,13 @@ complexity-guard src/app.ts src/utils/helpers.ts lib/config.js
 complexity-guard --verbose src/
 ```
 
-Verbose mode shows all four metric families for every function:
+Verbose mode shows all functions including those that pass thresholds:
 
 ```
 src/auth/login.ts
-  42:0  ✓  ok  Function 'validateCredentials' cyclomatic 3 cognitive 2
-              [halstead vol 75 diff 4.2 effort 316] [length 8 params 2 depth 2]
-  67:0  ⚠  warning  Function 'processLoginFlow' cyclomatic 12 cognitive 18
-              [halstead vol 843 diff 14.1 effort 11886] [length 34 params 3 depth 4]
-  89:2  ✗  error  Method 'handleComplexAuthFlow' cyclomatic 25 cognitive 32
-              [halstead vol 1244 diff 18.6 effort 23135 bugs 0.41] [length 62 params 4 depth 6]
+  42:0  ✓  ok  Function 'validateCredentials' cyclomatic 3 cognitive 2 [halstead vol 75] [length 8] [params 2] [depth 2]
+  67:0  ⚠  warning  Function 'processLoginFlow' cyclomatic 12 cognitive 18 [halstead vol 843] [length 34] [params 3] [depth 4]
+  89:2  ✗  error  Function 'handleComplexAuthFlow' cyclomatic 25 cognitive 32 [halstead vol 1244] [length 62] [params 4] [depth 6]
 ```
 
 Useful for getting a complete complexity overview of your codebase.
@@ -167,11 +164,11 @@ Every analysis run prints a composite health score (0–100) after the summary l
 src/auth/login.ts
   42:0  ✓  ok  Function 'validateCredentials' cyclomatic 3 cognitive 2
   67:0  ⚠  warning  Function 'processLoginFlow' cyclomatic 12 cognitive 18
-  89:2  ✗  error  Method 'handleComplexAuthFlow' cyclomatic 25 cognitive 32
+  89:2  ✗  error  Function 'handleComplexAuthFlow' cyclomatic 25 cognitive 32
 
 Analyzed 12 files, 47 functions
-Found 3 warnings, 1 errors
 Health: 73
+Found 3 warnings, 1 errors
 
 Top cyclomatic hotspots:
   1. handleComplexAuthFlow (src/auth/login.ts:89) complexity 25
@@ -519,8 +516,7 @@ Halstead volume captures information density. A function triggering a volume war
 
 ```
 src/parsers/expression.ts
-  156:0  ⚠  warning  Function 'parseExpression' cyclomatic 8 cognitive 12
-              [halstead vol 743 diff 22.4 effort 16643] [length 28 params 2 depth 3]
+  156:0  ⚠  warning  Function 'parseExpression' cyclomatic 8 cognitive 12 [halstead vol 743] [length 28] [params 2] [depth 3]
 ```
 
 This function has manageable cyclomatic and cognitive scores but high Halstead effort (16643 > 10000 threshold), flagging it as mentally expensive to understand or modify. This often happens with expression parsers, mathematical algorithms, or functions operating on many distinct values.
@@ -947,9 +943,9 @@ Output includes a project-level duplication summary:
 
 ```
 Analyzed 12 files, 47 functions
-Found 3 warnings, 1 errors
-Duplication: 8.2% (project warning threshold: 5%)
 Health: 68
+Found 3 warnings, 1 errors
+Duplication: 8.2%
 
 ✗ 4 problems (1 errors, 3 warnings)
 ```
