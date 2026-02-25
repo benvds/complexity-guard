@@ -4,6 +4,7 @@ const cognitive = @import("../metrics/cognitive.zig");
 const halstead = @import("../metrics/halstead.zig");
 const structural = @import("../metrics/structural.zig");
 const scoring = @import("../metrics/scoring.zig");
+const duplication_mod = @import("../metrics/duplication.zig");
 const parse = @import("../parser/parse.zig");
 const tree_sitter = @import("../parser/tree_sitter.zig");
 const console = @import("../output/console.zig");
@@ -21,6 +22,7 @@ pub const FileAnalysisResult = struct {
     function_count: u32,
     warning_count: u32,
     error_count: u32,
+    tokens: ?[]const duplication_mod.Token, // duplication tokens (null if duplication disabled)
 };
 
 /// Summary counts returned alongside the results slice.
@@ -46,7 +48,9 @@ const WorkerContext = struct {
     str_config: structural.StructuralConfig,
     effective_weights: scoring.EffectiveWeights,
     metric_thresholds: scoring.MetricThresholds,
+    precomputed_k: scoring.PrecomputedSteepness,
     parsed_metrics: ?[]const []const u8,
+    duplication_enabled: bool,
     // Track successful/failed counts atomically
     successful: std.atomic.Value(u32),
     failed: std.atomic.Value(u32),
@@ -227,11 +231,18 @@ fn analyzeFileWorker(ctx: *WorkerContext, path: []const u8) void {
         str_file_result = structural.analyzeFile(source, root);
     }
 
-    // Compute health scores — func_scores in arena (temp)
+    // Tokenize for duplication detection (while tree is still alive)
+    var arena_tokens: ?[]const duplication_mod.Token = null;
+    if (ctx.duplication_enabled) {
+        arena_tokens = duplication_mod.tokenizeTree(arena_alloc, root, source) catch null;
+    }
+
+    // Compute health scores — use pre-computed steepness to avoid per-function @log() calls
     var func_scores = std.ArrayList(f64).empty;
     defer func_scores.deinit(arena_alloc);
+    func_scores.ensureTotalCapacity(arena_alloc, cycl_results.len) catch {};
     for (cycl_results) |*tr| {
-        const breakdown = scoring.computeFunctionScore(tr.*, ctx.effective_weights, ctx.metric_thresholds);
+        const breakdown = scoring.computeFunctionScorePrecomputed(tr.*, ctx.effective_weights, ctx.metric_thresholds, ctx.precomputed_k);
         tr.health_score = breakdown.total;
         func_scores.append(arena_alloc, breakdown.total) catch {};
     }
@@ -282,6 +293,12 @@ fn analyzeFileWorker(ctx: *WorkerContext, path: []const u8) void {
         return;
     };
 
+    // Dupe duplication tokens to shared allocator (Token.kind points to static strings, only struct array needs duping)
+    var owned_tokens: ?[]const duplication_mod.Token = null;
+    if (arena_tokens) |toks| {
+        owned_tokens = ctx.allocator.dupe(duplication_mod.Token, toks) catch null;
+    }
+
     const result = FileAnalysisResult{
         .path = owned_path,
         .results = threshold_results,
@@ -290,6 +307,7 @@ fn analyzeFileWorker(ctx: *WorkerContext, path: []const u8) void {
         .function_count = @intCast(threshold_results.len),
         .warning_count = violations.warnings,
         .error_count = violations.errors,
+        .tokens = owned_tokens,
     };
 
     ctx.results.append(ctx.allocator, result) catch {
@@ -327,6 +345,7 @@ pub fn analyzeFilesParallel(
     effective_weights: scoring.EffectiveWeights,
     metric_thresholds: scoring.MetricThresholds,
     parsed_metrics: ?[]const []const u8,
+    duplication_enabled: bool,
 ) !struct { results: []FileAnalysisResult, summary: ParallelSummary } {
     var ctx = WorkerContext{
         .mutex = .{},
@@ -338,11 +357,16 @@ pub fn analyzeFilesParallel(
         .str_config = str_config,
         .effective_weights = effective_weights,
         .metric_thresholds = metric_thresholds,
+        .precomputed_k = scoring.PrecomputedSteepness.init(metric_thresholds),
         .parsed_metrics = parsed_metrics,
+        .duplication_enabled = duplication_enabled,
         .successful = std.atomic.Value(u32).init(0),
         .failed = std.atomic.Value(u32).init(0),
         .with_errors = std.atomic.Value(u32).init(0),
     };
+
+    // Pre-allocate results capacity to avoid resizes under mutex
+    try ctx.results.ensureTotalCapacity(allocator, file_paths.len);
 
     // Create thread pool with page_allocator (thread-safe) for pool internals.
     // The caller's allocator (arena) is NOT thread-safe, so the pool must not use it
@@ -383,6 +407,7 @@ pub fn freeResults(allocator: Allocator, results: []FileAnalysisResult) void {
             allocator.free(tr.function_kind);
         }
         allocator.free(result.results);
+        if (result.tokens) |tokens| allocator.free(tokens);
     }
     allocator.free(results);
 }
@@ -427,6 +452,7 @@ test "analyzeFilesParallel: single file" {
         weights,
         metric_thresholds,
         null,
+        false,
     );
     defer freeResults(allocator, out.results);
 
@@ -476,6 +502,7 @@ test "analyzeFilesParallel: results sorted by path" {
         weights,
         metric_thresholds,
         null,
+        false,
     );
     defer freeResults(allocator, out.results);
 

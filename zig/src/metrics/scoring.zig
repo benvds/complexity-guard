@@ -32,6 +32,28 @@ pub const EffectiveWeights = struct {
     duplication: f64,
 };
 
+/// Pre-computed sigmoid steepness values for all metrics.
+/// Computing these once avoids repeated @log() calls per function.
+pub const PrecomputedSteepness = struct {
+    cyclomatic_k: f64,
+    cognitive_k: f64,
+    halstead_k: f64,
+    function_length_k: f64,
+    params_count_k: f64,
+    nesting_depth_k: f64,
+
+    pub fn init(thresholds: MetricThresholds) PrecomputedSteepness {
+        return .{
+            .cyclomatic_k = computeSteepness(thresholds.cyclomatic_warning, thresholds.cyclomatic_error),
+            .cognitive_k = computeSteepness(thresholds.cognitive_warning, thresholds.cognitive_error),
+            .halstead_k = computeSteepness(thresholds.halstead_warning, thresholds.halstead_error),
+            .function_length_k = computeSteepness(thresholds.function_length_warning, thresholds.function_length_error),
+            .params_count_k = computeSteepness(thresholds.params_count_warning, thresholds.params_count_error),
+            .nesting_depth_k = computeSteepness(thresholds.nesting_depth_warning, thresholds.nesting_depth_error),
+        };
+    }
+};
+
 /// Per-metric sub-scores plus weighted total.
 pub const ScoreBreakdown = struct {
     cyclomatic_score: f64,
@@ -198,6 +220,38 @@ pub fn computeFunctionScore(tr: ThresholdResult, weights: EffectiveWeights, thre
         thresholds.halstead_error,
     );
     const str_score = normalizeStructural(tr, thresholds);
+
+    const total = cycl_score * weights.cyclomatic +
+        cogn_score * weights.cognitive +
+        hal_score * weights.halstead +
+        str_score * weights.structural;
+
+    return ScoreBreakdown{
+        .cyclomatic_score = cycl_score,
+        .cognitive_score = cogn_score,
+        .halstead_score = hal_score,
+        .structural_score = str_score,
+        .weights = weights,
+        .total = total,
+    };
+}
+
+/// Compute composite function score using pre-computed steepness values.
+/// Faster than computeFunctionScore when scoring many functions with the same thresholds.
+pub fn computeFunctionScorePrecomputed(
+    tr: ThresholdResult,
+    weights: EffectiveWeights,
+    thresholds: MetricThresholds,
+    k: PrecomputedSteepness,
+) ScoreBreakdown {
+    const cycl_score = sigmoidScore(@as(f64, @floatFromInt(tr.complexity)), thresholds.cyclomatic_warning, k.cyclomatic_k);
+    const cogn_score = sigmoidScore(@as(f64, @floatFromInt(tr.cognitive_complexity)), thresholds.cognitive_warning, k.cognitive_k);
+    const hal_score = sigmoidScore(tr.halstead_volume, thresholds.halstead_warning, k.halstead_k);
+
+    const len_score = sigmoidScore(@as(f64, @floatFromInt(tr.function_length)), thresholds.function_length_warning, k.function_length_k);
+    const par_score = sigmoidScore(@as(f64, @floatFromInt(tr.params_count)), thresholds.params_count_warning, k.params_count_k);
+    const nest_score = sigmoidScore(@as(f64, @floatFromInt(tr.nesting_depth)), thresholds.nesting_depth_warning, k.nesting_depth_k);
+    const str_score = (len_score + par_score + nest_score) / 3.0;
 
     const total = cycl_score * weights.cyclomatic +
         cogn_score * weights.cognitive +
@@ -481,6 +535,47 @@ test "computeFunctionScore: returns breakdown within 0-100" {
     try std.testing.expect(breakdown.total >= 0.0);
     try std.testing.expect(breakdown.total <= 100.0);
     try std.testing.expect(breakdown.total > 70.0);
+}
+
+test "computeFunctionScorePrecomputed: matches computeFunctionScore" {
+    const tr = ThresholdResult{
+        .complexity = 5,
+        .status = .ok,
+        .function_name = "test",
+        .function_kind = "function",
+        .start_line = 1,
+        .start_col = 0,
+        .cognitive_complexity = 3,
+        .cognitive_status = .ok,
+        .halstead_volume = 100.0,
+        .function_length = 10,
+        .params_count = 2,
+        .nesting_depth = 1,
+        .end_line = 11,
+    };
+    const thresholds = MetricThresholds{
+        .cyclomatic_warning = 10,
+        .cyclomatic_error = 20,
+        .cognitive_warning = 15,
+        .cognitive_error = 25,
+        .halstead_warning = 500,
+        .halstead_error = 1000,
+        .function_length_warning = 30,
+        .function_length_error = 60,
+        .params_count_warning = 4,
+        .params_count_error = 8,
+        .nesting_depth_warning = 3,
+        .nesting_depth_error = 6,
+    };
+    const weights = resolveEffectiveWeights(null, false);
+    const k = PrecomputedSteepness.init(thresholds);
+    const precomputed = computeFunctionScorePrecomputed(tr, weights, thresholds, k);
+    const original = computeFunctionScore(tr, weights, thresholds);
+    try std.testing.expectApproxEqAbs(original.total, precomputed.total, 0.0001);
+    try std.testing.expectApproxEqAbs(original.cyclomatic_score, precomputed.cyclomatic_score, 0.0001);
+    try std.testing.expectApproxEqAbs(original.cognitive_score, precomputed.cognitive_score, 0.0001);
+    try std.testing.expectApproxEqAbs(original.halstead_score, precomputed.halstead_score, 0.0001);
+    try std.testing.expectApproxEqAbs(original.structural_score, precomputed.structural_score, 0.0001);
 }
 
 test "computeFileScore: average of function scores" {

@@ -113,6 +113,7 @@ pub fn parseFiles(
 ) !ParseSummary {
     var results = std.ArrayList(ParseResult).empty;
     defer results.deinit(allocator);
+    try results.ensureTotalCapacity(allocator, file_paths.len);
 
     var errors = std.ArrayList(FileParseError).empty;
     defer errors.deinit(allocator);

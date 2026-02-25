@@ -97,8 +97,8 @@ pub fn main() !void {
     defer arena.deinit();
     const arena_allocator = arena.allocator();
 
-    // Get stdout and stderr with buffers
-    var stdout_buffer: [4096]u8 = undefined;
+    // Get stdout and stderr with larger buffers (64KB reduces syscall overhead for large output)
+    var stdout_buffer: [65536]u8 = undefined;
     var stdout_writer = std.fs.File.stdout().writer(&stdout_buffer);
     const stdout = &stdout_writer.interface;
     defer stdout.flush() catch {};
@@ -294,18 +294,34 @@ pub fn main() !void {
     // Resolve effective weights once (applies config overrides, normalizes)
     const effective_weights = scoring.resolveEffectiveWeights(cfg.weights, duplication_enabled);
 
+    // Pre-compute sigmoid steepness values once (avoids repeated @log() per function)
+    const precomputed_k = scoring.PrecomputedSteepness.init(metric_thresholds);
+
     // Resolve effective thread count: CLI/config threads override, else auto-detect CPU count
     const cpu_count = std.Thread.getCpuCount() catch 1;
     const effective_threads: usize = if (cfg.analysis) |a| if (a.threads) |t| @as(usize, @intCast(t)) else cpu_count else cpu_count;
 
+    const file_count = discovery_result.files.len;
+
+    // Pre-allocate result lists with known capacity to avoid resizes
     var file_results_list = std.ArrayList(console.FileThresholdResults).empty;
     defer file_results_list.deinit(arena_allocator);
+    try file_results_list.ensureTotalCapacity(arena_allocator, file_count);
 
-    // Per-file score tracking for project score computation
     var file_scores_list = std.ArrayList(f64).empty;
     defer file_scores_list.deinit(arena_allocator);
+    try file_scores_list.ensureTotalCapacity(arena_allocator, file_count);
+
     var file_function_counts = std.ArrayList(u32).empty;
     defer file_function_counts.deinit(arena_allocator);
+    try file_function_counts.ensureTotalCapacity(arena_allocator, file_count);
+
+    // Pre-allocate duplication token list (populated during analysis to avoid re-parsing)
+    var dup_tokens_list = std.ArrayList(duplication_mod.FileTokens).empty;
+    defer dup_tokens_list.deinit(arena_allocator);
+    if (duplication_enabled) {
+        try dup_tokens_list.ensureTotalCapacity(arena_allocator, file_count);
+    }
 
     var total_warnings: u32 = 0;
     var total_errors: u32 = 0;
@@ -445,11 +461,26 @@ pub fn main() !void {
                 }
             }
 
-            // Compute health scores for each function
+            // Tokenize for duplication detection (while tree is still alive, avoids re-parsing)
+            if (duplication_enabled) {
+                if (result.tree) |tree| {
+                    const dup_root = tree.rootNode();
+                    const tokens = duplication_mod.tokenizeTree(arena_allocator, dup_root, result.source) catch null;
+                    if (tokens) |toks| {
+                        try dup_tokens_list.append(arena_allocator, duplication_mod.FileTokens{
+                            .path = result.path,
+                            .tokens = toks,
+                        });
+                    }
+                }
+            }
+
+            // Compute health scores using pre-computed steepness (avoids @log() per function)
             var func_scores = std.ArrayList(f64).empty;
             defer func_scores.deinit(arena_allocator);
+            try func_scores.ensureTotalCapacity(arena_allocator, cycl_results.len);
             for (cycl_results) |*tr| {
-                const breakdown = scoring.computeFunctionScore(tr.*, effective_weights, metric_thresholds);
+                const breakdown = scoring.computeFunctionScorePrecomputed(tr.*, effective_weights, metric_thresholds, precomputed_k);
                 tr.health_score = breakdown.total;
                 try func_scores.append(arena_allocator, breakdown.total);
             }
@@ -483,6 +514,7 @@ pub fn main() !void {
             effective_weights,
             metric_thresholds,
             parsed_metrics,
+            duplication_enabled,
         );
         // par_out.results is owned by arena_allocator (paths and results slices duped)
         failed_parses = par_out.summary.failed;
@@ -500,6 +532,14 @@ pub fn main() !void {
                 .results = par_result.results,
                 .structural = par_result.structural,
             });
+
+            // Collect duplication tokens from parallel workers (avoids re-parsing)
+            if (par_result.tokens) |tokens| {
+                try dup_tokens_list.append(arena_allocator, duplication_mod.FileTokens{
+                    .path = par_result.path,
+                    .tokens = tokens,
+                });
+            }
         }
     }
 
@@ -526,33 +566,14 @@ pub fn main() !void {
 
     const file_results = file_results_list.items;
 
-    // Run duplication pass after all per-file analysis (re-parses files to get AST tokens)
+    // Run duplication detection using tokens collected during the first analysis pass
+    // (no re-parsing needed — tokens were gathered while the AST was still alive)
     var dup_result: ?duplication_mod.DuplicationResult = null;
-    if (duplication_enabled) {
+    if (duplication_enabled and dup_tokens_list.items.len > 0) {
         const dup_config = buildDuplicationConfig(cfg);
-
-        var file_tokens_list = std.ArrayList(duplication_mod.FileTokens).empty;
-        defer file_tokens_list.deinit(arena_allocator);
-
-        for (discovery_result.files) |file_path| {
-            const source = std.fs.cwd().readFileAlloc(arena_allocator, file_path, 10 * 1024 * 1024) catch continue;
-            const lang = parse.selectLanguage(file_path) catch continue;
-            const ts_parser = tree_sitter_mod.Parser.init() catch continue;
-            defer ts_parser.deinit();
-            ts_parser.setLanguage(lang) catch continue;
-            const tree = ts_parser.parseString(source) catch continue;
-            defer tree.deinit();
-            const root = tree.rootNode();
-            const tokens = duplication_mod.tokenizeTree(arena_allocator, root, source) catch continue;
-            file_tokens_list.append(arena_allocator, duplication_mod.FileTokens{
-                .path = file_path,
-                .tokens = tokens,
-            }) catch continue;
-        }
-
         dup_result = duplication_mod.detectDuplication(
             arena_allocator,
-            file_tokens_list.items,
+            dup_tokens_list.items,
             dup_config,
         ) catch null;
     }
