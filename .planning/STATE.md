@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-24)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** v0.8 Rust Rewrite — Phase 21 COMPLETE (3/3) — Phase 22: Cross-Compilation, CI, Release — TODO
+**Current focus:** v0.8 Rust Rewrite — Phase 21 COMPLETE (4/4) — Phase 22: Cross-Compilation, CI, Release — TODO
 
 ## Current Position
 
 Phase: 21 of 22 (Integration Testing and Behavioral Parity) — COMPLETE
-Plan: 3 of 3 in phase 21 — all plans complete
-Status: Phase 21 COMPLETE — integration test baselines recorded, 29 tests all passing
-Last activity: 2026-02-25 — Phase 21 plan 03 complete (29 integration tests, 12 baselines, behavioral parity confirmed)
+Plan: 4 of 4 in phase 21 — all plans complete
+Status: Phase 21 COMPLETE — 30 integration tests passing, exit code 4 documented as unreachable by design
+Last activity: 2026-02-25 — Phase 21 plan 04 complete (exit code 4 documentation test, 30 total tests)
 
 Progress: [█████████░] 70% (v0.8 milestone)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 12 (v0.8)
+- Total plans completed: 13 (v0.8)
 - Average duration: 8 min
-- Total execution time: 95 min
+- Total execution time: 97 min
 
 **By Phase:**
 
@@ -31,11 +31,11 @@ Progress: [█████████░] 70% (v0.8 milestone)
 | 18 | 3/3 | 30 min | 10 min |
 | 19 | 4/4 | 19 min | 5 min |
 | 20 | 2/2 | 6 min | 3 min |
-| 21 | 3/3 | 43 min | 14 min |
+| 21 | 4/4 | 45 min | 11 min |
 
 **Recent Trend:**
-- Last 5 plans: 20-02 (3 min), 21-01 (12 min), 21-02 (27 min), 21-03 (4 min)
-- Trend: Variable (21-03 was fast: baselines recorded, tests written, all passed first run)
+- Last 5 plans: 21-01 (12 min), 21-02 (27 min), 21-03 (4 min), 21-04 (2 min)
+- Trend: Fast (21-04 was minimal: single test addition, all 30 passed immediately)
 
 *Updated after each plan completion*
 
@@ -73,8 +73,8 @@ Recent decisions affecting v0.8:
 - [Phase 21]: Function name extraction enhanced with object_key/call_name/is_default_export NameContext fields in cyclomatic.rs walker — produces 'map callback', 'click handler', 'default export' matching Zig
 - [Phase 21-03]: Baseline files strip timestamp and elapsed_ms with jq del() — these fields change between runs
 - [Phase 21-03]: Float tolerances: HALSTEAD_TOL=1e-9, SCORE_TOL=1e-6 — explicitly defined as constants in integration_tests.rs
-- [Phase 21-03]: Exit code 4 (parse error) intentionally not tested — tree-sitter is error-tolerant, returns partial results
 - [Phase 21-03]: assert_cmd deprecation warning (cargo_bin API) noted but left — custom build-dir config not used; tests work correctly
+- [Phase 21-04]: Exit code 4 (ParseError) is unreachable by design — tree-sitter error tolerance means binary content in .ts files parses to zero functions with exit 0; documented via executable test not comment
 
 ### Pending Todos
 
@@ -89,18 +89,19 @@ Recent decisions affecting v0.8:
 ## Session Continuity
 
 Last session: 2026-02-25 (execute-phase 21)
-Stopped at: Completed 21-03-PLAN.md — integration test baselines (29 tests, 12 baseline JSONs, behavioral parity confirmed)
+Stopped at: Completed 21-04-PLAN.md — exit code 4 documentation test (30 total integration tests, Phase 21 fully complete)
 Resume with: Execute Phase 22 (Cross-Compilation, CI, Release)
 
 **Remaining phases to execute:**
 - Phase 19: CLI, Config, Output Formats — COMPLETE (4/4)
 - Phase 20: Parallel Pipeline — COMPLETE (2/2)
-- Phase 21: Integration Testing — COMPLETE (3/3)
+- Phase 21: Integration Testing — COMPLETE (4/4)
   - 21-01: Metric and schema bug fixes — COMPLETE
   - 21-02: Console format rewrite (Zig ESLint-style) + function naming — COMPLETE
   - 21-03: Integration test baselines (29 tests, 12 baselines) — COMPLETE
+  - 21-04: Exit code 4 documentation test + gap closure — COMPLETE
 - Phase 22: Cross-Compilation, CI, Release — TODO
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-25 after Phase 21 plan 03 completion (integration test baselines + 29 integration tests — Phase 21 COMPLETE)*
+*Last updated: 2026-02-25 after Phase 21 plan 04 completion (exit code 4 documentation test — Phase 21 fully COMPLETE with 4/4 plans)*
