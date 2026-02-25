@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-24)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** v0.8 Rust Rewrite — Phase 21 COMPLETE (4/4) — Phase 22: Cross-Compilation, CI, Release — TODO
+**Current focus:** v0.8 Rust Rewrite — Phase 22: Cross-Compilation, CI, Release — IN PROGRESS (1/4 complete)
 
 ## Current Position
 
-Phase: 21 of 22 (Integration Testing and Behavioral Parity) — COMPLETE
-Plan: 4 of 4 in phase 21 — all plans complete
-Status: Phase 21 COMPLETE — 30 integration tests passing, exit code 4 documented as unreachable by design
-Last activity: 2026-02-25 — Phase 21 plan 04 complete (exit code 4 documentation test, 30 total tests)
+Phase: 22 of 22 (Cross-Compilation, CI, and Release) — IN PROGRESS
+Plan: 1 of 4 in phase 22 — plan 01 complete
+Status: Phase 22-01 COMPLETE — 5-target cross-compilation matrix in rust-ci.yml
+Last activity: 2026-02-25 — Phase 22 plan 01 complete (CI cross-compilation matrix: linux-x86_64-musl, linux-aarch64-musl, macos-aarch64, macos-x86_64, windows-x86_64)
 
-Progress: [█████████░] 70% (v0.8 milestone)
+Progress: [█████████░] 75% (v0.8 milestone)
 
 ## Performance Metrics
 
@@ -32,10 +32,11 @@ Progress: [█████████░] 70% (v0.8 milestone)
 | 19 | 4/4 | 19 min | 5 min |
 | 20 | 2/2 | 6 min | 3 min |
 | 21 | 4/4 | 45 min | 11 min |
+| 22 | 1/4 | 1 min | 1 min |
 
 **Recent Trend:**
-- Last 5 plans: 21-01 (12 min), 21-02 (27 min), 21-03 (4 min), 21-04 (2 min)
-- Trend: Fast (21-04 was minimal: single test addition, all 30 passed immediately)
+- Last 5 plans: 21-02 (27 min), 21-03 (4 min), 21-04 (2 min), 22-01 (1 min)
+- Trend: Fast (22-01 was single-file YAML change, verified with Python YAML parser)
 
 *Updated after each plan completion*
 
@@ -75,6 +76,9 @@ Recent decisions affecting v0.8:
 - [Phase 21-03]: Float tolerances: HALSTEAD_TOL=1e-9, SCORE_TOL=1e-6 — explicitly defined as constants in integration_tests.rs
 - [Phase 21-03]: assert_cmd deprecation warning (cargo_bin API) noted but left — custom build-dir config not used; tests work correctly
 - [Phase 21-04]: Exit code 4 (ParseError) is unreachable by design — tree-sitter error tolerance means binary content in .ts files parses to zero functions with exit 0; documented via executable test not comment
+- [Phase 22-01]: can_test: false only for linux-aarch64-musl — aarch64 binary cannot execute on x86_64 ubuntu-latest runner (no free arm64 Linux runners on GitHub)
+- [Phase 22-01]: RUSTFLAGS crt-static applied conditionally via matrix.target expression for Windows-only static CRT (avoids extra step)
+- [Phase 22-01]: ext matrix field (empty string vs .exe) handles Windows binary suffix consistently across ls and --version steps
 
 ### Pending Todos
 
@@ -88,9 +92,9 @@ Recent decisions affecting v0.8:
 
 ## Session Continuity
 
-Last session: 2026-02-25 (execute-phase 21)
-Stopped at: Completed 21-04-PLAN.md — exit code 4 documentation test (30 total integration tests, Phase 21 fully complete)
-Resume with: Execute Phase 22 (Cross-Compilation, CI, Release)
+Last session: 2026-02-25 (execute-phase 22)
+Stopped at: Completed 22-01-PLAN.md — 5-target cross-compilation matrix in rust-ci.yml
+Resume with: Execute Phase 22 plan 02 (rust-release.yml for GitHub releases)
 
 **Remaining phases to execute:**
 - Phase 19: CLI, Config, Output Formats — COMPLETE (4/4)
@@ -100,8 +104,12 @@ Resume with: Execute Phase 22 (Cross-Compilation, CI, Release)
   - 21-02: Console format rewrite (Zig ESLint-style) + function naming — COMPLETE
   - 21-03: Integration test baselines (29 tests, 12 baselines) — COMPLETE
   - 21-04: Exit code 4 documentation test + gap closure — COMPLETE
-- Phase 22: Cross-Compilation, CI, Release — TODO
+- Phase 22: Cross-Compilation, CI, Release — IN PROGRESS (1/4)
+  - 22-01: CI cross-compilation matrix (5 targets) — COMPLETE
+  - 22-02: rust-release.yml (GitHub release workflow) — TODO
+  - 22-03: Documentation updates — TODO
+  - 22-04: Publication README updates — TODO
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-25 after Phase 21 plan 04 completion (exit code 4 documentation test — Phase 21 fully COMPLETE with 4/4 plans)*
+*Last updated: 2026-02-25 after Phase 22 plan 01 completion (5-target cross-compilation CI matrix — rust-ci.yml extended with linux-x86_64-musl, linux-aarch64-musl, macos-aarch64, macos-x86_64, windows-x86_64)*

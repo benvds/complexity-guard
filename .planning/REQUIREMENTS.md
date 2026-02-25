@@ -46,11 +46,11 @@ Requirements for the Rust rewrite. Each maps to roadmap phases. Goal: 1:1 featur
 
 ### Release
 
-- [ ] **REL-01**: Cross-compilation to Linux x86_64 and aarch64
-- [ ] **REL-02**: Cross-compilation to macOS x86_64 and aarch64
-- [ ] **REL-03**: Cross-compilation to Windows x86_64
-- [ ] **REL-04**: GitHub Actions CI pipeline with test + release
-- [ ] **REL-05**: Binary size measured and documented
+- [x] **REL-01**: Cross-compilation to Linux x86_64 and aarch64
+- [x] **REL-02**: Cross-compilation to macOS x86_64 and aarch64
+- [x] **REL-03**: Cross-compilation to Windows x86_64
+- [x] **REL-04**: GitHub Actions CI pipeline with test + release
+- [x] **REL-05**: Binary size measured and documented
 
 ## Future Requirements
 
@@ -107,11 +107,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PIPE-01 | Phase 20 | Complete |
 | PIPE-02 | Phase 20 | Complete |
 | PIPE-03 | Phase 20 | Complete |
-| REL-01 | Phase 22 | Pending |
-| REL-02 | Phase 22 | Pending |
-| REL-03 | Phase 22 | Pending |
-| REL-04 | Phase 22 | Pending |
-| REL-05 | Phase 22 | Pending |
+| REL-01 | Phase 22 | Complete |
+| REL-02 | Phase 22 | Complete |
+| REL-03 | Phase 22 | Complete |
+| REL-04 | Phase 22 | Complete |
+| REL-05 | Phase 22 | Complete |
 
 **Coverage:**
 - v0.8 requirements: 27 total
