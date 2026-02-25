@@ -84,6 +84,7 @@ Recent decisions affecting v0.8:
 - [Phase 22]: release.sh now uses rust/Cargo.toml as single source of truth for version — replaces src/main.zig grep/sed
 - [Phase 22]: docs/releasing.md fully rewritten around rust-release.yml; legacy Zig workflow noted in final section for historical reference
 - [Phase 22]: npm/Homebrew installation methods kept intact in README — will be updated when npm distribution ships
+- [Phase quick-21]: setCwd(..) in build.zig runs Zig tests from project root so tests/fixtures/ is accessible to both Zig and Rust
 
 ### Pending Todos
 
