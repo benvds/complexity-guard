@@ -1,8 +1,8 @@
 # Zig build artifacts
-zig-out/
-.zig-cache/
-zig-cache/
-zig-pkg/
+zig/zig-out/
+zig/.zig-cache/
+zig/zig-cache/
+zig/zig-pkg/
 
 # Rust build artifacts
 rust/target/
@@ -31,8 +31,8 @@ publication/npm/packages/*/complexity-guard
 publication/npm/packages/*/complexity-guard.exe
 
 # Benchmark cloned projects (large, ephemeral)
-benchmarks/projects/*/
-!benchmarks/projects/.gitkeep
+zig/benchmarks/projects/*/
+!zig/benchmarks/projects/.gitkeep
 
 # Test repos cloned for memory/stress testing
-tests/repos/
+zig/tests/repos/
