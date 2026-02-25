@@ -418,7 +418,6 @@ pub fn render_console(
     for file in files {
         let mut file_lines: Vec<String> = Vec::new();
         let mut file_has_output = false;
-        let mut file_violations_count: (u32, u32) = (0, 0); // (warnings, errors)
 
         for func in &file.functions {
             total_functions += 1;
@@ -436,8 +435,6 @@ pub fn render_console(
                 .count() as u32;
             total_warnings += func_warnings;
             total_errors += func_errors;
-            file_violations_count.0 += func_warnings;
-            file_violations_count.1 += func_errors;
 
             // Track hotspot data
             hotspot_items.push(HotspotItem {

@@ -45,7 +45,7 @@ jobs:
         run: ls -lh target/release/complexity-guard
 
       - name: Run binary
-        run: ./target/release/complexity-guard
+        run: ./target/release/complexity-guard --version
 
   cross-compile:
     name: Cross-compile (${{ matrix.name }})

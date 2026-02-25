@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Release script - bumps version, commits, tags, and pushes to trigger release workflow
-# Usage: ./scripts/release.sh <major|minor|patch>
-#
-# Reads current version from Cargo.toml (single source of truth for Rust binary).
+# Release script - sets version, commits, tags, and pushes to trigger release workflow
+# Usage: ./scripts/release.sh <version|major|minor|patch>
+#   e.g.: ./scripts/release.sh v0.8.0
+#         ./scripts/release.sh 0.8.0
+#         ./scripts/release.sh patch
 #
 # Flow:
-#   1. Bumps version in Cargo.toml, publication/npm/package.json (including optionalDependencies), and npm platform packages
+#   1. Sets version in Cargo.toml, Cargo.lock, publication/npm/package.json (including optionalDependencies), and npm platform packages
 #   2. Auto-generates CHANGELOG.md entries from conventional commits
 #   3. Creates git commit and tag
 #   4. Pushes to origin (with confirmation) to trigger GitHub Actions release
@@ -104,18 +105,14 @@ generate_changelog() {
   echo "CHANGELOG.md updated with v$NEW_VERSION entries"
 }
 
-BUMP_TYPE="${1:-}"
+VERSION_ARG="${1:-}"
 
-# Check if bump type was provided
-if [[ -z "$BUMP_TYPE" ]]; then
-  echo "Usage: ./scripts/release.sh <major|minor|patch>"
-  echo "Error: Bump type is required. Must be: major, minor, or patch"
-  exit 1
-fi
-
-# Validate bump type
-if [[ ! "$BUMP_TYPE" =~ ^(major|minor|patch)$ ]]; then
-  echo "Error: Invalid bump type '$BUMP_TYPE'. Must be: major, minor, or patch"
+# Check if version was provided
+if [[ -z "$VERSION_ARG" ]]; then
+  echo "Usage: ./scripts/release.sh <version|major|minor|patch>"
+  echo "  e.g.: ./scripts/release.sh v0.8.0"
+  echo "        ./scripts/release.sh 0.8.0"
+  echo "        ./scripts/release.sh patch"
   exit 1
 fi
 
@@ -127,29 +124,41 @@ if [[ -z "$CURRENT_VERSION" ]]; then
   exit 1
 fi
 
-echo "Current version: $CURRENT_VERSION"
+# Support both explicit version (v0.8.0 / 0.8.0) and bump type (major/minor/patch)
+if [[ "$VERSION_ARG" =~ ^(major|minor|patch)$ ]]; then
+  IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+  case "$VERSION_ARG" in
+    major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+    minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+    patch) PATCH=$((PATCH + 1)) ;;
+  esac
+  NEW_VERSION="$MAJOR.$MINOR.$PATCH"
 
-# Parse semver components
-IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+  echo "Current version: $CURRENT_VERSION"
+  echo "Computed version: $NEW_VERSION"
+  read -r -p "Release v$NEW_VERSION? [y/N] " CONFIRM
+  if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
+    echo "Release cancelled."
+    exit 0
+  fi
+else
+  # Strip leading 'v' if present
+  NEW_VERSION="${VERSION_ARG#v}"
 
-# Compute new version based on bump type
-case "$BUMP_TYPE" in
-  major)
-    MAJOR=$((MAJOR + 1))
-    MINOR=0
-    PATCH=0
-    ;;
-  minor)
-    MINOR=$((MINOR + 1))
-    PATCH=0
-    ;;
-  patch)
-    PATCH=$((PATCH + 1))
-    ;;
-esac
+  # Validate semver format
+  if [[ ! "$NEW_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    echo "Error: Invalid version '$VERSION_ARG'. Must be semver (e.g. v0.8.0) or bump type (major/minor/patch)"
+    exit 1
+  fi
 
-NEW_VERSION="$MAJOR.$MINOR.$PATCH"
-echo "New version: $NEW_VERSION"
+  if [[ "$CURRENT_VERSION" == "$NEW_VERSION" ]]; then
+    echo "Error: Version $NEW_VERSION is already the current version"
+    exit 1
+  fi
+
+  echo "Current version: $CURRENT_VERSION"
+  echo "New version: $NEW_VERSION"
+fi
 
 # Detect last tag for changelog generation
 LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
@@ -178,8 +187,11 @@ if [[ -d publication/npm/packages ]]; then
   done
 fi
 
-# Stage Cargo.toml
-git add Cargo.toml
+# Regenerate Cargo.lock to match new version
+cargo update --workspace
+
+# Stage Cargo.toml and Cargo.lock
+git add Cargo.toml Cargo.lock
 
 # Generate changelog entries from conventional commits
 if [[ -n "$LAST_TAG" ]]; then
@@ -194,7 +206,7 @@ git tag -a "v$NEW_VERSION" -m "Release $NEW_VERSION"
 
 echo ""
 echo "Release v$NEW_VERSION prepared:"
-echo "  - Version bumped: $CURRENT_VERSION -> $NEW_VERSION"
+echo "  - Version updated: $CURRENT_VERSION -> $NEW_VERSION"
 echo "  - CHANGELOG.md updated with v$NEW_VERSION entries"
 echo "  - Commit created: chore: release v$NEW_VERSION"
 echo "  - Tag created: v$NEW_VERSION"
