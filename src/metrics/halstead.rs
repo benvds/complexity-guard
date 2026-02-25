@@ -102,12 +102,12 @@ fn walk_and_analyze(
 
 /// Calculate Halstead metrics for a function node.
 /// Returns (volume, difficulty, effort, time, bugs).
-fn calculate_halstead(
+fn calculate_halstead<'a>(
     node: &tree_sitter::Node,
-    source: &[u8],
+    source: &'a [u8],
 ) -> (f64, f64, f64, f64, f64) {
-    let mut operators: FxHashMap<String, u32> = FxHashMap::default();
-    let mut operands: FxHashMap<String, u32> = FxHashMap::default();
+    let mut operators: FxHashMap<&'a str, u32> = FxHashMap::default();
+    let mut operands: FxHashMap<&'a str, u32> = FxHashMap::default();
     let mut n1_total: u32 = 0;
     let mut n2_total: u32 = 0;
 
@@ -165,11 +165,11 @@ fn calculate_halstead(
 }
 
 /// Recursive AST walker that classifies leaf nodes as operators or operands.
-fn classify_node(
+fn classify_node<'a>(
     node: tree_sitter::Node,
-    source: &[u8],
-    operators: &mut FxHashMap<String, u32>,
-    operands: &mut FxHashMap<String, u32>,
+    source: &'a [u8],
+    operators: &mut FxHashMap<&'a str, u32>,
+    operands: &mut FxHashMap<&'a str, u32>,
     n1_total: &mut u32,
     n2_total: &mut u32,
 ) {
@@ -187,7 +187,7 @@ fn classify_node(
 
     // Special case: ternary_expression -> count "?:" as one operator
     if kind == "ternary_expression" {
-        *operators.entry("?:".to_string()).or_insert(0) += 1;
+        *operators.entry("?:").or_insert(0) += 1;
         *n1_total += 1;
         for i in 0..node.child_count() as u32 {
             if let Some(child) = node.child(i) {
@@ -200,11 +200,11 @@ fn classify_node(
     // Leaf node classification
     if node.child_count() == 0 {
         if is_operator_token(kind) {
-            *operators.entry(kind.to_string()).or_insert(0) += 1;
+            *operators.entry(kind).or_insert(0) += 1;
             *n1_total += 1;
         } else if is_operand_token(kind) {
             if let Ok(text) = node.utf8_text(source) {
-                *operands.entry(text.to_string()).or_insert(0) += 1;
+                *operands.entry(text).or_insert(0) += 1;
                 *n2_total += 1;
             }
         }
@@ -356,7 +356,7 @@ mod tests {
     #[test]
     fn halstead_cases_fixture() {
         let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../tests/fixtures/typescript/halstead_cases.ts");
+            .join("tests/fixtures/typescript/halstead_cases.ts");
         let source = std::fs::read_to_string(&fixture_path).unwrap();
         let results = parse_and_analyze(&source);
 
@@ -421,7 +421,7 @@ mod tests {
     fn type_annotations_not_inflated() {
         // withTypeAnnotations has volume=8.0, same as plain JS equivalent
         let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../tests/fixtures/typescript/halstead_cases.ts");
+            .join("tests/fixtures/typescript/halstead_cases.ts");
         let source = std::fs::read_to_string(&fixture_path).unwrap();
         let results = parse_and_analyze(&source);
         let r = find_by_name(&results, "withTypeAnnotations").unwrap();

@@ -25,13 +25,12 @@ fn cargo_bin() -> Command {
 /// Resolve path to a fixture file (relative to the top-level tests/fixtures/).
 fn fixture_path(relative: &str) -> std::path::PathBuf {
     std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("..")
         .join("tests")
         .join("fixtures")
         .join(relative)
 }
 
-/// Resolve path to a baseline JSON file in rust/tests/fixtures/baselines/.
+/// Resolve path to a baseline JSON file in tests/fixtures/baselines/.
 fn baseline_path(name: &str) -> std::path::PathBuf {
     std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("tests")

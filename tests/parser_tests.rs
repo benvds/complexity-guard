@@ -3,10 +3,9 @@ use std::path::Path;
 use complexity_guard::parser::parse_file;
 use complexity_guard::types::ParseError;
 
-// Helper to get fixture path relative to the rust/ directory
+// Helper to get fixture path relative to the project root
 fn fixture_path(relative: &str) -> std::path::PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("..")
         .join("tests")
         .join("fixtures")
         .join(relative)

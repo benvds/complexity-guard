@@ -1,6 +1,6 @@
 # Examples
 
-> **Note:** ComplexityGuard is built with Rust. All examples below work with the current Rust binary. Output formats are identical to the legacy Zig binary.
+> **Note:** ComplexityGuard is built with Rust. All examples below work with the current binary.
 
 Real-world usage patterns, CI integration recipes, and configuration examples for ComplexityGuard.
 

@@ -162,18 +162,10 @@ See the [CLI Reference](docs/cli-reference.md) for complete configuration option
 Requires [Rust](https://www.rust-lang.org/) (stable toolchain):
 
 ```sh
-cd rust && cargo build --release
+cargo build --release
 ```
 
-The binary will be at `rust/target/release/complexity-guard`. Add it to your PATH or run it directly.
-
-For the legacy Zig source, requires [Zig](https://ziglang.org/) 0.14.0 or later:
-
-```sh
-cd zig
-zig build          # build binary to zig/zig-out/bin/complexity-guard
-zig build test     # run all tests
-```
+The binary will be at `target/release/complexity-guard`. Add it to your PATH or run it directly.
 
 ## Binary Sizes
 

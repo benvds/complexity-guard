@@ -532,10 +532,10 @@ mod tests {
         use crate::types::{CloneGroup, CloneInstance, DuplicationResult};
         use crate::types::Token;
         let token = Token {
-            kind: "identifier".to_string(),
+            kind: "identifier",
+            kind_hash: 0,
             start_byte: 0,
             end_byte: 5,
-            file_index: 0,
         };
         let tokens = vec![token; 50];
         let file = FileAnalysisResult {

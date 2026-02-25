@@ -1,6 +1,6 @@
 # CLI Reference
 
-> **Note:** ComplexityGuard is built with Rust. All CLI flags documented here are implemented in the Rust binary. The `--threads`, `--include`, and `--exclude` flags are fully functional. Build from source with `cd rust && cargo build --release`.
+> **Note:** ComplexityGuard is built with Rust. All CLI flags documented here are implemented in the Rust binary. The `--threads`, `--include`, and `--exclude` flags are fully functional. Build from source with `cargo build --release`.
 
 Complete reference for ComplexityGuard command-line interface, configuration options, and exit codes.
 

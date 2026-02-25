@@ -1,11 +1,7 @@
-# Release workflow - triggered by tag push or manual dispatch
+# Release workflow - triggered by v* tag push or manual dispatch
 #
-# This workflow orchestrates the complete release pipeline:
-# 1. Validates semver version (from tag name or manual input)
-# 2. Cross-compiles binaries for all 5 target platforms
-# 3. Creates GitHub release with binary archives
-# 4. Publishes npm packages (main + 5 platform packages)
-# 5. (DISABLED) Updates Homebrew formula with SHA256 checksums
+# Builds Rust binaries for all 5 release targets, creates archives, and
+# publishes a GitHub Release with the archives attached.
 #
 # Triggers:
 #   - Tag push: Push a v* tag (e.g., via scripts/release.sh)
@@ -14,292 +10,181 @@
 name: Release
 
 on:
-    push:
-        tags:
-            - "v*"
-    workflow_dispatch:
-        inputs:
-            version:
-                description: "Version to release (e.g., 0.1.0)"
-                required: true
-                type: string
+  push:
+    branches-ignore:
+      - '**'
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 0.8.0)'
+        required: true
 
 jobs:
-    # Job 1: Validate version format and ensure tag doesn't exist
-    validate:
-        runs-on: ubuntu-latest
-        outputs:
-            version: ${{ steps.validate.outputs.version }}
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
-              with:
-                  fetch-depth: 0 # Fetch all tags for duplicate check
+  # Job 1: Validate version format and ensure tag doesn't exist
+  validate:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.validate.outputs.version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-            - name: Validate and extract version
-              id: validate
-              run: |
-                  if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-                    VERSION="${{ inputs.version }}"
-                  else
-                    # Tag push: extract version from tag name (strip 'v' prefix)
-                    VERSION="${GITHUB_REF_NAME#v}"
-                  fi
+      - name: Validate and extract version
+        id: validate
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ inputs.version }}"
+          else
+            # Tag push: extract version from tag name (strip 'v' prefix)
+            VERSION="${GITHUB_REF_NAME#v}"
+          fi
 
-                  # Validate semver format (e.g., 0.1.0, 1.2.3)
-                  if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
-                    echo "Error: Invalid version format '$VERSION'. Expected semver (e.g., 0.1.0)"
-                    exit 1
-                  fi
+          # Validate semver format (e.g., 0.8.0, 1.2.3)
+          if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "Error: Invalid version format '$VERSION'. Expected semver (e.g., 0.8.0)"
+            exit 1
+          fi
 
-                  # Only check for existing tag on workflow_dispatch (tag push already has the tag)
-                  if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-                    if git tag | grep -q "^v$VERSION$"; then
-                      echo "Error: Tag v$VERSION already exists. Cannot create duplicate release."
-                      exit 1
-                    fi
-                  fi
+          # Only check for existing tag on workflow_dispatch (tag push already has the tag)
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            if git tag | grep -q "^v$VERSION$"; then
+              echo "Error: Tag v$VERSION already exists. Cannot create duplicate release."
+              exit 1
+            fi
+          fi
 
-                  echo "Version validation passed: $VERSION"
-                  echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Version validation passed: $VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
-    # Job 2: Build binaries for all 5 target platforms
-    build:
-        runs-on: ubuntu-latest
-        needs: validate
-        strategy:
-            matrix:
-                include:
-                    - { target: x86_64-linux, os: linux, arch: x64, ext: "" }
-                    - { target: aarch64-linux, os: linux, arch: arm64, ext: "" }
-                    - { target: x86_64-macos, os: macos, arch: x64, ext: "" }
-                    - { target: aarch64-macos, os: macos, arch: arm64, ext: "" }
-                    - {
-                          target: x86_64-windows,
-                          os: windows,
-                          arch: x64,
-                          ext: ".exe",
-                      }
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
-              with:
-                  submodules: true
+  # Job 2: Build binaries for all 5 release targets
+  build:
+    needs: validate
+    name: Build (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - name: linux-x86_64-musl
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            use_zigbuild: true
+            ext: ""
+            archive_name: complexity-guard-linux-x86_64-musl.tar.gz
+          - name: linux-aarch64-musl
+            os: ubuntu-latest
+            target: aarch64-unknown-linux-musl
+            use_zigbuild: true
+            ext: ""
+            archive_name: complexity-guard-linux-aarch64-musl.tar.gz
+          - name: macos-aarch64
+            os: macos-latest
+            target: aarch64-apple-darwin
+            use_zigbuild: false
+            ext: ""
+            archive_name: complexity-guard-macos-aarch64.tar.gz
+          - name: macos-x86_64
+            os: macos-latest
+            target: x86_64-apple-darwin
+            use_zigbuild: false
+            ext: ""
+            archive_name: complexity-guard-macos-x86_64.tar.gz
+          - name: windows-x86_64
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+            use_zigbuild: false
+            ext: ".exe"
+            archive_name: complexity-guard-windows-x86_64.zip
 
-            - name: Setup Zig
-              uses: mlugg/setup-zig@v2
-              with:
-                  version: 0.15.2
+    steps:
+      - uses: actions/checkout@v4
 
-            - name: Build binary for ${{ matrix.target }}
-              run: |
-                  cd zig && zig build -Dtarget=${{ matrix.target }} -Doptimize=ReleaseSmall
+      - name: Install Rust stable with target
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
 
-                  # Verify binary was created
-                  if [ ! -f "zig/zig-out/bin/complexity-guard${{ matrix.ext }}" ]; then
-                    echo "Error: Binary not found at zig/zig-out/bin/complexity-guard${{ matrix.ext }}"
-                    exit 1
-                  fi
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
 
-            - name: Create archive for ${{ matrix.target }}
-              run: |
-                  cd zig/zig-out/bin
-                  if [ "${{ matrix.os }}" = "windows" ]; then
-                    # Windows: create zip archive
-                    zip ../../../complexity-guard-${{ matrix.target }}.zip complexity-guard${{ matrix.ext }}
-                  else
-                    # Unix: create tar.gz archive
-                    tar czf ../../../complexity-guard-${{ matrix.target }}.tar.gz complexity-guard${{ matrix.ext }}
-                  fi
+      - name: Install Zig
+        if: ${{ matrix.use_zigbuild }}
+        run: pip3 install ziglang
 
-            - name: Upload artifact for ${{ matrix.target }}
-              uses: actions/upload-artifact@v4
-              with:
-                  name: complexity-guard-${{ matrix.target }}
-                  path: complexity-guard-${{ matrix.target }}.*
-                  retention-days: 1
+      - name: Install cargo-zigbuild
+        if: ${{ matrix.use_zigbuild }}
+        run: cargo install --locked cargo-zigbuild
 
-    # Job 3: Create GitHub release with binary archives
-    release:
-        runs-on: ubuntu-latest
-        needs: [validate, build]
-        permissions:
-            contents: write # Required for creating releases and tags
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
+      - name: Build release (zigbuild)
+        if: ${{ matrix.use_zigbuild }}
+        run: cargo zigbuild --release --target ${{ matrix.target }}
 
-            - name: Download all artifacts
-              uses: actions/download-artifact@v4
-              with:
-                  merge-multiple: true
+      - name: Build release
+        if: ${{ !matrix.use_zigbuild }}
+        env:
+          RUSTFLAGS: ${{ matrix.target == 'x86_64-pc-windows-msvc' && '-C target-feature=+crt-static' || '' }}
+        run: cargo build --release --target ${{ matrix.target }}
 
-            - name: List downloaded artifacts
-              run: ls -lh complexity-guard-*
+      - name: Print binary size
+        run: ls -lh target/${{ matrix.target }}/release/complexity-guard${{ matrix.ext }}
 
-            - name: Create git tag
-              if: github.event_name == 'workflow_dispatch'
-              run: |
-                  VERSION="${{ needs.validate.outputs.version }}"
-                  git config user.name "github-actions[bot]"
-                  git config user.email "github-actions[bot]@users.noreply.github.com"
-                  git tag -a "v$VERSION" -m "Release $VERSION"
-                  git push origin "v$VERSION"
+      - name: Create archive (Unix)
+        if: ${{ matrix.ext == '' }}
+        shell: bash
+        run: |
+          cd target/${{ matrix.target }}/release
+          tar czf ../../../complexity-guard-${{ matrix.name }}.tar.gz complexity-guard
 
-            - name: Create GitHub release
-              uses: softprops/action-gh-release@v2
-              with:
-                  tag_name: v${{ needs.validate.outputs.version }}
-                  name: complexity-guard@${{ needs.validate.outputs.version }}
-                  generate_release_notes: true
-                  files: |
-                      complexity-guard-*.tar.gz
-                      complexity-guard-*.zip
+      - name: Create archive (Windows)
+        if: ${{ matrix.ext == '.exe' }}
+        shell: pwsh
+        run: |
+          cd target/${{ matrix.target }}/release
+          Compress-Archive -Path complexity-guard.exe -DestinationPath ../../../complexity-guard-${{ matrix.name }}.zip
 
-    # Job 4: Publish npm packages (main + 5 platform packages)
-    npm-publish:
-        runs-on: ubuntu-latest
-        needs: [validate, release]
-        permissions:
-            id-token: write # Required for OIDC trusted publishing
-            contents: read
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: complexity-guard-${{ matrix.name }}
+          path: complexity-guard-${{ matrix.name }}.*
+          retention-days: 1
 
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 20
-                  registry-url: https://registry.npmjs.org
+  # Job 3: Create GitHub release with binary archives
+  release:
+    needs: [validate, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-            - name: Update npm for provenance support
-              run: npm install -g npm@latest
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
 
-            - name: Download all artifacts
-              uses: actions/download-artifact@v4
-              with:
-                  merge-multiple: true
+      - name: List downloaded artifacts
+        run: ls -lh complexity-guard-*
 
-            - name: Extract binaries to platform packages
-              run: |
-                  # Extract Linux x64
-                  tar xzf complexity-guard-x86_64-linux.tar.gz -C publication/npm/packages/linux-x64/
+      - name: Create git tag
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          VERSION="${{ needs.validate.outputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v$VERSION" -m "Release $VERSION"
+          git push origin "v$VERSION"
 
-                  # Extract Linux ARM64
-                  tar xzf complexity-guard-aarch64-linux.tar.gz -C publication/npm/packages/linux-arm64/
-
-                  # Extract macOS x64
-                  tar xzf complexity-guard-x86_64-macos.tar.gz -C publication/npm/packages/darwin-x64/
-
-                  # Extract macOS ARM64
-                  tar xzf complexity-guard-aarch64-macos.tar.gz -C publication/npm/packages/darwin-arm64/
-
-                  # Extract Windows x64
-                  unzip -o complexity-guard-x86_64-windows.zip -d publication/npm/packages/windows-x64/
-
-                  # Verify all binaries extracted
-                  for pkg in linux-x64 linux-arm64 darwin-x64 darwin-arm64; do
-                    if [ ! -f "publication/npm/packages/$pkg/complexity-guard" ]; then
-                      echo "Error: Binary missing in publication/npm/packages/$pkg/"
-                      exit 1
-                    fi
-                  done
-
-                  if [ ! -f "publication/npm/packages/windows-x64/complexity-guard.exe" ]; then
-                    echo "Error: Binary missing in publication/npm/packages/windows-x64/"
-                    exit 1
-                  fi
-
-            - name: Update version in all package.json files
-              run: |
-                  VERSION="${{ needs.validate.outputs.version }}"
-
-                  # Update main package.json
-                  sed -i.bak "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" publication/npm/package.json
-                  rm publication/npm/package.json.bak
-
-                  # Update platform packages and their optionalDependencies versions
-                  for pkg in publication/npm/packages/darwin-arm64 publication/npm/packages/darwin-x64 publication/npm/packages/linux-arm64 publication/npm/packages/linux-x64 publication/npm/packages/windows-x64; do
-                    sed -i.bak "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" "$pkg/package.json"
-                    rm "$pkg/package.json.bak"
-                  done
-
-                  # Update optionalDependencies versions in main package.json
-                  sed -i.bak -E "s/\"@complexity-guard\/(darwin-arm64|darwin-x64|linux-arm64|linux-x64|windows-x64)\": \".*\"/\"@complexity-guard\/\1\": \"$VERSION\"/g" publication/npm/package.json
-                  rm publication/npm/package.json.bak
-
-            - name: Publish platform packages to npm
-              run: |
-                  # Publish each platform package
-                  for pkg in publication/npm/packages/darwin-arm64 publication/npm/packages/darwin-x64 publication/npm/packages/linux-arm64 publication/npm/packages/linux-x64 publication/npm/packages/windows-x64; do
-                    echo "Publishing $pkg..."
-                    cd "$pkg"
-                    npm publish --access public --provenance
-                    cd -
-                  done
-
-            - name: Publish main package to npm
-              run: |
-                  cd publication/npm && npm publish --access public --provenance
-
-    # DISABLED: homebrew-update job
-    # To re-enable Homebrew publication, uncomment this entire job block.
-    # See also: README.md, docs/getting-started.md, docs/releasing.md for doc sections to restore.
-    #
-    # Job 5: Update Homebrew formula with SHA256 checksums
-    # homebrew-update:
-    #   runs-on: ubuntu-latest
-    #   needs: release
-    #   steps:
-    #     - name: Checkout repository
-    #       uses: actions/checkout@v4
-    #
-    #     - name: Download all artifacts
-    #       uses: actions/download-artifact@v4
-    #       with:
-    #         merge-multiple: true
-    #
-    #     - name: Compute SHA256 checksums
-    #       id: checksums
-    #       run: |
-    #         # Compute SHA256 for each macOS and Linux archive
-    #         SHA_AARCH64_MACOS=$(shasum -a 256 complexity-guard-aarch64-macos.tar.gz | awk '{print $1}')
-    #         SHA_X86_64_MACOS=$(shasum -a 256 complexity-guard-x86_64-macos.tar.gz | awk '{print $1}')
-    #         SHA_AARCH64_LINUX=$(shasum -a 256 complexity-guard-aarch64-linux.tar.gz | awk '{print $1}')
-    #         SHA_X86_64_LINUX=$(shasum -a 256 complexity-guard-x86_64-linux.tar.gz | awk '{print $1}')
-    #
-    #         echo "aarch64_macos=$SHA_AARCH64_MACOS" >> "$GITHUB_OUTPUT"
-    #         echo "x86_64_macos=$SHA_X86_64_MACOS" >> "$GITHUB_OUTPUT"
-    #         echo "aarch64_linux=$SHA_AARCH64_LINUX" >> "$GITHUB_OUTPUT"
-    #         echo "x86_64_linux=$SHA_X86_64_LINUX" >> "$GITHUB_OUTPUT"
-    #
-    #         echo "SHA256 checksums computed:"
-    #         echo "  aarch64-macos: $SHA_AARCH64_MACOS"
-    #         echo "  x86_64-macos: $SHA_X86_64_MACOS"
-    #         echo "  aarch64-linux: $SHA_AARCH64_LINUX"
-    #         echo "  x86_64-linux: $SHA_X86_64_LINUX"
-    #
-    #     - name: Update Homebrew formula
-    #       run: |
-    #         VERSION="${{ needs.validate.outputs.version }}"
-    #
-    #         # Update version in formula
-    #         sed -i.bak "s/version \".*\"/version \"$VERSION\"/" publication/homebrew/complexity-guard.rb
-    #         rm publication/homebrew/complexity-guard.rb.bak
-    #
-    #         # Update SHA256 placeholders with actual checksums
-    #         sed -i.bak "s/PLACEHOLDER_SHA256_AARCH64_MACOS/${{ steps.checksums.outputs.aarch64_macos }}/" publication/homebrew/complexity-guard.rb
-    #         sed -i.bak "s/PLACEHOLDER_SHA256_X86_64_MACOS/${{ steps.checksums.outputs.x86_64_macos }}/" publication/homebrew/complexity-guard.rb
-    #         sed -i.bak "s/PLACEHOLDER_SHA256_AARCH64_LINUX/${{ steps.checksums.outputs.aarch64_linux }}/" publication/homebrew/complexity-guard.rb
-    #         sed -i.bak "s/PLACEHOLDER_SHA256_X86_64_LINUX/${{ steps.checksums.outputs.x86_64_linux }}/" publication/homebrew/complexity-guard.rb
-    #         rm publication/homebrew/complexity-guard.rb.bak
-    #
-    #         echo "Updated Homebrew formula:"
-    #         cat publication/homebrew/complexity-guard.rb
-    #
-    #     - name: Output updated formula
-    #       run: |
-    #         echo "::notice::Homebrew formula updated locally with SHA256 checksums."
-    #         echo "::notice::Manual step: Copy publication/homebrew/complexity-guard.rb to Homebrew tap repository."
-    #         echo "::notice::Future enhancement: Automate tap update using PAT and git commit."
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.validate.outputs.version }}
+          name: complexity-guard@${{ needs.validate.outputs.version }}
+          generate_release_notes: true
+          files: |
+            complexity-guard-*.tar.gz
+            complexity-guard-*.zip

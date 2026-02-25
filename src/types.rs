@@ -222,10 +222,11 @@ impl Default for ScoringThresholds {
 /// A single normalized token extracted from an AST leaf node.
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct Token {
-    pub kind: String,
+    pub kind: &'static str,
+    #[serde(skip)]
+    pub kind_hash: u64,
     pub start_byte: usize,
     pub end_byte: usize,
-    pub file_index: usize,
 }
 
 /// A single instance of a clone at a specific location.

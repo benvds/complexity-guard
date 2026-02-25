@@ -6,11 +6,11 @@
 # by the `homebrew-update` job in `.github/workflows/release.yml`. The placeholders
 # are substituted with actual SHA256 checksums computed from the binary archives.
 #
-# Placeholder names match Zig cross-compilation target names:
-#   - PLACEHOLDER_SHA256_AARCH64_MACOS  (matches aarch64-macos target)
-#   - PLACEHOLDER_SHA256_X86_64_MACOS   (matches x86_64-macos target)
-#   - PLACEHOLDER_SHA256_AARCH64_LINUX  (matches aarch64-linux target)
-#   - PLACEHOLDER_SHA256_X86_64_LINUX   (matches x86_64-linux target)
+# Placeholder names match Rust build target names:
+#   - PLACEHOLDER_SHA256_AARCH64_MACOS  (matches aarch64-apple-darwin target)
+#   - PLACEHOLDER_SHA256_X86_64_MACOS   (matches x86_64-apple-darwin target)
+#   - PLACEHOLDER_SHA256_AARCH64_LINUX  (matches aarch64-unknown-linux-musl target)
+#   - PLACEHOLDER_SHA256_X86_64_LINUX   (matches x86_64-unknown-linux-musl target)
 #
 # After the release workflow completes, copy this file to the Homebrew tap repository.
 # See docs/releasing.md for the complete release process.

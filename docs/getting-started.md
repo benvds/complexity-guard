@@ -47,10 +47,10 @@ Requires [Rust](https://www.rust-lang.org/) (stable toolchain):
 ```sh
 git clone https://github.com/benvds/complexity-guard.git
 cd complexity-guard
-cd rust && cargo build --release
+cargo build --release
 ```
 
-The binary will be at `rust/target/release/complexity-guard`. Add it to your PATH or run it directly.
+The binary will be at `target/release/complexity-guard`. Add it to your PATH or run it directly.
 
 ## Your First Analysis
 

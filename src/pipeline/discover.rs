@@ -176,7 +176,7 @@ mod tests {
     #[test]
     fn test_discover_files_fixture_dir() {
         let fixture_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("../tests/fixtures/typescript");
+            .join("tests/fixtures/typescript");
 
         let paths = vec![fixture_dir];
         let files = discover_files(&paths, &[], &[]).unwrap();
@@ -211,7 +211,7 @@ mod tests {
     #[test]
     fn test_discover_files_single_file() {
         let fixture = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("../tests/fixtures/typescript/simple_function.ts");
+            .join("tests/fixtures/typescript/simple_function.ts");
 
         let paths = vec![fixture.clone()];
         let files = discover_files(&paths, &[], &[]).unwrap();
@@ -223,7 +223,7 @@ mod tests {
     #[test]
     fn test_discover_files_exclude_pattern() {
         let fixture_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("../tests/fixtures/typescript");
+            .join("tests/fixtures/typescript");
 
         let paths = vec![fixture_dir];
         let exclude = vec!["**/*_cases.ts".to_string()];

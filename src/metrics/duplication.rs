@@ -15,9 +15,10 @@ const MAX_BUCKET_SIZE: usize = 1000;
 ///
 /// Strips comments, whitespace, structural punctuation, and TypeScript type annotations.
 /// Normalizes identifier nodes to sentinel "V" for Type 2 clone detection.
-pub fn tokenize_tree(root: tree_sitter::Node, source: &[u8], file_index: usize) -> Vec<Token> {
+/// Each token stores a precomputed hash for efficient rolling hash computation.
+pub fn tokenize_tree(root: tree_sitter::Node, source: &[u8]) -> Vec<Token> {
     let mut tokens = Vec::new();
-    tokenize_node(root, source, file_index, &mut tokens);
+    tokenize_node(root, source, &mut tokens);
     tokens
 }
 
@@ -25,7 +26,6 @@ pub fn tokenize_tree(root: tree_sitter::Node, source: &[u8], file_index: usize) 
 fn tokenize_node(
     node: tree_sitter::Node,
     source: &[u8],
-    file_index: usize,
     tokens: &mut Vec<Token>,
 ) {
     let kind = node.kind();
@@ -43,10 +43,10 @@ fn tokenize_node(
 
         let normalized = normalize_kind(kind);
         tokens.push(Token {
-            kind: normalized.to_string(),
+            kind: normalized,
+            kind_hash: token_hash(normalized),
             start_byte: node.start_byte(),
             end_byte: node.end_byte(),
-            file_index,
         });
         return;
     }
@@ -54,7 +54,7 @@ fn tokenize_node(
     // Non-leaf: recurse into all children
     for i in 0..node.child_count() as u32 {
         if let Some(child) = node.child(i) {
-            tokenize_node(child, source, file_index, tokens);
+            tokenize_node(child, source, tokens);
         }
     }
 }
@@ -69,7 +69,8 @@ fn is_skipped_kind(kind: &str) -> bool {
 
 /// Returns the normalized kind for a token.
 /// Identifiers (all variants) are normalized to sentinel "V" for Type 2 clone detection.
-fn normalize_kind(kind: &str) -> &str {
+/// Returns `&'static str` since all inputs come from tree-sitter (static grammar strings).
+fn normalize_kind(kind: &'static str) -> &'static str {
     match kind {
         "identifier" | "property_identifier" | "shorthand_property_identifier"
         | "shorthand_property_identifier_pattern" => "V",
@@ -99,7 +100,7 @@ impl RollingHasher {
         let mut h: u64 = 0;
         let mut bpow: u64 = 1;
         for i in 0..window {
-            h = h.wrapping_mul(HASH_BASE).wrapping_add(token_hash(&tokens[i].kind));
+            h = h.wrapping_mul(HASH_BASE).wrapping_add(tokens[i].kind_hash);
             if i < window - 1 {
                 bpow = bpow.wrapping_mul(HASH_BASE);
             }
@@ -114,15 +115,15 @@ impl RollingHasher {
     fn roll(&mut self, remove: &Token, add: &Token) {
         self.hash = self
             .hash
-            .wrapping_sub(token_hash(&remove.kind).wrapping_mul(self.base_pow))
+            .wrapping_sub(remove.kind_hash.wrapping_mul(self.base_pow))
             .wrapping_mul(HASH_BASE)
-            .wrapping_add(token_hash(&add.kind));
+            .wrapping_add(add.kind_hash);
     }
 }
 
 /// Detect code clones across multiple files using Rabin-Karp rolling hash.
 pub fn detect_duplication(
-    file_tokens: &[Vec<Token>],
+    file_tokens: &[&[Token]],
     config: &DuplicationConfig,
 ) -> DuplicationResult {
     let window = config.min_tokens as usize;
@@ -247,6 +248,7 @@ fn make_instance(
 }
 
 /// Verify that two token windows have identical normalized token sequences.
+/// Uses pointer comparison on static strings for speed, with string fallback.
 fn tokens_match(
     a_tokens: &[Token],
     a_start: usize,
@@ -255,7 +257,10 @@ fn tokens_match(
     window: usize,
 ) -> bool {
     for i in 0..window {
-        if a_tokens[a_start + i].kind != b_tokens[b_start + i].kind {
+        let a = a_tokens[a_start + i].kind;
+        let b = b_tokens[b_start + i].kind;
+        // Fast path: pointer equality for static strings from same grammar
+        if !std::ptr::eq(a.as_ptr(), b.as_ptr()) && a != b {
             return false;
         }
     }
@@ -299,19 +304,19 @@ mod tests {
     use super::*;
     use std::path::Path;
 
-    fn parse_to_tokens(source: &str, file_index: usize) -> Vec<Token> {
+    fn parse_to_tokens(source: &str) -> Vec<Token> {
         let language: tree_sitter::Language =
             tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into();
         let mut parser = tree_sitter::Parser::new();
         parser.set_language(&language).unwrap();
         let tree = parser.parse(source.as_bytes(), None).unwrap();
-        tokenize_tree(tree.root_node(), source.as_bytes(), file_index)
+        tokenize_tree(tree.root_node(), source.as_bytes())
     }
 
     #[test]
     fn tokenize_produces_tokens() {
         let source = "function add(a: number, b: number): number { return a + b; }";
-        let tokens = parse_to_tokens(source, 0);
+        let tokens = parse_to_tokens(source);
         assert!(tokens.len() > 0, "should produce tokens from a real function");
     }
 
@@ -324,7 +329,7 @@ function greet(name: string): string {
   return name;
 }
 "#;
-        let tokens = parse_to_tokens(source, 0);
+        let tokens = parse_to_tokens(source);
         for tok in &tokens {
             assert_ne!(tok.kind, "comment");
             assert_ne!(tok.kind, "line_comment");
@@ -336,7 +341,7 @@ function greet(name: string): string {
     #[test]
     fn tokenize_normalizes_identifiers_to_v() {
         let source = "function myFunc(myParam: string): void { const myVar = myParam; }";
-        let tokens = parse_to_tokens(source, 0);
+        let tokens = parse_to_tokens(source);
         // No raw "identifier" kind should remain
         for tok in &tokens {
             assert_ne!(tok.kind, "identifier", "identifier should be normalized to V");
@@ -352,8 +357,8 @@ function greet(name: string): string {
         // JS without types
         let js_source = "function f(x, y) { return x > 0; }";
 
-        let ts_tokens = parse_to_tokens(ts_source, 0);
-        let js_tokens = parse_to_tokens(js_source, 0);
+        let ts_tokens = parse_to_tokens(ts_source);
+        let js_tokens = parse_to_tokens(js_source);
 
         assert_eq!(
             ts_tokens.len(),
@@ -401,14 +406,14 @@ function greet(name: string): string {
   return result.split(",").join(";");
 }"#;
 
-        let tokens_a = parse_to_tokens(source_a, 0);
-        let tokens_b = parse_to_tokens(source_b, 1);
+        let tokens_a = parse_to_tokens(source_a);
+        let tokens_b = parse_to_tokens(source_b);
 
         let config = DuplicationConfig {
             min_tokens: 10,
             enabled: true,
         };
-        let result = detect_duplication(&[tokens_a, tokens_b], &config);
+        let result = detect_duplication(&[tokens_a.as_slice(), tokens_b.as_slice()], &config);
         assert!(
             result.clone_groups.len() >= 1,
             "should detect clones between identical functions"
@@ -432,14 +437,14 @@ function greet(name: string): string {
   return cleaned.includes("+");
 }"#;
 
-        let tokens_e = parse_to_tokens(source_email, 0);
-        let tokens_p = parse_to_tokens(source_phone, 1);
+        let tokens_e = parse_to_tokens(source_email);
+        let tokens_p = parse_to_tokens(source_phone);
 
         let config = DuplicationConfig {
             min_tokens: 8,
             enabled: true,
         };
-        let result = detect_duplication(&[tokens_e, tokens_p], &config);
+        let result = detect_duplication(&[tokens_e.as_slice(), tokens_p.as_slice()], &config);
         assert!(
             result.clone_groups.len() >= 1,
             "should detect Type 2 clones with different identifiers"
@@ -463,13 +468,13 @@ function processItemData(input: string): string {
   return result.split(",").join(";");
 }"#;
 
-        let tokens = parse_to_tokens(source, 0);
+        let tokens = parse_to_tokens(source);
 
         let config = DuplicationConfig {
             min_tokens: 8,
             enabled: true,
         };
-        let result = detect_duplication(&[tokens], &config);
+        let result = detect_duplication(&[tokens.as_slice()], &config);
         assert!(
             result.duplication_percentage <= 100.0,
             "duplication_pct must not exceed 100%, got {}",
@@ -480,9 +485,9 @@ function processItemData(input: string): string {
     #[test]
     fn tokenize_duplication_fixture() {
         let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../tests/fixtures/typescript/duplication_cases.ts");
+            .join("tests/fixtures/typescript/duplication_cases.ts");
         let source = std::fs::read_to_string(&fixture_path).unwrap();
-        let tokens = parse_to_tokens(&source, 0);
+        let tokens = parse_to_tokens(&source);
 
         assert!(tokens.len() > 0, "fixture should produce tokens");
         // All identifiers should be normalized to "V"

@@ -91,8 +91,12 @@ pub fn analyze_file(
     let structural_results = structural::analyze_functions(root, &source);
     let file_structural = structural::analyze_file(&source, root);
 
-    // Tokenize BEFORE tree is dropped (avoids re-parse)
-    let tokens = duplication::tokenize_tree(root, &source, 0);
+    // Tokenize BEFORE tree is dropped (avoids re-parse); skip when disabled
+    let tokens = if config.duplication.enabled {
+        duplication::tokenize_tree(root, &source)
+    } else {
+        Vec::new()
+    };
 
     // All walkers discover functions in the same DFS order
     let func_count = cyclomatic_results.len();
@@ -212,7 +216,7 @@ mod tests {
     #[test]
     fn analyze_file_naming_edge_cases() {
         let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../tests/fixtures/naming-edge-cases.ts");
+            .join("tests/fixtures/naming-edge-cases.ts");
         let config = AnalysisConfig::default();
         let result = analyze_file(&fixture_path, &config).unwrap();
 
@@ -262,7 +266,7 @@ mod tests {
     #[test]
     fn analyze_file_simple_function() {
         let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../tests/fixtures/typescript/simple_function.ts");
+            .join("tests/fixtures/typescript/simple_function.ts");
         let config = AnalysisConfig::default();
         let result = analyze_file(&fixture_path, &config).unwrap();
 
@@ -298,7 +302,7 @@ mod tests {
     #[test]
     fn analyze_file_cyclomatic_cases() {
         let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../tests/fixtures/typescript/cyclomatic_cases.ts");
+            .join("tests/fixtures/typescript/cyclomatic_cases.ts");
         let config = AnalysisConfig::default();
         let result = analyze_file(&fixture_path, &config).unwrap();
 
@@ -328,7 +332,7 @@ mod tests {
     #[test]
     fn analyze_file_cognitive_cases() {
         let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../tests/fixtures/typescript/cognitive_cases.ts");
+            .join("tests/fixtures/typescript/cognitive_cases.ts");
         let config = AnalysisConfig::default();
         let result = analyze_file(&fixture_path, &config).unwrap();
 
@@ -355,7 +359,7 @@ mod tests {
     #[test]
     fn analyze_file_halstead_cases() {
         let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../tests/fixtures/typescript/halstead_cases.ts");
+            .join("tests/fixtures/typescript/halstead_cases.ts");
         let config = AnalysisConfig::default();
         let result = analyze_file(&fixture_path, &config).unwrap();
 
@@ -377,7 +381,7 @@ mod tests {
     #[test]
     fn analyze_file_structural_cases() {
         let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../tests/fixtures/typescript/structural_cases.ts");
+            .join("tests/fixtures/typescript/structural_cases.ts");
         let config = AnalysisConfig::default();
         let result = analyze_file(&fixture_path, &config).unwrap();
 
@@ -403,7 +407,7 @@ mod tests {
     #[test]
     fn analyze_file_tokens_embedded() {
         let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../tests/fixtures/typescript/simple_function.ts");
+            .join("tests/fixtures/typescript/simple_function.ts");
         let config = AnalysisConfig::default();
         let result = analyze_file(&fixture_path, &config).unwrap();
 
@@ -416,7 +420,7 @@ mod tests {
     #[test]
     fn analyze_file_score_in_range() {
         let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../tests/fixtures/typescript/simple_function.ts");
+            .join("tests/fixtures/typescript/simple_function.ts");
         let config = AnalysisConfig::default();
         let result = analyze_file(&fixture_path, &config).unwrap();
 

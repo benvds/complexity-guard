@@ -626,7 +626,7 @@ mod tests {
     #[test]
     fn cognitive_cases_fixture() {
         let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../tests/fixtures/typescript/cognitive_cases.ts");
+            .join("tests/fixtures/typescript/cognitive_cases.ts");
         let source = std::fs::read_to_string(&fixture_path).unwrap();
         let results = parse_and_analyze(&source);
 
@@ -695,7 +695,7 @@ mod tests {
     #[test]
     fn complex_nested_fixture() {
         let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../tests/fixtures/typescript/complex_nested.ts");
+            .join("tests/fixtures/typescript/complex_nested.ts");
         let source = std::fs::read_to_string(&fixture_path).unwrap();
         let results = parse_and_analyze(&source);
 
@@ -743,7 +743,7 @@ function test(x: number): string {
         // chains as additional structural increments. Fixed by using visit_node_cognitive()
         // which treats all function nodes (including arrow_function) as scope boundaries.
         let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../tests/fixtures/typescript/async_patterns.ts");
+            .join("tests/fixtures/typescript/async_patterns.ts");
         let source = std::fs::read_to_string(&fixture_path).unwrap();
         let results = parse_and_analyze(&source);
 

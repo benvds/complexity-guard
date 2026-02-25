@@ -1,12 +1,10 @@
-name: Rust CI
+name: CI
 
 on:
   push:
-    branches: [rust]
+    branches: [main, rust]
   pull_request:
     branches: [main]
-    paths:
-      - 'rust/**'
 
 env:
   CARGO_TERM_COLOR: always
@@ -29,31 +27,23 @@ jobs:
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: "rust"
 
       - name: Check formatting
-        working-directory: rust
         run: cargo fmt --check
 
       - name: Lint with clippy
-        working-directory: rust
         run: cargo clippy --lib --tests -- -D warnings
 
       - name: Run tests
-        working-directory: rust
         run: cargo test
 
       - name: Build release
-        working-directory: rust
         run: cargo build --release
 
       - name: Print binary size
-        working-directory: rust
         run: ls -lh target/release/complexity-guard
 
       - name: Run binary
-        working-directory: rust
         run: ./target/release/complexity-guard
 
   cross-compile:
@@ -103,8 +93,6 @@ jobs:
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: "rust"
 
       - name: Install Zig
         if: ${{ matrix.use_zigbuild }}
@@ -116,22 +104,20 @@ jobs:
 
       - name: Build release (zigbuild)
         if: ${{ matrix.use_zigbuild }}
-        working-directory: rust
         run: cargo zigbuild --release --target ${{ matrix.target }}
 
       - name: Build release
         if: ${{ !matrix.use_zigbuild }}
-        working-directory: rust
         env:
           RUSTFLAGS: ${{ matrix.target == 'x86_64-pc-windows-msvc' && '-C target-feature=+crt-static' || '' }}
         run: cargo build --release --target ${{ matrix.target }}
 
       - name: Print binary size
-        run: ls -lh rust/target/${{ matrix.target }}/release/complexity-guard${{ matrix.ext }}
+        run: ls -lh target/${{ matrix.target }}/release/complexity-guard${{ matrix.ext }}
 
       - name: Verify binary (--version)
         if: ${{ matrix.can_test }}
-        run: rust/target/${{ matrix.target }}/release/complexity-guard${{ matrix.ext }} --version
+        run: target/${{ matrix.target }}/release/complexity-guard${{ matrix.ext }} --version
 
       - name: Skip verification (aarch64-musl cannot run on x86_64 ubuntu runner)
         if: ${{ !matrix.can_test }}

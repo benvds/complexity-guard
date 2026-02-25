@@ -4,10 +4,10 @@ set -euo pipefail
 # Release script - bumps version, commits, tags, and pushes to trigger release workflow
 # Usage: ./scripts/release.sh <major|minor|patch>
 #
-# Reads current version from rust/Cargo.toml (single source of truth for Rust binary).
+# Reads current version from Cargo.toml (single source of truth for Rust binary).
 #
 # Flow:
-#   1. Bumps version in rust/Cargo.toml, publication/npm/package.json (including optionalDependencies), and npm platform packages
+#   1. Bumps version in Cargo.toml, publication/npm/package.json (including optionalDependencies), and npm platform packages
 #   2. Auto-generates CHANGELOG.md entries from conventional commits
 #   3. Creates git commit and tag
 #   4. Pushes to origin (with confirmation) to trigger GitHub Actions release
@@ -119,11 +119,11 @@ if [[ ! "$BUMP_TYPE" =~ ^(major|minor|patch)$ ]]; then
   exit 1
 fi
 
-# Read current version from rust/Cargo.toml
-CURRENT_VERSION=$(grep '^version' rust/Cargo.toml | head -1 | sed -E 's/version = "(.*)"/\1/')
+# Read current version from Cargo.toml
+CURRENT_VERSION=$(grep '^version' Cargo.toml | head -1 | sed -E 's/version = "(.*)"/\1/')
 
 if [[ -z "$CURRENT_VERSION" ]]; then
-  echo "Error: Could not find version in rust/Cargo.toml"
+  echo "Error: Could not find version in Cargo.toml"
   exit 1
 fi
 
@@ -154,9 +154,9 @@ echo "New version: $NEW_VERSION"
 # Detect last tag for changelog generation
 LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
 
-# Update version in rust/Cargo.toml
-sed -i.bak "s/^version = \".*\"/version = \"$NEW_VERSION\"/" rust/Cargo.toml
-rm rust/Cargo.toml.bak
+# Update version in Cargo.toml
+sed -i.bak "s/^version = \".*\"/version = \"$NEW_VERSION\"/" Cargo.toml
+rm Cargo.toml.bak
 
 # Update version in package.json if it exists
 if [[ -f publication/npm/package.json ]]; then
@@ -178,8 +178,8 @@ if [[ -d publication/npm/packages ]]; then
   done
 fi
 
-# Stage rust/Cargo.toml
-git add rust/Cargo.toml
+# Stage Cargo.toml
+git add Cargo.toml
 
 # Generate changelog entries from conventional commits
 if [[ -n "$LAST_TAG" ]]; then

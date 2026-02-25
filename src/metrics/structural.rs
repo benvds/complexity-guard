@@ -356,7 +356,7 @@ mod tests {
     #[test]
     fn structural_cases_fixture() {
         let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../tests/fixtures/typescript/structural_cases.ts");
+            .join("tests/fixtures/typescript/structural_cases.ts");
         let source = std::fs::read_to_string(&fixture_path).unwrap();
         let (tree, bytes) = parse_ts(&source);
         let root = tree.root_node();

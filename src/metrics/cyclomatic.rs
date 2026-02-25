@@ -448,7 +448,7 @@ mod tests {
     #[test]
     fn cyclomatic_cases_fixture() {
         let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../tests/fixtures/typescript/cyclomatic_cases.ts");
+            .join("tests/fixtures/typescript/cyclomatic_cases.ts");
         let source = std::fs::read_to_string(&fixture_path).unwrap();
         let config = CyclomaticConfig::default();
         let results = parse_and_analyze(&source, &config);
@@ -513,7 +513,7 @@ mod tests {
     #[test]
     fn complex_nested_fixture() {
         let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../tests/fixtures/typescript/complex_nested.ts");
+            .join("tests/fixtures/typescript/complex_nested.ts");
         let source = std::fs::read_to_string(&fixture_path).unwrap();
         let config = CyclomaticConfig::default();
         let results = parse_and_analyze(&source, &config);
@@ -547,7 +547,7 @@ function test(x: string): number {
     #[test]
     fn naming_edge_cases_fixture() {
         let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../tests/fixtures/naming-edge-cases.ts");
+            .join("tests/fixtures/naming-edge-cases.ts");
         let source = std::fs::read_to_string(&fixture_path).unwrap();
         let config = CyclomaticConfig::default();
         let results = parse_and_analyze(&source, &config);

@@ -5,7 +5,7 @@ use complexity_guard::output::console::{function_violations, Severity};
 use complexity_guard::output::{determine_exit_code, render_console, render_html, render_json, render_sarif, ExitCode};
 use complexity_guard::types::{
     AnalysisConfig, CognitiveConfig, CyclomaticConfig, DuplicationConfig, DuplicationResult,
-    ScoringThresholds, ScoringWeights, Token,
+    ScoringThresholds, ScoringWeights,
 };
 
 fn main() {
@@ -145,21 +145,7 @@ fn main() {
             .unwrap_or(false);
 
         if dup_enabled && !no_dup {
-            let file_tokens: Vec<Vec<Token>> = files
-                .iter()
-                .enumerate()
-                .map(|(i, f)| {
-                    f.tokens
-                        .iter()
-                        .map(|t| Token {
-                            kind: t.kind.clone(),
-                            start_byte: t.start_byte,
-                            end_byte: t.end_byte,
-                            file_index: i,
-                        })
-                        .collect()
-                })
-                .collect();
+            let file_tokens: Vec<&[_]> = files.iter().map(|f| f.tokens.as_slice()).collect();
             Some(detect_duplication(&file_tokens, &analysis_config.duplication))
         } else {
             None

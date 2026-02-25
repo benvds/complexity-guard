@@ -4,12 +4,12 @@ ComplexityGuard uses a two-step release process: a local **release** step (versi
 
 ## Overview
 
-Here's how the complete Rust release flow works from start to finish:
+Here's how the complete release flow works from start to finish:
 
 ```
 Local: release.sh -> bump version in Cargo.toml -> commit -> tag -> push
                                                                      |
-CI (rust-release.yml):                                       tag push triggers
+CI (release.yml):                                            tag push triggers
                                                                      |
                                                                  validate
                                                                      |
@@ -18,14 +18,12 @@ CI (rust-release.yml):                                       tag push triggers
                                                               release (GitHub)
 ```
 
-The legacy Zig release workflow (`release.yml`) still exists for Zig binary releases but the primary workflow is now `rust-release.yml`.
-
 ## Concepts: Release vs Publish
 
 It's important to understand the distinction between these two steps:
 
 **Release** = Local action you perform on your machine:
-- Bumps the version number in `rust/Cargo.toml`
+- Bumps the version number in `Cargo.toml`
 - Creates a git commit and annotated tag
 - Pushes the tag to origin to trigger CI
 - Uses the `scripts/release.sh` script
@@ -38,9 +36,9 @@ It's important to understand the distinction between these two steps:
 
 You trigger the process locally with `release.sh`. Everything else happens automatically in CI.
 
-## Rust Release Workflow (`rust-release.yml`)
+## Release Workflow (`release.yml`)
 
-The `rust-release.yml` workflow is triggered by pushing a `v*` tag or by manual `workflow_dispatch`. It has 3 jobs:
+The `release.yml` workflow is triggered by pushing a `v*` tag or by manual `workflow_dispatch`. It has 3 jobs:
 
 ### Job 1: validate
 
@@ -91,12 +89,12 @@ For each target:
 
 ## Step-by-Step: Creating a Release
 
-Follow these steps to create a new Rust release:
+Follow these steps to create a new release:
 
-1. **Ensure you're on `rust` (or `main`) with a clean working tree**
+1. **Ensure you're on `main` with a clean working tree**
    ```sh
-   git checkout rust
-   git pull origin rust
+   git checkout main
+   git pull origin main
    git status  # Should show "nothing to commit, working tree clean"
    ```
 
@@ -106,7 +104,7 @@ Follow these steps to create a new Rust release:
    ```
    The bump type is required.
 
-3. **The script reads the current version** from `rust/Cargo.toml` (the source of truth)
+3. **The script reads the current version** from `Cargo.toml` (the source of truth)
 
 4. **The script computes the new version** based on your chosen bump type:
    - `major`: 0.1.0 → 1.0.0 (breaking changes)
@@ -114,7 +112,7 @@ Follow these steps to create a new Rust release:
    - `patch`: 0.1.0 → 0.1.1 (bug fixes, backward compatible)
 
 5. **The script updates version in all necessary files**:
-   - `rust/Cargo.toml`
+   - `Cargo.toml`
    - `publication/npm/package.json`
    - `publication/npm/packages/*/package.json` (all 5 platform packages)
 
@@ -128,7 +126,7 @@ Follow these steps to create a new Rust release:
    Push to origin? [y/N]
    ```
 
-9. **After confirmation, the push triggers `rust-release.yml`** which handles everything else automatically
+9. **After confirmation, the push triggers `release.yml`** which handles everything else automatically
 
 ### Concrete Examples
 
@@ -149,7 +147,7 @@ ComplexityGuard's version is stored in multiple files to support different distr
 
 ### Source of Truth
 
-**`rust/Cargo.toml`**
+**`Cargo.toml`**
 - Contains `version = "X.Y.Z"`
 - This is the canonical version for the Rust binary
 - The release script reads from this file to determine the current version
@@ -175,7 +173,7 @@ ComplexityGuard's version is stored in multiple files to support different distr
 
 Before running `./scripts/release.sh`, ensure:
 
-- [ ] All tests pass locally (`cd rust && cargo test`)
+- [ ] All tests pass locally (`cargo test`)
 - [ ] CHANGELOG.md updated with new entries under `[Unreleased]`
 - [ ] You're on the correct branch (`git branch --show-current`)
 - [ ] Working tree is clean (`git status` shows no uncommitted changes)
@@ -187,7 +185,7 @@ Before running `./scripts/release.sh`, ensure:
 
 After pushing the tag, monitor the release and verify completion:
 
-- [ ] GitHub Actions `rust-release.yml` workflow completed successfully
+- [ ] GitHub Actions `release.yml` workflow completed successfully
   - Check: `https://github.com/benvds/complexity-guard/actions`
   - All 3 jobs (validate, build, release) should be green
 - [ ] GitHub Release page shows all 5 binary archives
@@ -252,11 +250,11 @@ gh release delete vX.Y.Z
 
 ### Manual Dispatch Trigger
 
-You can trigger `rust-release.yml` manually from the GitHub Actions UI instead of using a tag push:
+You can trigger `release.yml` manually from the GitHub Actions UI instead of using a tag push:
 
-1. Go to: Actions → Rust Release → Run workflow
-2. Select the branch (usually `rust` or `main`)
-3. Enter the version (e.g., `0.1.5`)
+1. Go to: Actions → Release → Run workflow
+2. Select the branch (usually `main`)
+3. Enter the version (e.g., `0.8.1`)
 4. Click "Run workflow"
 
 This is useful if:
@@ -282,7 +280,3 @@ sudo mv complexity-guard /usr/local/bin/
 ```
 
 This is documented in the README and `docs/getting-started.md`.
-
-## Legacy Zig Release Workflow
-
-The original `release.yml` workflow (Zig-based cross-compilation) still exists in the repository for historical reference. It is not the primary release workflow and will not be triggered by the standard `./scripts/release.sh` flow (which now targets the Rust release). The Zig workflow uses `mlugg/setup-zig@v2` and cross-compiles with `zig build -Dtarget=<target>`.
