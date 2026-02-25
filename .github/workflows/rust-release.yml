@@ -1,0 +1,194 @@
+# Rust Release workflow - triggered by v* tag push or manual dispatch
+#
+# Builds Rust binaries for all 5 release targets, creates archives, and
+# publishes a GitHub Release with the archives attached.
+#
+# Triggers:
+#   - Tag push: Push a v* tag (e.g., via scripts/release.sh)
+#   - Manual: workflow_dispatch via GitHub Actions UI
+
+name: Rust Release
+
+on:
+  push:
+    branches-ignore:
+      - '**'
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 0.8.0)'
+        required: true
+
+jobs:
+  # Job 1: Validate version format and ensure tag doesn't exist
+  validate:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.validate.outputs.version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate and extract version
+        id: validate
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ inputs.version }}"
+          else
+            # Tag push: extract version from tag name (strip 'v' prefix)
+            VERSION="${GITHUB_REF_NAME#v}"
+          fi
+
+          # Validate semver format (e.g., 0.8.0, 1.2.3)
+          if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "Error: Invalid version format '$VERSION'. Expected semver (e.g., 0.8.0)"
+            exit 1
+          fi
+
+          # Only check for existing tag on workflow_dispatch (tag push already has the tag)
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            if git tag | grep -q "^v$VERSION$"; then
+              echo "Error: Tag v$VERSION already exists. Cannot create duplicate release."
+              exit 1
+            fi
+          fi
+
+          echo "Version validation passed: $VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+  # Job 2: Build binaries for all 5 release targets
+  build:
+    needs: validate
+    name: Build (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - name: linux-x86_64-musl
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            use_zigbuild: true
+            ext: ""
+            archive_name: complexity-guard-linux-x86_64-musl.tar.gz
+          - name: linux-aarch64-musl
+            os: ubuntu-latest
+            target: aarch64-unknown-linux-musl
+            use_zigbuild: true
+            ext: ""
+            archive_name: complexity-guard-linux-aarch64-musl.tar.gz
+          - name: macos-aarch64
+            os: macos-latest
+            target: aarch64-apple-darwin
+            use_zigbuild: false
+            ext: ""
+            archive_name: complexity-guard-macos-aarch64.tar.gz
+          - name: macos-x86_64
+            os: macos-latest
+            target: x86_64-apple-darwin
+            use_zigbuild: false
+            ext: ""
+            archive_name: complexity-guard-macos-x86_64.tar.gz
+          - name: windows-x86_64
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+            use_zigbuild: false
+            ext: ".exe"
+            archive_name: complexity-guard-windows-x86_64.zip
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust stable with target
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "rust"
+
+      - name: Install Zig
+        if: ${{ matrix.use_zigbuild }}
+        run: pip3 install ziglang
+
+      - name: Install cargo-zigbuild
+        if: ${{ matrix.use_zigbuild }}
+        run: cargo install --locked cargo-zigbuild
+
+      - name: Build release (zigbuild)
+        if: ${{ matrix.use_zigbuild }}
+        working-directory: rust
+        run: cargo zigbuild --release --target ${{ matrix.target }}
+
+      - name: Build release
+        if: ${{ !matrix.use_zigbuild }}
+        working-directory: rust
+        env:
+          RUSTFLAGS: ${{ matrix.target == 'x86_64-pc-windows-msvc' && '-C target-feature=+crt-static' || '' }}
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Print binary size
+        run: ls -lh rust/target/${{ matrix.target }}/release/complexity-guard${{ matrix.ext }}
+
+      - name: Create archive (Unix)
+        if: ${{ matrix.ext == '' }}
+        shell: bash
+        run: |
+          cd rust/target/${{ matrix.target }}/release
+          tar czf ../../../../complexity-guard-${{ matrix.name }}.tar.gz complexity-guard
+
+      - name: Create archive (Windows)
+        if: ${{ matrix.ext == '.exe' }}
+        shell: pwsh
+        run: |
+          cd rust/target/${{ matrix.target }}/release
+          Compress-Archive -Path complexity-guard.exe -DestinationPath ../../../../complexity-guard-${{ matrix.name }}.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: complexity-guard-${{ matrix.name }}
+          path: complexity-guard-${{ matrix.name }}.*
+          retention-days: 1
+
+  # Job 3: Create GitHub release with binary archives
+  release:
+    needs: [validate, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: List downloaded artifacts
+        run: ls -lh complexity-guard-*
+
+      - name: Create git tag
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          VERSION="${{ needs.validate.outputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v$VERSION" -m "Release $VERSION"
+          git push origin "v$VERSION"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.validate.outputs.version }}
+          name: complexity-guard@${{ needs.validate.outputs.version }}
+          generate_release_notes: true
+          files: |
+            complexity-guard-*.tar.gz
+            complexity-guard-*.zip
