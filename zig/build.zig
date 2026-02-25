@@ -104,6 +104,9 @@ pub fn build(b: *std.Build) void {
     addTreeSitterSources(b, unit_tests);
 
     const run_unit_tests = b.addRunArtifact(unit_tests);
+    // Set working directory to project root so tests can find tests/fixtures/
+    // which is shared between Zig and Rust implementations.
+    run_unit_tests.setCwd(b.path(".."));
     const test_step = b.step("test", "Run unit tests");
     test_step.dependOn(&run_unit_tests.step);
 
