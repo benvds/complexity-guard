@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-24)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** v0.8 Rust Rewrite — Phase 22: Cross-Compilation, CI, Release — IN PROGRESS (2/3 complete)
+**Current focus:** v0.8 Rust Rewrite — Phase 22: Cross-Compilation, CI, Release — COMPLETE (3/3)
 
 ## Current Position
 
-Phase: 22 of 22 (Cross-Compilation, CI, and Release) — IN PROGRESS
-Plan: 2 of 3 in phase 22 — plan 02 complete
-Status: Phase 22-02 COMPLETE — tag-triggered rust-release.yml + release.sh Cargo.toml update
-Last activity: 2026-02-25 — Phase 22 plan 02 complete (rust-release.yml 3-job pipeline: validate/build/release with softprops/action-gh-release@v2; release.sh reads version from rust/Cargo.toml)
+Phase: 22 of 22 (Cross-Compilation, CI, and Release) — COMPLETE
+Plan: 3 of 3 in phase 22 — plan 03 complete
+Status: Phase 22-03 COMPLETE — documentation updates for Rust binary (README, docs, releasing, publication READMEs)
+Last activity: 2026-02-25 — Phase 22 plan 03 complete (all user-facing docs updated to reflect Rust binary)
 
 Progress: [█████████░] 75% (v0.8 milestone)
 
@@ -39,6 +39,7 @@ Progress: [█████████░] 75% (v0.8 milestone)
 - Trend: Fast (infra/config YAML changes with Python verification)
 
 *Updated after each plan completion*
+| Phase 22 P03 | 4 | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,8 @@ Recent decisions affecting v0.8:
 - [Phase 22-01]: ext matrix field (empty string vs .exe) handles Windows binary suffix consistently across ls and --version steps
 - [Phase 22]: rust-release.yml is a SEPARATE workflow from the Zig release.yml — they coexist for parallel Zig/Rust release paths
 - [Phase 22]: release.sh now uses rust/Cargo.toml as single source of truth for version — replaces src/main.zig grep/sed
+- [Phase 22]: docs/releasing.md fully rewritten around rust-release.yml; legacy Zig workflow noted in final section for historical reference
+- [Phase 22]: npm/Homebrew installation methods kept intact in README — will be updated when npm distribution ships
 
 ### Pending Todos
 
@@ -95,8 +98,8 @@ Recent decisions affecting v0.8:
 ## Session Continuity
 
 Last session: 2026-02-25 (execute-phase 22)
-Stopped at: Completed 22-02-PLAN.md — rust-release.yml tag-triggered workflow + release.sh Cargo.toml update
-Resume with: Execute Phase 22 plan 03 (documentation updates)
+Stopped at: Completed 22-03-PLAN.md — documentation updates for Rust binary
+Resume with: Phase 22 COMPLETE — all v0.8 milestone phases done
 
 **Remaining phases to execute:**
 - Phase 19: CLI, Config, Output Formats — COMPLETE (4/4)
@@ -106,11 +109,11 @@ Resume with: Execute Phase 22 plan 03 (documentation updates)
   - 21-02: Console format rewrite (Zig ESLint-style) + function naming — COMPLETE
   - 21-03: Integration test baselines (29 tests, 12 baselines) — COMPLETE
   - 21-04: Exit code 4 documentation test + gap closure — COMPLETE
-- Phase 22: Cross-Compilation, CI, Release — IN PROGRESS (2/3)
+- Phase 22: Cross-Compilation, CI, Release — COMPLETE (3/3)
   - 22-01: CI cross-compilation matrix (5 targets) — COMPLETE
   - 22-02: rust-release.yml (GitHub release workflow) — COMPLETE
-  - 22-03: Documentation updates — TODO
+  - 22-03: Documentation updates — COMPLETE
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-25 after Phase 22 plan 02 completion (rust-release.yml 3-job pipeline with softprops/action-gh-release@v2; release.sh reads version from rust/Cargo.toml)*
+*Last updated: 2026-02-25 after Phase 22 plan 03 completion (documentation updates: README, docs/*, releasing.md, publication READMEs all updated for Rust binary)*
