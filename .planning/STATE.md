@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-24)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** v0.8 Rust Rewrite — Phase 21: Integration Testing and Behavioral Parity — Plan 01 complete (1/3)
+**Current focus:** v0.8 Rust Rewrite — Phase 21: Integration Testing and Behavioral Parity — Plans 01-02 complete (2/3)
 
 ## Current Position
 
 Phase: 21 of 22 (Integration Testing and Behavioral Parity)
-Plan: 1 of 3 in current phase — 21-01 complete
-Status: Phase 21 IN PROGRESS — plan 01 done (metric and schema bugs fixed for parity)
-Last activity: 2026-02-25 — Phase 21 plan 01 complete (fixed cognitive_error default, arrow callback bug, duplication JSON schema)
+Plan: 2 of 3 in current phase — 21-01 and 21-02 complete
+Status: Phase 21 IN PROGRESS — plans 01-02 done (metric/schema bugs + console format + function naming)
+Last activity: 2026-02-25 — Phase 21 plan 02 complete (console output consolidated format, callback/export function naming)
 
-Progress: [███████░░░] 60% (v0.8 milestone)
+Progress: [████████░░] 65% (v0.8 milestone)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9 (v0.8)
-- Average duration: 6 min
-- Total execution time: 52 min
+- Total plans completed: 11 (v0.8)
+- Average duration: 8 min
+- Total execution time: 91 min
 
 **By Phase:**
 
@@ -31,11 +31,11 @@ Progress: [███████░░░] 60% (v0.8 milestone)
 | 18 | 3/3 | 30 min | 10 min |
 | 19 | 4/4 | 19 min | 5 min |
 | 20 | 2/2 | 6 min | 3 min |
-| 21 | 1/3 | 12 min | 12 min |
+| 21 | 2/3 | 39 min | 20 min |
 
 **Recent Trend:**
-- Last 5 plans: 19-04 (1 min), 20-01 (3 min), 20-02 (3 min), 21-01 (12 min)
-- Trend: Stable
+- Last 5 plans: 20-01 (3 min), 20-02 (3 min), 21-01 (12 min), 21-02 (27 min)
+- Trend: Increasing (complex behavioral parity work)
 
 *Updated after each plan completion*
 
@@ -69,6 +69,8 @@ Recent decisions affecting v0.8:
 - [Phase 21-01]: cognitive_error default changed from 30 to 25 in ResolvedConfig to match ScoringThresholds default (25.0); fixes health score divergence (greet: Rust 79.38 → 82.71 matching Zig)
 - [Phase 21-01]: visit_node_cognitive() added as scope-boundary variant of visit_node_with_arrows(); stops traversal at arrow_function nodes (scope boundary) vs treating them as callbacks — mirrors Zig visitNode() semantics
 - [Phase 21-01]: Duplication JSON schema rewritten to match Zig: enabled/project_duplication_pct/project_status/clone_groups.locations/files array; duplication thresholds hardcoded (3%/5%) since ResolvedConfig doesn't carry them yet
+- [Phase 21]: Console output consolidated to one line per function with worst severity — matching Zig format (symbols ✓/⚠/✗, inline cyclomatic/cognitive/halstead/structural)
+- [Phase 21]: Function name extraction enhanced with object_key/call_name/is_default_export NameContext fields in cyclomatic.rs walker — produces 'map callback', 'click handler', 'default export' matching Zig
 
 ### Pending Todos
 
@@ -83,18 +85,18 @@ Recent decisions affecting v0.8:
 ## Session Continuity
 
 Last session: 2026-02-25 (execute-phase 21)
-Stopped at: Completed 21-01-PLAN.md — metric and schema bugs fixed; health scores, cognitive complexity, duplication JSON match Zig v1.0 baseline
-Resume with: Execute Phase 21 Plan 02 (console format rewrite) and Plan 03 (integration test baselines)
+Stopped at: Completed 21-02-PLAN.md — console output format parity (consolidated per-function, ✓/⚠/✗ symbols) and function naming for callbacks/exports
+Resume with: Execute Phase 21 Plan 03 (integration test baselines)
 
 **Remaining phases to execute:**
 - Phase 19: CLI, Config, Output Formats — COMPLETE (4/4)
 - Phase 20: Parallel Pipeline — COMPLETE (2/2)
-- Phase 21: Integration Testing — IN PROGRESS (1/3 complete)
+- Phase 21: Integration Testing — IN PROGRESS (2/3 complete)
   - 21-01: Metric and schema bug fixes — COMPLETE
-  - 21-02: Console format rewrite (Zig ESLint-style) — TODO
+  - 21-02: Console format rewrite (Zig ESLint-style) + function naming — COMPLETE
   - 21-03: Integration test baselines — TODO
 - Phase 22: Cross-Compilation, CI, Release — TODO
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-24 after Phase 20 plan 02 completion (main.rs pipeline wiring: binary end-to-end functional)*
+*Last updated: 2026-02-25 after Phase 21 plan 02 completion (console output format parity + function naming for callbacks/exports)*
