@@ -101,11 +101,12 @@ Recent decisions affecting v0.8:
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 21 | Move zig code to zig/ directory to match rust/ directory structure | 2026-02-25 | 0c20250 | [21-move-zig-code-to-zig-directory-to-match-](./quick/21-move-zig-code-to-zig-directory-to-match-/) |
+| 22 | Create benchmark script comparing Rust vs Zig binaries | 2026-02-25 | 54154f5 | [22-create-benchmark-script-comparing-rust-v](./quick/22-create-benchmark-script-comparing-rust-v/) |
 
 ## Session Continuity
 
-Last session: 2026-02-25 (execute-phase 22)
-Stopped at: Completed 22-03-PLAN.md — documentation updates for Rust binary
+Last session: 2026-02-25 (quick task 22)
+Stopped at: Completed quick task 22 — bench-rust-vs-zig.sh benchmark script
 Resume with: Phase 22 COMPLETE — all v0.8 milestone phases done
 
 **Remaining phases to execute:**
