@@ -163,7 +163,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22
 | 18. Core Metrics Pipeline | v0.8 | 3/3 | Complete | 2026-02-24 |
 | 19. CLI, Config, and Output Formats | 4/4 | Complete    | 2026-02-24 | - |
 | 20. Parallel Pipeline | 2/2 | Complete    | 2026-02-24 | - |
-| 21. Integration Testing and Behavioral Parity | 4/4 | Complete   | 2026-02-25 | - |
+| 21. Integration Testing and Behavioral Parity | 4/4 | Complete    | 2026-02-25 | - |
 | 22. Cross-Compilation, CI, and Release | v0.8 | 0/TBD | Not started | - |
 
 ---
