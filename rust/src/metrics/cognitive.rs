@@ -365,6 +365,11 @@ fn visit_if_as_continuation_with_arrows(
 }
 
 /// Visit an arrow_function as a callback (structural increment + nesting).
+///
+/// Uses `visit_node_cognitive()` (NOT `visit_node_with_arrows()`) for body children,
+/// matching Zig's `visitArrowCallback()` which calls `visitNode()` — meaning nested
+/// arrow functions inside a callback body are treated as scope boundaries (stop traversal),
+/// not as additional callbacks.
 fn visit_arrow_callback(
     node: tree_sitter::Node,
     source: &[u8],
@@ -378,10 +383,10 @@ fn visit_arrow_callback(
         if let Some(child) = node.child(i) {
             let ct = child.kind();
             if ct == "statement_block" {
-                // Visit children of the block
+                // Visit children of the block using cognitive visitor (no arrow awareness)
                 for j in 0..child.child_count() as u32 {
                     if let Some(stmt) = child.child(j) {
-                        visit_node_with_arrows(stmt, source, complexity, nesting, function_name);
+                        visit_node_cognitive(stmt, source, complexity, nesting, function_name);
                     }
                 }
             } else if ct != "formal_parameters"
@@ -391,12 +396,207 @@ fn visit_arrow_callback(
                 && ct != ")"
                 && ct != "type_annotation"
             {
-                // Expression body arrow
-                visit_node_with_arrows(child, source, complexity, nesting, function_name);
+                // Expression body arrow — use cognitive visitor (stops at nested arrows)
+                visit_node_cognitive(child, source, complexity, nesting, function_name);
             }
         }
     }
     *nesting -= 1;
+}
+
+/// Scope-boundary visitor used inside arrow callback bodies.
+///
+/// Equivalent to Zig's `visitNode()` — treats ALL function nodes (including
+/// arrow_function) as scope boundaries and stops traversal. This is used
+/// inside `visit_arrow_callback()` bodies so that nested arrow functions
+/// do not generate additional structural increments.
+fn visit_node_cognitive(
+    node: tree_sitter::Node,
+    source: &[u8],
+    complexity: &mut u32,
+    nesting: &mut u32,
+    function_name: &str,
+) {
+    let kind = node.kind();
+
+    // All function nodes (including arrow_function) stop traversal
+    if is_function_node(kind) {
+        return;
+    }
+
+    // if_statement: structural increment + recurse
+    if kind == "if_statement" {
+        *complexity += 1 + *nesting;
+        *nesting += 1;
+        for i in 0..node.child_count() as u32 {
+            if let Some(child) = node.child(i) {
+                if child.kind() != "else_clause" {
+                    visit_node_cognitive(child, source, complexity, nesting, function_name);
+                }
+            }
+        }
+        *nesting -= 1;
+        for i in 0..node.child_count() as u32 {
+            if let Some(child) = node.child(i) {
+                if child.kind() == "else_clause" {
+                    visit_else_clause_cognitive(child, source, complexity, nesting, function_name);
+                }
+            }
+        }
+        return;
+    }
+
+    if kind == "else_clause" {
+        visit_else_clause_cognitive(node, source, complexity, nesting, function_name);
+        return;
+    }
+
+    // Structural increments: for/while/do/switch/ternary/catch
+    if kind == "for_statement"
+        || kind == "for_in_statement"
+        || kind == "while_statement"
+        || kind == "do_statement"
+        || kind == "switch_statement"
+        || kind == "ternary_expression"
+    {
+        *complexity += 1 + *nesting;
+        *nesting += 1;
+        for i in 0..node.child_count() as u32 {
+            if let Some(child) = node.child(i) {
+                visit_node_cognitive(child, source, complexity, nesting, function_name);
+            }
+        }
+        *nesting -= 1;
+        return;
+    }
+
+    if kind == "catch_clause" {
+        *complexity += 1 + *nesting;
+        *nesting += 1;
+        for i in 0..node.child_count() as u32 {
+            if let Some(child) = node.child(i) {
+                visit_node_cognitive(child, source, complexity, nesting, function_name);
+            }
+        }
+        *nesting -= 1;
+        return;
+    }
+
+    // binary_expression: per-operator counting deviation
+    if kind == "binary_expression" {
+        for i in 0..node.child_count() as u32 {
+            if let Some(child) = node.child(i) {
+                let ct = child.kind();
+                if ct == "&&" || ct == "||" || ct == "??" {
+                    *complexity += 1;
+                } else {
+                    visit_node_cognitive(child, source, complexity, nesting, function_name);
+                }
+            }
+        }
+        return;
+    }
+
+    // call_expression: recursion detection
+    if kind == "call_expression" {
+        if let Some(callee) = node.child(0) {
+            if callee.kind() == "identifier" {
+                if let Ok(text) = callee.utf8_text(source) {
+                    if !function_name.is_empty() && text == function_name {
+                        *complexity += 1;
+                    }
+                }
+            }
+        }
+        for i in 0..node.child_count() as u32 {
+            if let Some(child) = node.child(i) {
+                visit_node_cognitive(child, source, complexity, nesting, function_name);
+            }
+        }
+        return;
+    }
+
+    // break/continue with label
+    if kind == "break_statement" || kind == "continue_statement" {
+        for i in 0..node.child_count() as u32 {
+            if let Some(child) = node.child(i) {
+                if child.kind() == "statement_identifier" {
+                    *complexity += 1;
+                    break;
+                }
+            }
+        }
+        return;
+    }
+
+    // Default: recurse
+    for i in 0..node.child_count() as u32 {
+        if let Some(child) = node.child(i) {
+            visit_node_cognitive(child, source, complexity, nesting, function_name);
+        }
+    }
+}
+
+/// Handle else_clause without arrow awareness (used inside arrow callback bodies).
+fn visit_else_clause_cognitive(
+    node: tree_sitter::Node,
+    source: &[u8],
+    complexity: &mut u32,
+    nesting: &mut u32,
+    function_name: &str,
+) {
+    *complexity += 1;
+
+    for i in 0..node.child_count() as u32 {
+        if let Some(child) = node.child(i) {
+            let ct = child.kind();
+            if ct == "else" {
+                continue;
+            }
+            if ct == "if_statement" {
+                visit_if_as_continuation_cognitive(
+                    child,
+                    source,
+                    complexity,
+                    nesting,
+                    function_name,
+                );
+                return;
+            } else {
+                *nesting += 1;
+                visit_node_cognitive(child, source, complexity, nesting, function_name);
+                *nesting -= 1;
+                return;
+            }
+        }
+    }
+}
+
+/// Visit an if_statement as an "else if" continuation (no arrow awareness).
+fn visit_if_as_continuation_cognitive(
+    node: tree_sitter::Node,
+    source: &[u8],
+    complexity: &mut u32,
+    nesting: &mut u32,
+    function_name: &str,
+) {
+    *complexity += 1 + *nesting;
+    *nesting += 1;
+    for i in 0..node.child_count() as u32 {
+        if let Some(child) = node.child(i) {
+            if child.kind() != "else_clause" {
+                visit_node_cognitive(child, source, complexity, nesting, function_name);
+            }
+        }
+    }
+    *nesting -= 1;
+    for i in 0..node.child_count() as u32 {
+        if let Some(child) = node.child(i) {
+            if child.kind() == "else_clause" {
+                visit_else_clause_cognitive(child, source, complexity, nesting, function_name);
+            }
+        }
+    }
 }
 
 // TESTS
@@ -533,5 +733,53 @@ function test(x: number): string {
         let results = parse_and_analyze(source);
         // if (+1 at nesting 0) + else (+1 flat) + if continuation (+1 at nesting 0) = 3
         assert_eq!(results[0].complexity, 3);
+    }
+
+    #[test]
+    fn async_patterns_fetch_user_data_cognitive_15() {
+        // Regression test: fetchUserData must be 15 (Zig baseline), not 18.
+        // The +3 deviation was caused by visit_arrow_callback calling visit_node_with_arrows
+        // for body children — this counted nested arrow functions inside .then()/.catch()
+        // chains as additional structural increments. Fixed by using visit_node_cognitive()
+        // which treats all function nodes (including arrow_function) as scope boundaries.
+        let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../tests/fixtures/typescript/async_patterns.ts");
+        let source = std::fs::read_to_string(&fixture_path).unwrap();
+        let results = parse_and_analyze(&source);
+
+        let fetch_user_data = find_by_name(&results, "fetchUserData");
+        assert!(
+            fetch_user_data.is_some(),
+            "fetchUserData not found in async_patterns.ts"
+        );
+        assert_eq!(
+            fetch_user_data.unwrap().complexity,
+            15,
+            "fetchUserData cognitive complexity must be 15 (Zig baseline)"
+        );
+    }
+
+    #[test]
+    fn arrow_callback_nested_arrow_is_scope_boundary() {
+        // Arrow functions nested inside an arrow callback body must be treated as
+        // scope boundaries (no additional structural increment), not as callbacks.
+        // This matches Zig's visitArrowCallback -> visitNode behavior.
+        let source = r#"
+function outer(items: any[]) {
+    items.forEach(item => {
+        // This nested arrow inside the callback body should NOT add an increment
+        const transform = (x: any) => x.value;
+        return transform(item);
+    });
+}
+"#;
+        let results = parse_and_analyze(source);
+        let outer = find_by_name(&results, "outer").unwrap();
+        // forEach callback: +1 (nesting 0) = total 1
+        // The nested const transform arrow is a scope boundary — no additional increment
+        assert_eq!(
+            outer.complexity, 1,
+            "Nested arrow inside callback body should be scope boundary, not +1"
+        );
     }
 }

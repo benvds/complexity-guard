@@ -149,7 +149,7 @@ impl Default for ResolvedConfig {
             cyclomatic_warning: 10,
             cyclomatic_error: 20,
             cognitive_warning: 15,
-            cognitive_error: 30,
+            cognitive_error: 25,
             halstead_volume_warning: 500.0,
             halstead_volume_error: 1000.0,
             halstead_difficulty_warning: 10.0,
