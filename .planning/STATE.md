@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 Phase: 22 of 22 (Cross-Compilation, CI, and Release) — COMPLETE
 Plan: 3 of 3 in phase 22 — plan 03 complete
 Status: Phase 22-03 COMPLETE — documentation updates for Rust binary (README, docs, releasing, publication READMEs)
-Last activity: 2026-02-25 — Phase 22 plan 03 complete (all user-facing docs updated to reflect Rust binary)
+Last activity: 2026-02-25 - Completed quick task 21: Move zig code to zig/ directory to match rust/ directory structure
 
 Progress: [█████████░] 75% (v0.8 milestone)
 
@@ -95,6 +95,12 @@ Recent decisions affecting v0.8:
 
 - Binary size target of 5 MB — baseline was 279 KB stub; needs measurement after all dependencies added
 - serde-sarif skipped — using hand-rolled SARIF structs per research recommendation
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 21 | Move zig code to zig/ directory to match rust/ directory structure | 2026-02-25 | 0c20250 | [21-move-zig-code-to-zig-directory-to-match-](./quick/21-move-zig-code-to-zig-directory-to-match-/) |
 
 ## Session Continuity
 
