@@ -1,6 +1,6 @@
 # Examples
 
-> **Note:** All examples below work identically with the Rust binary (Phase 20 parallel pipeline complete). The Rust binary now supports directory analysis end-to-end. Output formats are the same.
+> **Note:** ComplexityGuard is built with Rust. All examples below work with the current Rust binary. Output formats are identical to the legacy Zig binary.
 
 Real-world usage patterns, CI integration recipes, and configuration examples for ComplexityGuard.
 
@@ -385,7 +385,8 @@ jobs:
 
       - name: Install ComplexityGuard
         run: |
-          curl -L https://github.com/benvds/complexity-guard/releases/latest/download/complexity-guard-linux-x64 -o complexity-guard
+          curl -L https://github.com/benvds/complexity-guard/releases/latest/download/complexity-guard-linux-x86_64-musl.tar.gz -o complexity-guard.tar.gz
+          tar xzf complexity-guard.tar.gz
           chmod +x complexity-guard
           sudo mv complexity-guard /usr/local/bin/
 
@@ -464,7 +465,8 @@ Use the JSON output to post a comment on pull requests:
 complexity:
   stage: test
   script:
-    - curl -L https://github.com/benvds/complexity-guard/releases/latest/download/complexity-guard-linux-x64 -o complexity-guard
+    - curl -L https://github.com/benvds/complexity-guard/releases/latest/download/complexity-guard-linux-x86_64-musl.tar.gz -o complexity-guard.tar.gz
+    - tar xzf complexity-guard.tar.gz
     - chmod +x complexity-guard
     - ./complexity-guard --fail-on warning src/
 ```
@@ -483,7 +485,8 @@ jobs:
       - run:
           name: Install ComplexityGuard
           command: |
-            curl -L https://github.com/benvds/complexity-guard/releases/latest/download/complexity-guard-linux-x64 -o complexity-guard
+            curl -L https://github.com/benvds/complexity-guard/releases/latest/download/complexity-guard-linux-x86_64-musl.tar.gz -o complexity-guard.tar.gz
+            tar xzf complexity-guard.tar.gz
             chmod +x complexity-guard
             sudo mv complexity-guard /usr/local/bin/
       - run:
@@ -499,7 +502,8 @@ pipeline {
   stages {
     stage('Complexity Analysis') {
       steps {
-        sh 'curl -L https://github.com/benvds/complexity-guard/releases/latest/download/complexity-guard-linux-x64 -o complexity-guard'
+        sh 'curl -L https://github.com/benvds/complexity-guard/releases/latest/download/complexity-guard-linux-x86_64-musl.tar.gz -o complexity-guard.tar.gz'
+        sh 'tar xzf complexity-guard.tar.gz'
         sh 'chmod +x complexity-guard'
         sh './complexity-guard --fail-on warning src/'
       }

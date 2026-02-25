@@ -1,6 +1,6 @@
 # CLI Reference
 
-> **Note:** The Rust rewrite (Phase 20 parallel pipeline complete) accepts the same CLI flags documented here. The `--threads`, `--include`, and `--exclude` flags are functional in the Rust binary. No changes to the CLI interface.
+> **Note:** ComplexityGuard is built with Rust. All CLI flags documented here are implemented in the Rust binary. The `--threads`, `--include`, and `--exclude` flags are fully functional. Build from source with `cd rust && cargo build --release`.
 
 Complete reference for ComplexityGuard command-line interface, configuration options, and exit codes.
 

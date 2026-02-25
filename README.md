@@ -1,6 +1,6 @@
 # ComplexityGuard
 
-Fast complexity analysis for TypeScript/JavaScript — single static binary, zero dependencies.
+Fast complexity analysis for TypeScript/JavaScript — single static binary built with Rust, zero dependencies.
 
 ## Quick Start
 
@@ -10,12 +10,21 @@ Install ComplexityGuard:
 # npm (global install)
 npm install -g complexity-guard
 
-# Direct download (all platforms)
-# Download the binary for your platform from GitHub releases:
+# Direct download (Rust binary — all platforms)
+# Download the archive for your platform from GitHub Releases:
 # https://github.com/benvds/complexity-guard/releases
-# Then make it executable and add to your PATH:
+#
+# Available platforms:
+#   complexity-guard-linux-x86_64-musl.tar.gz    (Linux x86_64)
+#   complexity-guard-linux-aarch64-musl.tar.gz   (Linux ARM64)
+#   complexity-guard-macos-x86_64.tar.gz         (macOS Intel)
+#   complexity-guard-macos-aarch64.tar.gz        (macOS Apple Silicon)
+#   complexity-guard-windows-x86_64.zip          (Windows x64)
+#
+# Extract and install (macOS/Linux):
+tar xzf complexity-guard-*.tar.gz
 chmod +x complexity-guard
-mv complexity-guard /usr/local/bin/
+sudo mv complexity-guard /usr/local/bin/
 ```
 
 Run analysis on your codebase:
@@ -150,27 +159,24 @@ See the [CLI Reference](docs/cli-reference.md) for complete configuration option
 
 ## Building from Source
 
-Requires [Zig](https://ziglang.org/) 0.14.0 or later:
-
-```sh
-zig build          # build binary to zig-out/bin/complexity-guard
-zig build test     # run all tests
-zig build run      # run the binary
-```
-
-The build produces a single static binary at `zig-out/bin/complexity-guard`.
-
-## Rust Rewrite (In Progress)
-
-A Rust rewrite is underway targeting 1:1 feature parity with the Zig binary. The Rust binary accepts the same CLI flags and produces identical output formats. To build from the Rust source:
+Requires [Rust](https://www.rust-lang.org/) (stable toolchain):
 
 ```sh
 cd rust && cargo build --release
 ```
 
-The Rust binary will replace the Zig binary in a future release. Until then, the Zig binary remains the official distribution.
+The binary will be at `rust/target/release/complexity-guard`. Add it to your PATH or run it directly.
 
-**Phase 20 (Parallel Pipeline) complete:** The Rust binary now discovers files, analyzes them in parallel using rayon, and produces sorted deterministic output. Running `complexity-guard .` against a directory performs full end-to-end analysis across all supported file types (`.ts`, `.tsx`, `.js`, `.jsx`).
+For the legacy Zig source, requires [Zig](https://ziglang.org/) 0.14.0 or later:
+
+```sh
+zig build          # build binary to zig-out/bin/complexity-guard
+zig build test     # run all tests
+```
+
+## Binary Sizes
+
+Binary sizes are measured in CI on every release. See the [latest GitHub Release](https://github.com/benvds/complexity-guard/releases/latest) for measured binary sizes per platform.
 
 ## License
 
