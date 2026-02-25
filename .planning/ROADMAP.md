@@ -134,7 +134,11 @@ Plans:
   2. Each built binary executes `--version` and produces correct output when run on a native runner of that platform
   3. Binary sizes for all five targets are recorded in documentation; the 5 MB target is assessed with actual measurements and any revised limit is documented
   4. Pushing a version tag triggers the release pipeline and attaches all five binaries to a GitHub Release
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 22-01-PLAN.md — Extend rust-ci.yml with 5-target cross-compilation matrix
+- [ ] 22-02-PLAN.md — Create rust-release.yml workflow and update release.sh for Cargo.toml
+- [ ] 22-03-PLAN.md — Update documentation (README, docs, publication READMEs) for Rust binary
 
 ## Progress
 
