@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-24)
 
 **Core value:** Deliver accurate, fast complexity analysis in a single binary that runs locally and offline — making code health metrics accessible without SaaS dependencies or slow tooling.
-**Current focus:** v0.8 Rust Rewrite — Phase 20: Parallel Pipeline COMPLETE (2/2); Phase 21: Integration Testing next
+**Current focus:** v0.8 Rust Rewrite — Phase 21: Integration Testing and Behavioral Parity — Plan 01 complete (1/3)
 
 ## Current Position
 
-Phase: 20 of 22 (Parallel Pipeline)
-Plan: 2 of 2 in current phase — 20-01 and 20-02 complete
-Status: Phase 20 COMPLETE — both plans done; ready for Phase 21 Integration Testing
-Last activity: 2026-02-24 — Phase 20 plan 02 complete (main.rs pipeline wiring: end-to-end binary functional)
+Phase: 21 of 22 (Integration Testing and Behavioral Parity)
+Plan: 1 of 3 in current phase — 21-01 complete
+Status: Phase 21 IN PROGRESS — plan 01 done (metric and schema bugs fixed for parity)
+Last activity: 2026-02-25 — Phase 21 plan 01 complete (fixed cognitive_error default, arrow callback bug, duplication JSON schema)
 
-Progress: [██████░░░░] 55% (v0.8 milestone)
+Progress: [███████░░░] 60% (v0.8 milestone)
 
 ## Performance Metrics
 
@@ -31,9 +31,10 @@ Progress: [██████░░░░] 55% (v0.8 milestone)
 | 18 | 3/3 | 30 min | 10 min |
 | 19 | 4/4 | 19 min | 5 min |
 | 20 | 2/2 | 6 min | 3 min |
+| 21 | 1/3 | 12 min | 12 min |
 
 **Recent Trend:**
-- Last 5 plans: 19-03 (6 min), 19-04 (1 min), 20-01 (3 min), 20-02 (3 min)
+- Last 5 plans: 19-04 (1 min), 20-01 (3 min), 20-02 (3 min), 21-01 (12 min)
 - Trend: Stable
 
 *Updated after each plan completion*
@@ -65,6 +66,9 @@ Recent decisions affecting v0.8:
 - [Phase 20-02]: build_analysis_config() maps ResolvedConfig flat thresholds into AnalysisConfig struct hierarchy in main.rs
 - [Phase 20-02]: Duplication gated on duplication_enabled && !no_duplication (post-parallel step in main.rs)
 - [Phase 20-02]: function_violations() reused from output::console to count violations for exit codes — no duplication of threshold logic
+- [Phase 21-01]: cognitive_error default changed from 30 to 25 in ResolvedConfig to match ScoringThresholds default (25.0); fixes health score divergence (greet: Rust 79.38 → 82.71 matching Zig)
+- [Phase 21-01]: visit_node_cognitive() added as scope-boundary variant of visit_node_with_arrows(); stops traversal at arrow_function nodes (scope boundary) vs treating them as callbacks — mirrors Zig visitNode() semantics
+- [Phase 21-01]: Duplication JSON schema rewritten to match Zig: enabled/project_duplication_pct/project_status/clone_groups.locations/files array; duplication thresholds hardcoded (3%/5%) since ResolvedConfig doesn't carry them yet
 
 ### Pending Todos
 
@@ -78,15 +82,18 @@ Recent decisions affecting v0.8:
 
 ## Session Continuity
 
-Last session: 2026-02-24 (execute-phase 20)
-Stopped at: Completed 20-02-PLAN.md — full pipeline wiring in main.rs; binary analyzes real files end-to-end
-Resume with: Plan + Execute Phase 21 (Integration Testing)
+Last session: 2026-02-25 (execute-phase 21)
+Stopped at: Completed 21-01-PLAN.md — metric and schema bugs fixed; health scores, cognitive complexity, duplication JSON match Zig v1.0 baseline
+Resume with: Execute Phase 21 Plan 02 (console format rewrite) and Plan 03 (integration test baselines)
 
-**Remaining phases to plan+execute:**
+**Remaining phases to execute:**
 - Phase 19: CLI, Config, Output Formats — COMPLETE (4/4)
 - Phase 20: Parallel Pipeline — COMPLETE (2/2)
-- Phase 21: Integration Testing — plan + execute
-- Phase 22: Cross-Compilation, CI, Release — plan + execute
+- Phase 21: Integration Testing — IN PROGRESS (1/3 complete)
+  - 21-01: Metric and schema bug fixes — COMPLETE
+  - 21-02: Console format rewrite (Zig ESLint-style) — TODO
+  - 21-03: Integration test baselines — TODO
+- Phase 22: Cross-Compilation, CI, Release — TODO
 
 ---
 *State initialized: 2026-02-14*

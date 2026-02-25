@@ -18,11 +18,11 @@ Requirements for the Rust rewrite. Each maps to roadmap phases. Goal: 1:1 featur
 ### Metrics
 
 - [ ] **METR-01**: Cyclomatic complexity matches Zig output for all fixture files
-- [ ] **METR-02**: Cognitive complexity matches Zig output (including per-operator counting deviation)
-- [ ] **METR-03**: Halstead metrics match Zig output within float tolerance
+- [x] **METR-02**: Cognitive complexity matches Zig output (including per-operator counting deviation)
+- [x] **METR-03**: Halstead metrics match Zig output within float tolerance
 - [ ] **METR-04**: Structural metrics (length, params, nesting, exports) match Zig output
-- [ ] **METR-05**: Duplication detection (Rabin-Karp, Type 1 & 2) matches Zig clone groups
-- [ ] **METR-06**: Composite health score (sigmoid normalization) matches Zig output within tolerance
+- [x] **METR-05**: Duplication detection (Rabin-Karp, Type 1 & 2) matches Zig clone groups
+- [x] **METR-06**: Composite health score (sigmoid normalization) matches Zig output within tolerance
 
 ### CLI & Config
 
@@ -91,11 +91,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PARSE-04 | Phase 17 | Complete |
 | PARSE-05 | Phase 17 | Complete |
 | METR-01 | Phase 18 | Pending |
-| METR-02 | Phase 18 | Pending |
-| METR-03 | Phase 18 | Pending |
+| METR-02 | Phase 18 | Complete |
+| METR-03 | Phase 18 | Complete |
 | METR-04 | Phase 18 | Pending |
-| METR-05 | Phase 18 | Pending |
-| METR-06 | Phase 18 | Pending |
+| METR-05 | Phase 18 | Complete |
+| METR-06 | Phase 18 | Complete |
 | CLI-01 | Phase 19 | Complete |
 | CLI-02 | Phase 19 | Complete |
 | CLI-03 | Phase 19 | Complete |
