@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 Phase: 22 of 22 (Cross-Compilation, CI, and Release) — COMPLETE
 Plan: 3 of 3 in phase 22 — plan 03 complete
 Status: Phase 22-03 COMPLETE — documentation updates for Rust binary (README, docs, releasing, publication READMEs)
-Last activity: 2026-02-25 - Completed quick task 23: rust is faster so were going with rust, document the rationale. cleanup any zig related code and documentation and move the rust code out of its subdirectory
+Last activity: 2026-02-25 - Completed quick task 24: restore benchmarks/ directory from main with Rust build commands
 
 Progress: [█████████░] 75% (v0.8 milestone)
 
@@ -107,12 +107,13 @@ Recent decisions affecting v0.8:
 | 21 | Move zig code to zig/ directory to match rust/ directory structure | 2026-02-25 | 0c20250 | [21-move-zig-code-to-zig-directory-to-match-](./quick/21-move-zig-code-to-zig-directory-to-match-/) |
 | 22 | Create benchmark script comparing Rust vs Zig binaries | 2026-02-25 | 54154f5 | [22-create-benchmark-script-comparing-rust-v](./quick/22-create-benchmark-script-comparing-rust-v/) |
 | 23 | Adopt Rust as sole language: remove Zig, promote Rust to root, create ADR | 2026-02-25 | 5e25696 | [23-rust-is-faster-so-were-going-with-rust-d](./quick/23-rust-is-faster-so-were-going-with-rust-d/) |
+| 24 | Restore benchmarks/ directory from main with Rust build commands | 2026-02-25 | 91c487e | [24-restore-benchmarks-and-scripts-from-main](./quick/24-restore-benchmarks-and-scripts-from-main/) |
 
 ## Session Continuity
 
-Last session: 2026-02-25 (quick task 23)
-Stopped at: Completed quick task 23 — Rust adoption, Zig removal, project restructure
-Resume with: Project is now Rust-only. Cargo.toml at root. No Zig code remains.
+Last session: 2026-02-25 (quick task 24)
+Stopped at: Completed quick task 24 — restored benchmarks/ directory with Rust build commands
+Resume with: Benchmarks restored. Run setup.sh + bench-quick.sh for new baselines.
 
 **Remaining phases to execute:**
 - Phase 19: CLI, Config, Output Formats — COMPLETE (4/4)
@@ -129,4 +130,4 @@ Resume with: Project is now Rust-only. Cargo.toml at root. No Zig code remains.
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-25 after quick task 23 completion (Rust adoption, Zig removal, Cargo.toml at project root, CI unified to ci.yml + release.yml)*
+*Last updated: 2026-02-25 after quick task 24 completion (benchmarks/ restored with Rust build commands, historical baselines preserved)*
