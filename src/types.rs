@@ -317,25 +317,13 @@ pub struct FileAnalysisResult {
 }
 
 /// Combined configuration for all metric analyses.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct AnalysisConfig {
     pub cyclomatic: CyclomaticConfig,
     pub cognitive: CognitiveConfig,
     pub scoring_weights: ScoringWeights,
     pub scoring_thresholds: ScoringThresholds,
     pub duplication: DuplicationConfig,
-}
-
-impl Default for AnalysisConfig {
-    fn default() -> Self {
-        Self {
-            cyclomatic: CyclomaticConfig::default(),
-            cognitive: CognitiveConfig::default(),
-            scoring_weights: ScoringWeights::default(),
-            scoring_thresholds: ScoringThresholds::default(),
-            duplication: DuplicationConfig::default(),
-        }
-    }
 }
 
 // TESTS

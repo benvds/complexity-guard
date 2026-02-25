@@ -310,23 +310,27 @@ fn get_last_member_segment(node: &tree_sitter::Node, source: &[u8]) -> Option<St
 
 /// Calculate cyclomatic complexity for a function node.
 /// Base complexity is 1 plus the number of decision points.
-fn calculate_complexity(node: &tree_sitter::Node, config: &CyclomaticConfig, source: &[u8]) -> u32 {
+fn calculate_complexity(
+    node: &tree_sitter::Node,
+    config: &CyclomaticConfig,
+    _source: &[u8],
+) -> u32 {
     // Look for statement_block child (function body)
     for i in 0..node.child_count() as u32 {
         if let Some(child) = node.child(i) {
             if child.kind() == "statement_block" {
-                return 1 + count_decision_points(child, config, source);
+                return 1 + count_decision_points(child, config);
             }
         }
     }
     // Expression body arrow function: count on whole node
-    1 + count_decision_points(*node, config, source)
+    1 + count_decision_points(*node, config)
 }
 
 /// Count decision points in an AST subtree.
 ///
 /// Stops recursion at nested function boundaries.
-fn count_decision_points(node: tree_sitter::Node, config: &CyclomaticConfig, source: &[u8]) -> u32 {
+fn count_decision_points(node: tree_sitter::Node, config: &CyclomaticConfig) -> u32 {
     let kind = node.kind();
     let mut count: u32 = 0;
 
@@ -367,9 +371,9 @@ fn count_decision_points(node: tree_sitter::Node, config: &CyclomaticConfig, sou
             for i in 0..node.child_count() as u32 {
                 if let Some(child) = node.child(i) {
                     let ct = child.kind();
-                    if config.count_logical_operators && (ct == "&&" || ct == "||") {
-                        count += 1;
-                    } else if config.count_nullish_coalescing && ct == "??" {
+                    if (config.count_logical_operators && (ct == "&&" || ct == "||"))
+                        || (config.count_nullish_coalescing && ct == "??")
+                    {
                         count += 1;
                     }
                 }
@@ -407,7 +411,7 @@ fn count_decision_points(node: tree_sitter::Node, config: &CyclomaticConfig, sou
     // Recurse into children
     for i in 0..node.child_count() as u32 {
         if let Some(child) = node.child(i) {
-            count += count_decision_points(child, config, source);
+            count += count_decision_points(child, config);
         }
     }
 
@@ -525,8 +529,10 @@ function test(x: string): number {
     }
 }
 "#;
-        let mut config = CyclomaticConfig::default();
-        config.switch_case_mode = SwitchCaseMode::Modified;
+        let config = CyclomaticConfig {
+            switch_case_mode: SwitchCaseMode::Modified,
+            ..Default::default()
+        };
         let results = parse_and_analyze(source, &config);
 
         // Modified mode: base 1 + 1 for the switch = 2

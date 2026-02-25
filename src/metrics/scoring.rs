@@ -21,6 +21,7 @@ pub fn compute_steepness(warning: f64, error: f64) -> f64 {
 /// Applies sigmoid normalization to each metric, then returns a weighted average.
 /// The structural sub-score is the average of function_length, params_count,
 /// and nesting_depth sigmoid scores.
+#[allow(clippy::too_many_arguments)]
 pub fn compute_function_score(
     cyclomatic: u32,
     cognitive: u32,

@@ -337,7 +337,7 @@ mod tests {
         assert!(!result.error);
 
         // Tokens should be non-empty
-        assert!(result.tokens.len() > 0, "tokens should be non-empty");
+        assert!(!result.tokens.is_empty(), "tokens should be non-empty");
 
         // File score should be between 0 and 100
         assert!(result.file_score >= 0.0 && result.file_score <= 100.0);

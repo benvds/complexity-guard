@@ -170,10 +170,10 @@ pub fn count_logical_lines(source: &[u8], start_byte: usize, end_byte: usize) ->
         }
 
         // Handle block comment start
-        if line.starts_with("/*") {
-            if let Some(close_idx) = line[2..].find("*/") {
+        if let Some(stripped) = line.strip_prefix("/*") {
+            if let Some(close_idx) = stripped.find("*/") {
                 // Inline block comment -- check for code after
-                let after_close = line[2 + close_idx + 2..].trim();
+                let after_close = stripped[close_idx + 2..].trim();
                 if !after_close.is_empty() {
                     count += 1;
                 }

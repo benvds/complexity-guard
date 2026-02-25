@@ -21,10 +21,10 @@ pub const EXCLUDED_DIRS: &[&str] = &[
 
 /// Returns true if the file extension is one of .ts, .tsx, .js, or .jsx.
 fn is_target_extension(path: &Path) -> bool {
-    match path.extension().and_then(|e| e.to_str()) {
-        Some("ts" | "tsx" | "js" | "jsx") => true,
-        _ => false,
-    }
+    matches!(
+        path.extension().and_then(|e| e.to_str()),
+        Some("ts" | "tsx" | "js" | "jsx")
+    )
 }
 
 /// Returns true if the path ends with `.d.ts` or `.d.tsx` (TypeScript declaration files).

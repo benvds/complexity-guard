@@ -23,6 +23,7 @@ pub fn tokenize_tree(root: tree_sitter::Node, source: &[u8]) -> Vec<Token> {
 }
 
 /// Recursively collect normalized tokens from an AST node.
+#[allow(clippy::only_used_in_recursion)]
 fn tokenize_node(node: tree_sitter::Node, source: &[u8], tokens: &mut Vec<Token>) {
     let kind = node.kind();
 
@@ -97,8 +98,8 @@ impl RollingHasher {
     fn new(tokens: &[Token], window: usize) -> Self {
         let mut h: u64 = 0;
         let mut bpow: u64 = 1;
-        for i in 0..window {
-            h = h.wrapping_mul(HASH_BASE).wrapping_add(tokens[i].kind_hash);
+        for (i, token) in tokens.iter().enumerate().take(window) {
+            h = h.wrapping_mul(HASH_BASE).wrapping_add(token.kind_hash);
             if i < window - 1 {
                 bpow = bpow.wrapping_mul(HASH_BASE);
             }
@@ -164,7 +165,7 @@ pub fn detect_duplication(
     let num_files = file_tokens.len();
     let mut intervals_per_file: Vec<Vec<(usize, usize)>> = vec![Vec::new(); num_files];
 
-    for (_, bucket) in &index {
+    for bucket in index.values() {
         if bucket.len() < 2 || bucket.len() > MAX_BUCKET_SIZE {
             continue;
         }
@@ -183,15 +184,15 @@ pub fn detect_duplication(
                 }
 
                 // Verify token-by-token match
-                if tokens_match(&file_tokens[fi_a], st_a, &file_tokens[fi_b], st_b, window) {
+                if tokens_match(file_tokens[fi_a], st_a, file_tokens[fi_b], st_b, window) {
                     if !added[i] {
                         added[i] = true;
-                        instances.push(make_instance(fi_a, st_a, window, &file_tokens[fi_a]));
+                        instances.push(make_instance(fi_a, st_a, window, file_tokens[fi_a]));
                         intervals_per_file[fi_a].push((st_a, st_a + window));
                     }
                     if !added[j] {
                         added[j] = true;
-                        instances.push(make_instance(fi_b, st_b, window, &file_tokens[fi_b]));
+                        instances.push(make_instance(fi_b, st_b, window, file_tokens[fi_b]));
                         intervals_per_file[fi_b].push((st_b, st_b + window));
                     }
                 }
@@ -266,7 +267,7 @@ fn tokens_match(
 }
 
 /// Merge overlapping intervals and return total non-overlapping token count.
-fn count_merged_intervals(intervals: &mut Vec<(usize, usize)>) -> usize {
+fn count_merged_intervals(intervals: &mut [(usize, usize)]) -> usize {
     if intervals.is_empty() {
         return 0;
     }
@@ -315,7 +316,7 @@ mod tests {
         let source = "function add(a: number, b: number): number { return a + b; }";
         let tokens = parse_to_tokens(source);
         assert!(
-            tokens.len() > 0,
+            !tokens.is_empty(),
             "should produce tokens from a real function"
         );
     }
@@ -335,7 +336,7 @@ function greet(name: string): string {
             assert_ne!(tok.kind, "line_comment");
             assert_ne!(tok.kind, "block_comment");
         }
-        assert!(tokens.len() > 0);
+        assert!(!tokens.is_empty());
     }
 
     #[test]
@@ -418,7 +419,7 @@ function greet(name: string): string {
         };
         let result = detect_duplication(&[tokens_a.as_slice(), tokens_b.as_slice()], &config);
         assert!(
-            result.clone_groups.len() >= 1,
+            !result.clone_groups.is_empty(),
             "should detect clones between identical functions"
         );
     }
@@ -449,7 +450,7 @@ function greet(name: string): string {
         };
         let result = detect_duplication(&[tokens_e.as_slice(), tokens_p.as_slice()], &config);
         assert!(
-            result.clone_groups.len() >= 1,
+            !result.clone_groups.is_empty(),
             "should detect Type 2 clones with different identifiers"
         );
     }
@@ -492,7 +493,7 @@ function processItemData(input: string): string {
         let source = std::fs::read_to_string(&fixture_path).unwrap();
         let tokens = parse_to_tokens(&source);
 
-        assert!(tokens.len() > 0, "fixture should produce tokens");
+        assert!(!tokens.is_empty(), "fixture should produce tokens");
         // All identifiers should be normalized to "V"
         for tok in &tokens {
             assert_ne!(tok.kind, "identifier", "identifiers should be normalized");

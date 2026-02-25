@@ -18,6 +18,7 @@ const HALSTEAD_TOL: f64 = 1e-9;
 const SCORE_TOL: f64 = 1e-6;
 
 /// Construct an assert_cmd Command for the complexity-guard binary.
+#[allow(deprecated)]
 fn cargo_bin() -> Command {
     Command::cargo_bin("complexity-guard").unwrap()
 }
@@ -581,7 +582,7 @@ fn test_sarif_structure() {
         );
         let locations = result["locations"]
             .as_array()
-            .expect(&format!("result[{}].locations must be array", i));
+            .unwrap_or_else(|| panic!("result[{}].locations must be array", i));
         assert!(
             !locations.is_empty(),
             "result[{}].locations must not be empty",
