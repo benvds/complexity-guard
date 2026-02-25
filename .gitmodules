@@ -1,9 +1,0 @@
-[submodule "zig/vendor/tree-sitter"]
-	path = zig/vendor/tree-sitter
-	url = https://github.com/tree-sitter/tree-sitter
-[submodule "zig/vendor/tree-sitter-typescript"]
-	path = zig/vendor/tree-sitter-typescript
-	url = https://github.com/tree-sitter/tree-sitter-typescript
-[submodule "zig/vendor/tree-sitter-javascript"]
-	path = zig/vendor/tree-sitter-javascript
-	url = https://github.com/tree-sitter/tree-sitter-javascript
