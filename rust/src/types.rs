@@ -254,6 +254,17 @@ pub struct DuplicationResult {
     pub duplication_percentage: f64,
 }
 
+/// Per-file duplication statistics, matching the Zig JSON schema `files` array element.
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct DuplicationFileInfo {
+    pub path: String,
+    pub total_tokens: usize,
+    pub cloned_tokens: usize,
+    pub duplication_pct: f64,
+    /// "ok", "warning", or "error"
+    pub status: String,
+}
+
 /// Configuration for duplication detection.
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct DuplicationConfig {

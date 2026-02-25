@@ -2,6 +2,14 @@ use crate::cli::ResolvedConfig;
 use crate::output::console::{function_violations, Severity};
 use crate::types::{DuplicationResult, FileAnalysisResult};
 
+/// Duplication thresholds used for computing per-file and project status.
+/// These match the Zig defaults since ResolvedConfig does not currently carry
+/// duplication thresholds.
+const DUP_FILE_WARNING: f64 = 3.0;
+const DUP_FILE_ERROR: f64 = 5.0;
+const DUP_PROJECT_WARNING: f64 = 3.0;
+const DUP_PROJECT_ERROR: f64 = 5.0;
+
 // --- JSON output structs matching Zig schema exactly ---
 
 /// Top-level JSON output matching the Zig JsonOutput struct.
@@ -68,12 +76,52 @@ pub struct JsonMetadata {
     pub thread_count: u32,
 }
 
-/// Duplication detection results.
+/// Duplication detection results matching the Zig JSON schema exactly.
 #[derive(serde::Serialize)]
 pub struct JsonDuplicationOutput {
+    pub enabled: bool,
+    pub project_duplication_pct: f64,
+    /// "ok", "warning", or "error"
+    pub project_status: String,
+    pub clone_groups: Vec<JsonCloneGroup>,
+    pub files: Vec<JsonDuplicationFileInfo>,
+}
+
+/// A single clone group entry matching Zig schema: token_count + locations array.
+#[derive(serde::Serialize)]
+pub struct JsonCloneGroup {
+    pub token_count: u32,
+    pub locations: Vec<JsonCloneLocation>,
+}
+
+/// A single clone location within a clone group.
+#[derive(serde::Serialize)]
+pub struct JsonCloneLocation {
+    pub file: String,
+    pub start_line: usize,
+    pub end_line: usize,
+}
+
+/// Per-file duplication stats matching Zig schema.
+#[derive(serde::Serialize)]
+pub struct JsonDuplicationFileInfo {
+    pub path: String,
     pub total_tokens: usize,
     pub cloned_tokens: usize,
-    pub duplication_percentage: f64,
+    pub duplication_pct: f64,
+    /// "ok", "warning", or "error"
+    pub status: String,
+}
+
+/// Compute a duplication status string from a percentage value and thresholds.
+fn duplication_status(pct: f64, warning: f64, error: f64) -> String {
+    if pct >= error {
+        "error".to_string()
+    } else if pct >= warning {
+        "warning".to_string()
+    } else {
+        "ok".to_string()
+    }
 }
 
 /// Renders analysis results as a JSON string matching the Zig schema exactly.
@@ -163,10 +211,84 @@ pub fn render_json(
         .unwrap_or_default()
         .as_secs();
 
-    let json_duplication = duplication.map(|d| JsonDuplicationOutput {
-        total_tokens: d.total_tokens,
-        cloned_tokens: d.cloned_tokens,
-        duplication_percentage: d.duplication_percentage,
+    let json_duplication = duplication.map(|d| {
+        // Build clone groups with locations (file paths resolved from files slice)
+        let clone_groups: Vec<JsonCloneGroup> = d
+            .clone_groups
+            .iter()
+            .map(|group| {
+                let locations: Vec<JsonCloneLocation> = group
+                    .instances
+                    .iter()
+                    .map(|inst| {
+                        let file_path = if inst.file_index < files.len() {
+                            files[inst.file_index].path.to_string_lossy().to_string()
+                        } else {
+                            String::new()
+                        };
+                        JsonCloneLocation {
+                            file: file_path,
+                            start_line: inst.start_line,
+                            end_line: inst.end_line,
+                        }
+                    })
+                    .collect();
+                JsonCloneGroup {
+                    token_count: group.token_count,
+                    locations,
+                }
+            })
+            .collect();
+
+        // Compute per-file cloned token counts from clone group instances
+        let mut file_cloned: Vec<usize> = vec![0usize; files.len()];
+        for group in &d.clone_groups {
+            for inst in &group.instances {
+                if inst.file_index < files.len() {
+                    // Count tokens in this instance: end_token - start_token
+                    // If token indices are available use them; else approximate with token_count
+                    file_cloned[inst.file_index] += group.token_count as usize;
+                }
+            }
+        }
+
+        // Build per-file info array
+        let dup_files: Vec<JsonDuplicationFileInfo> = files
+            .iter()
+            .enumerate()
+            .map(|(i, f)| {
+                let total = f.tokens.len();
+                let cloned = file_cloned[i];
+                let pct = if total > 0 {
+                    (cloned as f64 / total as f64) * 100.0
+                } else {
+                    0.0
+                };
+                let status =
+                    duplication_status(pct, DUP_FILE_WARNING, DUP_FILE_ERROR);
+                JsonDuplicationFileInfo {
+                    path: f.path.to_string_lossy().to_string(),
+                    total_tokens: total,
+                    cloned_tokens: cloned,
+                    duplication_pct: pct,
+                    status,
+                }
+            })
+            .collect();
+
+        let project_status = duplication_status(
+            d.duplication_percentage,
+            DUP_PROJECT_WARNING,
+            DUP_PROJECT_ERROR,
+        );
+
+        JsonDuplicationOutput {
+            enabled: true,
+            project_duplication_pct: d.duplication_percentage,
+            project_status,
+            clone_groups,
+            files: dup_files,
+        }
     });
 
     let output = JsonOutput {
@@ -386,9 +508,98 @@ mod tests {
         let json_str = render_json(&[file], Some(&dup), &config, 5).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&json_str).unwrap();
 
+        // Verify Zig schema fields are present
         assert!(!parsed["duplication"].is_null(), "duplication should be present");
-        assert_eq!(parsed["duplication"]["total_tokens"].as_u64().unwrap(), 1000);
-        assert_eq!(parsed["duplication"]["cloned_tokens"].as_u64().unwrap(), 150);
+        let dup_obj = &parsed["duplication"];
+        assert!(dup_obj["enabled"].as_bool().unwrap(), "enabled must be true");
+        assert_eq!(
+            dup_obj["project_duplication_pct"].as_f64().unwrap(),
+            15.0,
+            "project_duplication_pct must match"
+        );
+        assert_eq!(
+            dup_obj["project_status"].as_str().unwrap(),
+            "error",
+            "15% duplication should be error status (threshold=5%)"
+        );
+        assert!(dup_obj["clone_groups"].is_array(), "clone_groups must be array");
+        assert!(dup_obj["files"].is_array(), "files must be array");
+    }
+
+    #[test]
+    fn test_render_json_duplication_schema_field_names() {
+        // Verifies the Zig schema field names are present (not the old Rust schema names).
+        use crate::types::{CloneGroup, CloneInstance, DuplicationResult};
+        use crate::types::Token;
+        let token = Token {
+            kind: "identifier".to_string(),
+            start_byte: 0,
+            end_byte: 5,
+            file_index: 0,
+        };
+        let tokens = vec![token; 50];
+        let file = FileAnalysisResult {
+            path: std::path::PathBuf::from("src/a.ts"),
+            functions: vec![make_func("f", 1, 2, 1, 90.0)],
+            tokens,
+            file_score: 90.0,
+            file_length: 100,
+            export_count: 1,
+            error: false,
+        };
+        let config = default_config();
+        let clone_instance = CloneInstance {
+            file_index: 0,
+            start_token: 0,
+            end_token: 24,
+            start_line: 1,
+            end_line: 10,
+        };
+        let dup = DuplicationResult {
+            clone_groups: vec![CloneGroup {
+                instances: vec![clone_instance],
+                token_count: 25,
+            }],
+            total_tokens: 50,
+            cloned_tokens: 25,
+            duplication_percentage: 50.0,
+        };
+        let json_str = render_json(&[file], Some(&dup), &config, 5).unwrap();
+        let parsed: serde_json::Value = serde_json::from_str(&json_str).unwrap();
+        let dup_obj = &parsed["duplication"];
+
+        // Zig schema fields must be present
+        assert!(dup_obj["enabled"].is_boolean(), "enabled field missing");
+        assert!(dup_obj["project_duplication_pct"].is_number(), "project_duplication_pct missing");
+        assert!(dup_obj["project_status"].is_string(), "project_status missing");
+        assert!(dup_obj["clone_groups"].is_array(), "clone_groups missing");
+        assert!(dup_obj["files"].is_array(), "files missing");
+
+        // Old Rust schema fields must NOT be present
+        assert!(dup_obj["total_tokens"].is_null(), "total_tokens is old Rust schema — should not be present");
+        assert!(dup_obj["cloned_tokens"].is_null(), "cloned_tokens is old Rust schema — should not be present");
+        assert!(dup_obj["duplication_percentage"].is_null(), "duplication_percentage is old Rust schema — should not be present");
+
+        // Clone group structure: token_count + locations
+        let group = &dup_obj["clone_groups"][0];
+        assert!(group["token_count"].is_number(), "token_count missing");
+        assert!(group["locations"].is_array(), "locations missing");
+        // Old schema uses instances — must not be present
+        assert!(group["instances"].is_null(), "instances is old Rust schema — should not be present");
+
+        // Location structure: file, start_line, end_line
+        let location = &group["locations"][0];
+        assert!(location["file"].is_string(), "location.file missing");
+        assert!(location["start_line"].is_number(), "location.start_line missing");
+        assert!(location["end_line"].is_number(), "location.end_line missing");
+
+        // Per-file array structure: path, total_tokens, cloned_tokens, duplication_pct, status
+        let file_info = &dup_obj["files"][0];
+        assert!(file_info["path"].is_string(), "file_info.path missing");
+        assert!(file_info["total_tokens"].is_number(), "file_info.total_tokens missing");
+        assert!(file_info["cloned_tokens"].is_number(), "file_info.cloned_tokens missing");
+        assert!(file_info["duplication_pct"].is_number(), "file_info.duplication_pct missing");
+        assert!(file_info["status"].is_string(), "file_info.status missing");
     }
 
     #[test]
