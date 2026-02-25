@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 Phase: 22 of 22 (Cross-Compilation, CI, and Release) — COMPLETE
 Plan: 3 of 3 in phase 22 — plan 03 complete
 Status: Phase 22-03 COMPLETE — documentation updates for Rust binary (README, docs, releasing, publication READMEs)
-Last activity: 2026-02-25 - Completed quick task 21: Move zig code to zig/ directory to match rust/ directory structure
+Last activity: 2026-02-25 - Completed quick task 23: rust is faster so were going with rust, document the rationale. cleanup any zig related code and documentation and move the rust code out of its subdirectory
 
 Progress: [█████████░] 75% (v0.8 milestone)
 
