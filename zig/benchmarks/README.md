@@ -8,6 +8,7 @@ TypeScript and JavaScript projects.
 
 - **Zig 0.15.2+** — for building ComplexityGuard in ReleaseFast mode
 - **Node.js / npm** — FTA is auto-installed per benchmark run (no global install needed)
+- **Rust / Cargo** — for building the Rust binary (`cargo build --release`)
 - **[hyperfine](https://github.com/sharkdp/hyperfine)** — for statistical benchmarking
   ```sh
   cargo install hyperfine
@@ -36,6 +37,9 @@ bash benchmarks/scripts/bench-subsystems.sh   # from Plan 02
 
 # 4. Metric accuracy comparison (how well do CG and FTA agree on rankings?)
 bash benchmarks/scripts/compare-metrics.sh --suite quick
+
+# 5. Rust vs Zig binary comparison (requires both toolchains)
+bash benchmarks/scripts/bench-rust-vs-zig.sh
 ```
 
 Then summarize results:
@@ -56,6 +60,7 @@ node benchmarks/scripts/summarize-results.mjs benchmarks/results/baseline-$(date
 | `compare-metrics.sh [--suite ...]` | Run both tools, compare per-file metrics with tolerance bands | `results/*/metric-accuracy.json` |
 | `compare-metrics.mjs <cg> <fta> <proj>` | Per-project metric comparison (called by compare-metrics.sh) | JSON to stdout |
 | `summarize-results.mjs <results-dir>` | Aggregate hyperfine + accuracy results into markdown tables | Markdown to stdout |
+| `bench-rust-vs-zig.sh` | Hyperfine benchmark: Rust binary vs Zig binary, quick suite | `results/rust-vs-zig-*/`*`-rust-vs-zig.json`* |
 
 ## Suite Tiers
 
@@ -80,6 +85,10 @@ benchmarks/results/
     vscode-quick.json           # hyperfine JSON: CG vs FTA timings for vscode
     zod-subsystems.json         # Zig subsystem timing breakdown for zod
     metric-accuracy.json        # CG vs FTA metric comparison across all projects
+  rust-vs-zig-2026-02-25/          # Rust vs Zig comparison
+    system-info.json
+    zod-rust-vs-zig.json           # hyperfine JSON: Rust vs Zig timings for zod
+    ...
 ```
 
 ### Hyperfine JSON Schema
@@ -173,6 +182,14 @@ If multiple bench scripts write to the same dated results directory, only the fi
 writes `system-info.json` (subsequent scripts skip if the file already exists).
 
 ## Interpreting Results
+
+### Rust vs Zig (Binary Comparison)
+
+`bench-rust-vs-zig.sh` reports Rust/Zig ratio:
+
+- **< 1.0**: Rust is faster
+- **= 1.0**: Equal performance
+- **> 1.0**: Zig is faster
 
 ### Speed (Speedup Ratio)
 
