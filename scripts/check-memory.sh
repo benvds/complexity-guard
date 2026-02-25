@@ -11,9 +11,9 @@
 
 set -euo pipefail
 
-BINARY="./zig-out/bin/complexity-guard"
+BINARY="./zig/zig-out/bin/complexity-guard"
 FIXTURES="tests/fixtures/typescript"
-SUPPRESSIONS=".valgrind.supp"
+SUPPRESSIONS="zig/.valgrind.supp"
 PASS=0
 FAIL=0
 
@@ -29,7 +29,7 @@ fi
 # ── Build ─────────────────────────────────────────────────────────────────────
 
 echo "=== Building (ReleaseSafe) ==="
-zig build -Doptimize=ReleaseSafe
+(cd zig && zig build -Doptimize=ReleaseSafe)
 echo "Build complete: $BINARY"
 echo ""
 
@@ -96,7 +96,7 @@ run_check "Helgrind thread-safety (--threads 4)" \
 
 # ── Stress test: real-world codebase (optional) ───────────────────────────────
 
-ZOD_DIR="tests/repos/zod"
+ZOD_DIR="zig/tests/repos/zod"
 if [ -d "$ZOD_DIR" ]; then
   run_check "Valgrind memcheck stress test (zod, --threads 4)" \
     valgrind \

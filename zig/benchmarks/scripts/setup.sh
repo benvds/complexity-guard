@@ -13,8 +13,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
-PROJECTS_JSON="$PROJECT_ROOT/tests/public-projects.json"
-PROJECTS_DIR="$PROJECT_ROOT/benchmarks/projects"
+PROJECTS_JSON="$PROJECT_ROOT/zig/tests/public-projects.json"
+PROJECTS_DIR="$PROJECT_ROOT/zig/benchmarks/projects"
 
 # Check for jq
 if ! command -v jq &>/dev/null; then

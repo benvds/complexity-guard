@@ -93,23 +93,23 @@ jobs:
 
             - name: Build binary for ${{ matrix.target }}
               run: |
-                  zig build -Dtarget=${{ matrix.target }} -Doptimize=ReleaseSmall
+                  cd zig && zig build -Dtarget=${{ matrix.target }} -Doptimize=ReleaseSmall
 
                   # Verify binary was created
-                  if [ ! -f "zig-out/bin/complexity-guard${{ matrix.ext }}" ]; then
-                    echo "Error: Binary not found at zig-out/bin/complexity-guard${{ matrix.ext }}"
+                  if [ ! -f "zig/zig-out/bin/complexity-guard${{ matrix.ext }}" ]; then
+                    echo "Error: Binary not found at zig/zig-out/bin/complexity-guard${{ matrix.ext }}"
                     exit 1
                   fi
 
             - name: Create archive for ${{ matrix.target }}
               run: |
-                  cd zig-out/bin
+                  cd zig/zig-out/bin
                   if [ "${{ matrix.os }}" = "windows" ]; then
                     # Windows: create zip archive
-                    zip ../../complexity-guard-${{ matrix.target }}.zip complexity-guard${{ matrix.ext }}
+                    zip ../../../complexity-guard-${{ matrix.target }}.zip complexity-guard${{ matrix.ext }}
                   else
                     # Unix: create tar.gz archive
-                    tar czf ../../complexity-guard-${{ matrix.target }}.tar.gz complexity-guard${{ matrix.ext }}
+                    tar czf ../../../complexity-guard-${{ matrix.target }}.tar.gz complexity-guard${{ matrix.ext }}
                   fi
 
             - name: Upload artifact for ${{ matrix.target }}

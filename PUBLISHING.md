@@ -41,23 +41,25 @@ The `scripts/publish.sh` script publishes all npm packages from your local machi
 
 ### Building binaries locally
 
-Cross-compile for all platforms:
+Cross-compile for all platforms (from the `zig/` directory):
 
 ```sh
+cd zig
+
 zig build -Dtarget=aarch64-macos -Doptimize=ReleaseSafe
-cp zig-out/bin/complexity-guard npm/darwin-arm64/
+cp zig-out/bin/complexity-guard ../npm/darwin-arm64/
 
 zig build -Dtarget=x86_64-macos -Doptimize=ReleaseSafe
-cp zig-out/bin/complexity-guard npm/darwin-x64/
+cp zig-out/bin/complexity-guard ../npm/darwin-x64/
 
 zig build -Dtarget=aarch64-linux -Doptimize=ReleaseSafe
-cp zig-out/bin/complexity-guard npm/linux-arm64/
+cp zig-out/bin/complexity-guard ../npm/linux-arm64/
 
 zig build -Dtarget=x86_64-linux -Doptimize=ReleaseSafe
-cp zig-out/bin/complexity-guard npm/linux-x64/
+cp zig-out/bin/complexity-guard ../npm/linux-x64/
 
 zig build -Dtarget=x86_64-windows -Doptimize=ReleaseSafe
-cp zig-out/bin/complexity-guard.exe npm/windows-x64/
+cp zig-out/bin/complexity-guard.exe ../npm/windows-x64/
 ```
 
 ### Dry run

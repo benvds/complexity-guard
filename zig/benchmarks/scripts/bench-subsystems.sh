@@ -161,8 +161,8 @@ fi
 # ── Build complexity-bench in ReleaseFast ──────────────────────────────────────
 
 echo "Building complexity-bench in ReleaseFast mode..."
-(cd "$PROJECT_ROOT" && zig build bench-build -Doptimize=ReleaseFast)
-BENCH_BIN="$PROJECT_ROOT/zig-out/bin/complexity-bench"
+(cd "$PROJECT_ROOT/zig" && zig build bench-build -Doptimize=ReleaseFast)
+BENCH_BIN="$PROJECT_ROOT/zig/zig-out/bin/complexity-bench"
 
 if [[ ! -x "$BENCH_BIN" ]]; then
   echo "Error: complexity-bench binary not found at $BENCH_BIN" >&2
@@ -172,7 +172,7 @@ echo "complexity-bench: $BENCH_BIN"
 
 # ── Check projects are cloned ──────────────────────────────────────────────────
 
-PROJECTS_DIR="$PROJECT_ROOT/benchmarks/projects"
+PROJECTS_DIR="$PROJECT_ROOT/zig/benchmarks/projects"
 
 CLONED_COUNT=0
 for project in "${SUITE_PROJECTS[@]}"; do
@@ -184,7 +184,7 @@ done
 if [[ "$CLONED_COUNT" -eq 0 ]]; then
   echo "" >&2
   echo "Error: No ${SUITE} suite projects found in $PROJECTS_DIR" >&2
-  echo "Run: bash benchmarks/scripts/setup.sh --suite ${SUITE}" >&2
+  echo "Run: bash zig/benchmarks/scripts/setup.sh --suite ${SUITE}" >&2
   echo "" >&2
   exit 1
 fi
@@ -192,7 +192,7 @@ fi
 # ── Create timestamped results directory ───────────────────────────────────────
 
 RESULTS_DATE=$(date +%Y-%m-%d)
-RESULTS_DIR="$PROJECT_ROOT/benchmarks/results/baseline-${RESULTS_DATE}"
+RESULTS_DIR="$PROJECT_ROOT/zig/benchmarks/results/baseline-${RESULTS_DATE}"
 mkdir -p "$RESULTS_DIR"
 capture_system_info "$RESULTS_DIR"
 

@@ -100,8 +100,8 @@ echo "hyperfine: $HYPERFINE ($("$HYPERFINE" --version))"
 
 # Build CG in ReleaseFast mode
 echo "Building ComplexityGuard in ReleaseFast mode..."
-(cd "$PROJECT_ROOT" && zig build -Doptimize=ReleaseFast)
-CG_BIN="$PROJECT_ROOT/zig-out/bin/complexity-guard"
+(cd "$PROJECT_ROOT/zig" && zig build -Doptimize=ReleaseFast)
+CG_BIN="$PROJECT_ROOT/zig/zig-out/bin/complexity-guard"
 echo "CG binary: $CG_BIN ($("$CG_BIN" --version 2>&1 || true))"
 
 # Auto-install FTA into temp dir
@@ -115,7 +115,7 @@ echo "FTA binary: $FTA_BIN ($("$FTA_BIN" --version 2>&1 || true))"
 
 # Create timestamped results directory
 RESULTS_DATE=$(date +%Y-%m-%d)
-RESULTS_DIR="$PROJECT_ROOT/benchmarks/results/baseline-${RESULTS_DATE}"
+RESULTS_DIR="$PROJECT_ROOT/zig/benchmarks/results/baseline-${RESULTS_DATE}"
 mkdir -p "$RESULTS_DIR"
 capture_system_info "$RESULTS_DIR"
 echo "Results dir: $RESULTS_DIR"
@@ -125,7 +125,7 @@ echo "Results dir: $RESULTS_DIR"
 # Note: ComplexityGuard is single-threaded at this baseline. Phase 12 will add
 #       parallelization — rerun this suite after Phase 12 for before/after comparison.
 STRESS_SUITE=(vscode typescript effect)
-PROJECTS_DIR="$PROJECT_ROOT/benchmarks/projects"
+PROJECTS_DIR="$PROJECT_ROOT/zig/benchmarks/projects"
 
 CLONED_COUNT=0
 for project in "${STRESS_SUITE[@]}"; do

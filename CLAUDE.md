@@ -7,7 +7,8 @@ ComplexityGuard -- a Zig-based code complexity analyzer for TypeScript/JavaScrip
 ## Build & Test
 
 ```sh
-zig build          # build binary to zig-out/bin/complexity-guard
+cd zig
+zig build          # build binary to zig/zig-out/bin/complexity-guard
 zig build test     # run all tests
 zig build run      # run the binary
 ```
@@ -17,12 +18,16 @@ Requires Zig 0.14.0+. No external dependencies yet.
 ## Project Structure
 
 ```
-src/
-  main.zig              # entry point, imports all modules for test discovery
-  core/types.zig        # core data structures (FunctionResult, FileResult, ProjectResult)
-  core/json.zig         # JSON serialization helpers
-  test_helpers.zig      # test builders (createTestFunction, createTestFile, etc.)
-tests/fixtures/         # real-world TS/JS fixture files for testing
+zig/                    # Zig implementation (original v1.0)
+  src/
+    main.zig            # entry point, imports all modules for test discovery
+    core/types.zig      # core data structures (FunctionResult, FileResult, ProjectResult)
+    core/json.zig       # JSON serialization helpers
+    test_helpers.zig    # test builders (createTestFunction, createTestFile, etc.)
+  build.zig             # Zig build configuration
+  vendor/               # tree-sitter submodules
+rust/                   # Rust implementation (v0.8+)
+tests/fixtures/         # real-world TS/JS fixture files for testing (shared by Zig and Rust)
 .planning/              # roadmap, requirements, phase plans (do not edit unless asked)
 ```
 

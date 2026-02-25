@@ -102,7 +102,7 @@ Benchmarks were run on the following system:
 | OS | Fedora Linux 43 (kernel 6.18.9) |
 | Architecture | x86_64 |
 
-For reproducible results on your hardware, run `bash benchmarks/scripts/bench-quick.sh` directly.
+For reproducible results on your hardware, run `bash zig/benchmarks/scripts/bench-quick.sh` directly.
 System specs are automatically captured in `system-info.json` alongside benchmark results.
 
 ### Tool Versions
@@ -183,16 +183,16 @@ To reproduce these benchmarks:
 git clone https://github.com/benvds/complexity-guard && cd complexity-guard
 
 # 2. Checkout benchmark project repos
-bash benchmarks/scripts/setup.sh --suite quick
+bash zig/benchmarks/scripts/setup.sh --suite quick
 
 # 3. Run end-to-end benchmark
-bash benchmarks/scripts/bench-quick.sh
+bash zig/benchmarks/scripts/bench-quick.sh
 
 # 4. Compare metrics
-bash benchmarks/scripts/compare-metrics.sh --suite quick
+bash zig/benchmarks/scripts/compare-metrics.sh --suite quick
 
 # 5. View results
-node benchmarks/scripts/summarize-results.mjs benchmarks/results/baseline-$(date +%Y-%m-%d)/
+node zig/benchmarks/scripts/summarize-results.mjs zig/benchmarks/results/baseline-$(date +%Y-%m-%d)/
 ```
 
 Results will differ based on hardware but relative ratios should be consistent.
@@ -204,16 +204,16 @@ Results will differ based on hardware but relative ratios should be consistent.
 ### Speed and Memory (Quick Suite)
 
 See the table in [Key Findings: Speed](#speed) above. Raw data is available in
-`benchmarks/results/baseline-2026-02-21/` (parallel) and
-`benchmarks/results/baseline-2026-02-21-single-threaded/` (single-threaded baseline):
+`zig/benchmarks/results/baseline-2026-02-21/` (parallel) and
+`zig/benchmarks/results/baseline-2026-02-21-single-threaded/` (single-threaded baseline):
 
 - Per-project timing: `*-quick.json` (hyperfine JSON format)
-- Aggregate summary: run `node benchmarks/scripts/summarize-results.mjs benchmarks/results/baseline-2026-02-21/`
+- Aggregate summary: run `node zig/benchmarks/scripts/summarize-results.mjs zig/benchmarks/results/baseline-2026-02-21/`
 
 ### Metric Accuracy
 
 CG vs FTA metric comparison for the quick suite is in
-`benchmarks/results/baseline-2026-02-21/metric-accuracy.json`.
+`zig/benchmarks/results/baseline-2026-02-21/metric-accuracy.json`.
 
 **Interpretation of low within-tolerance percentages:**
 
@@ -314,10 +314,10 @@ Avoid on very large repos (webpack/vscode scale) in fast CI pipelines — the re
 
 ```sh
 # Clone benchmark projects (if not already done)
-bash benchmarks/scripts/setup.sh --suite quick
+bash zig/benchmarks/scripts/setup.sh --suite quick
 
 # Run duplication overhead benchmark
-bash benchmarks/scripts/bench-duplication.sh
+bash zig/benchmarks/scripts/bench-duplication.sh
 ```
 
 Results are saved to `/tmp/bench-dup-*.json` in hyperfine JSON format.
@@ -334,7 +334,7 @@ CG went from 1.2–3.8x slower than FTA to 1.5–3.1x faster across all projects
 ### Phase 10.1: Single-threaded Baseline
 
 The Phase 10.1 baseline captured single-threaded (`--threads 1`) performance before
-parallelization. Raw data is preserved in `benchmarks/results/baseline-2026-02-21-single-threaded/`.
+parallelization. Raw data is preserved in `zig/benchmarks/results/baseline-2026-02-21-single-threaded/`.
 
 ### Schema Version
 
@@ -352,9 +352,9 @@ The schema consists of:
 Capture a new baseline at any time:
 
 ```sh
-bash benchmarks/scripts/setup.sh --suite quick
-bash benchmarks/scripts/bench-quick.sh
-bash benchmarks/scripts/compare-metrics.sh --suite quick
+bash zig/benchmarks/scripts/setup.sh --suite quick
+bash zig/benchmarks/scripts/bench-quick.sh
+bash zig/benchmarks/scripts/compare-metrics.sh --suite quick
 ```
 
 The results directory will be timestamped automatically (`baseline-YYYY-MM-DD`).
@@ -362,10 +362,10 @@ The results directory will be timestamped automatically (`baseline-YYYY-MM-DD`).
 ### Raw Data
 
 All raw benchmark data is committed to the repository in
-[`benchmarks/results/`](../benchmarks/results/). This includes:
+[`zig/benchmarks/results/`](../zig/benchmarks/results/). This includes:
 
 - `baseline-2026-02-21/*.json` — Phase 12 parallel benchmarks: 7 quick-suite projects
 - `baseline-2026-02-21-single-threaded/*.json` — Phase 10.1 single-threaded baseline
 - `metric-accuracy.json` — Metric accuracy comparison
 
-See [`benchmarks/`](../benchmarks/) for scripts and additional documentation.
+See [`zig/benchmarks/`](../zig/benchmarks/) for scripts and additional documentation.

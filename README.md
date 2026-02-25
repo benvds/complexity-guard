@@ -170,7 +170,8 @@ The binary will be at `rust/target/release/complexity-guard`. Add it to your PAT
 For the legacy Zig source, requires [Zig](https://ziglang.org/) 0.14.0 or later:
 
 ```sh
-zig build          # build binary to zig-out/bin/complexity-guard
+cd zig
+zig build          # build binary to zig/zig-out/bin/complexity-guard
 zig build test     # run all tests
 ```
 

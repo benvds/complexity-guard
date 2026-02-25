@@ -25,10 +25,10 @@ jobs:
           version: 0.15.2
 
       - name: Run tests
-        run: zig build test
+        run: cd zig && zig build test
 
       - name: Build release binary (smoke test)
-        run: zig build -Doptimize=ReleaseSafe
+        run: cd zig && zig build -Doptimize=ReleaseSafe
 
   memory-check:
     runs-on: ubuntu-latest
@@ -46,7 +46,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y valgrind
 
       - name: Clone test repos for stress testing
-        run: git clone --depth 1 https://github.com/colinhacks/zod.git tests/repos/zod
+        run: git clone --depth 1 https://github.com/colinhacks/zod.git zig/tests/repos/zod
 
       - name: Run memory and thread-safety checks
         run: bash scripts/check-memory.sh

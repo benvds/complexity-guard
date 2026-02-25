@@ -95,8 +95,8 @@ echo "hyperfine: $HYPERFINE ($("$HYPERFINE" --version))"
 
 # Build CG in ReleaseFast mode
 echo "Building ComplexityGuard in ReleaseFast mode..."
-(cd "$PROJECT_ROOT" && zig build -Doptimize=ReleaseFast)
-CG_BIN="$PROJECT_ROOT/zig-out/bin/complexity-guard"
+(cd "$PROJECT_ROOT/zig" && zig build -Doptimize=ReleaseFast)
+CG_BIN="$PROJECT_ROOT/zig/zig-out/bin/complexity-guard"
 echo "CG binary: $CG_BIN ($("$CG_BIN" --version 2>&1 || true))"
 
 # Auto-install FTA into temp dir
@@ -110,14 +110,14 @@ echo "FTA binary: $FTA_BIN ($("$FTA_BIN" --version 2>&1 || true))"
 
 # Create timestamped results directory
 RESULTS_DATE=$(date +%Y-%m-%d)
-RESULTS_DIR="$PROJECT_ROOT/benchmarks/results/baseline-${RESULTS_DATE}"
+RESULTS_DIR="$PROJECT_ROOT/zig/benchmarks/results/baseline-${RESULTS_DATE}"
 mkdir -p "$RESULTS_DIR"
 capture_system_info "$RESULTS_DIR"
 echo "Results dir: $RESULTS_DIR"
 
 # Quick suite project list (must match setup.sh QUICK_SUITE)
 QUICK_SUITE=(zod got dayjs vite nestjs webpack typeorm rxjs effect vscode)
-PROJECTS_DIR="$PROJECT_ROOT/benchmarks/projects"
+PROJECTS_DIR="$PROJECT_ROOT/zig/benchmarks/projects"
 
 # Verify at least some projects are cloned
 CLONED_COUNT=0
