@@ -306,8 +306,39 @@ fn test_exit_code_3_bad_config_path() {
         .code(3);
 }
 
-// Exit code 4 (parse error) is intentionally not tested:
-// tree-sitter is error-tolerant and returns partial results instead of failing.
+/// Exit code 4 (ParseError) is unreachable by design — documented here via behavioral test.
+///
+/// tree-sitter is error-tolerant: it recovers from all syntax errors and returns a partial AST
+/// rather than failing. Even binary content written to a `.ts` file parses successfully,
+/// producing zero functions and exit 0 (not exit 4).
+///
+/// Both Zig v1.0 and Rust v0.8 produce identical behavior for this scenario:
+/// - File discovery filters by extension so unsupported file types never reach analysis.
+/// - For supported extensions (.ts/.tsx/.js/.jsx), tree-sitter never returns a parse failure;
+///   it always produces a (possibly empty) AST.
+/// - `determine_exit_code` checks `has_parse_errors` but this flag is never true in the
+///   normal discovery + analysis pipeline.
+///
+/// This test documents behavioral parity between the two implementations, not a missing feature.
+#[test]
+fn test_exit_code_4_unreachable_tree_sitter_error_tolerant() {
+    use std::io::Write;
+    // Create a temporary .ts file containing binary content (definitely not valid TypeScript).
+    let mut tmp = tempfile::Builder::new()
+        .suffix(".ts")
+        .tempfile()
+        .expect("should create tempfile");
+    tmp.write_all(b"\x00\x01\x02\xff\xfe\xfd")
+        .expect("should write binary content");
+    tmp.flush().expect("should flush");
+
+    // Binary content in a .ts file must exit 0 (not 4): tree-sitter parses it as zero functions.
+    cargo_bin()
+        .args(["--format", "json", "--no-color"])
+        .arg(tmp.path())
+        .assert()
+        .success();
+}
 
 // ============================================================
 // Task 4: CLI flags (CLI-01, CLI-02, CLI-03)
