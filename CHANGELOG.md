@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-02-25
+
+### Added
+
+- Restore benchmark scripts from main with Rust build commands
+- Promote Rust code to project root, update all references
+- Add bench-rust-vs-zig.sh benchmark script
+- Update releasing docs and sync publication READMEs
+- Update main README and docs for Rust binary
+- Update release.sh to read version from rust/Cargo.toml
+- Add rust-release.yml workflow for GitHub releases
+- Extend rust-ci.yml with 5-target cross-compilation matrix
+- Add exit code 4 unreachability documentation test
+- Write integration test suite with 29 tests covering all requirements
+- Fix function name extraction for callback and export patterns
+- Rewrite duplication JSON output to match Zig schema
+- Rewrite console renderer to Zig consolidated per-function format
+- Wire full pipeline into main.rs replacing placeholder stub
+- Add pipeline/parallel.rs with rayon-based parallel analysis
+- Add pipeline/discover.rs with recursive glob-filtered file discovery
+- Implement self-contained HTML report with embedded CSS/JS and minijinja template
+- Implement SARIF 2.1.0 output with hand-rolled serde structs
+- Implement JSON output renderer with exact Zig schema parity
+- Implement console output renderer with ESLint-style format
+- Add exit code logic and wire main.rs entry point
+- Add CLI modules — args, config, merge, discovery
+- Add scoring, duplication, and analyze_file entry point (18-03)
+- Add cognitive complexity and Halstead metrics
+- Add metrics module with cyclomatic and structural metrics
+- Add GitHub Actions CI for Rust crate
+- Implement parser with language selection and function extraction
+- Scaffold Rust crate with grammar dependencies and core types
+
+### Fixed
+
+- Resolve clippy lint and CI failures, update release script
+- Resolve all clippy lint warnings failing CI
+- Resolve CI failures for formatting and Windows cross-compile
+- Set test working directory to project root in build.zig
+- Fix cognitive_error default and arrow callback scope boundary bug
+- Revise plans based on checker feedback
+- Revise plans based on checker feedback
+- Revise plans based on checker feedback
+- Revise plans based on checker feedback
+- Revise plans based on checker feedback
+
 ## [0.7.0] - 2026-02-23
 
 ### Added
@@ -206,7 +252,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tree-sitter based parsing with error-tolerant syntax handling
 - CLI with --help, --version, --verbose, --quiet, --format, --output, --config, --init flags
 
-[Unreleased]: https://github.com/benvds/complexity-guard/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/benvds/complexity-guard/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/benvds/complexity-guard/compare/v0.7.0...v0.9.0
 [0.7.0]: https://github.com/benvds/complexity-guard/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/benvds/complexity-guard/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/benvds/complexity-guard/compare/v0.4.0...v0.5.0
