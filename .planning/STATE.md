@@ -85,6 +85,10 @@ Recent decisions affecting v0.8:
 - [Phase 22]: docs/releasing.md fully rewritten around rust-release.yml; legacy Zig workflow noted in final section for historical reference
 - [Phase 22]: npm/Homebrew installation methods kept intact in README — will be updated when npm distribution ships
 - [Phase quick-21]: setCwd(..) in build.zig runs Zig tests from project root so tests/fixtures/ is accessible to both Zig and Rust
+- [quick-23]: Rust adopted as sole implementation language; ADR in docs/architecture-decision-rust.md with benchmark rationale (1.5-3.1x faster with parallel)
+- [quick-23]: Cargo.toml, src/, tests/ now at project root; all CARGO_MANIFEST_DIR-relative paths in src/**/*.rs updated from ../tests/fixtures to tests/fixtures
+- [quick-23]: CI unified: rust-ci.yml → ci.yml, rust-release.yml → release.yml (old Zig release.yml removed)
+- [quick-23]: release.sh now references Cargo.toml (not rust/Cargo.toml) as version source
 
 ### Pending Todos
 
@@ -102,12 +106,13 @@ Recent decisions affecting v0.8:
 |---|-------------|------|--------|-----------|
 | 21 | Move zig code to zig/ directory to match rust/ directory structure | 2026-02-25 | 0c20250 | [21-move-zig-code-to-zig-directory-to-match-](./quick/21-move-zig-code-to-zig-directory-to-match-/) |
 | 22 | Create benchmark script comparing Rust vs Zig binaries | 2026-02-25 | 54154f5 | [22-create-benchmark-script-comparing-rust-v](./quick/22-create-benchmark-script-comparing-rust-v/) |
+| 23 | Adopt Rust as sole language: remove Zig, promote Rust to root, create ADR | 2026-02-25 | 5e25696 | [23-rust-is-faster-so-were-going-with-rust-d](./quick/23-rust-is-faster-so-were-going-with-rust-d/) |
 
 ## Session Continuity
 
-Last session: 2026-02-25 (quick task 22)
-Stopped at: Completed quick task 22 — bench-rust-vs-zig.sh benchmark script
-Resume with: Phase 22 COMPLETE — all v0.8 milestone phases done
+Last session: 2026-02-25 (quick task 23)
+Stopped at: Completed quick task 23 — Rust adoption, Zig removal, project restructure
+Resume with: Project is now Rust-only. Cargo.toml at root. No Zig code remains.
 
 **Remaining phases to execute:**
 - Phase 19: CLI, Config, Output Formats — COMPLETE (4/4)
@@ -124,4 +129,4 @@ Resume with: Phase 22 COMPLETE — all v0.8 milestone phases done
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-25 after Phase 22 plan 03 completion (documentation updates: README, docs/*, releasing.md, publication READMEs all updated for Rust binary)*
+*Last updated: 2026-02-25 after quick task 23 completion (Rust adoption, Zig removal, Cargo.toml at project root, CI unified to ci.yml + release.yml)*
