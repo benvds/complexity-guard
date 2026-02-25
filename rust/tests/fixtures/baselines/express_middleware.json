@@ -1,0 +1,58 @@
+{
+  "version": "0.8.0",
+  "summary": {
+    "files_analyzed": 1,
+    "total_functions": 2,
+    "warnings": 2,
+    "errors": 0,
+    "status": "warning",
+    "health_score": 72.34941142343934
+  },
+  "files": [
+    {
+      "path": "../tests/fixtures/javascript/express_middleware.js",
+      "functions": [
+        {
+          "name": "errorHandler",
+          "start_line": 5,
+          "end_line": 20,
+          "start_col": 0,
+          "cyclomatic": 5,
+          "cognitive": 10,
+          "halstead_volume": 242.13186826628436,
+          "halstead_difficulty": 5.6,
+          "halstead_effort": 1355.9384622911923,
+          "halstead_bugs": 0.08071062275542812,
+          "nesting_depth": 4,
+          "line_count": 12,
+          "params_count": 4,
+          "health_score": 62.96110993795885,
+          "status": "warning"
+        },
+        {
+          "name": "rateLimiter",
+          "start_line": 22,
+          "end_line": 44,
+          "start_col": 0,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 11.60964047443681,
+          "halstead_difficulty": 1.5,
+          "halstead_effort": 17.414460711655217,
+          "halstead_bugs": 0.0038698801581456034,
+          "nesting_depth": 0,
+          "line_count": 14,
+          "params_count": 1,
+          "health_score": 81.7377129089198,
+          "status": "ok"
+        }
+      ],
+      "file_length": 29,
+      "export_count": 0
+    }
+  ],
+  "metadata": {
+    "thread_count": 10
+  },
+  "duplication": null
+}

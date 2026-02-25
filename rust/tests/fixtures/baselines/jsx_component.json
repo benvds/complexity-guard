@@ -1,0 +1,58 @@
+{
+  "version": "0.8.0",
+  "summary": {
+    "files_analyzed": 1,
+    "total_functions": 2,
+    "warnings": 0,
+    "errors": 0,
+    "status": "pass",
+    "health_score": 81.9282265202614
+  },
+  "files": [
+    {
+      "path": "../tests/fixtures/javascript/jsx_component.jsx",
+      "functions": [
+        {
+          "name": "Card",
+          "start_line": 5,
+          "end_line": 12,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 69.73835003173087,
+          "halstead_difficulty": 4.0,
+          "halstead_effort": 278.9534001269235,
+          "halstead_bugs": 0.023246116677243626,
+          "nesting_depth": 0,
+          "line_count": 6,
+          "params_count": 1,
+          "health_score": 81.80600779521342,
+          "status": "ok"
+        },
+        {
+          "name": "List",
+          "start_line": 14,
+          "end_line": 20,
+          "start_col": 20,
+          "cyclomatic": 1,
+          "cognitive": 1,
+          "halstead_volume": 16.253496664211536,
+          "halstead_difficulty": 1.3333333333333333,
+          "halstead_effort": 21.67132888561538,
+          "halstead_bugs": 0.005417832221403845,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 82.0504452453094,
+          "status": "ok"
+        }
+      ],
+      "file_length": 15,
+      "export_count": 2
+    }
+  ],
+  "metadata": {
+    "thread_count": 10
+  },
+  "duplication": null
+}

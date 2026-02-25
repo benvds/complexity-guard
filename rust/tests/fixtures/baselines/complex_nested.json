@@ -1,0 +1,41 @@
+{
+  "version": "0.8.0",
+  "summary": {
+    "files_analyzed": 1,
+    "total_functions": 1,
+    "warnings": 2,
+    "errors": 2,
+    "status": "error",
+    "health_score": 34.010384450594536
+  },
+  "files": [
+    {
+      "path": "../tests/fixtures/typescript/complex_nested.ts",
+      "functions": [
+        {
+          "name": "processData",
+          "start_line": 5,
+          "end_line": 27,
+          "start_col": 7,
+          "cyclomatic": 11,
+          "cognitive": 35,
+          "halstead_volume": 299.32032633211963,
+          "halstead_difficulty": 11.289473684210527,
+          "halstead_effort": 3379.168947275772,
+          "halstead_bugs": 0.09977344211070655,
+          "nesting_depth": 7,
+          "line_count": 14,
+          "params_count": 2,
+          "health_score": 34.010384450594536,
+          "status": "error"
+        }
+      ],
+      "file_length": 15,
+      "export_count": 1
+    }
+  ],
+  "metadata": {
+    "thread_count": 10
+  },
+  "duplication": null
+}

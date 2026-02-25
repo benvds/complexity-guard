@@ -1,0 +1,58 @@
+{
+  "version": "0.8.0",
+  "summary": {
+    "files_analyzed": 1,
+    "total_functions": 2,
+    "warnings": 0,
+    "errors": 0,
+    "status": "pass",
+    "health_score": 81.01798704142585
+  },
+  "files": [
+    {
+      "path": "../tests/fixtures/typescript/react_component.tsx",
+      "functions": [
+        {
+          "name": "Greeting",
+          "start_line": 10,
+          "end_line": 20,
+          "start_col": 7,
+          "cyclomatic": 2,
+          "cognitive": 1,
+          "halstead_volume": 118.30376252379816,
+          "halstead_difficulty": 5.357142857142857,
+          "halstead_effort": 633.77015637749,
+          "halstead_bugs": 0.03943458750793272,
+          "nesting_depth": 1,
+          "line_count": 8,
+          "params_count": 1,
+          "health_score": 79.48169414665529,
+          "status": "ok"
+        },
+        {
+          "name": "Badge",
+          "start_line": 22,
+          "end_line": 24,
+          "start_col": 50,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 20.67970000576925,
+          "halstead_difficulty": 2.0,
+          "halstead_effort": 41.3594000115385,
+          "halstead_bugs": 0.006893233335256416,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 82.55427993619642,
+          "status": "ok"
+        }
+      ],
+      "file_length": 16,
+      "export_count": 2
+    }
+  ],
+  "metadata": {
+    "thread_count": 10
+  },
+  "duplication": null
+}
