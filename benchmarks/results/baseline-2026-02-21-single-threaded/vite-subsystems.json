@@ -1,0 +1,21 @@
+{
+  "project": "/home/ben/code/complexity-guard/benchmarks/projects/vite",
+  "files": 1182,
+  "functions": 2652,
+  "bytes": 2256211,
+  "runs": 2,
+  "subsystems": {
+    "file_discovery": { "mean_ms": 7.792, "stddev_ms": 0.110, "min_ms": 7.682, "max_ms": 7.902 },
+    "file_read": { "mean_ms": 10.125, "stddev_ms": 0.043, "min_ms": 10.082, "max_ms": 10.168 },
+    "parsing": { "mean_ms": 283.029, "stddev_ms": 7.928, "min_ms": 275.100, "max_ms": 290.957 },
+    "cyclomatic": { "mean_ms": 43.018, "stddev_ms": 0.357, "min_ms": 42.661, "max_ms": 43.374 },
+    "cognitive": { "mean_ms": 49.966, "stddev_ms": 0.391, "min_ms": 49.575, "max_ms": 50.356 },
+    "halstead": { "mean_ms": 56.121, "stddev_ms": 0.117, "min_ms": 56.004, "max_ms": 56.239 },
+    "structural": { "mean_ms": 41.604, "stddev_ms": 0.021, "min_ms": 41.583, "max_ms": 41.625 },
+    "scoring": { "mean_ms": 0.001, "stddev_ms": 0.000, "min_ms": 0.001, "max_ms": 0.001 },
+    "json_output": { "mean_ms": 0.120, "stddev_ms": 0.004, "min_ms": 0.117, "max_ms": 0.124 }
+  },
+  "total_pipeline_mean_ms": 491.776,
+  "hotspot": "parsing",
+  "hotspot_pct": 57.6
+}

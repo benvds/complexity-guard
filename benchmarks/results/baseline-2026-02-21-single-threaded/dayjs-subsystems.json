@@ -1,0 +1,21 @@
+{
+  "project": "/home/ben/code/complexity-guard/benchmarks/projects/dayjs",
+  "files": 283,
+  "functions": 994,
+  "bytes": 598870,
+  "runs": 2,
+  "subsystems": {
+    "file_discovery": { "mean_ms": 1.077, "stddev_ms": 0.097, "min_ms": 0.979, "max_ms": 1.174 },
+    "file_read": { "mean_ms": 2.411, "stddev_ms": 0.046, "min_ms": 2.365, "max_ms": 2.457 },
+    "parsing": { "mean_ms": 102.093, "stddev_ms": 2.541, "min_ms": 99.551, "max_ms": 104.634 },
+    "cyclomatic": { "mean_ms": 26.205, "stddev_ms": 0.055, "min_ms": 26.150, "max_ms": 26.261 },
+    "cognitive": { "mean_ms": 29.360, "stddev_ms": 2.652, "min_ms": 26.708, "max_ms": 32.012 },
+    "halstead": { "mean_ms": 34.407, "stddev_ms": 0.023, "min_ms": 34.384, "max_ms": 34.430 },
+    "structural": { "mean_ms": 22.183, "stddev_ms": 0.578, "min_ms": 21.605, "max_ms": 22.760 },
+    "scoring": { "mean_ms": 0.000, "stddev_ms": 0.000, "min_ms": 0.000, "max_ms": 0.001 },
+    "json_output": { "mean_ms": 0.037, "stddev_ms": 0.004, "min_ms": 0.033, "max_ms": 0.041 }
+  },
+  "total_pipeline_mean_ms": 217.773,
+  "hotspot": "parsing",
+  "hotspot_pct": 46.9
+}
