@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# bench-quick.sh — Hyperfine end-to-end benchmark: quick suite (test_sets-driven, CG vs FTA)
+# bench-quick.sh — Hyperfine end-to-end benchmark: quick suite (test_sets-driven, CG only)
 #
 # Usage:
 #   bash benchmarks/scripts/bench-quick.sh
@@ -7,7 +7,6 @@
 # Prerequisites:
 #   - Run setup.sh --suite quick first to clone projects
 #   - hyperfine must be installed (checked at /home/ben/.cargo/bin/hyperfine or on PATH)
-#   - node/npm must be available for FTA auto-install
 #   - jq must be installed for JSON extraction
 #
 # Project selection:
@@ -99,20 +98,11 @@ if [[ ! -x "$HYPERFINE" ]]; then
 fi
 echo "hyperfine: $HYPERFINE ($("$HYPERFINE" --version))"
 
-# Build CG in ReleaseFast mode
+# Build CG in release mode
 echo "Building ComplexityGuard in release mode..."
 (cd "$PROJECT_ROOT" && cargo build --release)
 CG_BIN="$PROJECT_ROOT/target/release/complexity-guard"
 echo "CG binary: $CG_BIN ($("$CG_BIN" --version 2>&1 || true))"
-
-# Auto-install FTA into temp dir
-FTA_VERSION="3.0.0"
-FTA_TEMP=$(mktemp -d /tmp/fta-bench-XXXX)
-trap "rm -rf $FTA_TEMP" EXIT
-echo "Installing fta-cli@${FTA_VERSION} into $FTA_TEMP..."
-npm install "fta-cli@${FTA_VERSION}" --prefix "$FTA_TEMP" --quiet 2>/dev/null
-FTA_BIN="$FTA_TEMP/node_modules/.bin/fta"
-echo "FTA binary: $FTA_BIN ($("$FTA_BIN" --version 2>&1 || true))"
 
 # Create timestamped results directory
 RESULTS_DATE=$(date +%Y-%m-%d)
@@ -140,14 +130,13 @@ if [[ "$CLONED_COUNT" -eq 0 ]]; then
 fi
 
 echo ""
-echo "=== ComplexityGuard vs FTA Quick Suite Benchmark ==="
+echo "=== ComplexityGuard Quick Suite Benchmark ==="
 echo "Projects available: $CLONED_COUNT / ${#QUICK_SUITE[@]}"
 echo "Warmup runs: 3 | Benchmark runs: 15"
 echo ""
 
 # Collect results for summary table
 declare -A CG_MEAN
-declare -A FTA_MEAN
 
 # Run hyperfine for each project
 for project in "${QUICK_SUITE[@]}"; do
@@ -166,16 +155,13 @@ for project in "${QUICK_SUITE[@]}"; do
     --runs 15 \
     --ignore-failure \
     --export-json "$RESULT_JSON" \
-    "${CG_BIN} --format json --fail-on none ${PROJECT_DIR}" \
-    "${FTA_BIN} --json --exclude-under 0 ${PROJECT_DIR}"
+    "${CG_BIN} --format json --fail-on none ${PROJECT_DIR}"
 
-  # Extract mean times from JSON using jq
+  # Extract mean time from JSON using jq
   if [[ -f "$RESULT_JSON" ]]; then
     cg_ms=$(jq -r '.results[0].mean * 1000 | . * 10 | round / 10' "$RESULT_JSON" 2>/dev/null || echo "")
-    fta_ms=$(jq -r '.results[1].mean * 1000 | . * 10 | round / 10' "$RESULT_JSON" 2>/dev/null || echo "")
-    if [[ -n "$cg_ms" && -n "$fta_ms" ]]; then
+    if [[ -n "$cg_ms" ]]; then
       CG_MEAN[$project]="$cg_ms"
-      FTA_MEAN[$project]="$fta_ms"
     fi
   fi
 
@@ -184,14 +170,12 @@ done
 
 # Print summary table
 echo "=== Summary: Mean Wall-Clock Time (ms) ==="
-printf "%-20s %10s %10s %10s\n" "Project" "CG (ms)" "FTA (ms)" "Ratio"
-printf "%-20s %10s %10s %10s\n" "-------" "-------" "--------" "-----"
+printf "%-20s %10s\n" "Project" "CG (ms)"
+printf "%-20s %10s\n" "-------" "-------"
 for project in "${QUICK_SUITE[@]}"; do
-  if [[ -n "${CG_MEAN[$project]:-}" && -n "${FTA_MEAN[$project]:-}" ]]; then
+  if [[ -n "${CG_MEAN[$project]:-}" ]]; then
     cg_ms="${CG_MEAN[$project]}"
-    fta_ms="${FTA_MEAN[$project]}"
-    ratio=$(node -e "console.log((${fta_ms} / Math.max(${cg_ms}, 0.001)).toFixed(2) + 'x')" 2>/dev/null || echo "N/A")
-    printf "%-20s %10s %10s %10s\n" "$project" "${cg_ms}ms" "${fta_ms}ms" "$ratio"
+    printf "%-20s %10s\n" "$project" "${cg_ms}ms"
   fi
 done
 

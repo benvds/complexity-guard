@@ -119,4 +119,4 @@ done
 
 echo ""
 echo "Results saved to /tmp/bench-dup-*.json"
-echo "Tip: Run 'bash benchmarks/scripts/bench-quick.sh' for full CG vs FTA comparison."
+echo "Tip: Run 'bash benchmarks/scripts/bench-quick.sh' for full quick suite benchmark."

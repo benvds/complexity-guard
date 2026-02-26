@@ -11,13 +11,11 @@
  *
  * Reads:
  *   *-quick.json, *-full.json, *-stress.json   hyperfine result files
- *   *-subsystems.json                           Zig subsystem timing files (if present)
- *   metric-accuracy.json                        compare-metrics.mjs output (if present)
+ *   *-subsystems.json                           subsystem timing files (if present)
  *
  * Hyperfine JSON schema:
  *   { results: [
  *     { command, mean, stddev, memory_usage_byte: [int, ...], ... },  // CG
- *     { command, mean, stddev, memory_usage_byte: [int, ...], ... },  // FTA
  *   ]}
  */
 
@@ -50,8 +48,8 @@ function round(value, decimals) {
 /**
  * Parse a single hyperfine JSON result file.
  *
- * Returns object with project, suite, cg_mean_ms, cg_stddev_ms, fta_mean_ms,
- * fta_stddev_ms, cg_mem_mb, fta_mem_mb, speedup, mem_ratio, or null on error.
+ * Returns object with project, suite, cg_mean_ms, cg_stddev_ms, cg_mem_mb,
+ * or null on error.
  * @param {string} filepath
  * @returns {object|null}
  */
@@ -74,46 +72,29 @@ function parseHyperfineFile(filepath) {
   }
 
   const results = data.results || [];
-  if (results.length < 2) {
-    if (results.length === 1) {
-      process.stderr.write(`Warning: ${filename} has only 1 result (expected 2), skipping\n`);
-    }
+  if (results.length < 1) {
     return null;
   }
 
   const cg = results[0];
-  const fta = results[1];
 
   const cgMeanMs = (cg.mean || 0.0) * 1000;
   const cgStddevMs = (cg.stddev || 0.0) * 1000;
-  const ftaMeanMs = (fta.mean || 0.0) * 1000;
-  const ftaStddevMs = (fta.stddev || 0.0) * 1000;
 
   const cgMemList = cg.memory_usage_byte || [];
-  const ftaMemList = fta.memory_usage_byte || [];
   const cgMemMb = meanMemory(cgMemList);
-  const ftaMemMb = meanMemory(ftaMemList);
-
-  // speedup > 1.0 means FTA is faster (CG takes longer relative to FTA)
-  const speedup = ftaMeanMs > 0 ? cgMeanMs / ftaMeanMs : 0.0;
-  const memRatio = cgMemMb > 0 ? ftaMemMb / cgMemMb : 0.0;
 
   return {
     project,
     suite,
     cg_mean_ms: round(cgMeanMs, 1),
     cg_stddev_ms: round(cgStddevMs, 1),
-    fta_mean_ms: round(ftaMeanMs, 1),
-    fta_stddev_ms: round(ftaStddevMs, 1),
     cg_mem_mb: round(cgMemMb, 1),
-    fta_mem_mb: round(ftaMemMb, 1),
-    speedup: round(speedup, 2),
-    mem_ratio: round(memRatio, 2),
   };
 }
 
 /**
- * Parse a Zig subsystem benchmark JSON file.
+ * Parse a subsystem benchmark JSON file.
  *
  * Handles two schemas:
  *   - Array schema: { project, subsystems: [{ name, mean_ms, stddev_ms }] }
@@ -142,24 +123,6 @@ function parseSubsystemsFile(filepath) {
 }
 
 /**
- * Parse metric-accuracy.json produced by compare-metrics.sh.
- *
- * Expected schema: [{ project, files_compared, cyclomatic, halstead_volume, ... }]
- * Returns null on error.
- * @param {string} filepath
- * @returns {object[]|null}
- */
-function parseMetricAccuracy(filepath) {
-  try {
-    const content = fs.readFileSync(filepath, 'utf8');
-    const data = JSON.parse(content);
-    return Array.isArray(data) ? data : null;
-  } catch (_e) {
-    return null;
-  }
-}
-
-/**
  * Pad a string to a given width (left-aligned).
  * @param {string|number} value
  * @param {number} width
@@ -170,34 +133,20 @@ function padEnd(value, width) {
 }
 
 /**
- * Format a markdown table row for the speed comparison table.
- *
- * speedup = cg_mean / fta_mean: >1.0 means FTA is faster than CG.
+ * Format a markdown table row for the performance table.
  * @param {object} r
  * @returns {string}
  */
 function formatSpeedRow(r) {
-  let speedupLabel;
-  if (r.speedup > 1.0) {
-    speedupLabel = `${r.speedup.toFixed(1)}x faster`;
-  } else if (r.speedup < 0.99) {
-    speedupLabel = `${(1 / r.speedup).toFixed(1)}x CG faster`;
-  } else {
-    speedupLabel = 'equal';
-  }
-
   const cgMsStr = `${Math.round(r.cg_mean_ms)} \u00b1 ${Math.round(r.cg_stddev_ms)}`;
-  const ftaMsStr = `${Math.round(r.fta_mean_ms)} \u00b1 ${Math.round(r.fta_stddev_ms)}`;
 
   return (
-    `| ${padEnd(r.project, 20)} | ${padEnd(cgMsStr, 12)} | ${padEnd(ftaMsStr, 12)} | ` +
-    `${padEnd(speedupLabel, 12)} | ${padEnd(r.cg_mem_mb.toFixed(1), 10)} | ${padEnd(r.fta_mem_mb.toFixed(1), 11)} | ` +
-    `${r.mem_ratio.toFixed(1)}x      |`
+    `| ${padEnd(r.project, 20)} | ${padEnd(cgMsStr, 14)} | ${padEnd(r.cg_mem_mb.toFixed(1), 12)} |`
   );
 }
 
 /**
- * Print a markdown speed and memory comparison table.
+ * Print a markdown performance table.
  * @param {object[]} results
  * @param {string|null} suite
  */
@@ -206,9 +155,9 @@ function printSpeedTable(results, suite = null) {
   if (filtered.length === 0) return;
 
   const suiteLabel = suite || 'all';
-  console.log(`\n### Speed and Memory Comparison (${suiteLabel} suite)\n`);
-  console.log(`| ${padEnd('Project', 20)} | ${padEnd('CG (ms)', 12)} | ${padEnd('FTA (ms)', 12)} | ${padEnd('Speedup', 12)} | ${padEnd('CG Mem (MB)', 10)} | ${padEnd('FTA Mem (MB)', 11)} | Mem Ratio |`);
-  console.log(`| ${'-'.repeat(20)} | ${'-'.repeat(12)} | ${'-'.repeat(12)} | ${'-'.repeat(12)} | ${'-'.repeat(10)} | ${'-'.repeat(11)} | ${'-'.repeat(9)} |`);
+  console.log(`\n### Performance (${suiteLabel} suite)\n`);
+  console.log(`| ${padEnd('Project', 20)} | ${padEnd('CG (ms)', 14)} | ${padEnd('CG Mem (MB)', 12)} |`);
+  console.log(`| ${'-'.repeat(20)} | ${'-'.repeat(14)} | ${'-'.repeat(12)} |`);
 
   const sorted = [...filtered].sort((a, b) => a.cg_mean_ms - b.cg_mean_ms);
   for (const r of sorted) {
@@ -216,45 +165,12 @@ function printSpeedTable(results, suite = null) {
   }
 
   if (filtered.length > 1) {
-    const avgSpeedup = filtered.reduce((sum, r) => sum + r.speedup, 0) / filtered.length;
-    const withMem = filtered.filter(r => r.mem_ratio > 0);
-    const avgMemRatio = withMem.length > 0
-      ? withMem.reduce((sum, r) => sum + r.mem_ratio, 0) / withMem.length
+    const avgMs = filtered.reduce((sum, r) => sum + r.cg_mean_ms, 0) / filtered.length;
+    const withMem = filtered.filter(r => r.cg_mem_mb > 0);
+    const avgMem = withMem.length > 0
+      ? withMem.reduce((sum, r) => sum + r.cg_mem_mb, 0) / withMem.length
       : 0;
-    console.log(`\n**Mean speedup:** ${avgSpeedup.toFixed(1)}x \u00a0 | \u00a0 **Mean memory ratio:** ${avgMemRatio.toFixed(1)}x`);
-    console.log(`*(Speedup = CG time / FTA time; >1.0 means FTA is faster than CG)*`);
-  }
-}
-
-/**
- * Print a markdown metric accuracy summary table.
- * @param {object[]} accuracyData
- */
-function printMetricAccuracyTable(accuracyData) {
-  if (!accuracyData || accuracyData.length === 0) return;
-
-  console.log('\n### Metric Accuracy: CG vs FTA Agreement\n');
-  console.log('| Project | Files | Cyclo Agree | Cyclo Corr | Halstead Agree | Halstead Corr |');
-  console.log('| ------- | ----- | ----------- | ---------- | -------------- | ------------- |');
-
-  for (const item of accuracyData) {
-    const project = item.project || '?';
-    const n = item.files_compared || 0;
-    const cyclo = item.cyclomatic || {};
-    const hal = item.halstead_volume || {};
-    console.log(
-      `| ${padEnd(project, 20)} | ${padEnd(n, 5)} | ` +
-      `${(cyclo.within_tolerance_pct || 0).toFixed(0)}% (\u00b125%)  | ` +
-      `${(cyclo.ranking_correlation || 0).toFixed(3)}      | ` +
-      `${(hal.within_tolerance_pct || 0).toFixed(0)}% (\u00b130%)      | ` +
-      `${(hal.ranking_correlation || 0).toFixed(3)}         |`
-    );
-  }
-
-  if (accuracyData.length > 0) {
-    const avgCyclo = accuracyData.reduce((sum, d) => sum + ((d.cyclomatic || {}).within_tolerance_pct || 0), 0) / accuracyData.length;
-    const avgHal = accuracyData.reduce((sum, d) => sum + ((d.halstead_volume || {}).within_tolerance_pct || 0), 0) / accuracyData.length;
-    console.log(`\n**Mean cyclomatic agreement:** ${avgCyclo.toFixed(0)}% \u00a0 | \u00a0 **Mean Halstead agreement:** ${avgHal.toFixed(0)}%`);
+    console.log(`\n**Mean analysis time:** ${Math.round(avgMs)} ms \u00a0 | \u00a0 **Mean memory:** ${avgMem.toFixed(1)} MB`);
   }
 }
 
@@ -306,10 +222,6 @@ function main() {
     if (d !== null) subsystemData.push(d);
   }
 
-  // Load metric accuracy if present
-  const accuracyPath = path.join(resultsDir, 'metric-accuracy.json');
-  const accuracyData = parseMetricAccuracy(accuracyPath);
-
   // Determine which suites are present
   const suiteSet = new Set(benchmarkResults.map(r => r.suite));
   const suites = [...suiteSet].sort();
@@ -322,7 +234,7 @@ function main() {
   } catch (_e) { /* system-info.json not present in older baselines */ }
 
   // Print markdown output
-  console.log('## ComplexityGuard vs FTA: Benchmark Summary\n');
+  console.log('## ComplexityGuard Benchmark Summary\n');
   console.log(`Results from: \`${resultsDir}\`\n`);
 
   if (systemInfo) {
@@ -370,29 +282,22 @@ function main() {
     }
   }
 
-  // Metric accuracy
-  if (accuracyData) {
-    printMetricAccuracyTable(accuracyData);
-  } else {
-    console.log('\n*Metric accuracy data not found. Run `compare-metrics.sh` to generate it.*');
-  }
-
   // Overall summary stats
   if (benchmarkResults.length > 0) {
-    const avgSpeedup = benchmarkResults.reduce((sum, r) => sum + r.speedup, 0) / benchmarkResults.length;
-    const withMem = benchmarkResults.filter(r => r.mem_ratio > 0);
-    const avgMemRatio = withMem.length > 0
-      ? withMem.reduce((sum, r) => sum + r.mem_ratio, 0) / withMem.length
+    const avgMs = benchmarkResults.reduce((sum, r) => sum + r.cg_mean_ms, 0) / benchmarkResults.length;
+    const withMem = benchmarkResults.filter(r => r.cg_mem_mb > 0);
+    const avgMem = withMem.length > 0
+      ? withMem.reduce((sum, r) => sum + r.cg_mem_mb, 0) / withMem.length
       : 0;
     const fastestCg = benchmarkResults.reduce((min, r) => r.cg_mean_ms < min.cg_mean_ms ? r : min);
     const slowestCg = benchmarkResults.reduce((max, r) => r.cg_mean_ms > max.cg_mean_ms ? r : max);
 
     console.log('\n### Overall Summary\n');
     console.log(`- Projects benchmarked: ${benchmarkResults.length}`);
-    console.log(`- Mean CG/FTA speed ratio: ${avgSpeedup.toFixed(2)}x (>1.0 means FTA is faster than CG)`);
-    console.log(`- Mean FTA/CG memory ratio: ${avgMemRatio.toFixed(2)}x (FTA uses more memory = >1.0)`);
-    console.log(`- Fastest project: ${fastestCg.project} (${Math.round(fastestCg.cg_mean_ms)} ms CG)`);
-    console.log(`- Slowest project: ${slowestCg.project} (${Math.round(slowestCg.cg_mean_ms)} ms CG)`);
+    console.log(`- Mean analysis time: ${Math.round(avgMs)} ms`);
+    console.log(`- Mean memory usage: ${avgMem.toFixed(1)} MB`);
+    console.log(`- Fastest project: ${fastestCg.project} (${Math.round(fastestCg.cg_mean_ms)} ms)`);
+    console.log(`- Slowest project: ${slowestCg.project} (${Math.round(slowestCg.cg_mean_ms)} ms)`);
   }
 
   // JSON output
@@ -402,7 +307,6 @@ function main() {
       system_info: systemInfo,
       benchmark_results: benchmarkResults,
       subsystem_data: subsystemData,
-      accuracy_data: accuracyData,
     };
     const dir = path.dirname(path.resolve(jsonOutputPath));
     fs.mkdirSync(dir, { recursive: true });
