@@ -193,19 +193,19 @@ done
 
 # Print summary table
 echo "=== Summary ==="
-printf "%-15s %7s %7s %12s %6s %6s %9s %7s\n" "Project" "Files" "Funcs" "CG (ms)" "Cyc" "Cog" "Halstead" "Score"
-printf "%-15s %7s %7s %12s %6s %6s %9s %7s\n" "-------" "-----" "-----" "-------" "---" "---" "--------" "-----"
+printf "%-15s %7s %7s %6s %6s %9s %7s %12s\n" "Project" "Files" "Funcs" "Cyc" "Cog" "Halstead" "Score" "CG (ms)"
+printf "%-15s %7s %7s %6s %6s %9s %7s %12s\n" "-------" "-----" "-----" "---" "---" "--------" "-----" "-------"
 for project in "${STRESS_SUITE[@]}"; do
   if [[ -n "${CG_MEAN[$project]:-}" ]]; then
-    printf "%-15s %7s %7s %12s %6s %6s %9s %7s\n" \
+    printf "%-15s %7s %7s %6s %6s %9s %7s %12s\n" \
       "$project" \
       "${CG_FILES[$project]:-"-"}" \
       "${CG_FUNCS[$project]:-"-"}" \
-      "${CG_MEAN[$project]}ms" \
       "${CG_CYC[$project]:-"-"}" \
       "${CG_COG[$project]:-"-"}" \
       "${CG_HAL[$project]:-"-"}" \
-      "${CG_SCORE[$project]:-"-"}"
+      "${CG_SCORE[$project]:-"-"}" \
+      "${CG_MEAN[$project]}ms"
   fi
 done
 
