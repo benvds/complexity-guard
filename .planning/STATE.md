@@ -89,6 +89,10 @@ Recent decisions affecting v0.8:
 - [quick-23]: Cargo.toml, src/, tests/ now at project root; all CARGO_MANIFEST_DIR-relative paths in src/**/*.rs updated from ../tests/fixtures to tests/fixtures
 - [quick-23]: CI unified: rust-ci.yml → ci.yml, rust-release.yml → release.yml (old Zig release.yml removed)
 - [quick-23]: release.sh now references Cargo.toml (not rust/Cargo.toml) as version source
+- [quick-30]: FileOutcome enum used in parallel pipeline to cleanly separate skipped vs analyzed vs error outcomes
+- [quick-30]: Function-level size guard uses `continue` in merge loop rather than index-based filtering
+- [quick-30]: JSON skipped array omitted (not null) when empty, using skip_serializing_if
+- [quick-30]: SARIF complexity-guard/skipped rule at index 11 with "note" default level; rule count is now 12
 
 ### Pending Todos
 
@@ -114,12 +118,13 @@ Recent decisions affecting v0.8:
 | 27 | Add 8 missing combo repos and restrict quick set to small repos | 2026-02-26 | b8f0412 | [27-add-missing-combo-repos-and-restrict-qui](./quick/27-add-missing-combo-repos-and-restrict-qui/) |
 | 28 | Add license field to all repos in public-projects.json | 2026-02-26 | 62457fb | [28-add-license-field-to-all-repos-in-public](./quick/28-add-license-field-to-all-repos-in-public/) |
 | 29 | Remove FTA benchmarking from all scripts and documentation | 2026-02-26 | a011be5 | [29-remove-the-benchmarking-against-the-fta-](./quick/29-remove-the-benchmarking-against-the-fta-/) |
+| 30 | Add size guards to skip files > 10,000 lines and functions > 5,000 lines | 2026-02-26 | b8da1c8 | [30-add-a-fail-safe-to-skip-files-bigger-tha](./quick/30-add-a-fail-safe-to-skip-files-bigger-tha/) |
 
 ## Session Continuity
 
-Last session: 2026-02-26 (quick task 29)
-Stopped at: Completed quick task 29 — removed all FTA benchmarking from scripts and documentation
-Resume with: Benchmarks are CG-only; ready for next task
+Last session: 2026-02-26 (quick task 30)
+Stopped at: Completed quick task 30 — add size guards to skip files > 10,000 lines and functions > 5,000 lines
+Resume with: Size guards active; skipped list surfaced in all output formats; ready for next task
 
 **Remaining phases to execute:**
 - Phase 19: CLI, Config, Output Formats — COMPLETE (4/4)
@@ -136,4 +141,4 @@ Resume with: Benchmarks are CG-only; ready for next task
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-26 after quick task 29 completion (remove FTA benchmarking)*
+*Last updated: 2026-02-26 after quick task 30 completion (add size guards, skipped list in all output formats)*
