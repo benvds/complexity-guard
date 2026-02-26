@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 Phase: 22 of 22 (Cross-Compilation, CI, and Release) — COMPLETE
 Plan: 3 of 3 in phase 22 — plan 03 complete
 Status: Phase 22-03 COMPLETE — documentation updates for Rust binary (README, docs, releasing, publication READMEs)
-Last activity: 2026-02-26 - Completed quick task 26: restructure public-projects.json with categories, repo_size, test_sets
+Last activity: 2026-02-26 - Completed quick task 27: add missing combo repos and restrict quick set to small repos
 
 Progress: [█████████░] 75% (v0.8 milestone)
 
@@ -111,12 +111,13 @@ Recent decisions affecting v0.8:
 | 24 | Restore benchmarks/ directory from main with Rust build commands | 2026-02-25 | 91c487e | [24-restore-benchmarks-and-scripts-from-main](./quick/24-restore-benchmarks-and-scripts-from-main/) |
 | 25 | Create a Claude Code skill for complexity-guard CLI | 2026-02-26 | 0855eac | [25-create-a-claude-skill-for-complexity-gua](./quick/25-create-a-claude-skill-for-complexity-gua/) |
 | 26 | Restructure public-projects.json with categories, repo_size, test_sets | 2026-02-26 | 00af450 | [26-improve-public-projects-json-restructure](./quick/26-improve-public-projects-json-restructure/) |
+| 27 | Add 8 missing combo repos and restrict quick set to small repos | 2026-02-26 | b8f0412 | [27-add-missing-combo-repos-and-restrict-qui](./quick/27-add-missing-combo-repos-and-restrict-qui/) |
 
 ## Session Continuity
 
-Last session: 2026-02-26 (quick task 26)
-Stopped at: Completed quick task 26 — restructured public-projects.json
-Resume with: Benchmark scripts now use test_sets from JSON for suite selection
+Last session: 2026-02-26 (quick task 27)
+Stopped at: Completed quick task 27 — added 8 repos, restricted quick set to 9 small repos
+Resume with: All 27 combos populated; quick set ready for fast benchmarks
 
 **Remaining phases to execute:**
 - Phase 19: CLI, Config, Output Formats — COMPLETE (4/4)
@@ -133,4 +134,4 @@ Resume with: Benchmark scripts now use test_sets from JSON for suite selection
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-26 after quick task 26 completion (restructure public-projects.json)*
+*Last updated: 2026-02-26 after quick task 27 completion (add missing combo repos, restrict quick set)*
