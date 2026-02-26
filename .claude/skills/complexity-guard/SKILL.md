@@ -1,11 +1,11 @@
 ---
 name: complexity-guard
-description: "Analyzes TypeScript/JavaScript code complexity. Use when the user needs to check code quality, measure cyclomatic/cognitive/halstead/structural complexity, detect duplication, generate health scores, or enforce complexity thresholds in CI. Runs as a single static binary with zero dependencies."
+description: "Analyzes TypeScript/JavaScript code complexity. Use when the user needs to check code quality, measure cyclomatic/cognitive/halstead/structural complexity, detect duplication, generate health scores, or enforce complexity thresholds in CI."
 ---
 
 # ComplexityGuard CLI Reference
 
-ComplexityGuard analyzes TypeScript/JavaScript complexity using tree-sitter parsing. Single static binary, zero runtime dependencies.
+ComplexityGuard analyzes TypeScript/JavaScript complexity.
 
 ## Quick Start
 
@@ -296,10 +296,4 @@ complexity-guard src/
 ```sh
 # npm
 npm install -g complexity-guard
-
-# Direct download (GitHub Releases)
-# Platforms: linux-x86_64-musl, linux-aarch64-musl, macos-x86_64, macos-aarch64, windows-x86_64
-
-# Build from source (requires Rust stable)
-cargo build --release
 ```
