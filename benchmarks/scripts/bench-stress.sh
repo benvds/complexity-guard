@@ -143,6 +143,7 @@ for project in "${STRESS_SUITE[@]}"; do
   fi
 
   RESULT_JSON="$RESULTS_DIR/${project}-stress.json"
+  ANALYSIS_JSON="$RESULTS_DIR/${project}-analysis.json"
   echo "Benchmarking (stress): $project"
   echo "  Warning: This may take several minutes for massive repos."
 
@@ -157,6 +158,11 @@ for project in "${STRESS_SUITE[@]}"; do
     echo "  Partial results may exist at $RESULT_JSON"
     continue
   }
+
+  # Capture analysis output (files, functions, metrics, health score)
+  if [[ ! -f "$ANALYSIS_JSON" ]]; then
+    "$CG_BIN" --format json --fail-on none "$PROJECT_DIR" > "$ANALYSIS_JSON" 2>/dev/null || true
+  fi
 
   # Extract mean time from JSON using jq
   if [[ -f "$RESULT_JSON" ]]; then

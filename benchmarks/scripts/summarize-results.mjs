@@ -94,6 +94,53 @@ function parseHyperfineFile(filepath) {
 }
 
 /**
+ * Parse a CG analysis JSON output file.
+ *
+ * Extracts file count, function count, metric averages, and health score.
+ * @param {string} filepath
+ * @returns {object|null}
+ */
+function parseAnalysisFile(filepath) {
+  try {
+    const content = fs.readFileSync(filepath, 'utf8');
+    const data = JSON.parse(content);
+    const summary = data.summary || {};
+    const files = data.files || [];
+
+    // Compute average metrics across all functions
+    let totalCyclomatic = 0;
+    let totalCognitive = 0;
+    let totalHalstead = 0;
+    let funcCount = 0;
+
+    for (const file of files) {
+      for (const fn of file.functions || []) {
+        totalCyclomatic += fn.cyclomatic || 0;
+        totalCognitive += fn.cognitive || 0;
+        totalHalstead += fn.halstead_volume || 0;
+        funcCount++;
+      }
+    }
+
+    const project = path.basename(filepath).replace(/-analysis\.json$/, '');
+
+    return {
+      project,
+      files_analyzed: summary.files_analyzed || 0,
+      total_functions: summary.total_functions || funcCount,
+      warnings: summary.warnings || 0,
+      errors: summary.errors || 0,
+      health_score: round(summary.health_score || 0, 1),
+      avg_cyclomatic: funcCount > 0 ? round(totalCyclomatic / funcCount, 1) : 0,
+      avg_cognitive: funcCount > 0 ? round(totalCognitive / funcCount, 1) : 0,
+      avg_halstead: funcCount > 0 ? round(totalHalstead / funcCount, 0) : 0,
+    };
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
  * Parse a subsystem benchmark JSON file.
  *
  * Handles two schemas:
@@ -135,13 +182,20 @@ function padEnd(value, width) {
 /**
  * Format a markdown table row for the performance table.
  * @param {object} r
+ * @param {object|null} analysis
  * @returns {string}
  */
-function formatSpeedRow(r) {
+function formatSpeedRow(r, analysis) {
   const cgMsStr = `${Math.round(r.cg_mean_ms)} \u00b1 ${Math.round(r.cg_stddev_ms)}`;
 
+  if (analysis) {
+    return (
+      `| ${padEnd(r.project, 20)} | ${padEnd(analysis.files_analyzed, 5)} | ${padEnd(analysis.total_functions, 5)} | ${padEnd(cgMsStr, 14)} | ${padEnd(r.cg_mem_mb.toFixed(1), 8)} | ${padEnd(analysis.avg_cyclomatic, 4)} | ${padEnd(analysis.avg_cognitive, 4)} | ${padEnd(analysis.avg_halstead, 7)} | ${padEnd(analysis.warnings, 4)} | ${padEnd(analysis.errors, 4)} | ${padEnd(analysis.health_score, 5)} |`
+    );
+  }
+
   return (
-    `| ${padEnd(r.project, 20)} | ${padEnd(cgMsStr, 14)} | ${padEnd(r.cg_mem_mb.toFixed(1), 12)} |`
+    `| ${padEnd(r.project, 20)} | ${padEnd('-', 5)} | ${padEnd('-', 5)} | ${padEnd(cgMsStr, 14)} | ${padEnd(r.cg_mem_mb.toFixed(1), 8)} | ${padEnd('-', 4)} | ${padEnd('-', 4)} | ${padEnd('-', 7)} | ${padEnd('-', 4)} | ${padEnd('-', 4)} | ${padEnd('-', 5)} |`
   );
 }
 
@@ -149,19 +203,21 @@ function formatSpeedRow(r) {
  * Print a markdown performance table.
  * @param {object[]} results
  * @param {string|null} suite
+ * @param {Map<string, object>} analysisMap
  */
-function printSpeedTable(results, suite = null) {
+function printSpeedTable(results, suite = null, analysisMap = new Map()) {
   const filtered = suite === null ? results : results.filter(r => r.suite === suite);
   if (filtered.length === 0) return;
 
   const suiteLabel = suite || 'all';
   console.log(`\n### Performance (${suiteLabel} suite)\n`);
-  console.log(`| ${padEnd('Project', 20)} | ${padEnd('CG (ms)', 14)} | ${padEnd('CG Mem (MB)', 12)} |`);
-  console.log(`| ${'-'.repeat(20)} | ${'-'.repeat(14)} | ${'-'.repeat(12)} |`);
+  console.log(`| ${padEnd('Project', 20)} | ${padEnd('Files', 5)} | ${padEnd('Funcs', 5)} | ${padEnd('CG (ms)', 14)} | ${padEnd('Mem (MB)', 8)} | ${padEnd('Cyc', 4)} | ${padEnd('Cog', 4)} | ${padEnd('Halsted', 7)} | ${padEnd('Warn', 4)} | ${padEnd('Err', 4)} | ${padEnd('Score', 5)} |`);
+  console.log(`| ${'-'.repeat(20)} | ${'-'.repeat(5)} | ${'-'.repeat(5)} | ${'-'.repeat(14)} | ${'-'.repeat(8)} | ${'-'.repeat(4)} | ${'-'.repeat(4)} | ${'-'.repeat(7)} | ${'-'.repeat(4)} | ${'-'.repeat(4)} | ${'-'.repeat(5)} |`);
 
   const sorted = [...filtered].sort((a, b) => a.cg_mean_ms - b.cg_mean_ms);
   for (const r of sorted) {
-    console.log(formatSpeedRow(r));
+    const analysis = analysisMap.get(r.project) || null;
+    console.log(formatSpeedRow(r, analysis));
   }
 
   if (filtered.length > 1) {
@@ -170,7 +226,17 @@ function printSpeedTable(results, suite = null) {
     const avgMem = withMem.length > 0
       ? withMem.reduce((sum, r) => sum + r.cg_mem_mb, 0) / withMem.length
       : 0;
-    console.log(`\n**Mean analysis time:** ${Math.round(avgMs)} ms \u00a0 | \u00a0 **Mean memory:** ${avgMem.toFixed(1)} MB`);
+
+    // Compute analysis averages
+    const withAnalysis = filtered.filter(r => analysisMap.has(r.project));
+    let analysisStats = '';
+    if (withAnalysis.length > 0) {
+      const avgFiles = Math.round(withAnalysis.reduce((sum, r) => sum + (analysisMap.get(r.project)?.files_analyzed || 0), 0) / withAnalysis.length);
+      const avgFuncs = Math.round(withAnalysis.reduce((sum, r) => sum + (analysisMap.get(r.project)?.total_functions || 0), 0) / withAnalysis.length);
+      const avgScore = round(withAnalysis.reduce((sum, r) => sum + (analysisMap.get(r.project)?.health_score || 0), 0) / withAnalysis.length, 1);
+      analysisStats = ` \u00a0 | \u00a0 **Mean files:** ${avgFiles} \u00a0 | \u00a0 **Mean functions:** ${avgFuncs} \u00a0 | \u00a0 **Mean health score:** ${avgScore}`;
+    }
+    console.log(`\n**Mean analysis time:** ${Math.round(avgMs)} ms \u00a0 | \u00a0 **Mean memory:** ${avgMem.toFixed(1)} MB${analysisStats}`);
   }
 }
 
@@ -214,6 +280,14 @@ function main() {
     process.stderr.write('Warning: No hyperfine benchmark result files found.\n');
   }
 
+  // Discover analysis files
+  const analysisFiles = allFiles.filter(f => f.endsWith('-analysis.json')).sort();
+  const analysisMap = new Map();
+  for (const filepath of analysisFiles) {
+    const a = parseAnalysisFile(filepath);
+    if (a !== null) analysisMap.set(a.project, a);
+  }
+
   // Discover subsystem files
   const subsystemFiles = allFiles.filter(f => f.endsWith('-subsystems.json')).sort();
   const subsystemData = [];
@@ -249,11 +323,11 @@ function main() {
   }
 
   for (const suite of suites) {
-    printSpeedTable(benchmarkResults, suite);
+    printSpeedTable(benchmarkResults, suite, analysisMap);
   }
 
   if (suites.length > 1) {
-    printSpeedTable(benchmarkResults, null);
+    printSpeedTable(benchmarkResults, null, analysisMap);
   }
 
   // Subsystem breakdown
@@ -306,6 +380,7 @@ function main() {
       results_dir: resultsDir,
       system_info: systemInfo,
       benchmark_results: benchmarkResults,
+      analysis_data: Object.fromEntries(analysisMap),
       subsystem_data: subsystemData,
     };
     const dir = path.dirname(path.resolve(jsonOutputPath));

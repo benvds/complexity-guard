@@ -148,6 +148,7 @@ for project in "${QUICK_SUITE[@]}"; do
   fi
 
   RESULT_JSON="$RESULTS_DIR/${project}-quick.json"
+  ANALYSIS_JSON="$RESULTS_DIR/${project}-analysis.json"
   echo "Benchmarking: $project"
 
   "$HYPERFINE" \
@@ -156,6 +157,9 @@ for project in "${QUICK_SUITE[@]}"; do
     --ignore-failure \
     --export-json "$RESULT_JSON" \
     "${CG_BIN} --format json --fail-on none ${PROJECT_DIR}"
+
+  # Capture analysis output (files, functions, metrics, health score)
+  "$CG_BIN" --format json --fail-on none "$PROJECT_DIR" > "$ANALYSIS_JSON" 2>/dev/null || true
 
   # Extract mean time from JSON using jq
   if [[ -f "$RESULT_JSON" ]]; then

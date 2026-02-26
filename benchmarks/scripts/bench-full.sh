@@ -150,6 +150,7 @@ while IFS= read -r project; do
   fi
 
   RESULT_JSON="$RESULTS_DIR/${project}-full.json"
+  ANALYSIS_JSON="$RESULTS_DIR/${project}-analysis.json"
   echo "[$((BENCHMARKED+1))/$CLONED_COUNT] Benchmarking: $project"
 
   "$HYPERFINE" \
@@ -158,6 +159,11 @@ while IFS= read -r project; do
     --ignore-failure \
     --export-json "$RESULT_JSON" \
     "${CG_BIN} --format json --fail-on none ${PROJECT_DIR}"
+
+  # Capture analysis output (files, functions, metrics, health score)
+  if [[ ! -f "$ANALYSIS_JSON" ]]; then
+    "$CG_BIN" --format json --fail-on none "$PROJECT_DIR" > "$ANALYSIS_JSON" 2>/dev/null || true
+  fi
 
   # Extract mean time from JSON using jq
   if [[ -f "$RESULT_JSON" ]]; then
