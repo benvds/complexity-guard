@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# bench-quick.sh — Hyperfine end-to-end benchmark: quick suite (10 projects, CG vs FTA)
+# bench-quick.sh — Hyperfine end-to-end benchmark: quick suite (test_sets-driven, CG vs FTA)
 #
 # Usage:
 #   bash benchmarks/scripts/bench-quick.sh
@@ -10,6 +10,11 @@
 #   - node/npm must be available for FTA auto-install
 #   - jq must be installed for JSON extraction
 #
+# Project selection:
+#   Projects are selected dynamically from tests/public-projects.json where
+#   test_sets contains "quick". This covers one repo per unique
+#   (category x repo_size x quality_tier) combination.
+#
 # Output:
 #   benchmarks/results/baseline-YYYY-MM-DD/${project}-quick.json (hyperfine JSON per project)
 
@@ -17,6 +22,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
+PROJECTS_JSON="$PROJECT_ROOT/tests/public-projects.json"
 
 # Capture system specs into $RESULTS_DIR/system-info.json (skip if already present).
 # Called after mkdir -p "$RESULTS_DIR". Works on Linux and macOS.
@@ -115,8 +121,8 @@ mkdir -p "$RESULTS_DIR"
 capture_system_info "$RESULTS_DIR"
 echo "Results dir: $RESULTS_DIR"
 
-# Quick suite project list (must match setup.sh QUICK_SUITE)
-QUICK_SUITE=(zod got dayjs vite nestjs webpack typeorm rxjs effect vscode)
+# Build quick suite project list dynamically from test_sets in public-projects.json
+QUICK_SUITE=($(jq -r '.libraries[] | select(.test_sets | contains(["quick"])) | .name' "$PROJECTS_JSON"))
 PROJECTS_DIR="$PROJECT_ROOT/benchmarks/projects"
 
 # Verify at least some projects are cloned
@@ -178,14 +184,14 @@ done
 
 # Print summary table
 echo "=== Summary: Mean Wall-Clock Time (ms) ==="
-printf "%-15s %10s %10s %10s\n" "Project" "CG (ms)" "FTA (ms)" "Ratio"
-printf "%-15s %10s %10s %10s\n" "-------" "-------" "--------" "-----"
+printf "%-20s %10s %10s %10s\n" "Project" "CG (ms)" "FTA (ms)" "Ratio"
+printf "%-20s %10s %10s %10s\n" "-------" "-------" "--------" "-----"
 for project in "${QUICK_SUITE[@]}"; do
   if [[ -n "${CG_MEAN[$project]:-}" && -n "${FTA_MEAN[$project]:-}" ]]; then
     cg_ms="${CG_MEAN[$project]}"
     fta_ms="${FTA_MEAN[$project]}"
     ratio=$(node -e "console.log((${fta_ms} / Math.max(${cg_ms}, 0.001)).toFixed(2) + 'x')" 2>/dev/null || echo "N/A")
-    printf "%-15s %10s %10s %10s\n" "$project" "${cg_ms}ms" "${fta_ms}ms" "$ratio"
+    printf "%-20s %10s %10s %10s\n" "$project" "${cg_ms}ms" "${fta_ms}ms" "$ratio"
   fi
 done
 

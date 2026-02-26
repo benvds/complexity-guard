@@ -2,12 +2,13 @@
 # setup.sh — Clone benchmark projects from tests/public-projects.json
 #
 # Usage:
-#   bash benchmarks/scripts/setup.sh [--suite quick|full|stress]
+#   bash benchmarks/scripts/setup.sh [--suite quick|normal|full|stress]
 #
 # Suites:
-#   quick  (default) — 10 representative projects spanning all quality tiers
+#   quick  (default) — ~17 representative projects from test_sets (one per category/size/tier combo)
+#   normal           — ~39 projects from test_sets (2-3 per populated combo)
 #   full             — all 76 projects from public-projects.json
-#   stress           — only massive repos: vscode, typescript, effect
+#   stress           — only large repo_size entries
 
 set -euo pipefail
 
@@ -21,14 +22,6 @@ if ! command -v jq &>/dev/null; then
   echo "Error: jq not found. Install via: sudo apt install jq (or brew install jq)" >&2
   exit 1
 fi
-
-# Quick suite: 10 representative projects spanning size/quality/language tiers
-# Rationale: 2 small (zod, dayjs), 3 medium (got, vite, rxjs),
-#            3 large (nestjs, webpack, typeorm), 2 massive (effect, vscode)
-QUICK_SUITE="zod got dayjs vite nestjs webpack typeorm rxjs effect vscode"
-
-# Stress suite: only the 3 largest repos
-STRESS_SUITE="vscode typescript effect"
 
 # Parse --suite flag
 SUITE="quick"
@@ -44,14 +37,14 @@ while [[ $# -gt 0 ]]; do
       ;;
     *)
       echo "Unknown argument: $1" >&2
-      echo "Usage: $0 [--suite quick|full|stress]" >&2
+      echo "Usage: $0 [--suite quick|normal|full|stress]" >&2
       exit 1
       ;;
   esac
 done
 
-if [[ "$SUITE" != "quick" && "$SUITE" != "full" && "$SUITE" != "stress" ]]; then
-  echo "Error: --suite must be 'quick', 'full', or 'stress'" >&2
+if [[ "$SUITE" != "quick" && "$SUITE" != "normal" && "$SUITE" != "full" && "$SUITE" != "stress" ]]; then
+  echo "Error: --suite must be 'quick', 'normal', 'full', or 'stress'" >&2
   exit 1
 fi
 
@@ -64,24 +57,21 @@ mkdir -p "$PROJECTS_DIR"
 
 # Build list of projects to clone based on suite
 # Each line: "name git_url tag"
+# Project lists are driven by test_sets and repo_size fields in public-projects.json
 case "$SUITE" in
   quick)
-    # Filter and sort to match QUICK_SUITE ordering
     CLONE_LIST=$(
-      for name in $QUICK_SUITE; do
-        jq -r --arg name "$name" \
-          '.libraries[] | select(.name == $name) | "\(.name) \(.git_url) \(.latest_stable_tag)"' \
-          "$PROJECTS_JSON"
-      done
+      jq -r '.libraries[] | select(.test_sets | contains(["quick"])) | "\(.name) \(.git_url) \(.latest_stable_tag)"' "$PROJECTS_JSON"
+    )
+    ;;
+  normal)
+    CLONE_LIST=$(
+      jq -r '.libraries[] | select(.test_sets | contains(["normal"])) | "\(.name) \(.git_url) \(.latest_stable_tag)"' "$PROJECTS_JSON"
     )
     ;;
   stress)
     CLONE_LIST=$(
-      for name in $STRESS_SUITE; do
-        jq -r --arg name "$name" \
-          '.libraries[] | select(.name == $name) | "\(.name) \(.git_url) \(.latest_stable_tag)"' \
-          "$PROJECTS_JSON"
-      done
+      jq -r '.libraries[] | select(.repo_size == "large") | "\(.name) \(.git_url) \(.latest_stable_tag)"' "$PROJECTS_JSON"
     )
     ;;
   full)
