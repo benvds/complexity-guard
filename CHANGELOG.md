@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.2] - 2026-02-26
+
+### Added
+
+- Add size guards and skipped list to all output formats
+- Show files, functions, metrics, and health score in bench script console output
+- Add bench-normal.sh for normal test suite benchmarking
+- Add file/function counts, metrics, and health scores to benchmark output
+- Remaining files for linear scoring method
+- Add license field to all 84 repos in public-projects.json
+- Add 8 repos and restrict quick set to small repos only
+- Update benchmark scripts to use test_sets from JSON
+- Restructure public-projects.json with 3 categories, repo_size, and test_sets
+- Add Claude Code skill docs page and update READMEs
+- Create Claude Code skill for complexity-guard
+
+### Fixed
+
+- Move CG (ms) column to last position in bench script output
+- Correct git tags for 11 more repos in public-projects.json
+- Correct git tags for 11 repos in public-projects.json
+- Public-projects.json for quick dataset
+
 ## [0.9.1] - 2026-02-26
 
 ### Fixed
@@ -258,7 +281,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tree-sitter based parsing with error-tolerant syntax handling
 - CLI with --help, --version, --verbose, --quiet, --format, --output, --config, --init flags
 
-[Unreleased]: https://github.com/benvds/complexity-guard/compare/v0.9.1...HEAD
+[Unreleased]: https://github.com/benvds/complexity-guard/compare/v0.9.2...HEAD
+[0.9.2]: https://github.com/benvds/complexity-guard/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/benvds/complexity-guard/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/benvds/complexity-guard/compare/v0.7.0...v0.9.0
 [0.7.0]: https://github.com/benvds/complexity-guard/compare/v0.6.0...v0.7.0

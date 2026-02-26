@@ -4,7 +4,7 @@
         "name": "Ben van de Sande",
         "email": "info@getlean.digital"
     },
-    "version": "0.9.1",
+    "version": "0.9.2",
     "description": "ComplexityGuard binary for Linux x64",
     "os": [
         "linux"
