@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 Phase: 22 of 22 (Cross-Compilation, CI, and Release) — COMPLETE
 Plan: 3 of 3 in phase 22 — plan 03 complete
 Status: Phase 22-03 COMPLETE — documentation updates for Rust binary (README, docs, releasing, publication READMEs)
-Last activity: 2026-02-26 - Completed quick task 28: add license field to all repos in public-projects.json
+Last activity: 2026-02-26 - Completed quick task 29: remove FTA benchmarking from all scripts and documentation
 
 Progress: [█████████░] 75% (v0.8 milestone)
 
@@ -113,12 +113,13 @@ Recent decisions affecting v0.8:
 | 26 | Restructure public-projects.json with categories, repo_size, test_sets | 2026-02-26 | 00af450 | [26-improve-public-projects-json-restructure](./quick/26-improve-public-projects-json-restructure/) |
 | 27 | Add 8 missing combo repos and restrict quick set to small repos | 2026-02-26 | b8f0412 | [27-add-missing-combo-repos-and-restrict-qui](./quick/27-add-missing-combo-repos-and-restrict-qui/) |
 | 28 | Add license field to all repos in public-projects.json | 2026-02-26 | 62457fb | [28-add-license-field-to-all-repos-in-public](./quick/28-add-license-field-to-all-repos-in-public/) |
+| 29 | Remove FTA benchmarking from all scripts and documentation | 2026-02-26 | a011be5 | [29-remove-the-benchmarking-against-the-fta-](./quick/29-remove-the-benchmarking-against-the-fta-/) |
 
 ## Session Continuity
 
-Last session: 2026-02-26 (quick task 28)
-Stopped at: Completed quick task 28 — added SPDX license field to all 84 repos, fixed pm2 org
-Resume with: All repos have license metadata; ready for next task
+Last session: 2026-02-26 (quick task 29)
+Stopped at: Completed quick task 29 — removed all FTA benchmarking from scripts and documentation
+Resume with: Benchmarks are CG-only; ready for next task
 
 **Remaining phases to execute:**
 - Phase 19: CLI, Config, Output Formats — COMPLETE (4/4)
@@ -135,4 +136,4 @@ Resume with: All repos have license metadata; ready for next task
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-26 after quick task 28 completion (add license field to all repos)*
+*Last updated: 2026-02-26 after quick task 29 completion (remove FTA benchmarking)*
