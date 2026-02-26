@@ -1,0 +1,5573 @@
+{
+  "version": "0.9.1",
+  "timestamp": 1772118560,
+  "summary": {
+    "files_analyzed": 259,
+    "total_functions": 230,
+    "warnings": 43,
+    "errors": 11,
+    "status": "error",
+    "health_score": 97.6011555781392
+  },
+  "files": [
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/examples/basic-validation.js",
+      "functions": [],
+      "file_length": 24,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/examples/composing-structs.js",
+      "functions": [],
+      "file_length": 19,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/examples/custom-errors.js",
+      "functions": [],
+      "file_length": 26,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/examples/custom-types.js",
+      "functions": [
+        {
+          "name": "define callback",
+          "start_line": 9,
+          "end_line": 11,
+          "start_col": 26,
+          "cyclomatic": 2,
+          "cognitive": 1,
+          "halstead_volume": 22.458839376460833,
+          "halstead_difficulty": 1.875,
+          "halstead_effort": 42.11032383086406,
+          "halstead_bugs": 0.007486279792153611,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 97.86489203800987,
+          "status": "ok"
+        },
+        {
+          "name": "define callback",
+          "start_line": 13,
+          "end_line": 21,
+          "start_col": 30,
+          "cyclomatic": 3,
+          "cognitive": 4,
+          "halstead_volume": 58.81033751683405,
+          "halstead_difficulty": 3.333333333333333,
+          "halstead_effort": 196.03445838944683,
+          "halstead_bugs": 0.019603445838944685,
+          "nesting_depth": 2,
+          "line_count": 6,
+          "params_count": 1,
+          "health_score": 94.50892246862375,
+          "status": "ok"
+        }
+      ],
+      "file_length": 28,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/examples/default-values.js",
+      "functions": [
+        {
+          "name": "defaulted callback",
+          "start_line": 16,
+          "end_line": 16,
+          "start_col": 26,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 2.0,
+          "halstead_difficulty": 0.5,
+          "halstead_effort": 1.0,
+          "halstead_bugs": 0.0006666666666666666,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.43499999999997,
+          "status": "ok"
+        },
+        {
+          "name": "defaulted callback",
+          "start_line": 20,
+          "end_line": 20,
+          "start_col": 32,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 2.0,
+          "halstead_difficulty": 0.5,
+          "halstead_effort": 1.0,
+          "halstead_bugs": 0.0006666666666666666,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.43499999999997,
+          "status": "ok"
+        }
+      ],
+      "file_length": 21,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/examples/optional-values.js",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/examples/returning-errors.js",
+      "functions": [],
+      "file_length": 11,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/examples/testing-values.js",
+      "functions": [],
+      "file_length": 12,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/examples/throwing-errors.js",
+      "functions": [],
+      "file_length": 11,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/rollup.config.js",
+      "functions": [],
+      "file_length": 15,
+      "export_count": 1
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/src/error.ts",
+      "functions": [
+        {
+          "name": "StructError.constructor",
+          "start_line": 35,
+          "end_line": 48,
+          "start_col": 2,
+          "cyclomatic": 4,
+          "cognitive": 4,
+          "halstead_volume": 204.32967235008786,
+          "halstead_difficulty": 5.833333333333334,
+          "halstead_effort": 1191.923088708846,
+          "halstead_bugs": 0.06810989078336262,
+          "nesting_depth": 1,
+          "line_count": 11,
+          "params_count": 2,
+          "health_score": 92.66752745737435,
+          "status": "ok"
+        }
+      ],
+      "file_length": 30,
+      "export_count": 2
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/src/index.ts",
+      "functions": [],
+      "file_length": 6,
+      "export_count": 6
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/src/struct.ts",
+      "functions": [
+        {
+          "name": "Struct.constructor",
+          "start_line": 22,
+          "end_line": 61,
+          "start_col": 2,
+          "cyclomatic": 3,
+          "cognitive": 13,
+          "halstead_volume": 157.73835003173087,
+          "halstead_difficulty": 5.75,
+          "halstead_effort": 906.9955126824525,
+          "halstead_bugs": 0.052579450010576956,
+          "nesting_depth": 1,
+          "line_count": 24,
+          "params_count": 1,
+          "health_score": 88.78362904142868,
+          "status": "ok"
+        },
+        {
+          "name": "Struct.assert",
+          "start_line": 67,
+          "end_line": 69,
+          "start_col": 2,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 18.094737505048094,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 18.094737505048094,
+          "halstead_bugs": 0.006031579168349364,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 2,
+          "health_score": 98.4809561353788,
+          "status": "ok"
+        },
+        {
+          "name": "Struct.create",
+          "start_line": 75,
+          "end_line": 77,
+          "start_col": 2,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 18.094737505048094,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 18.094737505048094,
+          "halstead_bugs": 0.006031579168349364,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 2,
+          "health_score": 98.4809561353788,
+          "status": "ok"
+        },
+        {
+          "name": "Struct.is",
+          "start_line": 83,
+          "end_line": 85,
+          "start_col": 2,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 11.60964047443681,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 11.60964047443681,
+          "halstead_bugs": 0.0038698801581456034,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.94626102977506,
+          "status": "ok"
+        },
+        {
+          "name": "Struct.mask",
+          "start_line": 93,
+          "end_line": 95,
+          "start_col": 2,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 18.094737505048094,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 18.094737505048094,
+          "halstead_bugs": 0.006031579168349364,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 2,
+          "health_score": 98.4809561353788,
+          "status": "ok"
+        },
+        {
+          "name": "Struct.validate",
+          "start_line": 107,
+          "end_line": 116,
+          "start_col": 2,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 18.094737505048094,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 18.094737505048094,
+          "halstead_bugs": 0.006031579168349364,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 2,
+          "health_score": 98.4809561353788,
+          "status": "ok"
+        },
+        {
+          "name": "assert",
+          "start_line": 123,
+          "end_line": 133,
+          "start_col": 7,
+          "cyclomatic": 2,
+          "cognitive": 1,
+          "halstead_volume": 41.209025018750054,
+          "halstead_difficulty": 3.2,
+          "halstead_effort": 131.86888006000018,
+          "halstead_bugs": 0.013736341672916685,
+          "nesting_depth": 1,
+          "line_count": 3,
+          "params_count": 5,
+          "health_score": 95.54093231235936,
+          "status": "warning"
+        },
+        {
+          "name": "create",
+          "start_line": 139,
+          "end_line": 151,
+          "start_col": 7,
+          "cyclomatic": 2,
+          "cognitive": 2,
+          "halstead_volume": 76.14709844115208,
+          "halstead_difficulty": 4.5,
+          "halstead_effort": 342.6619429851844,
+          "halstead_bugs": 0.025382366147050694,
+          "nesting_depth": 1,
+          "line_count": 5,
+          "params_count": 5,
+          "health_score": 94.67889676169136,
+          "status": "warning"
+        },
+        {
+          "name": "mask",
+          "start_line": 157,
+          "end_line": 169,
+          "start_col": 7,
+          "cyclomatic": 2,
+          "cognitive": 2,
+          "halstead_volume": 89.85848369899593,
+          "halstead_difficulty": 4.666666666666667,
+          "halstead_effort": 419.33959059531435,
+          "halstead_bugs": 0.02995282789966531,
+          "nesting_depth": 1,
+          "line_count": 5,
+          "params_count": 5,
+          "health_score": 94.57606137225753,
+          "status": "warning"
+        },
+        {
+          "name": "is",
+          "start_line": 175,
+          "end_line": 178,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 31.69925001442312,
+          "halstead_difficulty": 2.4,
+          "halstead_effort": 76.07820003461549,
+          "halstead_bugs": 0.010566416671474373,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 4,
+          "health_score": 97.49558895822517,
+          "status": "warning"
+        },
+        {
+          "name": "validate",
+          "start_line": 185,
+          "end_line": 211,
+          "start_col": 7,
+          "cyclomatic": 2,
+          "cognitive": 2,
+          "halstead_volume": 155.58941141594505,
+          "halstead_difficulty": 5.653846153846154,
+          "halstead_effort": 879.6785953132278,
+          "halstead_bugs": 0.05186313713864835,
+          "nesting_depth": 1,
+          "line_count": 12,
+          "params_count": 5,
+          "health_score": 93.7330794143804,
+          "status": "warning"
+        }
+      ],
+      "file_length": 128,
+      "export_count": 13
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/src/structs/coercions.ts",
+      "functions": [
+        {
+          "name": "coerce",
+          "start_line": 16,
+          "end_line": 29,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 3,
+          "halstead_volume": 18.094737505048094,
+          "halstead_difficulty": 1.5,
+          "halstead_effort": 27.14210625757214,
+          "halstead_bugs": 0.006031579168349364,
+          "nesting_depth": 0,
+          "line_count": 7,
+          "params_count": 6,
+          "health_score": 95.01428946871212,
+          "status": "error"
+        },
+        {
+          "name": "defaulted",
+          "start_line": 38,
+          "end_line": 70,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 19,
+          "halstead_volume": 13.931568569324174,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 13.931568569324174,
+          "halstead_bugs": 0.004643856189774725,
+          "nesting_depth": 0,
+          "line_count": 15,
+          "params_count": 5,
+          "health_score": 86.06217990239674,
+          "status": "warning"
+        },
+        {
+          "name": "trimmed",
+          "start_line": 79,
+          "end_line": 81,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 1,
+          "halstead_volume": 13.931568569324174,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 13.931568569324174,
+          "halstead_bugs": 0.004643856189774725,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 3,
+          "health_score": 97.59551323573007,
+          "status": "warning"
+        }
+      ],
+      "file_length": 39,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/src/structs/refinements.ts",
+      "functions": [
+        {
+          "name": "empty",
+          "start_line": 8,
+          "end_line": 19,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 2,
+          "halstead_volume": 10.0,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 10.0,
+          "halstead_bugs": 0.0033333333333333335,
+          "nesting_depth": 0,
+          "line_count": 7,
+          "params_count": 3,
+          "health_score": 96.82499999999999,
+          "status": "warning"
+        },
+        {
+          "name": "getSize",
+          "start_line": 21,
+          "end_line": 27,
+          "start_col": 0,
+          "cyclomatic": 3,
+          "cognitive": 3,
+          "halstead_volume": 49.82892142331043,
+          "halstead_difficulty": 4.0,
+          "halstead_effort": 199.31568569324173,
+          "halstead_bugs": 0.01660964047443681,
+          "nesting_depth": 1,
+          "line_count": 4,
+          "params_count": 1,
+          "health_score": 95.59294975599182,
+          "status": "ok"
+        },
+        {
+          "name": "max",
+          "start_line": 33,
+          "end_line": 49,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 7,
+          "halstead_volume": 18.094737505048094,
+          "halstead_difficulty": 1.5,
+          "halstead_effort": 27.14210625757214,
+          "halstead_bugs": 0.006031579168349364,
+          "nesting_depth": 0,
+          "line_count": 9,
+          "params_count": 5,
+          "health_score": 93.3309561353788,
+          "status": "warning"
+        },
+        {
+          "name": "min",
+          "start_line": 55,
+          "end_line": 71,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 7,
+          "halstead_volume": 18.094737505048094,
+          "halstead_difficulty": 1.5,
+          "halstead_effort": 27.14210625757214,
+          "halstead_bugs": 0.006031579168349364,
+          "nesting_depth": 0,
+          "line_count": 9,
+          "params_count": 5,
+          "health_score": 93.3309561353788,
+          "status": "warning"
+        },
+        {
+          "name": "nonempty",
+          "start_line": 77,
+          "end_line": 87,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 2,
+          "halstead_volume": 10.0,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 10.0,
+          "halstead_bugs": 0.0033333333333333335,
+          "nesting_depth": 0,
+          "line_count": 6,
+          "params_count": 3,
+          "health_score": 96.875,
+          "status": "warning"
+        },
+        {
+          "name": "pattern",
+          "start_line": 93,
+          "end_line": 103,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 2,
+          "halstead_volume": 10.0,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 10.0,
+          "halstead_bugs": 0.0033333333333333335,
+          "nesting_depth": 0,
+          "line_count": 6,
+          "params_count": 4,
+          "health_score": 96.45833333333331,
+          "status": "warning"
+        },
+        {
+          "name": "size",
+          "start_line": 109,
+          "end_line": 136,
+          "start_col": 7,
+          "cyclomatic": 2,
+          "cognitive": 16,
+          "halstead_volume": 64.5293250129808,
+          "halstead_difficulty": 3.9285714285714284,
+          "halstead_effort": 253.50806255099602,
+          "halstead_bugs": 0.021509775004326936,
+          "nesting_depth": 1,
+          "line_count": 21,
+          "params_count": 5,
+          "health_score": 86.71603006240264,
+          "status": "warning"
+        },
+        {
+          "name": "refine",
+          "start_line": 146,
+          "end_line": 163,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 13.931568569324174,
+          "halstead_difficulty": 1.5,
+          "halstead_effort": 20.897352853986263,
+          "halstead_bugs": 0.004643856189774725,
+          "nesting_depth": 0,
+          "line_count": 9,
+          "params_count": 5,
+          "health_score": 96.86217990239672,
+          "status": "warning"
+        }
+      ],
+      "file_length": 109,
+      "export_count": 7
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/src/structs/types.ts",
+      "functions": [
+        {
+          "name": "any",
+          "start_line": 19,
+          "end_line": 21,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 1,
+          "halstead_volume": 4.754887502163468,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 4.754887502163468,
+          "halstead_bugs": 0.001584962500721156,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 98.91433834373376,
+          "status": "ok"
+        },
+        {
+          "name": "<anonymous>",
+          "start_line": 31,
+          "end_line": 31,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.44999999999997,
+          "status": "ok"
+        },
+        {
+          "name": "<anonymous>",
+          "start_line": 32,
+          "end_line": 32,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.44999999999997,
+          "status": "ok"
+        },
+        {
+          "name": "array",
+          "start_line": 33,
+          "end_line": 54,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 30.880904142633646,
+          "halstead_difficulty": 1.5,
+          "halstead_effort": 46.321356213950466,
+          "halstead_bugs": 0.010293634714211216,
+          "nesting_depth": 0,
+          "line_count": 15,
+          "params_count": 2,
+          "health_score": 97.68505988559691,
+          "status": "ok"
+        },
+        {
+          "name": "bigint",
+          "start_line": 60,
+          "end_line": 64,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 1,
+          "halstead_volume": 4.754887502163468,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 4.754887502163468,
+          "halstead_bugs": 0.001584962500721156,
+          "nesting_depth": 0,
+          "line_count": 3,
+          "params_count": 0,
+          "health_score": 98.81433834373377,
+          "status": "ok"
+        },
+        {
+          "name": "boolean",
+          "start_line": 70,
+          "end_line": 74,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 1,
+          "halstead_volume": 4.754887502163468,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 4.754887502163468,
+          "halstead_bugs": 0.001584962500721156,
+          "nesting_depth": 0,
+          "line_count": 3,
+          "params_count": 0,
+          "health_score": 98.81433834373377,
+          "status": "ok"
+        },
+        {
+          "name": "date",
+          "start_line": 83,
+          "end_line": 90,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 3,
+          "halstead_volume": 4.754887502163468,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 4.754887502163468,
+          "halstead_bugs": 0.001584962500721156,
+          "nesting_depth": 0,
+          "line_count": 6,
+          "params_count": 0,
+          "health_score": 97.66433834373376,
+          "status": "ok"
+        },
+        {
+          "name": "<anonymous>",
+          "start_line": 99,
+          "end_line": 99,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.44999999999997,
+          "status": "ok"
+        },
+        {
+          "name": "<anonymous>",
+          "start_line": 102,
+          "end_line": 102,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.44999999999997,
+          "status": "ok"
+        },
+        {
+          "name": "enums",
+          "start_line": 105,
+          "end_line": 125,
+          "start_col": 7,
+          "cyclomatic": 2,
+          "cognitive": 2,
+          "halstead_volume": 83.76180828526729,
+          "halstead_difficulty": 4.5,
+          "halstead_effort": 376.9281372837028,
+          "halstead_bugs": 0.027920602761755765,
+          "nesting_depth": 1,
+          "line_count": 13,
+          "params_count": 3,
+          "health_score": 95.05511977119383,
+          "status": "warning"
+        },
+        {
+          "name": "func",
+          "start_line": 131,
+          "end_line": 138,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 2,
+          "halstead_volume": 4.754887502163468,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 4.754887502163468,
+          "halstead_bugs": 0.001584962500721156,
+          "nesting_depth": 0,
+          "line_count": 6,
+          "params_count": 0,
+          "health_score": 98.16433834373377,
+          "status": "ok"
+        },
+        {
+          "name": "instance",
+          "start_line": 144,
+          "end_line": 153,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 2,
+          "halstead_volume": 4.754887502163468,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 4.754887502163468,
+          "halstead_bugs": 0.001584962500721156,
+          "nesting_depth": 0,
+          "line_count": 6,
+          "params_count": 2,
+          "health_score": 97.33100501040043,
+          "status": "ok"
+        },
+        {
+          "name": "integer",
+          "start_line": 159,
+          "end_line": 166,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 4,
+          "halstead_volume": 4.754887502163468,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 4.754887502163468,
+          "halstead_bugs": 0.001584962500721156,
+          "nesting_depth": 0,
+          "line_count": 6,
+          "params_count": 0,
+          "health_score": 97.16433834373376,
+          "status": "ok"
+        },
+        {
+          "name": "intersection",
+          "start_line": 172,
+          "end_line": 194,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 30.880904142633646,
+          "halstead_difficulty": 1.5,
+          "halstead_effort": 46.321356213950466,
+          "halstead_bugs": 0.010293634714211216,
+          "nesting_depth": 0,
+          "line_count": 13,
+          "params_count": 3,
+          "health_score": 97.36839321893025,
+          "status": "warning"
+        },
+        {
+          "name": "<anonymous>",
+          "start_line": 200,
+          "end_line": 200,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.44999999999997,
+          "status": "ok"
+        },
+        {
+          "name": "<anonymous>",
+          "start_line": 201,
+          "end_line": 201,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.44999999999997,
+          "status": "ok"
+        },
+        {
+          "name": "<anonymous>",
+          "start_line": 202,
+          "end_line": 202,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.44999999999997,
+          "status": "ok"
+        },
+        {
+          "name": "<anonymous>",
+          "start_line": 203,
+          "end_line": 203,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.44999999999997,
+          "status": "ok"
+        },
+        {
+          "name": "literal",
+          "start_line": 204,
+          "end_line": 218,
+          "start_col": 7,
+          "cyclomatic": 4,
+          "cognitive": 3,
+          "halstead_volume": 108.0,
+          "halstead_difficulty": 6.5,
+          "halstead_effort": 702.0,
+          "halstead_bugs": 0.036,
+          "nesting_depth": 1,
+          "line_count": 12,
+          "params_count": 2,
+          "health_score": 93.84,
+          "status": "ok"
+        },
+        {
+          "name": "<anonymous>",
+          "start_line": 225,
+          "end_line": 225,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.44999999999997,
+          "status": "ok"
+        },
+        {
+          "name": "<anonymous>",
+          "start_line": 226,
+          "end_line": 226,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.44999999999997,
+          "status": "ok"
+        },
+        {
+          "name": "map",
+          "start_line": 230,
+          "end_line": 252,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 30.880904142633646,
+          "halstead_difficulty": 1.5,
+          "halstead_effort": 46.321356213950466,
+          "halstead_bugs": 0.010293634714211216,
+          "nesting_depth": 0,
+          "line_count": 16,
+          "params_count": 4,
+          "health_score": 96.80172655226359,
+          "status": "warning"
+        },
+        {
+          "name": "never",
+          "start_line": 258,
+          "end_line": 260,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 1,
+          "halstead_volume": 4.754887502163468,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 4.754887502163468,
+          "halstead_bugs": 0.001584962500721156,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 98.91433834373376,
+          "status": "ok"
+        },
+        {
+          "name": "nullable",
+          "start_line": 266,
+          "end_line": 272,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 4,
+          "halstead_volume": 25.26619429851844,
+          "halstead_difficulty": 1.5,
+          "halstead_effort": 37.89929144777766,
+          "halstead_bugs": 0.008422064766172813,
+          "nesting_depth": 0,
+          "line_count": 5,
+          "params_count": 3,
+          "health_score": 95.81050354276111,
+          "status": "warning"
+        },
+        {
+          "name": "number",
+          "start_line": 278,
+          "end_line": 285,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 3,
+          "halstead_volume": 4.754887502163468,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 4.754887502163468,
+          "halstead_bugs": 0.001584962500721156,
+          "nesting_depth": 0,
+          "line_count": 6,
+          "params_count": 0,
+          "health_score": 97.66433834373376,
+          "status": "ok"
+        },
+        {
+          "name": "<anonymous>",
+          "start_line": 294,
+          "end_line": 294,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.44999999999997,
+          "status": "ok"
+        },
+        {
+          "name": "<anonymous>",
+          "start_line": 295,
+          "end_line": 295,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.44999999999997,
+          "status": "ok"
+        },
+        {
+          "name": "object",
+          "start_line": 298,
+          "end_line": 345,
+          "start_col": 7,
+          "cyclomatic": 3,
+          "cognitive": 2,
+          "halstead_volume": 91.3765181293825,
+          "halstead_difficulty": 3.611111111111111,
+          "halstead_effort": 329.97075991165906,
+          "halstead_bugs": 0.030458839376460836,
+          "nesting_depth": 1,
+          "line_count": 28,
+          "params_count": 2,
+          "health_score": 94.16467611402962,
+          "status": "warning"
+        },
+        {
+          "name": "optional",
+          "start_line": 351,
+          "end_line": 358,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 4,
+          "halstead_volume": 25.26619429851844,
+          "halstead_difficulty": 1.5,
+          "halstead_effort": 37.89929144777766,
+          "halstead_bugs": 0.008422064766172813,
+          "nesting_depth": 0,
+          "line_count": 6,
+          "params_count": 3,
+          "health_score": 95.7605035427611,
+          "status": "warning"
+        },
+        {
+          "name": "record",
+          "start_line": 367,
+          "end_line": 393,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 30.880904142633646,
+          "halstead_difficulty": 1.5,
+          "halstead_effort": 46.321356213950466,
+          "halstead_bugs": 0.010293634714211216,
+          "nesting_depth": 0,
+          "line_count": 17,
+          "params_count": 4,
+          "health_score": 96.75172655226358,
+          "status": "warning"
+        },
+        {
+          "name": "regexp",
+          "start_line": 402,
+          "end_line": 406,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 1,
+          "halstead_volume": 4.754887502163468,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 4.754887502163468,
+          "halstead_bugs": 0.001584962500721156,
+          "nesting_depth": 0,
+          "line_count": 3,
+          "params_count": 0,
+          "health_score": 98.81433834373377,
+          "status": "ok"
+        },
+        {
+          "name": "<anonymous>",
+          "start_line": 413,
+          "end_line": 413,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.44999999999997,
+          "status": "ok"
+        },
+        {
+          "name": "<anonymous>",
+          "start_line": 414,
+          "end_line": 414,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.44999999999997,
+          "status": "ok"
+        },
+        {
+          "name": "set",
+          "start_line": 415,
+          "end_line": 436,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 30.880904142633646,
+          "halstead_difficulty": 1.5,
+          "halstead_effort": 46.321356213950466,
+          "halstead_bugs": 0.010293634714211216,
+          "nesting_depth": 0,
+          "line_count": 15,
+          "params_count": 2,
+          "health_score": 97.68505988559691,
+          "status": "ok"
+        },
+        {
+          "name": "string",
+          "start_line": 442,
+          "end_line": 449,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 2,
+          "halstead_volume": 4.754887502163468,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 4.754887502163468,
+          "halstead_bugs": 0.001584962500721156,
+          "nesting_depth": 0,
+          "line_count": 6,
+          "params_count": 0,
+          "health_score": 98.16433834373377,
+          "status": "ok"
+        },
+        {
+          "name": "tuple",
+          "start_line": 456,
+          "end_line": 483,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 46.50699332842307,
+          "halstead_difficulty": 2.0,
+          "halstead_effort": 93.01398665684614,
+          "halstead_bugs": 0.015502331109474358,
+          "nesting_depth": 0,
+          "line_count": 17,
+          "params_count": 3,
+          "health_score": 97.05119755003682,
+          "status": "warning"
+        },
+        {
+          "name": "type",
+          "start_line": 492,
+          "end_line": 516,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 44.37895002019237,
+          "halstead_difficulty": 2.4,
+          "halstead_effort": 106.50948004846168,
+          "halstead_bugs": 0.014792983340064124,
+          "nesting_depth": 0,
+          "line_count": 16,
+          "params_count": 2,
+          "health_score": 97.53382454151522,
+          "status": "ok"
+        },
+        {
+          "name": "union",
+          "start_line": 522,
+          "end_line": 568,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 1,
+          "halstead_volume": 53.77443751081734,
+          "halstead_difficulty": 2.0,
+          "halstead_effort": 107.54887502163469,
+          "halstead_bugs": 0.01792481250360578,
+          "nesting_depth": 0,
+          "line_count": 31,
+          "params_count": 3,
+          "health_score": 95.79669171866887,
+          "status": "warning"
+        },
+        {
+          "name": "unknown",
+          "start_line": 574,
+          "end_line": 576,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 1,
+          "halstead_volume": 4.754887502163468,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 4.754887502163468,
+          "halstead_bugs": 0.001584962500721156,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 98.91433834373376,
+          "status": "ok"
+        }
+      ],
+      "file_length": 328,
+      "export_count": 39
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/src/structs/utilities.ts",
+      "functions": [
+        {
+          "name": "<anonymous>",
+          "start_line": 17,
+          "end_line": 17,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.44999999999997,
+          "status": "ok"
+        },
+        {
+          "name": "<anonymous>",
+          "start_line": 21,
+          "end_line": 21,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.44999999999997,
+          "status": "ok"
+        },
+        {
+          "name": "<anonymous>",
+          "start_line": 30,
+          "end_line": 30,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.44999999999997,
+          "status": "ok"
+        },
+        {
+          "name": "<anonymous>",
+          "start_line": 44,
+          "end_line": 44,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.44999999999997,
+          "status": "ok"
+        },
+        {
+          "name": "assign",
+          "start_line": 60,
+          "end_line": 65,
+          "start_col": 7,
+          "cyclomatic": 2,
+          "cognitive": 2,
+          "halstead_volume": 89.85848369899593,
+          "halstead_difficulty": 4.0,
+          "halstead_effort": 359.4339347959837,
+          "halstead_bugs": 0.02995282789966531,
+          "nesting_depth": 1,
+          "line_count": 4,
+          "params_count": 1,
+          "health_score": 96.2927280389242,
+          "status": "ok"
+        },
+        {
+          "name": "define",
+          "start_line": 71,
+          "end_line": 73,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 27.0,
+          "halstead_difficulty": 1.5,
+          "halstead_effort": 40.5,
+          "halstead_bugs": 0.009,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 3,
+          "health_score": 97.99749999999999,
+          "status": "warning"
+        },
+        {
+          "name": "deprecated",
+          "start_line": 80,
+          "end_line": 96,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 2,
+          "halstead_volume": 20.67970000576925,
+          "halstead_difficulty": 1.5,
+          "halstead_effort": 31.019550008653873,
+          "halstead_bugs": 0.006893233335256416,
+          "nesting_depth": 0,
+          "line_count": 10,
+          "params_count": 3,
+          "health_score": 96.59490224995672,
+          "status": "warning"
+        },
+        {
+          "name": "dynamic",
+          "start_line": 106,
+          "end_line": 129,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 33.68825906469125,
+          "halstead_difficulty": 1.5,
+          "halstead_effort": 50.53238859703688,
+          "halstead_bugs": 0.011229419688230418,
+          "nesting_depth": 0,
+          "line_count": 16,
+          "params_count": 2,
+          "health_score": 97.61400472368148,
+          "status": "ok"
+        },
+        {
+          "name": "lazy",
+          "start_line": 140,
+          "end_line": 162,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 39.0,
+          "halstead_difficulty": 1.5,
+          "halstead_effort": 58.5,
+          "halstead_bugs": 0.013,
+          "nesting_depth": 0,
+          "line_count": 17,
+          "params_count": 2,
+          "health_score": 97.52416666666666,
+          "status": "ok"
+        },
+        {
+          "name": "omit",
+          "start_line": 171,
+          "end_line": 188,
+          "start_col": 7,
+          "cyclomatic": 3,
+          "cognitive": 2,
+          "halstead_volume": 82.0447025077789,
+          "halstead_difficulty": 6.285714285714286,
+          "halstead_effort": 515.7095586203245,
+          "halstead_bugs": 0.02734823416925963,
+          "nesting_depth": 1,
+          "line_count": 9,
+          "params_count": 4,
+          "health_score": 94.3513313978583,
+          "status": "warning"
+        },
+        {
+          "name": "partial",
+          "start_line": 197,
+          "end_line": 212,
+          "start_col": 7,
+          "cyclomatic": 5,
+          "cognitive": 4,
+          "halstead_volume": 120.0,
+          "halstead_difficulty": 11.571428571428573,
+          "halstead_effort": 1388.5714285714287,
+          "halstead_bugs": 0.04,
+          "nesting_depth": 1,
+          "line_count": 7,
+          "params_count": 2,
+          "health_score": 93.0,
+          "status": "warning"
+        },
+        {
+          "name": "pick",
+          "start_line": 221,
+          "end_line": 239,
+          "start_col": 7,
+          "cyclomatic": 3,
+          "cognitive": 2,
+          "halstead_volume": 74.00879436282185,
+          "halstead_difficulty": 5.833333333333334,
+          "halstead_effort": 431.7179671164608,
+          "halstead_bugs": 0.024669598120940616,
+          "nesting_depth": 1,
+          "line_count": 9,
+          "params_count": 4,
+          "health_score": 94.4116007089455,
+          "status": "warning"
+        },
+        {
+          "name": "struct",
+          "start_line": 247,
+          "end_line": 253,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 19.651484454403228,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 19.651484454403228,
+          "halstead_bugs": 0.00655049481813441,
+          "nesting_depth": 0,
+          "line_count": 4,
+          "params_count": 3,
+          "health_score": 97.90261386659198,
+          "status": "warning"
+        }
+      ],
+      "file_length": 150,
+      "export_count": 13
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/src/utils.ts",
+      "functions": [
+        {
+          "name": "isIterable",
+          "start_line": 8,
+          "end_line": 10,
+          "start_col": 0,
+          "cyclomatic": 2,
+          "cognitive": 1,
+          "halstead_volume": 27.0,
+          "halstead_difficulty": 2.5,
+          "halstead_effort": 67.5,
+          "halstead_bugs": 0.009,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 2,
+          "health_score": 97.41416666666667,
+          "status": "ok"
+        },
+        {
+          "name": "isObject",
+          "start_line": 16,
+          "end_line": 18,
+          "start_col": 7,
+          "cyclomatic": 2,
+          "cognitive": 1,
+          "halstead_volume": 22.458839376460833,
+          "halstead_difficulty": 3.75,
+          "halstead_effort": 84.22064766172812,
+          "halstead_bugs": 0.007486279792153611,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 97.86489203800987,
+          "status": "ok"
+        },
+        {
+          "name": "isNonArrayObject",
+          "start_line": 24,
+          "end_line": 26,
+          "start_col": 7,
+          "cyclomatic": 2,
+          "cognitive": 1,
+          "halstead_volume": 22.458839376460833,
+          "halstead_difficulty": 1.875,
+          "halstead_effort": 42.11032383086406,
+          "halstead_bugs": 0.007486279792153611,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 97.86489203800987,
+          "status": "ok"
+        },
+        {
+          "name": "isPlainObject",
+          "start_line": 32,
+          "end_line": 39,
+          "start_col": 7,
+          "cyclomatic": 3,
+          "cognitive": 2,
+          "halstead_volume": 87.56916320732489,
+          "halstead_difficulty": 5.625,
+          "halstead_effort": 492.5765430412025,
+          "halstead_bugs": 0.029189721069108297,
+          "nesting_depth": 1,
+          "line_count": 4,
+          "params_count": 1,
+          "health_score": 95.80989794261173,
+          "status": "ok"
+        },
+        {
+          "name": "print",
+          "start_line": 45,
+          "end_line": 51,
+          "start_col": 7,
+          "cyclomatic": 3,
+          "cognitive": 2,
+          "halstead_volume": 50.718800023076994,
+          "halstead_difficulty": 5.0,
+          "halstead_effort": 253.59400011538497,
+          "halstead_bugs": 0.016906266674359,
+          "nesting_depth": 1,
+          "line_count": 3,
+          "params_count": 1,
+          "health_score": 96.13627566649359,
+          "status": "ok"
+        },
+        {
+          "name": "shiftIterator",
+          "start_line": 58,
+          "end_line": 61,
+          "start_col": 7,
+          "cyclomatic": 2,
+          "cognitive": 1,
+          "halstead_volume": 28.52932501298081,
+          "halstead_difficulty": 2.0,
+          "halstead_effort": 57.05865002596162,
+          "halstead_bugs": 0.009509775004326936,
+          "nesting_depth": 1,
+          "line_count": 2,
+          "params_count": 2,
+          "health_score": 96.93603006240264,
+          "status": "ok"
+        },
+        {
+          "name": "toFailure",
+          "start_line": 67,
+          "end_line": 100,
+          "start_col": 7,
+          "cyclomatic": 5,
+          "cognitive": 6,
+          "halstead_volume": 239.7487836710217,
+          "halstead_difficulty": 7.392857142857142,
+          "halstead_effort": 1772.4285078536245,
+          "halstead_bugs": 0.0799162612236739,
+          "nesting_depth": 3,
+          "line_count": 23,
+          "params_count": 6,
+          "health_score": 87.80188412246733,
+          "status": "error"
+        },
+        {
+          "name": "toFailures",
+          "start_line": 106,
+          "end_line": 123,
+          "start_col": 7,
+          "cyclomatic": 4,
+          "cognitive": 4,
+          "halstead_volume": 97.67226489021297,
+          "halstead_difficulty": 6.125,
+          "halstead_effort": 598.2426224525544,
+          "halstead_bugs": 0.03255742163007099,
+          "nesting_depth": 2,
+          "line_count": 6,
+          "params_count": 6,
+          "health_score": 91.63412467999007,
+          "status": "error"
+        },
+        {
+          "name": "run",
+          "start_line": 130,
+          "end_line": 196,
+          "start_col": 7,
+          "cyclomatic": 19,
+          "cognitive": 50,
+          "halstead_volume": 1021.8589618705474,
+          "halstead_difficulty": 22.53125,
+          "halstead_effort": 23023.759734645773,
+          "halstead_bugs": 0.3406196539568491,
+          "nesting_depth": 9,
+          "line_count": 38,
+          "params_count": 5,
+          "health_score": 35.770753345623,
+          "status": "error"
+        }
+      ],
+      "file_length": 222,
+      "export_count": 28
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/api/assert.test.ts",
+      "functions": [
+        {
+          "name": "describe callback",
+          "start_line": 4,
+          "end_line": 29,
+          "start_col": 19,
+          "cyclomatic": 1,
+          "cognitive": 5,
+          "halstead_volume": 10.0,
+          "halstead_difficulty": 2.5,
+          "halstead_effort": 25.0,
+          "halstead_bugs": 0.0033333333333333335,
+          "nesting_depth": 0,
+          "line_count": 20,
+          "params_count": 0,
+          "health_score": 95.92499999999998,
+          "status": "ok"
+        }
+      ],
+      "file_length": 24,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/api/create.test.ts",
+      "functions": [
+        {
+          "name": "describe callback",
+          "start_line": 12,
+          "end_line": 63,
+          "start_col": 19,
+          "cyclomatic": 1,
+          "cognitive": 7,
+          "halstead_volume": 14.0,
+          "halstead_difficulty": 3.5,
+          "halstead_effort": 49.0,
+          "halstead_bugs": 0.004666666666666667,
+          "nesting_depth": 0,
+          "line_count": 44,
+          "params_count": 0,
+          "health_score": 93.69499999999998,
+          "status": "warning"
+        }
+      ],
+      "file_length": 56,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/api/is.test.ts",
+      "functions": [
+        {
+          "name": "describe callback",
+          "start_line": 4,
+          "end_line": 20,
+          "start_col": 15,
+          "cyclomatic": 1,
+          "cognitive": 4,
+          "halstead_volume": 8.0,
+          "halstead_difficulty": 2.0,
+          "halstead_effort": 16.0,
+          "halstead_bugs": 0.0026666666666666666,
+          "nesting_depth": 0,
+          "line_count": 12,
+          "params_count": 0,
+          "health_score": 96.83999999999999,
+          "status": "ok"
+        }
+      ],
+      "file_length": 16,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/api/mask.test.ts",
+      "functions": [
+        {
+          "name": "describe callback",
+          "start_line": 13,
+          "end_line": 110,
+          "start_col": 17,
+          "cyclomatic": 1,
+          "cognitive": 9,
+          "halstead_volume": 18.0,
+          "halstead_difficulty": 4.5,
+          "halstead_effort": 81.0,
+          "halstead_bugs": 0.006,
+          "nesting_depth": 0,
+          "line_count": 85,
+          "params_count": 0,
+          "health_score": 89.74,
+          "status": "error"
+        }
+      ],
+      "file_length": 98,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/api/validate.test.ts",
+      "functions": [
+        {
+          "name": "describe callback",
+          "start_line": 12,
+          "end_line": 148,
+          "start_col": 21,
+          "cyclomatic": 1,
+          "cognitive": 10,
+          "halstead_volume": 20.0,
+          "halstead_difficulty": 5.0,
+          "halstead_effort": 100.0,
+          "halstead_bugs": 0.006666666666666667,
+          "nesting_depth": 0,
+          "line_count": 108,
+          "params_count": 0,
+          "health_score": 88.1,
+          "status": "error"
+        }
+      ],
+      "file_length": 120,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/deprecated.test.ts",
+      "functions": [
+        {
+          "name": "describe callback",
+          "start_line": 4,
+          "end_line": 18,
+          "start_col": 23,
+          "cyclomatic": 1,
+          "cognitive": 2,
+          "halstead_volume": 4.0,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 4.0,
+          "halstead_bugs": 0.0013333333333333333,
+          "nesting_depth": 0,
+          "line_count": 12,
+          "params_count": 0,
+          "health_score": 97.86999999999999,
+          "status": "ok"
+        }
+      ],
+      "file_length": 16,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/index.test.ts",
+      "functions": [
+        {
+          "name": "describe callback",
+          "start_line": 10,
+          "end_line": 81,
+          "start_col": 24,
+          "cyclomatic": 1,
+          "cognitive": 3,
+          "halstead_volume": 2.0,
+          "halstead_difficulty": 0.5,
+          "halstead_effort": 1.0,
+          "halstead_bugs": 0.0006666666666666666,
+          "nesting_depth": 0,
+          "line_count": 54,
+          "params_count": 0,
+          "health_score": 95.18499999999999,
+          "status": "error"
+        }
+      ],
+      "file_length": 65,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/index.ts",
+      "functions": [
+        {
+          "name": "test",
+          "start_line": 5,
+          "end_line": 5,
+          "start_col": 7,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 2,
+          "health_score": 98.61666666666666,
+          "status": "ok"
+        }
+      ],
+      "file_length": 1,
+      "export_count": 1
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/any.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 10,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 13.931568569324174,
+          "halstead_difficulty": 1.3333333333333333,
+          "halstead_effort": 18.575424759098897,
+          "halstead_bugs": 0.004643856189774725,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.8788465690634,
+          "status": "ok"
+        }
+      ],
+      "file_length": 6,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/array.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 21,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 13.931568569324174,
+          "halstead_difficulty": 1.3333333333333333,
+          "halstead_effort": 18.575424759098897,
+          "halstead_bugs": 0.004643856189774725,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.8788465690634,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 9,
+          "end_line": 12,
+          "start_col": 20,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 18.094737505048094,
+          "halstead_difficulty": 1.25,
+          "halstead_effort": 22.61842188131012,
+          "halstead_bugs": 0.006031579168349364,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.84762280204548,
+          "status": "ok"
+        }
+      ],
+      "file_length": 10,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/assign.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 7,
+          "end_line": 10,
+          "start_col": 3,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 43.18506523353571,
+          "halstead_difficulty": 1.25,
+          "halstead_effort": 53.98133154191964,
+          "halstead_bugs": 0.014395021744511903,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.65944534408182,
+          "status": "ok"
+        }
+      ],
+      "file_length": 9,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/bigint.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 13,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 13.931568569324174,
+          "halstead_difficulty": 1.3333333333333333,
+          "halstead_effort": 18.575424759098897,
+          "halstead_bugs": 0.004643856189774725,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.8788465690634,
+          "status": "ok"
+        }
+      ],
+      "file_length": 6,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/boolean.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 14,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 13.931568569324174,
+          "halstead_difficulty": 1.3333333333333333,
+          "halstead_effort": 18.575424759098897,
+          "halstead_bugs": 0.004643856189774725,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.8788465690634,
+          "status": "ok"
+        }
+      ],
+      "file_length": 6,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/coerce.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 10,
+          "start_col": 13,
+          "cyclomatic": 1,
+          "cognitive": 1,
+          "halstead_volume": 28.07354922057604,
+          "halstead_difficulty": 1.2,
+          "halstead_effort": 33.688259064691245,
+          "halstead_bugs": 0.009357849740192013,
+          "nesting_depth": 0,
+          "line_count": 5,
+          "params_count": 1,
+          "health_score": 98.12278171417901,
+          "status": "ok"
+        }
+      ],
+      "file_length": 9,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/date.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 11,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 13.931568569324174,
+          "halstead_difficulty": 1.3333333333333333,
+          "halstead_effort": 18.575424759098897,
+          "halstead_bugs": 0.004643856189774725,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.8788465690634,
+          "status": "ok"
+        }
+      ],
+      "file_length": 6,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/defaulted.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 13,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 20.67970000576925,
+          "halstead_difficulty": 1.25,
+          "halstead_effort": 25.84962500721156,
+          "halstead_bugs": 0.006893233335256416,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.82823558329008,
+          "status": "ok"
+        }
+      ],
+      "file_length": 6,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/deprecated.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 8,
+          "start_col": 14,
+          "cyclomatic": 1,
+          "cognitive": 1,
+          "halstead_volume": 33.0,
+          "halstead_difficulty": 2.0999999999999996,
+          "halstead_effort": 69.29999999999998,
+          "halstead_bugs": 0.011,
+          "nesting_depth": 0,
+          "line_count": 3,
+          "params_count": 1,
+          "health_score": 98.18583333333333,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 10,
+          "end_line": 14,
+          "start_col": 22,
+          "cyclomatic": 1,
+          "cognitive": 1,
+          "halstead_volume": 43.18506523353571,
+          "halstead_difficulty": 1.9285714285714288,
+          "halstead_effort": 83.2854829503903,
+          "halstead_bugs": 0.014395021744511903,
+          "nesting_depth": 0,
+          "line_count": 3,
+          "params_count": 1,
+          "health_score": 98.1094453440818,
+          "status": "ok"
+        }
+      ],
+      "file_length": 12,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/describe.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 33,
+          "end_line": 35,
+          "start_col": 20,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 2.0,
+          "halstead_difficulty": 0.5,
+          "halstead_effort": 1.0,
+          "halstead_bugs": 0.0006666666666666666,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 99.01833333333332,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 37,
+          "end_line": 39,
+          "start_col": 30,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 4.754887502163468,
+          "halstead_difficulty": 0.5,
+          "halstead_effort": 2.377443751081734,
+          "halstead_bugs": 0.001584962500721156,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.99767167706709,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 41,
+          "end_line": 43,
+          "start_col": 24,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 2.0,
+          "halstead_difficulty": 0.5,
+          "halstead_effort": 1.0,
+          "halstead_bugs": 0.0006666666666666666,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 99.01833333333332,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 45,
+          "end_line": 47,
+          "start_col": 21,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 2.0,
+          "halstead_difficulty": 0.5,
+          "halstead_effort": 1.0,
+          "halstead_bugs": 0.0006666666666666666,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 99.01833333333332,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 49,
+          "end_line": 51,
+          "start_col": 23,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 4.754887502163468,
+          "halstead_difficulty": 0.5,
+          "halstead_effort": 2.377443751081734,
+          "halstead_bugs": 0.001584962500721156,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.99767167706709,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 53,
+          "end_line": 55,
+          "start_col": 32,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 6.339850002884624,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 6.339850002884624,
+          "halstead_bugs": 0.002113283334294875,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.9857844583117,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 57,
+          "end_line": 59,
+          "start_col": 26,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 18.094737505048094,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 18.094737505048094,
+          "halstead_bugs": 0.006031579168349364,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.89762280204546,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 61,
+          "end_line": 63,
+          "start_col": 25,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 2.0,
+          "halstead_difficulty": 0.5,
+          "halstead_effort": 1.0,
+          "halstead_bugs": 0.0006666666666666666,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 99.01833333333332,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 65,
+          "end_line": 67,
+          "start_col": 23,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 2.0,
+          "halstead_difficulty": 0.5,
+          "halstead_effort": 1.0,
+          "halstead_bugs": 0.0006666666666666666,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 99.01833333333332,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 69,
+          "end_line": 71,
+          "start_col": 32,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 11.60964047443681,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 11.60964047443681,
+          "halstead_bugs": 0.0038698801581456034,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.94626102977506,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 73,
+          "end_line": 75,
+          "start_col": 22,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 4.754887502163468,
+          "halstead_difficulty": 0.5,
+          "halstead_effort": 2.377443751081734,
+          "halstead_bugs": 0.001584962500721156,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.99767167706709,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 77,
+          "end_line": 79,
+          "start_col": 19,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 4.754887502163468,
+          "halstead_difficulty": 0.5,
+          "halstead_effort": 2.377443751081734,
+          "halstead_bugs": 0.001584962500721156,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.99767167706709,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 81,
+          "end_line": 83,
+          "start_col": 23,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 2.0,
+          "halstead_difficulty": 0.5,
+          "halstead_effort": 1.0,
+          "halstead_bugs": 0.0006666666666666666,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 99.01833333333332,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 85,
+          "end_line": 87,
+          "start_col": 36,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 11.60964047443681,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 11.60964047443681,
+          "halstead_bugs": 0.0038698801581456034,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.94626102977506,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 89,
+          "end_line": 91,
+          "start_col": 23,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 11.60964047443681,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 11.60964047443681,
+          "halstead_bugs": 0.0038698801581456034,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.94626102977506,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 93,
+          "end_line": 95,
+          "start_col": 23,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 11.60964047443681,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 11.60964047443681,
+          "halstead_bugs": 0.0038698801581456034,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.94626102977506,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 97,
+          "end_line": 99,
+          "start_col": 22,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 2.0,
+          "halstead_difficulty": 0.5,
+          "halstead_effort": 1.0,
+          "halstead_bugs": 0.0006666666666666666,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 99.01833333333332,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 101,
+          "end_line": 103,
+          "start_col": 30,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 4.754887502163468,
+          "halstead_difficulty": 0.5,
+          "halstead_effort": 2.377443751081734,
+          "halstead_bugs": 0.001584962500721156,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.99767167706709,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 105,
+          "end_line": 107,
+          "start_col": 23,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 2.0,
+          "halstead_difficulty": 0.5,
+          "halstead_effort": 1.0,
+          "halstead_bugs": 0.0006666666666666666,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 99.01833333333332,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 109,
+          "end_line": 111,
+          "start_col": 33,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 8.0,
+          "halstead_difficulty": 0.5,
+          "halstead_effort": 4.0,
+          "halstead_bugs": 0.0026666666666666666,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.97333333333333,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 113,
+          "end_line": 115,
+          "start_col": 34,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 11.60964047443681,
+          "halstead_difficulty": 0.5,
+          "halstead_effort": 5.804820237218405,
+          "halstead_bugs": 0.0038698801581456034,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.94626102977506,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 117,
+          "end_line": 119,
+          "start_col": 35,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 4.754887502163468,
+          "halstead_difficulty": 0.5,
+          "halstead_effort": 2.377443751081734,
+          "halstead_bugs": 0.001584962500721156,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.99767167706709,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 121,
+          "end_line": 123,
+          "start_col": 23,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 13.931568569324174,
+          "halstead_difficulty": 1.5,
+          "halstead_effort": 20.897352853986263,
+          "halstead_bugs": 0.004643856189774725,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.9288465690634,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 125,
+          "end_line": 127,
+          "start_col": 39,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 11.60964047443681,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 11.60964047443681,
+          "halstead_bugs": 0.0038698801581456034,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.94626102977506,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 129,
+          "end_line": 131,
+          "start_col": 23,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 2.0,
+          "halstead_difficulty": 0.5,
+          "halstead_effort": 1.0,
+          "halstead_bugs": 0.0006666666666666666,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 99.01833333333332,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 133,
+          "end_line": 135,
+          "start_col": 28,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 4.754887502163468,
+          "halstead_difficulty": 0.5,
+          "halstead_effort": 2.377443751081734,
+          "halstead_bugs": 0.001584962500721156,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.99767167706709,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 137,
+          "end_line": 139,
+          "start_col": 23,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 18.094737505048094,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 18.094737505048094,
+          "halstead_bugs": 0.006031579168349364,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.89762280204546,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 141,
+          "end_line": 143,
+          "start_col": 23,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 2.0,
+          "halstead_difficulty": 0.5,
+          "halstead_effort": 1.0,
+          "halstead_bugs": 0.0006666666666666666,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 99.01833333333332,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 145,
+          "end_line": 147,
+          "start_col": 25,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 4.754887502163468,
+          "halstead_difficulty": 0.5,
+          "halstead_effort": 2.377443751081734,
+          "halstead_bugs": 0.001584962500721156,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.99767167706709,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 149,
+          "end_line": 151,
+          "start_col": 33,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 11.60964047443681,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 11.60964047443681,
+          "halstead_bugs": 0.0038698801581456034,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.94626102977506,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 153,
+          "end_line": 155,
+          "start_col": 32,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 11.60964047443681,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 11.60964047443681,
+          "halstead_bugs": 0.0038698801581456034,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.94626102977506,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 157,
+          "end_line": 159,
+          "start_col": 24,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 2.0,
+          "halstead_difficulty": 0.5,
+          "halstead_effort": 1.0,
+          "halstead_bugs": 0.0006666666666666666,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 99.01833333333332,
+          "status": "ok"
+        }
+      ],
+      "file_length": 127,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/dynamic.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 10,
+          "start_col": 13,
+          "cyclomatic": 1,
+          "cognitive": 1,
+          "halstead_volume": 13.931568569324174,
+          "halstead_difficulty": 1.3333333333333333,
+          "halstead_effort": 18.575424759098897,
+          "halstead_bugs": 0.004643856189774725,
+          "nesting_depth": 0,
+          "line_count": 5,
+          "params_count": 1,
+          "health_score": 98.2288465690634,
+          "status": "ok"
+        }
+      ],
+      "file_length": 9,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/empty.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 13,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 18.094737505048094,
+          "halstead_difficulty": 1.25,
+          "halstead_effort": 22.61842188131012,
+          "halstead_bugs": 0.006031579168349364,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.84762280204548,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 9,
+          "end_line": 12,
+          "start_col": 21,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 18.094737505048094,
+          "halstead_difficulty": 1.25,
+          "halstead_effort": 22.61842188131012,
+          "halstead_bugs": 0.006031579168349364,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.84762280204548,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 14,
+          "end_line": 17,
+          "start_col": 19,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 18.094737505048094,
+          "halstead_difficulty": 1.25,
+          "halstead_effort": 22.61842188131012,
+          "halstead_bugs": 0.006031579168349364,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.84762280204548,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 19,
+          "end_line": 22,
+          "start_col": 28,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 18.094737505048094,
+          "halstead_difficulty": 1.25,
+          "halstead_effort": 22.61842188131012,
+          "halstead_bugs": 0.006031579168349364,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.84762280204548,
+          "status": "ok"
+        }
+      ],
+      "file_length": 18,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/enums.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 22,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 18.575424759098897,
+          "halstead_difficulty": 1.3333333333333333,
+          "halstead_effort": 24.76723301213186,
+          "halstead_bugs": 0.006191808253032966,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.8440176476401,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 9,
+          "end_line": 12,
+          "start_col": 16,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 33.0,
+          "halstead_difficulty": 1.1666666666666667,
+          "halstead_effort": 38.5,
+          "halstead_bugs": 0.011,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.73583333333333,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 14,
+          "end_line": 17,
+          "start_col": 16,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 13.931568569324174,
+          "halstead_difficulty": 1.3333333333333333,
+          "halstead_effort": 18.575424759098897,
+          "halstead_bugs": 0.004643856189774725,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.8788465690634,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 19,
+          "end_line": 23,
+          "start_col": 13,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 46.50699332842307,
+          "halstead_difficulty": 1.9285714285714288,
+          "halstead_effort": 89.69205856195879,
+          "halstead_bugs": 0.015502331109474358,
+          "nesting_depth": 0,
+          "line_count": 3,
+          "params_count": 1,
+          "health_score": 98.58453088337016,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 29,
+          "end_line": 31,
+          "start_col": 3,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 10.0,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 10.0,
+          "halstead_bugs": 0.0033333333333333335,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.95833333333331,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 37,
+          "end_line": 39,
+          "start_col": 3,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 22.458839376460833,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 22.458839376460833,
+          "halstead_bugs": 0.007486279792153611,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.86489203800987,
+          "status": "ok"
+        }
+      ],
+      "file_length": 33,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/func.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 15,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 13.931568569324174,
+          "halstead_difficulty": 1.3333333333333333,
+          "halstead_effort": 18.575424759098897,
+          "halstead_bugs": 0.004643856189774725,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.8788465690634,
+          "status": "ok"
+        }
+      ],
+      "file_length": 6,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/infer.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 7,
+          "end_line": 10,
+          "start_col": 8,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 13.931568569324174,
+          "halstead_difficulty": 1.3333333333333333,
+          "halstead_effort": 18.575424759098897,
+          "halstead_bugs": 0.004643856189774725,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.8788465690634,
+          "status": "ok"
+        }
+      ],
+      "file_length": 8,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/instance.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 11,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 18.094737505048094,
+          "halstead_difficulty": 1.25,
+          "halstead_effort": 22.61842188131012,
+          "halstead_bugs": 0.006031579168349364,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.84762280204548,
+          "status": "ok"
+        }
+      ],
+      "file_length": 6,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/integer.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 13,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 13.931568569324174,
+          "halstead_difficulty": 1.3333333333333333,
+          "halstead_effort": 18.575424759098897,
+          "halstead_bugs": 0.004643856189774725,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.8788465690634,
+          "status": "ok"
+        }
+      ],
+      "file_length": 6,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/intersection.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 31,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 41.209025018750054,
+          "halstead_difficulty": 1.4285714285714286,
+          "halstead_effort": 58.870035741071504,
+          "halstead_bugs": 0.013736341672916685,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.67426564569271,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 50,
+          "end_line": 96,
+          "start_col": 3,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 894.8170368812362,
+          "halstead_difficulty": 2.75,
+          "halstead_effort": 2460.7468514233997,
+          "halstead_bugs": 0.2982723456270787,
+          "nesting_depth": 0,
+          "line_count": 45,
+          "params_count": 1,
+          "health_score": 90.12220555672404,
+          "status": "warning"
+        }
+      ],
+      "file_length": 93,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/lazy.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 10,
+          "start_col": 13,
+          "cyclomatic": 1,
+          "cognitive": 1,
+          "halstead_volume": 13.931568569324174,
+          "halstead_difficulty": 1.3333333333333333,
+          "halstead_effort": 18.575424759098897,
+          "halstead_bugs": 0.004643856189774725,
+          "nesting_depth": 0,
+          "line_count": 5,
+          "params_count": 1,
+          "health_score": 98.2288465690634,
+          "status": "ok"
+        }
+      ],
+      "file_length": 9,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/literal.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 11,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 18.094737505048094,
+          "halstead_difficulty": 1.25,
+          "halstead_effort": 22.61842188131012,
+          "halstead_bugs": 0.006031579168349364,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.84762280204548,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 9,
+          "end_line": 12,
+          "start_col": 10,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 13.931568569324174,
+          "halstead_difficulty": 1.3333333333333333,
+          "halstead_effort": 18.575424759098897,
+          "halstead_bugs": 0.004643856189774725,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.8788465690634,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 14,
+          "end_line": 17,
+          "start_col": 9,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 18.094737505048094,
+          "halstead_difficulty": 1.25,
+          "halstead_effort": 22.61842188131012,
+          "halstead_bugs": 0.006031579168349364,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.84762280204548,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 19,
+          "end_line": 22,
+          "start_col": 11,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 22.458839376460833,
+          "halstead_difficulty": 1.875,
+          "halstead_effort": 42.11032383086406,
+          "halstead_bugs": 0.007486279792153611,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.81489203800989,
+          "status": "ok"
+        }
+      ],
+      "file_length": 18,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/map.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 26,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 25.26619429851844,
+          "halstead_difficulty": 1.2,
+          "halstead_effort": 30.319433158222125,
+          "halstead_bugs": 0.008422064766172813,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.79383687609445,
+          "status": "ok"
+        }
+      ],
+      "file_length": 6,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/max.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 13,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 25.26619429851844,
+          "halstead_difficulty": 1.2,
+          "halstead_effort": 30.319433158222125,
+          "halstead_bugs": 0.008422064766172813,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.79383687609445,
+          "status": "ok"
+        }
+      ],
+      "file_length": 6,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/min.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 13,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 25.26619429851844,
+          "halstead_difficulty": 1.2,
+          "halstead_effort": 30.319433158222125,
+          "halstead_bugs": 0.008422064766172813,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.79383687609445,
+          "status": "ok"
+        }
+      ],
+      "file_length": 6,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/never.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 12,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 13.931568569324174,
+          "halstead_difficulty": 1.3333333333333333,
+          "halstead_effort": 18.575424759098897,
+          "halstead_bugs": 0.004643856189774725,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.8788465690634,
+          "status": "ok"
+        }
+      ],
+      "file_length": 6,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/nonempty.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 13,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 18.094737505048094,
+          "halstead_difficulty": 1.25,
+          "halstead_effort": 22.61842188131012,
+          "halstead_bugs": 0.006031579168349364,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.84762280204548,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 9,
+          "end_line": 12,
+          "start_col": 21,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 18.094737505048094,
+          "halstead_difficulty": 1.25,
+          "halstead_effort": 22.61842188131012,
+          "halstead_bugs": 0.006031579168349364,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.84762280204548,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 14,
+          "end_line": 17,
+          "start_col": 19,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 18.094737505048094,
+          "halstead_difficulty": 1.25,
+          "halstead_effort": 22.61842188131012,
+          "halstead_bugs": 0.006031579168349364,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.84762280204548,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 19,
+          "end_line": 22,
+          "start_col": 28,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 18.094737505048094,
+          "halstead_difficulty": 1.25,
+          "halstead_effort": 22.61842188131012,
+          "halstead_bugs": 0.006031579168349364,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.84762280204548,
+          "status": "ok"
+        }
+      ],
+      "file_length": 18,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/nullable.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 20,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 18.094737505048094,
+          "halstead_difficulty": 1.25,
+          "halstead_effort": 22.61842188131012,
+          "halstead_bugs": 0.006031579168349364,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.84762280204548,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 9,
+          "end_line": 12,
+          "start_col": 27,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 27.0,
+          "halstead_difficulty": 1.1666666666666667,
+          "halstead_effort": 31.500000000000004,
+          "halstead_bugs": 0.009,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.78083333333333,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 17,
+          "end_line": 19,
+          "start_col": 3,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 11.60964047443681,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 11.60964047443681,
+          "halstead_bugs": 0.0038698801581456034,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.36292769644172,
+          "status": "ok"
+        }
+      ],
+      "file_length": 16,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/number.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 13,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 13.931568569324174,
+          "halstead_difficulty": 1.3333333333333333,
+          "halstead_effort": 18.575424759098897,
+          "halstead_bugs": 0.004643856189774725,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.8788465690634,
+          "status": "ok"
+        }
+      ],
+      "file_length": 6,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/object.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 30,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 13.931568569324174,
+          "halstead_difficulty": 1.3333333333333333,
+          "halstead_effort": 18.575424759098897,
+          "halstead_bugs": 0.004643856189774725,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.8788465690634,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 12,
+          "end_line": 15,
+          "start_col": 3,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 34.86917501586544,
+          "halstead_difficulty": 1.1428571428571428,
+          "halstead_effort": 39.85048573241764,
+          "halstead_bugs": 0.011623058338621813,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.72181452071435,
+          "status": "ok"
+        }
+      ],
+      "file_length": 13,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/omit.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 6,
+          "end_line": 9,
+          "start_col": 3,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 43.18506523353571,
+          "halstead_difficulty": 1.125,
+          "halstead_effort": 48.58319838772768,
+          "halstead_bugs": 0.014395021744511903,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.65944534408182,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 13,
+          "end_line": 16,
+          "start_col": 3,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 43.18506523353571,
+          "halstead_difficulty": 1.125,
+          "halstead_effort": 48.58319838772768,
+          "halstead_bugs": 0.014395021744511903,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.65944534408182,
+          "status": "ok"
+        }
+      ],
+      "file_length": 14,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/optional.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 25,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 18.094737505048094,
+          "halstead_difficulty": 1.25,
+          "halstead_effort": 22.61842188131012,
+          "halstead_bugs": 0.006031579168349364,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.84762280204548,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 12,
+          "end_line": 21,
+          "start_col": 3,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 43.18506523353571,
+          "halstead_difficulty": 1.125,
+          "halstead_effort": 48.58319838772768,
+          "halstead_bugs": 0.014395021744511903,
+          "nesting_depth": 0,
+          "line_count": 8,
+          "params_count": 1,
+          "health_score": 98.3594453440818,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 26,
+          "end_line": 28,
+          "start_col": 3,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 11.60964047443681,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 11.60964047443681,
+          "halstead_bugs": 0.0038698801581456034,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.36292769644172,
+          "status": "ok"
+        }
+      ],
+      "file_length": 25,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/partial.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 21,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 22.458839376460833,
+          "halstead_difficulty": 1.2,
+          "halstead_effort": 26.950607251753,
+          "halstead_bugs": 0.007486279792153611,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.81489203800989,
+          "status": "ok"
+        }
+      ],
+      "file_length": 6,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/pattern.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 13,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 28.07354922057604,
+          "halstead_difficulty": 1.875,
+          "halstead_effort": 52.63790478858007,
+          "halstead_bugs": 0.009357849740192013,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.77278171417902,
+          "status": "ok"
+        }
+      ],
+      "file_length": 6,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/pick.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 6,
+          "end_line": 9,
+          "start_col": 3,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 43.18506523353571,
+          "halstead_difficulty": 1.125,
+          "halstead_effort": 48.58319838772768,
+          "halstead_bugs": 0.014395021744511903,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.65944534408182,
+          "status": "ok"
+        }
+      ],
+      "file_length": 8,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/record.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 29,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 25.26619429851844,
+          "halstead_difficulty": 1.2,
+          "halstead_effort": 30.319433158222125,
+          "halstead_bugs": 0.008422064766172813,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.79383687609445,
+          "status": "ok"
+        }
+      ],
+      "file_length": 6,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/refine.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 10,
+          "start_col": 13,
+          "cyclomatic": 1,
+          "cognitive": 1,
+          "halstead_volume": 23.264662506490403,
+          "halstead_difficulty": 1.25,
+          "halstead_effort": 29.080828133113002,
+          "halstead_bugs": 0.007754887502163467,
+          "nesting_depth": 0,
+          "line_count": 5,
+          "params_count": 1,
+          "health_score": 98.15884836453465,
+          "status": "ok"
+        }
+      ],
+      "file_length": 9,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/regexp.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 13,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 13.931568569324174,
+          "halstead_difficulty": 1.3333333333333333,
+          "halstead_effort": 18.575424759098897,
+          "halstead_bugs": 0.004643856189774725,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.8788465690634,
+          "status": "ok"
+        }
+      ],
+      "file_length": 6,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/set.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 18,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 18.094737505048094,
+          "halstead_difficulty": 1.25,
+          "halstead_effort": 22.61842188131012,
+          "halstead_bugs": 0.006031579168349364,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.84762280204548,
+          "status": "ok"
+        }
+      ],
+      "file_length": 6,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/size.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 13,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 33.0,
+          "halstead_difficulty": 1.1666666666666667,
+          "halstead_effort": 38.5,
+          "halstead_bugs": 0.011,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.73583333333333,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 9,
+          "end_line": 12,
+          "start_col": 13,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 33.0,
+          "halstead_difficulty": 1.1666666666666667,
+          "halstead_effort": 38.5,
+          "halstead_bugs": 0.011,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.73583333333333,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 14,
+          "end_line": 17,
+          "start_col": 21,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 33.0,
+          "halstead_difficulty": 1.1666666666666667,
+          "halstead_effort": 38.5,
+          "halstead_bugs": 0.011,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.73583333333333,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 19,
+          "end_line": 22,
+          "start_col": 19,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 33.0,
+          "halstead_difficulty": 1.1666666666666667,
+          "halstead_effort": 38.5,
+          "halstead_bugs": 0.011,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.73583333333333,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 24,
+          "end_line": 27,
+          "start_col": 28,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 33.0,
+          "halstead_difficulty": 1.1666666666666667,
+          "halstead_effort": 38.5,
+          "halstead_bugs": 0.011,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.73583333333333,
+          "status": "ok"
+        }
+      ],
+      "file_length": 22,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/string.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 13,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 13.931568569324174,
+          "halstead_difficulty": 1.3333333333333333,
+          "halstead_effort": 18.575424759098897,
+          "halstead_bugs": 0.004643856189774725,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.8788465690634,
+          "status": "ok"
+        }
+      ],
+      "file_length": 6,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/struct.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 10,
+          "start_col": 13,
+          "cyclomatic": 1,
+          "cognitive": 1,
+          "halstead_volume": 25.26619429851844,
+          "halstead_difficulty": 2.6666666666666665,
+          "halstead_effort": 67.3765181293825,
+          "halstead_bugs": 0.008422064766172813,
+          "nesting_depth": 0,
+          "line_count": 5,
+          "params_count": 1,
+          "health_score": 98.14383687609444,
+          "status": "ok"
+        }
+      ],
+      "file_length": 9,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/trimmed.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 13,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 18.094737505048094,
+          "halstead_difficulty": 1.25,
+          "halstead_effort": 22.61842188131012,
+          "halstead_bugs": 0.006031579168349364,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.84762280204548,
+          "status": "ok"
+        }
+      ],
+      "file_length": 6,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/tuple.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 23,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 25.26619429851844,
+          "halstead_difficulty": 1.2,
+          "halstead_effort": 30.319433158222125,
+          "halstead_bugs": 0.008422064766172813,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.79383687609445,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 54,
+          "end_line": 102,
+          "start_col": 2,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 227.47670006346175,
+          "halstead_difficulty": 11.25,
+          "halstead_effort": 2559.1128757139445,
+          "halstead_bugs": 0.07582556668782059,
+          "nesting_depth": 0,
+          "line_count": 47,
+          "params_count": 1,
+          "health_score": 95.02725808285736,
+          "status": "warning"
+        }
+      ],
+      "file_length": 99,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/type.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 20,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 22.458839376460833,
+          "halstead_difficulty": 1.2,
+          "halstead_effort": 26.950607251753,
+          "halstead_bugs": 0.007486279792153611,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.81489203800989,
+          "status": "ok"
+        }
+      ],
+      "file_length": 6,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/union.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 36,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 41.209025018750054,
+          "halstead_difficulty": 1.4285714285714286,
+          "halstead_effort": 58.870035741071504,
+          "halstead_bugs": 0.013736341672916685,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.67426564569271,
+          "status": "ok"
+        },
+        {
+          "name": "test callback",
+          "start_line": 51,
+          "end_line": 98,
+          "start_col": 2,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 222.30677506201943,
+          "halstead_difficulty": 11.0,
+          "halstead_effort": 2445.3745256822135,
+          "halstead_bugs": 0.07410225835400648,
+          "nesting_depth": 0,
+          "line_count": 46,
+          "params_count": 1,
+          "health_score": 95.11603252036818,
+          "status": "warning"
+        }
+      ],
+      "file_length": 95,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/typings/unknown.ts",
+      "functions": [
+        {
+          "name": "test callback",
+          "start_line": 4,
+          "end_line": 7,
+          "start_col": 14,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 13.931568569324174,
+          "halstead_difficulty": 1.3333333333333333,
+          "halstead_effort": 18.575424759098897,
+          "halstead_bugs": 0.004643856189774725,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.8788465690634,
+          "status": "ok"
+        }
+      ],
+      "file_length": 6,
+      "export_count": 0
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/any/valid-number.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/any/valid-string.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/any/valid-undefined.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/array/invalid-element-property.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/array/invalid-element.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/array/invalid-opaque.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/array/invalid.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/array/valid-frozen.ts",
+      "functions": [],
+      "file_length": 5,
+      "export_count": 4
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/array/valid-opaque.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/array/valid.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/assign/invalid-object.ts",
+      "functions": [],
+      "file_length": 20,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/assign/invalid-type.ts",
+      "functions": [],
+      "file_length": 15,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/assign/valid-object.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/assign/valid-type.ts",
+      "functions": [],
+      "file_length": 12,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/bigint/invalid-number.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/bigint/invalid.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/bigint/valid.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/boolean/invalid.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/boolean/valid.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/coerce/changed.ts",
+      "functions": [
+        {
+          "name": "coerce callback",
+          "start_line": 3,
+          "end_line": 4,
+          "start_col": 50,
+          "cyclomatic": 1,
+          "cognitive": 1,
+          "halstead_volume": 10.0,
+          "halstead_difficulty": 1.5,
+          "halstead_effort": 15.0,
+          "halstead_bugs": 0.0033333333333333335,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.45833333333333,
+          "status": "ok"
+        }
+      ],
+      "file_length": 7,
+      "export_count": 4
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/coerce/condition-not-met.ts",
+      "functions": [
+        {
+          "name": "coerce callback",
+          "start_line": 3,
+          "end_line": 3,
+          "start_col": 49,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 99.03333333333332,
+          "status": "ok"
+        }
+      ],
+      "file_length": 11,
+      "export_count": 4
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/coerce/unchanged.ts",
+      "functions": [
+        {
+          "name": "coerce callback",
+          "start_line": 3,
+          "end_line": 4,
+          "start_col": 50,
+          "cyclomatic": 1,
+          "cognitive": 1,
+          "halstead_volume": 10.0,
+          "halstead_difficulty": 1.5,
+          "halstead_effort": 15.0,
+          "halstead_bugs": 0.0033333333333333335,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.45833333333333,
+          "status": "ok"
+        }
+      ],
+      "file_length": 7,
+      "export_count": 4
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/date/invalid-date.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/date/invalid.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/date/valid.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/defaulted/function.ts",
+      "functions": [
+        {
+          "name": "defaulted callback",
+          "start_line": 3,
+          "end_line": 3,
+          "start_col": 42,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.44999999999997,
+          "status": "ok"
+        }
+      ],
+      "file_length": 5,
+      "export_count": 4
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/defaulted/mixin.ts",
+      "functions": [],
+      "file_length": 14,
+      "export_count": 4
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/defaulted/nested-double.ts",
+      "functions": [],
+      "file_length": 14,
+      "export_count": 4
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/defaulted/nested.ts",
+      "functions": [],
+      "file_length": 8,
+      "export_count": 4
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/defaulted/strict.ts",
+      "functions": [],
+      "file_length": 19,
+      "export_count": 4
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/defaulted/value.ts",
+      "functions": [],
+      "file_length": 5,
+      "export_count": 4
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/deprecated/invalid-null.ts",
+      "functions": [
+        {
+          "name": "deprecated callback",
+          "start_line": 3,
+          "end_line": 3,
+          "start_col": 43,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.44999999999997,
+          "status": "ok"
+        }
+      ],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/deprecated/invalid-property.ts",
+      "functions": [
+        {
+          "name": "deprecated callback",
+          "start_line": 4,
+          "end_line": 4,
+          "start_col": 38,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.44999999999997,
+          "status": "ok"
+        }
+      ],
+      "file_length": 13,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/deprecated/invalid.ts",
+      "functions": [
+        {
+          "name": "deprecated callback",
+          "start_line": 3,
+          "end_line": 3,
+          "start_col": 43,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.44999999999997,
+          "status": "ok"
+        }
+      ],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/deprecated/valid-property.ts",
+      "functions": [
+        {
+          "name": "deprecated callback",
+          "start_line": 4,
+          "end_line": 4,
+          "start_col": 26,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.44999999999997,
+          "status": "ok"
+        }
+      ],
+      "file_length": 9,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/deprecated/valid-undefined.ts",
+      "functions": [
+        {
+          "name": "deprecated callback",
+          "start_line": 3,
+          "end_line": 3,
+          "start_col": 43,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.44999999999997,
+          "status": "ok"
+        }
+      ],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/deprecated/valid.ts",
+      "functions": [
+        {
+          "name": "deprecated callback",
+          "start_line": 3,
+          "end_line": 3,
+          "start_col": 43,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.44999999999997,
+          "status": "ok"
+        }
+      ],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/dynamic/invalid-reference.ts",
+      "functions": [
+        {
+          "name": "dynamic callback",
+          "start_line": 22,
+          "end_line": 25,
+          "start_col": 30,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 22.458839376460833,
+          "halstead_difficulty": 1.2,
+          "halstead_effort": 26.950607251753,
+          "halstead_bugs": 0.007486279792153611,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.81489203800989,
+          "status": "ok"
+        }
+      ],
+      "file_length": 29,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/dynamic/invalid.ts",
+      "functions": [
+        {
+          "name": "dynamic callback",
+          "start_line": 3,
+          "end_line": 3,
+          "start_col": 30,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.44999999999997,
+          "status": "ok"
+        }
+      ],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/dynamic/valid-reference.ts",
+      "functions": [
+        {
+          "name": "dynamic callback",
+          "start_line": 22,
+          "end_line": 25,
+          "start_col": 30,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 22.458839376460833,
+          "halstead_difficulty": 1.2,
+          "halstead_effort": 26.950607251753,
+          "halstead_bugs": 0.007486279792153611,
+          "nesting_depth": 0,
+          "line_count": 2,
+          "params_count": 1,
+          "health_score": 98.81489203800989,
+          "status": "ok"
+        }
+      ],
+      "file_length": 25,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/dynamic/valid.ts",
+      "functions": [
+        {
+          "name": "dynamic callback",
+          "start_line": 3,
+          "end_line": 3,
+          "start_col": 30,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.44999999999997,
+          "status": "ok"
+        }
+      ],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/dynamic/with-refiners.ts",
+      "functions": [
+        {
+          "name": "dynamic callback",
+          "start_line": 3,
+          "end_line": 3,
+          "start_col": 30,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 2.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0006666666666666666,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.43499999999997,
+          "status": "ok"
+        }
+      ],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/empty/invalid-array.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/empty/invalid-map.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/empty/invalid-set.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/empty/invalid-string.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/empty/valid-array.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/empty/valid-map.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/empty/valid-set.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/empty/valid-string.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/enums/invalid-numbers.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/enums/invalid-strings.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/enums/valid.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/function/invalid.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/function/valid.ts",
+      "functions": [
+        {
+          "name": "data",
+          "start_line": 5,
+          "end_line": 5,
+          "start_col": 20,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.44999999999997,
+          "status": "ok"
+        }
+      ],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/instance/invalid.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/instance/valid.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/integer/invalid-decimal.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/integer/invalid.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/integer/valid.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/intersection/invalid-refinement.ts",
+      "functions": [
+        {
+          "name": "refine callback",
+          "start_line": 4,
+          "end_line": 4,
+          "start_col": 39,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 4.754887502163468,
+          "halstead_difficulty": 0.5,
+          "halstead_effort": 2.377443751081734,
+          "halstead_bugs": 0.001584962500721156,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.99767167706709,
+          "status": "ok"
+        }
+      ],
+      "file_length": 12,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/intersection/invalid.ts",
+      "functions": [],
+      "file_length": 14,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/intersection/valid-refinement.ts",
+      "functions": [
+        {
+          "name": "refine callback",
+          "start_line": 4,
+          "end_line": 4,
+          "start_col": 39,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 4.754887502163468,
+          "halstead_difficulty": 0.5,
+          "halstead_effort": 2.377443751081734,
+          "halstead_bugs": 0.001584962500721156,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.99767167706709,
+          "status": "ok"
+        }
+      ],
+      "file_length": 6,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/intersection/valid.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/lazy/invalid.ts",
+      "functions": [
+        {
+          "name": "lazy callback",
+          "start_line": 3,
+          "end_line": 3,
+          "start_col": 27,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.44999999999997,
+          "status": "ok"
+        }
+      ],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/lazy/valid.ts",
+      "functions": [
+        {
+          "name": "lazy callback",
+          "start_line": 3,
+          "end_line": 3,
+          "start_col": 27,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 0.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.44999999999997,
+          "status": "ok"
+        }
+      ],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/lazy/with-refiners.ts",
+      "functions": [
+        {
+          "name": "lazy callback",
+          "start_line": 3,
+          "end_line": 3,
+          "start_col": 27,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 2.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0006666666666666666,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 0,
+          "health_score": 99.43499999999997,
+          "status": "ok"
+        }
+      ],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/literal/invalid.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/literal/valid.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/map/invalid-opaque.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/map/invalid-property.ts",
+      "functions": [],
+      "file_length": 18,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/map/invalid.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/map/valid-opaque.ts",
+      "functions": [],
+      "file_length": 7,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/map/valid.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/max/invalid-exclusive.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/max/invalid.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/max/valid-inclusive.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/max/valid.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/min/invalid-exclusive.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/min/invalid.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/min/valid-inclusive.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/min/valid.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/never/invalid.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/nullable/invalid.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/nullable/valid-defined-nested.ts",
+      "functions": [],
+      "file_length": 11,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/nullable/valid-defined.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/nullable/valid-null-nested.ts",
+      "functions": [],
+      "file_length": 11,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/nullable/valid-null.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/number/invalid.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/number/valid.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/object/invalid-array.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/object/invalid-element-nested.ts",
+      "functions": [],
+      "file_length": 15,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/object/invalid-opaque.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/object/invalid-property-nested.ts",
+      "functions": [],
+      "file_length": 20,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/object/invalid-property-unknown.ts",
+      "functions": [],
+      "file_length": 16,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/object/invalid-property.ts",
+      "functions": [],
+      "file_length": 22,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/object/invalid-referential.ts",
+      "functions": [
+        {
+          "name": "refine callback",
+          "start_line": 7,
+          "end_line": 11,
+          "start_col": 44,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 34.86917501586544,
+          "halstead_difficulty": 1.1428571428571428,
+          "halstead_effort": 39.85048573241764,
+          "halstead_bugs": 0.011623058338621813,
+          "nesting_depth": 0,
+          "line_count": 3,
+          "params_count": 2,
+          "health_score": 98.25514785404766,
+          "status": "ok"
+        }
+      ],
+      "file_length": 20,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/object/invalid.ts",
+      "functions": [],
+      "file_length": 13,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/object/valid-frozen.ts",
+      "functions": [],
+      "file_length": 13,
+      "export_count": 4
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/object/valid-nested.ts",
+      "functions": [],
+      "file_length": 18,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/object/valid-opaque.ts",
+      "functions": [],
+      "file_length": 8,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/object/valid-referential.ts",
+      "functions": [
+        {
+          "name": "refine callback",
+          "start_line": 7,
+          "end_line": 11,
+          "start_col": 44,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 34.86917501586544,
+          "halstead_difficulty": 1.1428571428571428,
+          "halstead_effort": 39.85048573241764,
+          "halstead_bugs": 0.011623058338621813,
+          "nesting_depth": 0,
+          "line_count": 3,
+          "params_count": 2,
+          "health_score": 98.25514785404766,
+          "status": "ok"
+        }
+      ],
+      "file_length": 16,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/object/valid.ts",
+      "functions": [],
+      "file_length": 11,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/omit/invalid-element-nested.ts",
+      "functions": [],
+      "file_length": 17,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/omit/invalid-property-nested.ts",
+      "functions": [],
+      "file_length": 22,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/omit/invalid-property-unknown.ts",
+      "functions": [],
+      "file_length": 18,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/omit/invalid-property.ts",
+      "functions": [],
+      "file_length": 17,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/omit/invalid.ts",
+      "functions": [],
+      "file_length": 16,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/omit/valid-nested.ts",
+      "functions": [],
+      "file_length": 19,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/omit/valid-type.ts",
+      "functions": [],
+      "file_length": 14,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/omit/valid.ts",
+      "functions": [],
+      "file_length": 12,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/optional/invalid.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/optional/valid-defined-nested.ts",
+      "functions": [],
+      "file_length": 11,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/optional/valid-defined.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/optional/valid-undefined-nested.ts",
+      "functions": [],
+      "file_length": 9,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/optional/valid-undefined.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/partial/composed.ts",
+      "functions": [],
+      "file_length": 11,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/partial/invalid-property-unknown.ts",
+      "functions": [],
+      "file_length": 15,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/partial/invalid-property.ts",
+      "functions": [],
+      "file_length": 14,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/partial/invalid.ts",
+      "functions": [],
+      "file_length": 13,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/partial/valid-empty.ts",
+      "functions": [],
+      "file_length": 7,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/partial/valid-full.ts",
+      "functions": [],
+      "file_length": 11,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/partial/valid-partial.ts",
+      "functions": [],
+      "file_length": 9,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/partial/valid-type.ts",
+      "functions": [],
+      "file_length": 13,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/pattern/invalid.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/pattern/valid.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/pick/invalid-element-nested.ts",
+      "functions": [],
+      "file_length": 17,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/pick/invalid-property-nested.ts",
+      "functions": [],
+      "file_length": 22,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/pick/invalid-property-unknown.ts",
+      "functions": [],
+      "file_length": 18,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/pick/invalid-property.ts",
+      "functions": [],
+      "file_length": 17,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/pick/invalid.ts",
+      "functions": [],
+      "file_length": 16,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/pick/valid-nested.ts",
+      "functions": [],
+      "file_length": 19,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/pick/valid-type.ts",
+      "functions": [],
+      "file_length": 14,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/pick/valid.ts",
+      "functions": [],
+      "file_length": 12,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/record/invalid-array.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/record/invalid-property.ts",
+      "functions": [],
+      "file_length": 17,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/record/invalid.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/record/valid-frozen.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 4
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/record/valid.ts",
+      "functions": [],
+      "file_length": 8,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/refine/invalid-multiple-refinements.ts",
+      "functions": [
+        {
+          "name": "refine callback",
+          "start_line": 3,
+          "end_line": 4,
+          "start_col": 60,
+          "cyclomatic": 1,
+          "cognitive": 1,
+          "halstead_volume": 15.509775004326936,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 15.509775004326936,
+          "halstead_bugs": 0.005169925001442312,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.41701002080087,
+          "status": "ok"
+        },
+        {
+          "name": "refine callback",
+          "start_line": 14,
+          "end_line": 18,
+          "start_col": 2,
+          "cyclomatic": 2,
+          "cognitive": 1,
+          "halstead_volume": 22.458839376460833,
+          "halstead_difficulty": 1.875,
+          "halstead_effort": 42.11032383086406,
+          "halstead_bugs": 0.007486279792153611,
+          "nesting_depth": 1,
+          "line_count": 3,
+          "params_count": 1,
+          "health_score": 97.3482253713432,
+          "status": "ok"
+        }
+      ],
+      "file_length": 31,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/refine/invalid-shorthand.ts",
+      "functions": [
+        {
+          "name": "refine callback",
+          "start_line": 6,
+          "end_line": 6,
+          "start_col": 2,
+          "cyclomatic": 1,
+          "cognitive": 1,
+          "halstead_volume": 8.0,
+          "halstead_difficulty": 1.0,
+          "halstead_effort": 8.0,
+          "halstead_bugs": 0.0026666666666666666,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.47333333333333,
+          "status": "ok"
+        }
+      ],
+      "file_length": 14,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/refine/invalid.ts",
+      "functions": [
+        {
+          "name": "refine callback",
+          "start_line": 3,
+          "end_line": 3,
+          "start_col": 48,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 2.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0006666666666666666,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 99.01833333333332,
+          "status": "ok"
+        }
+      ],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/refine/valid.ts",
+      "functions": [
+        {
+          "name": "refine callback",
+          "start_line": 3,
+          "end_line": 3,
+          "start_col": 48,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 2.0,
+          "halstead_difficulty": 0.0,
+          "halstead_effort": 0.0,
+          "halstead_bugs": 0.0006666666666666666,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 99.01833333333332,
+          "status": "ok"
+        }
+      ],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/regexp/invalid.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/regexp/valid.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/set/invalid-element.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/set/invalid-opaque.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/set/invalid.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/set/valid-opaque.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/set/valid.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/size/invalid-array.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/size/invalid-map.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/size/invalid-number.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/size/invalid-set.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/size/invalid-string.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/size/valid-array.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/size/valid-exact.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/size/valid-map.ts",
+      "functions": [],
+      "file_length": 8,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/size/valid-max-inclusive.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/size/valid-min-inclusive.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/size/valid-number.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/size/valid-set.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/size/valid-string.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/string/invalid.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/string/valid.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/trimmed/invalid.ts",
+      "functions": [],
+      "file_length": 11,
+      "export_count": 4
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/trimmed/valid.ts",
+      "functions": [],
+      "file_length": 5,
+      "export_count": 4
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/tuple/invalid-element-missing.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/tuple/invalid-element-unknown.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/tuple/invalid-element.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/tuple/invalid.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/tuple/valid-frozen.ts",
+      "functions": [],
+      "file_length": 5,
+      "export_count": 4
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/tuple/valid.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/type/invalid-array.ts",
+      "functions": [],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/type/invalid-property-nested.ts",
+      "functions": [],
+      "file_length": 17,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/type/invalid-property.ts",
+      "functions": [],
+      "file_length": 15,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/type/invalid.ts",
+      "functions": [],
+      "file_length": 13,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/type/valid-frozen.ts",
+      "functions": [],
+      "file_length": 13,
+      "export_count": 4
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/type/valid-instance.ts",
+      "functions": [
+        {
+          "name": "Person.constructor",
+          "start_line": 6,
+          "end_line": 8,
+          "start_col": 2,
+          "cyclomatic": 1,
+          "cognitive": 0,
+          "halstead_volume": 6.339850002884624,
+          "halstead_difficulty": 0.75,
+          "halstead_effort": 4.754887502163468,
+          "halstead_bugs": 0.002113283334294875,
+          "nesting_depth": 0,
+          "line_count": 1,
+          "params_count": 1,
+          "health_score": 98.9857844583117,
+          "status": "ok"
+        }
+      ],
+      "file_length": 10,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/type/valid.ts",
+      "functions": [],
+      "file_length": 9,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/union/coercion-object.ts",
+      "functions": [],
+      "file_length": 7,
+      "export_count": 4
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/union/coercion-type.ts",
+      "functions": [],
+      "file_length": 7,
+      "export_count": 4
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/union/coercion.ts",
+      "functions": [],
+      "file_length": 7,
+      "export_count": 4
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/union/invalid.ts",
+      "functions": [],
+      "file_length": 23,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/union/valid.ts",
+      "functions": [],
+      "file_length": 8,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/unknown/valid-number.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/unknown/valid-string.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    },
+    {
+      "path": "/Users/benvds/code/complexity-guard/benchmarks/projects/superstruct/test/validation/unknown/valid-undefined.ts",
+      "functions": [],
+      "file_length": 4,
+      "export_count": 3
+    }
+  ],
+  "metadata": {
+    "elapsed_ms": 7,
+    "thread_count": 10
+  },
+  "duplication": null
+}
