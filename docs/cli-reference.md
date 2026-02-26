@@ -567,6 +567,31 @@ When both a config file and CLI flags are provided, CLI flags take precedence:
 complexity-guard --fail-on never src/  # Won't fail even with errors
 ```
 
+## Size Limits
+
+ComplexityGuard applies automatic safety limits to prevent stack overflows, excessive memory use, and runaway analysis times on pathologically large files such as auto-generated code, minified bundles, or the TypeScript compiler's `checker.ts`.
+
+| Item | Limit | Behavior |
+|------|-------|----------|
+| File | 10,000 lines | Entire file skipped — not parsed, not analyzed |
+| Function | 5,000 lines | Function excluded from results, rest of file analyzed normally |
+
+These limits are hardcoded safety guards and are not configurable. When items are skipped, ComplexityGuard reports them in all output formats:
+
+- **Console**: A "Skipped (N items):" section appears after the verdict with the path, reason, and line counts. The summary line also reports the skipped count: `Analyzed 12 files, 3 functions (2 skipped)`.
+- **JSON**: A `skipped` array is included in the top-level output when non-empty. Each entry has `path`, `function_name` (for function-level skips), `start_line`, `reason` (`"file_too_large"` or `"function_too_large"`), `lines`, and `max_lines`. The `summary.skipped_count` field always shows the count.
+- **SARIF**: Skipped items appear as `"note"`-level results with `ruleId: "complexity-guard/skipped"`.
+- **HTML**: A "Skipped Items" table section appears when any items are skipped.
+
+Skipped items do not cause crashes, panics, or analysis failures. Analysis of all other files and functions continues normally.
+
+To avoid size limit skips, use `--exclude` to exclude auto-generated or minified files before analysis:
+
+```sh
+# Exclude generated files
+complexity-guard --exclude "src/generated/**" --exclude "**/*.min.js" src/
+```
+
 ## Exit Codes
 
 ComplexityGuard uses exit codes to signal different outcomes, making it easy to integrate with CI/CD pipelines.

@@ -69,6 +69,8 @@ complexity-guard .
 
 ComplexityGuard automatically finds all `.ts`, `.tsx`, `.js`, and `.jsx` files in the given paths and analyzes them in parallel across all available CPU cores by default. On multi-core machines this means large codebases run significantly faster than single-threaded analysis. Use `--threads 1` if you need single-threaded sequential output (useful for debugging or timing comparisons).
 
+ComplexityGuard also applies automatic safety limits: files exceeding 10,000 lines and functions exceeding 5,000 lines are skipped and reported in the output. This prevents crashes or hangs on auto-generated code, minified bundles, or unusually large files. See [Size Limits](cli-reference.md#size-limits) for details.
+
 ## Understanding the Output
 
 ComplexityGuard measures five families of metrics:

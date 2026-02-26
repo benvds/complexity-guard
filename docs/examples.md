@@ -103,6 +103,59 @@ complexity-guard src/ > report.txt
 complexity-guard --format json --output report.json src/
 ```
 
+### Large File Safety Limits
+
+When ComplexityGuard encounters files exceeding 10,000 lines or functions exceeding 5,000 lines, it skips them automatically and reports them in the output. This prevents crashes on auto-generated code or minified bundles.
+
+Console output shows a "Skipped" section after the verdict:
+
+```
+Analyzed 24 files, 147 functions (2 skipped)
+Health: 78
+
+✗ 3 problems (1 errors, 2 warnings)
+
+Skipped (2 items):
+  src/generated/api-client.ts — file too large (15,234 lines, max 10,000)
+  src/utils/parser.ts:142 — function 'processAll' too large (6,200 lines, max 5,000)
+```
+
+JSON output includes a `skipped` array:
+
+```json
+{
+  "summary": {
+    "files_analyzed": 24,
+    "total_functions": 147,
+    "skipped_count": 2,
+    "status": "error"
+  },
+  "skipped": [
+    {
+      "path": "src/generated/api-client.ts",
+      "start_line": 0,
+      "reason": "file_too_large",
+      "lines": 15234,
+      "max_lines": 10000
+    },
+    {
+      "path": "src/utils/parser.ts",
+      "function_name": "processAll",
+      "start_line": 142,
+      "reason": "function_too_large",
+      "lines": 6200,
+      "max_lines": 5000
+    }
+  ]
+}
+```
+
+To avoid size limit skips for auto-generated files, exclude them before analysis:
+
+```sh
+complexity-guard --exclude "src/generated/**" --exclude "**/*.min.js" src/
+```
+
 ### JSON Output with All Metrics
 
 JSON output includes all metric families. Here is a condensed example of a function with Halstead and structural fields populated:

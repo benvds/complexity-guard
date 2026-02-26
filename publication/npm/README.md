@@ -61,6 +61,7 @@ Top Halstead volume hotspots:
 - **Single Binary**: No runtime dependencies, runs offline, fast startup
 - **Low Memory Footprint**: 1.2–2.2x less memory than Node.js-based tools on small and medium projects
 - **Error-Tolerant Parsing**: Tree-sitter based parser handles syntax errors gracefully, continues analysis on remaining files
+- **Automatic Safety Limits**: Files > 10,000 lines and functions > 5,000 lines are skipped and reported in output — prevents crashes on auto-generated code or minified bundles
 
 ## Configuration
 
