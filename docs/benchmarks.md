@@ -84,7 +84,7 @@ System specs are automatically captured in `system-info.json` alongside benchmar
 
 | Tool | Version |
 |------|---------|
-| ComplexityGuard | 0.8.0 |
+| ComplexityGuard | 0.9.2 |
 | hyperfine | 1.20.0 |
 
 ### Statistical Approach
@@ -168,7 +168,7 @@ Avoid on very large repos (webpack/vscode scale) in fast CI pipelines -- the re-
 
 ---
 
-## Full Benchmark Results (v0.8.0, 2026-02-26)
+## Full Benchmark Results (v0.9.2, 2026-02-26)
 
 83 open-source TypeScript/JavaScript projects analyzed with parallel analysis on Apple M1 Max (10 cores, 64 GB RAM). Times are mean ± standard deviation over 15 runs with 3 warmup runs.
 
