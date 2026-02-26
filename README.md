@@ -88,7 +88,7 @@ Top Halstead volume hotspots:
 - **Selective Metrics**: Use `--metrics cyclomatic,halstead` to compute only specific families
 - **Zero Config**: Works out of the box with sensible defaults, optional `.complexityguard.json` for customization
 - **Single Binary**: No runtime dependencies, runs offline, fast startup — under 300ms on mid-size projects
-- **Fast**: 1.5–3.1x faster than FTA with parallel analysis across all CPU cores (see [benchmarks](docs/benchmarks.md))
+- **Fast**: Analyzes thousands of files in seconds with parallel analysis across all CPU cores (see [benchmarks](docs/benchmarks.md))
 - **Low Memory Footprint**: 1.2–2.2x less memory than Node.js-based tools on small and medium projects (see [benchmarks](docs/benchmarks.md))
 - **Error-Tolerant Parsing**: Tree-sitter based parser handles syntax errors gracefully, continues analysis on remaining files
 
@@ -99,7 +99,7 @@ Top Halstead volume hotspots:
 - **[Examples](docs/examples.md)** — Real-world usage patterns, CI integration recipes
 - **[SARIF Output](docs/sarif-output.md)** — GitHub Code Scanning integration with inline PR annotations
 - **[HTML Reports](docs/examples.md#html-reports)** — Self-contained interactive reports for sharing with stakeholders
-- **[Performance Benchmarks](docs/benchmarks.md)** — Speed and memory comparison vs FTA across real-world projects
+- **[Performance Benchmarks](docs/benchmarks.md)** — Speed and memory benchmarks across real-world projects
 - **[Releasing](docs/releasing.md)** — Release process, publishing, version management
 - **[Claude Code Skill](docs/claude-code-skill.md)** — Use ComplexityGuard with Claude Code AI agents
 

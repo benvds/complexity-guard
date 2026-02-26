@@ -18,7 +18,7 @@ npm install -g complexity-guard
 - **Structural Metrics** — function length, parameters, nesting depth, file length, exports
 - **Duplication Detection** — Rabin-Karp clone detection across files; enable with `--duplication`
 - **Health Score** — composite 0–100 score combining all metrics; enforce in CI with `--fail-health-below`
-- **Multi-threaded Parallel Analysis** — 1.5–3.1x faster than FTA; analyzes files concurrently across all CPU cores by default; use `--threads N` to control
+- **Multi-threaded Parallel Analysis** — Analyzes files concurrently across all CPU cores by default; use `--threads N` to control thread count
 - **SARIF Output** — `--format sarif` generates SARIF 2.1.0 for GitHub Code Scanning inline PR annotations
 - **HTML Reports** — `--format html` generates a self-contained interactive report with dashboard, treemap, and sortable metric tables
 
