@@ -4,11 +4,11 @@
     "purpose": "ComplexityGuard automated test suite — TypeScript/JavaScript library corpus",
     "note": "Tags reflect latest stable releases as of generation date. Verify tags before cloning as they may update.",
     "tag_clone_example": "git clone --branch <latest_stable_tag> --depth 1 <git_url>",
-    "total_libraries": 76,
+    "total_libraries": 84,
     "quality_tiers": {
-      "high": 29,
-      "medium": 34,
-      "low": 13
+      "high": 31,
+      "medium": 37,
+      "low": 16
     },
     "categories": [
       "application",
@@ -16,184 +16,50 @@
       "library"
     ],
     "repo_sizes": {
-      "small": 24,
-      "medium": 36,
-      "large": 16
+      "small": 27,
+      "medium": 38,
+      "large": 19
     },
     "test_sets": {
-      "quick": 17,
-      "normal": 39,
-      "full": 76
+      "quick": 9,
+      "normal": 57,
+      "full": 84
     }
   },
   "libraries": [
     {
-      "name": "vite",
-      "npm_package": "vite",
-      "github_org": "vitejs",
-      "github_repo": "vite",
-      "git_url": "https://github.com/vitejs/vite.git",
-      "latest_stable_tag": "v6.1.0",
-      "category": "framework-and-build-tool",
-      "quality_tier": "high",
-      "repo_size": "medium",
-      "test_sets": ["full", "normal"],
-      "primary_language": "typescript",
-      "reason": "Exemplary plugin architecture, clean TS strictness, used as high-quality baseline in complexity analysis"
-    },
-    {
-      "name": "zod",
-      "npm_package": "zod",
-      "github_org": "colinhacks",
-      "github_repo": "zod",
-      "git_url": "https://github.com/colinhacks/zod.git",
-      "latest_stable_tag": "v3.24.1",
-      "category": "library",
-      "quality_tier": "high",
-      "repo_size": "small",
-      "test_sets": ["full", "normal", "quick"],
-      "primary_language": "typescript",
-      "reason": "Near-zero unnecessary branching, minimal cyclomatic complexity, ideal high-quality validation baseline"
-    },
-    {
-      "name": "trpc",
-      "npm_package": "@trpc/server",
-      "github_org": "trpc",
-      "github_repo": "trpc",
-      "git_url": "https://github.com/trpc/trpc.git",
-      "latest_stable_tag": "v11.0.0",
-      "category": "framework-and-build-tool",
-      "quality_tier": "high",
-      "repo_size": "medium",
-      "test_sets": ["full"],
-      "primary_language": "typescript",
-      "reason": "Clean monorepo, typed end-to-end, well-decomposed modules with high test coverage"
-    },
-    {
-      "name": "vitest",
-      "npm_package": "vitest",
-      "github_org": "vitest-dev",
-      "github_repo": "vitest",
-      "git_url": "https://github.com/vitest-dev/vitest.git",
-      "latest_stable_tag": "v3.0.5",
-      "category": "framework-and-build-tool",
-      "quality_tier": "high",
-      "repo_size": "medium",
-      "test_sets": ["full", "normal"],
-      "primary_language": "typescript",
-      "reason": "Modern testing framework built on Vite, clean architecture, eats its own cooking for test coverage"
-    },
-    {
-      "name": "effect",
-      "npm_package": "effect",
-      "github_org": "Effect-TS",
-      "github_repo": "effect",
-      "git_url": "https://github.com/Effect-TS/effect.git",
-      "latest_stable_tag": "v3.13.0",
-      "category": "library",
-      "quality_tier": "high",
-      "repo_size": "medium",
-      "test_sets": ["full"],
-      "primary_language": "typescript",
-      "reason": "Extremely typed, functional style. High cognitive complexity by design but well-structured — good stress test for complexity tools"
-    },
-    {
-      "name": "prettier",
-      "npm_package": "prettier",
-      "github_org": "prettier",
-      "github_repo": "prettier",
-      "git_url": "https://github.com/prettier/prettier.git",
-      "latest_stable_tag": "v3.4.2",
-      "category": "framework-and-build-tool",
-      "quality_tier": "high",
-      "repo_size": "medium",
-      "test_sets": ["full"],
-      "primary_language": "javascript",
-      "reason": "Very high test coverage, good separation of concerns, well-maintained over many years"
-    },
-    {
-      "name": "tanstack-query",
-      "npm_package": "@tanstack/query-core",
-      "github_org": "TanStack",
-      "github_repo": "query",
-      "git_url": "https://github.com/TanStack/query.git",
-      "latest_stable_tag": "v5.66.0",
-      "category": "library",
-      "quality_tier": "high",
-      "repo_size": "medium",
-      "test_sets": ["full"],
-      "primary_language": "typescript",
-      "reason": "Clean async state patterns, good abstraction layering, framework-agnostic core with high test coverage"
-    },
-    {
-      "name": "got",
-      "npm_package": "got",
-      "github_org": "sindresorhus",
-      "github_repo": "got",
-      "git_url": "https://github.com/sindresorhus/got.git",
-      "latest_stable_tag": "v14.4.3",
-      "category": "library",
-      "quality_tier": "high",
-      "repo_size": "medium",
-      "test_sets": ["full", "normal", "quick"],
-      "primary_language": "typescript",
-      "reason": "Modular hooks-based design, very clean internals — stark contrast to deprecated request package"
-    },
-    {
-      "name": "typescript",
-      "npm_package": "typescript",
-      "github_org": "microsoft",
-      "github_repo": "TypeScript",
-      "git_url": "https://github.com/microsoft/TypeScript.git",
-      "latest_stable_tag": "v5.7.3",
-      "category": "library",
-      "quality_tier": "high",
-      "repo_size": "large",
-      "test_sets": ["full", "normal", "quick"],
-      "primary_language": "typescript",
-      "reason": "The language itself — exemplary compiler architecture with comprehensive tests"
-    },
-    {
-      "name": "biome",
-      "npm_package": "@biomejs/biome",
-      "github_org": "biomejs",
-      "github_repo": "biome",
-      "git_url": "https://github.com/biomejs/biome.git",
-      "latest_stable_tag": "v1.9.4",
-      "category": "framework-and-build-tool",
-      "quality_tier": "high",
-      "repo_size": "medium",
-      "test_sets": ["full", "normal"],
-      "primary_language": "typescript",
-      "reason": "Modern toolchain written in Rust with TS wrappers, strict and minimal coupling"
-    },
-    {
-      "name": "nestjs",
-      "npm_package": "@nestjs/core",
-      "github_org": "nestjs",
-      "github_repo": "nest",
-      "git_url": "https://github.com/nestjs/nest.git",
-      "latest_stable_tag": "v11.0.1",
+      "name": "angular",
+      "npm_package": "@angular/core",
+      "github_org": "angular",
+      "github_repo": "angular",
+      "git_url": "https://github.com/angular/angular.git",
+      "latest_stable_tag": "v19.1.4",
       "category": "framework-and-build-tool",
       "quality_tier": "medium",
-      "repo_size": "medium",
-      "test_sets": ["full", "normal", "quick"],
+      "repo_size": "large",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
       "primary_language": "typescript",
-      "reason": "Heavy decorator metadata internals create non-trivial complexity; useful medium-tier benchmark"
+      "reason": "98k stars; large enterprise framework with complex DI and compilation internals"
     },
     {
-      "name": "storybook",
-      "npm_package": "storybook",
-      "github_org": "storybookjs",
-      "github_repo": "storybook",
-      "git_url": "https://github.com/storybookjs/storybook.git",
-      "latest_stable_tag": "v8.5.3",
-      "category": "application",
+      "name": "ant-design",
+      "npm_package": "antd",
+      "github_org": "ant-design",
+      "github_repo": "ant-design",
+      "git_url": "https://github.com/ant-design/ant-design.git",
+      "latest_stable_tag": "v5.24.0",
+      "category": "framework-and-build-tool",
       "quality_tier": "medium",
       "repo_size": "large",
-      "test_sets": ["full", "normal"],
+      "test_sets": [
+        "full",
+        "normal"
+      ],
       "primary_language": "typescript",
-      "reason": "Massive monorepo with mixed quality across packages — good test for per-package complexity variance"
+      "reason": "92k stars; large component library with complex theme system and form internals"
     },
     {
       "name": "apollo-client",
@@ -205,359 +71,28 @@
       "category": "library",
       "quality_tier": "medium",
       "repo_size": "medium",
-      "test_sets": ["full"],
+      "test_sets": [
+        "full"
+      ],
       "primary_language": "typescript",
       "reason": "Complex normalized cache internals and evolving API surface create moderate complexity"
     },
     {
-      "name": "prisma",
-      "npm_package": "@prisma/client",
-      "github_org": "prisma",
-      "github_repo": "prisma",
-      "git_url": "https://github.com/prisma/prisma.git",
-      "latest_stable_tag": "v6.3.1",
+      "name": "ava",
+      "npm_package": "ava",
+      "github_org": "avajs",
+      "github_repo": "ava",
+      "git_url": "https://github.com/avajs/ava.git",
+      "latest_stable_tag": "v6.2.0",
       "category": "framework-and-build-tool",
-      "quality_tier": "medium",
-      "repo_size": "large",
-      "test_sets": ["full"],
-      "primary_language": "typescript",
-      "reason": "Large codebase with Rust engine bridging; some complex query pipeline code worth measuring"
-    },
-    {
-      "name": "typeorm",
-      "npm_package": "typeorm",
-      "github_org": "typeorm",
-      "github_repo": "typeorm",
-      "git_url": "https://github.com/typeorm/typeorm.git",
-      "latest_stable_tag": "v0.3.20",
-      "category": "framework-and-build-tool",
-      "quality_tier": "medium",
-      "repo_size": "medium",
-      "test_sets": ["full"],
-      "primary_language": "typescript",
-      "reason": "Decorator/metadata system has complex resolution paths; QueryBuilder internals score high on cyclomatic complexity"
-    },
-    {
-      "name": "redwoodjs",
-      "npm_package": "@redwoodjs/core",
-      "github_org": "redwoodjs",
-      "github_repo": "redwood",
-      "git_url": "https://github.com/redwoodjs/redwood.git",
-      "latest_stable_tag": "v8.4.1",
-      "category": "framework-and-build-tool",
-      "quality_tier": "medium",
-      "repo_size": "large",
-      "test_sets": ["full"],
-      "primary_language": "typescript",
-      "reason": "Full-stack ambition creates some messy seams between CLI, API, and web layers"
-    },
-    {
-      "name": "chakra-ui",
-      "npm_package": "@chakra-ui/react",
-      "github_org": "chakra-ui",
-      "github_repo": "chakra-ui",
-      "git_url": "https://github.com/chakra-ui/chakra-ui.git",
-      "latest_stable_tag": "v3.3.1",
-      "category": "framework-and-build-tool",
-      "quality_tier": "medium",
-      "repo_size": "medium",
-      "test_sets": ["full"],
-      "primary_language": "typescript",
-      "reason": "Good test coverage but theme system resolution logic has complex branching"
-    },
-    {
-      "name": "remix",
-      "npm_package": "@remix-run/react",
-      "github_org": "remix-run",
-      "github_repo": "remix",
-      "git_url": "https://github.com/remix-run/remix.git",
-      "latest_stable_tag": "v2.15.2",
-      "category": "framework-and-build-tool",
-      "quality_tier": "medium",
-      "repo_size": "medium",
-      "test_sets": ["full"],
-      "primary_language": "typescript",
-      "reason": "Generally solid but some compiler and adapter code is densely conditional"
-    },
-    {
-      "name": "strapi",
-      "npm_package": "@strapi/strapi",
-      "github_org": "strapi",
-      "github_repo": "strapi",
-      "git_url": "https://github.com/strapi/strapi.git",
-      "latest_stable_tag": "v5.8.0",
-      "category": "application",
-      "quality_tier": "medium",
-      "repo_size": "large",
-      "test_sets": ["full"],
-      "primary_language": "typescript",
-      "reason": "Mixed TS quality across modules; some plugin loader paths are more chaotic than others"
-    },
-    {
-      "name": "keystonejs",
-      "npm_package": "@keystone-6/core",
-      "github_org": "keystonejs",
-      "github_repo": "keystone",
-      "git_url": "https://github.com/keystonejs/keystone.git",
-      "latest_stable_tag": "v6.5.0",
-      "category": "application",
-      "quality_tier": "medium",
-      "repo_size": "large",
-      "test_sets": ["full"],
-      "primary_language": "typescript",
-      "reason": "Complex schema-to-GraphQL generation pipeline has some messy areas worth measuring"
-    },
-    {
-      "name": "webpack",
-      "npm_package": "webpack",
-      "github_org": "webpack",
-      "github_repo": "webpack",
-      "git_url": "https://github.com/webpack/webpack.git",
-      "latest_stable_tag": "v5.97.1",
-      "category": "framework-and-build-tool",
-      "quality_tier": "low",
-      "repo_size": "large",
-      "test_sets": ["full", "normal", "quick"],
-      "primary_language": "javascript",
-      "reason": "Compilation.js and plugin resolution have deeply nested logic; functions with cyclomatic complexity 20-50+"
-    },
-    {
-      "name": "sequelize",
-      "npm_package": "sequelize",
-      "github_org": "sequelize",
-      "github_repo": "sequelize",
-      "git_url": "https://github.com/sequelize/sequelize.git",
-      "latest_stable_tag": "v6.37.5",
-      "category": "framework-and-build-tool",
-      "quality_tier": "low",
-      "repo_size": "medium",
-      "test_sets": ["full"],
-      "primary_language": "javascript",
-      "reason": "Query builder dialect handling has massive branching trees and significant historical debt"
-    },
-    {
-      "name": "moment",
-      "npm_package": "moment",
-      "github_org": "moment",
-      "github_repo": "moment",
-      "git_url": "https://github.com/moment/moment.git",
-      "latest_stable_tag": "v2.30.1",
-      "category": "library",
-      "quality_tier": "low",
-      "repo_size": "small",
-      "test_sets": ["full", "normal", "quick"],
-      "primary_language": "javascript",
-      "reason": "Deprecated by maintainers; notoriously bloated timezone logic — canonical example of high complexity codebase"
-    },
-    {
-      "name": "grunt",
-      "npm_package": "grunt",
-      "github_org": "gruntjs",
-      "github_repo": "grunt",
-      "git_url": "https://github.com/gruntjs/grunt.git",
-      "latest_stable_tag": "v1.6.1",
-      "category": "framework-and-build-tool",
-      "quality_tier": "low",
-      "repo_size": "small",
-      "test_sets": ["full", "normal", "quick"],
-      "primary_language": "javascript",
-      "reason": "Aging build tool; complex task resolution with old JS patterns and minimal refactoring over the years"
-    },
-    {
-      "name": "karma",
-      "npm_package": "karma",
-      "github_org": "karma-runner",
-      "github_repo": "karma",
-      "git_url": "https://github.com/karma-runner/karma.git",
-      "latest_stable_tag": "v6.4.4",
-      "category": "framework-and-build-tool",
-      "quality_tier": "low",
-      "repo_size": "small",
-      "test_sets": ["full", "normal"],
-      "primary_language": "javascript",
-      "reason": "Old test runner with complex configuration resolution paths; minimal architectural refactoring"
-    },
-    {
-      "name": "mongodb-node-driver",
-      "npm_package": "mongodb",
-      "github_org": "mongodb",
-      "github_repo": "node-mongodb-native",
-      "git_url": "https://github.com/mongodb/node-mongodb-native.git",
-      "latest_stable_tag": "v6.13.0",
-      "category": "library",
-      "quality_tier": "low",
-      "repo_size": "medium",
-      "test_sets": ["full"],
-      "primary_language": "typescript",
-      "reason": "Driver code has many deeply nested conditional paths for connection pooling and cursor management"
-    },
-    {
-      "name": "socket.io",
-      "npm_package": "socket.io",
-      "github_org": "socketio",
-      "github_repo": "socket.io",
-      "git_url": "https://github.com/socketio/socket.io.git",
-      "latest_stable_tag": "v4.8.1",
-      "category": "library",
-      "quality_tier": "low",
-      "repo_size": "medium",
-      "test_sets": ["full", "normal", "quick"],
-      "primary_language": "typescript",
-      "reason": "Real-time event/state handling complexity; room and namespace management logic has high branching"
-    },
-    {
-      "name": "jshint",
-      "npm_package": "jshint",
-      "github_org": "jshint",
-      "github_repo": "jshint",
-      "git_url": "https://github.com/jshint/jshint.git",
-      "latest_stable_tag": "v2.13.6",
-      "category": "framework-and-build-tool",
-      "quality_tier": "low",
-      "repo_size": "small",
-      "test_sets": ["full", "normal"],
-      "primary_language": "javascript",
-      "reason": "Old parser with complex state machines; high cyclomatic count throughout core jshint.js"
-    },
-    {
-      "name": "pm2",
-      "npm_package": "pm2",
-      "github_org": "pm2-hive",
-      "github_repo": "pm2",
-      "git_url": "https://github.com/pm2-hive/pm2.git",
-      "latest_stable_tag": "v5.4.3",
-      "category": "application",
-      "quality_tier": "low",
-      "repo_size": "medium",
-      "test_sets": ["full", "normal", "quick"],
-      "primary_language": "javascript",
-      "reason": "Process manager daemon/IPC code has long functions and complex branching in God.js"
-    },
-    {
-      "name": "request",
-      "npm_package": "request",
-      "github_org": "request",
-      "github_repo": "request",
-      "git_url": "https://github.com/request/request.git",
-      "latest_stable_tag": "v2.88.2",
-      "category": "library",
-      "quality_tier": "low",
-      "repo_size": "small",
-      "test_sets": ["full", "normal"],
-      "primary_language": "javascript",
-      "reason": "Deprecated; deep callback nesting and high complexity — direct comparison target for got"
-    },
-    {
-      "name": "dayjs",
-      "npm_package": "dayjs",
-      "github_org": "iamkun",
-      "github_repo": "dayjs",
-      "git_url": "https://github.com/iamkun/dayjs.git",
-      "latest_stable_tag": "v1.11.19",
-      "category": "library",
       "quality_tier": "high",
       "repo_size": "small",
-      "test_sets": ["full", "normal"],
+      "test_sets": [
+        "full",
+        "normal"
+      ],
       "primary_language": "javascript",
-      "reason": "2KB Moment.js alternative — same API surface, tiny footprint, dramatically lower complexity"
-    },
-    {
-      "name": "date-fns",
-      "npm_package": "date-fns",
-      "github_org": "date-fns",
-      "github_repo": "date-fns",
-      "git_url": "https://github.com/date-fns/date-fns.git",
-      "latest_stable_tag": "v4.1.0",
-      "category": "library",
-      "quality_tier": "high",
-      "repo_size": "medium",
-      "test_sets": ["full"],
-      "primary_language": "typescript",
-      "reason": "Functional, tree-shakeable date utilities; clean per-function architecture is a great high-quality baseline"
-    },
-    {
-      "name": "luxon",
-      "npm_package": "luxon",
-      "github_org": "moment",
-      "github_repo": "luxon",
-      "git_url": "https://github.com/moment/luxon.git",
-      "latest_stable_tag": "v3.5.0",
-      "category": "library",
-      "quality_tier": "medium",
-      "repo_size": "medium",
-      "test_sets": ["full"],
-      "primary_language": "javascript",
-      "reason": "Moment team rewrite — better than Moment but still heavier than dayjs or date-fns"
-    },
-    {
-      "name": "rrule",
-      "npm_package": "rrule",
-      "github_org": "jakubroztocil",
-      "github_repo": "rrule",
-      "git_url": "https://github.com/jakubroztocil/rrule.git",
-      "latest_stable_tag": "v2.8.1",
-      "category": "library",
-      "quality_tier": "medium",
-      "repo_size": "small",
-      "test_sets": ["full"],
-      "primary_language": "typescript",
-      "reason": "iCalendar recurrence rule parsing — inherently complex domain, tested but intricate branching"
-    },
-    {
-      "name": "joi",
-      "npm_package": "joi",
-      "github_org": "hapijs",
-      "github_repo": "joi",
-      "git_url": "https://github.com/hapijs/joi.git",
-      "latest_stable_tag": "v17.13.3",
-      "category": "library",
-      "quality_tier": "medium",
-      "repo_size": "medium",
-      "test_sets": ["full"],
-      "primary_language": "javascript",
-      "reason": "Large rule-chaining internals; complex validation pipeline with many conditional branches"
-    },
-    {
-      "name": "yup",
-      "npm_package": "yup",
-      "github_org": "jquense",
-      "github_repo": "yup",
-      "git_url": "https://github.com/jquense/yup.git",
-      "latest_stable_tag": "v1.6.1",
-      "category": "library",
-      "quality_tier": "medium",
-      "repo_size": "medium",
-      "test_sets": ["full"],
-      "primary_language": "typescript",
-      "reason": "Similar to Joi; some messy async validation resolution paths worth measuring against Zod"
-    },
-    {
-      "name": "valibot",
-      "npm_package": "valibot",
-      "github_org": "fabian-hiller",
-      "github_repo": "valibot",
-      "git_url": "https://github.com/fabian-hiller/valibot.git",
-      "latest_stable_tag": "v1.0.0",
-      "category": "library",
-      "quality_tier": "high",
-      "repo_size": "small",
-      "test_sets": ["full"],
-      "primary_language": "typescript",
-      "reason": "Even smaller than Zod, very clean modular design — good high-quality validation comparison"
-    },
-    {
-      "name": "superstruct",
-      "npm_package": "superstruct",
-      "github_org": "ianstormtaylor",
-      "github_repo": "superstruct",
-      "git_url": "https://github.com/ianstormtaylor/superstruct.git",
-      "latest_stable_tag": "v2.0.2",
-      "category": "library",
-      "quality_tier": "high",
-      "repo_size": "small",
-      "test_sets": ["full"],
-      "primary_language": "typescript",
-      "reason": "Functional style, minimal surface area; good structural validation baseline"
+      "reason": "Concurrent by default, clean design; good high-quality testing framework baseline"
     },
     {
       "name": "axios",
@@ -569,107 +104,213 @@
       "category": "library",
       "quality_tier": "medium",
       "repo_size": "medium",
-      "test_sets": ["full", "normal", "quick"],
+      "test_sets": [
+        "full",
+        "normal"
+      ],
       "primary_language": "javascript",
       "reason": "Widely used; interceptor/adapter code has some tangled conditional paths"
     },
     {
-      "name": "wretch",
-      "npm_package": "wretch",
-      "github_org": "elbywan",
-      "github_repo": "wretch",
-      "git_url": "https://github.com/elbywan/wretch.git",
-      "latest_stable_tag": "v2.11.0",
-      "category": "library",
+      "name": "biome",
+      "npm_package": "@biomejs/biome",
+      "github_org": "biomejs",
+      "github_repo": "biome",
+      "git_url": "https://github.com/biomejs/biome.git",
+      "latest_stable_tag": "v1.9.4",
+      "category": "framework-and-build-tool",
       "quality_tier": "high",
       "repo_size": "medium",
-      "test_sets": ["full", "normal"],
+      "test_sets": [
+        "full",
+        "normal"
+      ],
       "primary_language": "typescript",
-      "reason": "Thin fetch wrapper; minimal complexity — good low-complexity HTTP baseline"
+      "reason": "Modern toolchain written in Rust with TS wrappers, strict and minimal coupling"
     },
     {
-      "name": "undici",
-      "npm_package": "undici",
-      "github_org": "nodejs",
-      "github_repo": "undici",
-      "git_url": "https://github.com/nodejs/undici.git",
-      "latest_stable_tag": "v7.3.0",
-      "category": "library",
+      "name": "chakra-ui",
+      "npm_package": "@chakra-ui/react",
+      "github_org": "chakra-ui",
+      "github_repo": "chakra-ui",
+      "git_url": "https://github.com/chakra-ui/chakra-ui.git",
+      "latest_stable_tag": "v3.3.1",
+      "category": "framework-and-build-tool",
       "quality_tier": "medium",
       "repo_size": "medium",
-      "test_sets": ["full", "normal"],
+      "test_sets": [
+        "full"
+      ],
+      "primary_language": "typescript",
+      "reason": "Good test coverage but theme system resolution logic has complex branching"
+    },
+    {
+      "name": "chalk",
+      "npm_package": "chalk",
+      "github_org": "chalk",
+      "github_repo": "chalk",
+      "git_url": "https://github.com/chalk/chalk.git",
+      "latest_stable_tag": "v5.4.1",
+      "category": "library",
+      "quality_tier": "high",
+      "repo_size": "small",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
       "primary_language": "javascript",
-      "reason": "High-performance Node.js HTTP client; complex connection pool internals justify medium tier"
+      "reason": "Well-maintained terminal styling library; minimal and clean"
     },
     {
-      "name": "redux",
-      "npm_package": "redux",
-      "github_org": "reduxjs",
-      "github_repo": "redux",
-      "git_url": "https://github.com/reduxjs/redux.git",
-      "latest_stable_tag": "v5.0.1",
+      "name": "commander",
+      "npm_package": "commander",
+      "github_org": "tj",
+      "github_repo": "commander.js",
+      "git_url": "https://github.com/tj/commander.js.git",
+      "latest_stable_tag": "v13.1.0",
       "category": "library",
       "quality_tier": "medium",
-      "repo_size": "medium",
-      "test_sets": ["full", "normal"],
-      "primary_language": "typescript",
-      "reason": "Core is clean, but middleware/enhancer composition adds layers of complexity"
+      "repo_size": "small",
+      "test_sets": [
+        "full",
+        "normal",
+        "quick"
+      ],
+      "primary_language": "javascript",
+      "reason": "CLI option parsing has moderate complexity; useful for testing tooling-category code"
     },
     {
-      "name": "zustand",
-      "npm_package": "zustand",
-      "github_org": "pmndrs",
-      "github_repo": "zustand",
-      "git_url": "https://github.com/pmndrs/zustand.git",
-      "latest_stable_tag": "v5.0.3",
+      "name": "date-fns",
+      "npm_package": "date-fns",
+      "github_org": "date-fns",
+      "github_repo": "date-fns",
+      "git_url": "https://github.com/date-fns/date-fns.git",
+      "latest_stable_tag": "v4.1.0",
+      "category": "library",
+      "quality_tier": "high",
+      "repo_size": "medium",
+      "test_sets": [
+        "full"
+      ],
+      "primary_language": "typescript",
+      "reason": "Functional, tree-shakeable date utilities; clean per-function architecture is a great high-quality baseline"
+    },
+    {
+      "name": "dayjs",
+      "npm_package": "dayjs",
+      "github_org": "iamkun",
+      "github_repo": "dayjs",
+      "git_url": "https://github.com/iamkun/dayjs.git",
+      "latest_stable_tag": "v1.11.19",
       "category": "library",
       "quality_tier": "high",
       "repo_size": "small",
-      "test_sets": ["full"],
-      "primary_language": "typescript",
-      "reason": "Tiny implementation; almost no complexity — ideal high-quality state management baseline"
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "javascript",
+      "reason": "2KB Moment.js alternative — same API surface, tiny footprint, dramatically lower complexity"
     },
     {
-      "name": "jotai",
-      "npm_package": "jotai",
-      "github_org": "pmndrs",
-      "github_repo": "jotai",
-      "git_url": "https://github.com/pmndrs/jotai.git",
-      "latest_stable_tag": "v2.11.3",
+      "name": "debug",
+      "npm_package": "debug",
+      "github_org": "debug-js",
+      "github_repo": "debug",
+      "git_url": "https://github.com/debug-js/debug.git",
+      "latest_stable_tag": "v4.4.0",
       "category": "library",
       "quality_tier": "high",
       "repo_size": "small",
-      "test_sets": ["full"],
-      "primary_language": "typescript",
-      "reason": "Atomic model keeps things very decomposed; clean low-complexity implementation"
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "javascript",
+      "reason": "Tiny, clean; perfect minimal-complexity baseline for tooling analysis"
     },
     {
-      "name": "mobx",
-      "npm_package": "mobx",
-      "github_org": "mobxjs",
-      "github_repo": "mobx",
-      "git_url": "https://github.com/mobxjs/mobx.git",
-      "latest_stable_tag": "v6.13.5",
-      "category": "library",
-      "quality_tier": "medium",
-      "repo_size": "medium",
-      "test_sets": ["full"],
+      "name": "deno",
+      "npm_package": null,
+      "github_org": "denoland",
+      "github_repo": "deno",
+      "git_url": "https://github.com/denoland/deno.git",
+      "latest_stable_tag": "v2.2.0",
+      "category": "application",
+      "quality_tier": "high",
+      "repo_size": "large",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
       "primary_language": "typescript",
-      "reason": "Observable tracking internals are complex; useful medium tier between Zustand and Redux"
+      "reason": "106k stars; TypeScript-native runtime with well-structured Rust/TS codebase"
     },
     {
-      "name": "xstate",
-      "npm_package": "xstate",
-      "github_org": "statelyai",
-      "github_repo": "xstate",
-      "git_url": "https://github.com/statelyai/xstate.git",
-      "latest_stable_tag": "v5.28.0",
+      "name": "dotenv",
+      "npm_package": "dotenv",
+      "github_org": "motdotla",
+      "github_repo": "dotenv",
+      "git_url": "https://github.com/motdotla/dotenv.git",
+      "latest_stable_tag": "v16.4.7",
       "category": "library",
+      "quality_tier": "high",
+      "repo_size": "small",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "javascript",
+      "reason": "Zero-dependency env loader; minimal complexity — good sanity-check baseline"
+    },
+    {
+      "name": "effect",
+      "npm_package": "effect",
+      "github_org": "Effect-TS",
+      "github_repo": "effect",
+      "git_url": "https://github.com/Effect-TS/effect.git",
+      "latest_stable_tag": "v3.13.0",
+      "category": "library",
+      "quality_tier": "high",
+      "repo_size": "medium",
+      "test_sets": [
+        "full"
+      ],
+      "primary_language": "typescript",
+      "reason": "Extremely typed, functional style. High cognitive complexity by design but well-structured — good stress test for complexity tools"
+    },
+    {
+      "name": "eslint",
+      "npm_package": "eslint",
+      "github_org": "eslint",
+      "github_repo": "eslint",
+      "git_url": "https://github.com/eslint/eslint.git",
+      "latest_stable_tag": "v9.20.0",
+      "category": "framework-and-build-tool",
       "quality_tier": "medium",
       "repo_size": "medium",
-      "test_sets": ["full"],
+      "test_sets": [
+        "full"
+      ],
+      "primary_language": "javascript",
+      "reason": "Rule engine and source-code traversal has moderate complexity; good mid-tier tooling baseline"
+    },
+    {
+      "name": "excalidraw",
+      "npm_package": "@excalidraw/excalidraw",
+      "github_org": "excalidraw",
+      "github_repo": "excalidraw",
+      "git_url": "https://github.com/excalidraw/excalidraw.git",
+      "latest_stable_tag": "v0.17.6",
+      "category": "application",
+      "quality_tier": "medium",
+      "repo_size": "large",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
       "primary_language": "typescript",
-      "reason": "State machines are inherently complex but well-structured; complexity is domain-justified"
+      "reason": "90k stars; complex canvas/drawing state logic, good medium-complexity real-world app target"
     },
     {
       "name": "express",
@@ -681,7 +322,10 @@
       "category": "framework-and-build-tool",
       "quality_tier": "low",
       "repo_size": "medium",
-      "test_sets": ["full", "normal", "quick"],
+      "test_sets": [
+        "full",
+        "normal"
+      ],
       "primary_language": "javascript",
       "reason": "Aging middleware resolution logic; high cyclomatic count in router.js — direct comparison target for Fastify and Hono"
     },
@@ -695,37 +339,47 @@
       "category": "framework-and-build-tool",
       "quality_tier": "medium",
       "repo_size": "medium",
-      "test_sets": ["full", "normal"],
+      "test_sets": [
+        "full",
+        "normal"
+      ],
       "primary_language": "javascript",
       "reason": "Cleaner than Express with schema-based validation; much better test coverage"
     },
     {
-      "name": "hono",
-      "npm_package": "hono",
-      "github_org": "honojs",
-      "github_repo": "hono",
-      "git_url": "https://github.com/honojs/hono.git",
-      "latest_stable_tag": "v4.7.4",
-      "category": "framework-and-build-tool",
+      "name": "got",
+      "npm_package": "got",
+      "github_org": "sindresorhus",
+      "github_repo": "got",
+      "git_url": "https://github.com/sindresorhus/got.git",
+      "latest_stable_tag": "v14.4.3",
+      "category": "library",
       "quality_tier": "high",
       "repo_size": "medium",
-      "test_sets": ["full", "normal", "quick"],
+      "test_sets": [
+        "full",
+        "normal"
+      ],
       "primary_language": "typescript",
-      "reason": "Modern, minimal, edge-ready; very clean internal routing with low cyclomatic complexity"
+      "reason": "Modular hooks-based design, very clean internals — stark contrast to deprecated request package"
     },
     {
-      "name": "koa",
-      "npm_package": "koa",
-      "github_org": "koajs",
-      "github_repo": "koa",
-      "git_url": "https://github.com/koajs/koa.git",
-      "latest_stable_tag": "v2.15.3",
+      "name": "grunt",
+      "npm_package": "grunt",
+      "github_org": "gruntjs",
+      "github_repo": "grunt",
+      "git_url": "https://github.com/gruntjs/grunt.git",
+      "latest_stable_tag": "v1.6.1",
       "category": "framework-and-build-tool",
-      "quality_tier": "medium",
+      "quality_tier": "low",
       "repo_size": "small",
-      "test_sets": ["full"],
+      "test_sets": [
+        "full",
+        "normal",
+        "quick"
+      ],
       "primary_language": "javascript",
-      "reason": "Cleaner than Express but same vintage; context.js has grown complex over time"
+      "reason": "Aging build tool; complex task resolution with old JS patterns and minimal refactoring over the years"
     },
     {
       "name": "h3",
@@ -737,51 +391,30 @@
       "category": "framework-and-build-tool",
       "quality_tier": "high",
       "repo_size": "small",
-      "test_sets": ["full"],
+      "test_sets": [
+        "full",
+        "normal",
+        "quick"
+      ],
       "primary_language": "typescript",
       "reason": "Nuxt HTTP layer; clean handler pattern with minimal coupling"
     },
     {
-      "name": "jest",
-      "npm_package": "jest",
-      "github_org": "jestjs",
-      "github_repo": "jest",
-      "git_url": "https://github.com/jestjs/jest.git",
-      "latest_stable_tag": "v29.7.0",
-      "category": "framework-and-build-tool",
-      "quality_tier": "medium",
-      "repo_size": "large",
-      "test_sets": ["full"],
-      "primary_language": "javascript",
-      "reason": "Transform/config resolution is complex; large monorepo with mixed quality across packages"
-    },
-    {
-      "name": "mocha",
-      "npm_package": "mocha",
-      "github_org": "mochajs",
-      "github_repo": "mocha",
-      "git_url": "https://github.com/mochajs/mocha.git",
-      "latest_stable_tag": "v10.8.2",
-      "category": "framework-and-build-tool",
-      "quality_tier": "low",
-      "repo_size": "small",
-      "test_sets": ["full", "normal"],
-      "primary_language": "javascript",
-      "reason": "Old patterns in runner and reporter internals; complex option parsing"
-    },
-    {
-      "name": "ava",
-      "npm_package": "ava",
-      "github_org": "avajs",
-      "github_repo": "ava",
-      "git_url": "https://github.com/avajs/ava.git",
-      "latest_stable_tag": "v6.2.0",
+      "name": "hono",
+      "npm_package": "hono",
+      "github_org": "honojs",
+      "github_repo": "hono",
+      "git_url": "https://github.com/honojs/hono.git",
+      "latest_stable_tag": "v4.7.4",
       "category": "framework-and-build-tool",
       "quality_tier": "high",
-      "repo_size": "small",
-      "test_sets": ["full"],
-      "primary_language": "javascript",
-      "reason": "Concurrent by default, clean design; good high-quality testing framework baseline"
+      "repo_size": "medium",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "typescript",
+      "reason": "Modern, minimal, edge-ready; very clean internal routing with low cyclomatic complexity"
     },
     {
       "name": "jasmine",
@@ -793,205 +426,147 @@
       "category": "framework-and-build-tool",
       "quality_tier": "low",
       "repo_size": "small",
-      "test_sets": ["full"],
+      "test_sets": [
+        "full",
+        "normal"
+      ],
       "primary_language": "javascript",
       "reason": "Old, heavily stateful; complex spy system with high coupling between components"
     },
     {
-      "name": "winston",
-      "npm_package": "winston",
-      "github_org": "winstonjs",
-      "github_repo": "winston",
-      "git_url": "https://github.com/winstonjs/winston.git",
-      "latest_stable_tag": "v3.17.0",
+      "name": "jest",
+      "npm_package": "jest",
+      "github_org": "jestjs",
+      "github_repo": "jest",
+      "git_url": "https://github.com/jestjs/jest.git",
+      "latest_stable_tag": "v29.7.0",
+      "category": "framework-and-build-tool",
+      "quality_tier": "medium",
+      "repo_size": "large",
+      "test_sets": [
+        "full"
+      ],
+      "primary_language": "javascript",
+      "reason": "Transform/config resolution is complex; large monorepo with mixed quality across packages"
+    },
+    {
+      "name": "joi",
+      "npm_package": "joi",
+      "github_org": "hapijs",
+      "github_repo": "joi",
+      "git_url": "https://github.com/hapijs/joi.git",
+      "latest_stable_tag": "v17.13.3",
       "category": "library",
       "quality_tier": "medium",
       "repo_size": "medium",
-      "test_sets": ["full", "normal"],
+      "test_sets": [
+        "full"
+      ],
       "primary_language": "javascript",
-      "reason": "Transport system has messy branching and some convoluted stream handling"
+      "reason": "Large rule-chaining internals; complex validation pipeline with many conditional branches"
     },
     {
-      "name": "pino",
-      "npm_package": "pino",
-      "github_org": "pinojs",
-      "github_repo": "pino",
-      "git_url": "https://github.com/pinojs/pino.git",
-      "latest_stable_tag": "v9.6.0",
-      "category": "library",
-      "quality_tier": "high",
-      "repo_size": "medium",
-      "test_sets": ["full", "normal"],
-      "primary_language": "javascript",
-      "reason": "Performance-focused JSON logger; clean internals with minimal branching"
-    },
-    {
-      "name": "signale",
-      "npm_package": "signale",
-      "github_org": "klaussinani",
-      "github_repo": "signale",
-      "git_url": "https://github.com/klaussinani/signale.git",
-      "latest_stable_tag": "v1.4.0",
+      "name": "jotai",
+      "npm_package": "jotai",
+      "github_org": "pmndrs",
+      "github_repo": "jotai",
+      "git_url": "https://github.com/pmndrs/jotai.git",
+      "latest_stable_tag": "v2.11.3",
       "category": "library",
       "quality_tier": "high",
       "repo_size": "small",
-      "test_sets": ["full"],
-      "primary_language": "javascript",
-      "reason": "Small, clean, extensible logger — good low-complexity logging baseline"
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "typescript",
+      "reason": "Atomic model keeps things very decomposed; clean low-complexity implementation"
     },
     {
-      "name": "debug",
-      "npm_package": "debug",
-      "github_org": "debug-js",
-      "github_repo": "debug",
-      "git_url": "https://github.com/debug-js/debug.git",
-      "latest_stable_tag": "v4.4.0",
-      "category": "library",
+      "name": "jshint",
+      "npm_package": "jshint",
+      "github_org": "jshint",
+      "github_repo": "jshint",
+      "git_url": "https://github.com/jshint/jshint.git",
+      "latest_stable_tag": "v2.13.6",
+      "category": "framework-and-build-tool",
+      "quality_tier": "low",
+      "repo_size": "small",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "javascript",
+      "reason": "Old parser with complex state machines; high cyclomatic count throughout core jshint.js"
+    },
+    {
+      "name": "json-server",
+      "npm_package": "json-server",
+      "github_org": "typicode",
+      "github_repo": "json-server",
+      "git_url": "https://github.com/typicode/json-server.git",
+      "latest_stable_tag": "v1.0.0-beta.9",
+      "category": "application",
       "quality_tier": "high",
       "repo_size": "small",
-      "test_sets": ["full"],
+      "test_sets": [
+        "full",
+        "normal",
+        "quick"
+      ],
       "primary_language": "javascript",
-      "reason": "Tiny, clean; perfect minimal-complexity baseline for tooling analysis"
+      "reason": "Zero-config REST API server; extremely small and clean — ideal small high-quality application baseline"
     },
     {
-      "name": "vscode",
-      "npm_package": null,
-      "github_org": "microsoft",
-      "github_repo": "vscode",
-      "git_url": "https://github.com/microsoft/vscode.git",
-      "latest_stable_tag": "1.96.4",
-      "category": "application",
-      "quality_tier": "high",
-      "repo_size": "large",
-      "test_sets": ["full", "normal", "quick"],
-      "primary_language": "typescript",
-      "reason": "Top GitHub TS repo by contributors; large real-world codebase, excellent quality benchmark"
-    },
-    {
-      "name": "next.js",
-      "npm_package": "next",
-      "github_org": "vercel",
-      "github_repo": "next.js",
-      "git_url": "https://github.com/vercel/next.js.git",
-      "latest_stable_tag": "v15.1.7",
+      "name": "karma",
+      "npm_package": "karma",
+      "github_org": "karma-runner",
+      "github_repo": "karma",
+      "git_url": "https://github.com/karma-runner/karma.git",
+      "latest_stable_tag": "v6.4.4",
       "category": "framework-and-build-tool",
-      "quality_tier": "medium",
-      "repo_size": "large",
-      "test_sets": ["full", "normal", "quick"],
-      "primary_language": "typescript",
-      "reason": "135k stars; large meta-framework with some complex compiler and router internals"
+      "quality_tier": "low",
+      "repo_size": "small",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "javascript",
+      "reason": "Old test runner with complex configuration resolution paths; minimal architectural refactoring"
     },
     {
-      "name": "vue-core",
-      "npm_package": "vue",
-      "github_org": "vuejs",
-      "github_repo": "core",
-      "git_url": "https://github.com/vuejs/core.git",
-      "latest_stable_tag": "v3.5.13",
-      "category": "framework-and-build-tool",
-      "quality_tier": "high",
-      "repo_size": "large",
-      "test_sets": ["full", "normal", "quick"],
-      "primary_language": "typescript",
-      "reason": "210k stars; clean reactivity system architecture, well-tested"
-    },
-    {
-      "name": "angular",
-      "npm_package": "@angular/core",
-      "github_org": "angular",
-      "github_repo": "angular",
-      "git_url": "https://github.com/angular/angular.git",
-      "latest_stable_tag": "v19.1.4",
-      "category": "framework-and-build-tool",
-      "quality_tier": "medium",
-      "repo_size": "large",
-      "test_sets": ["full", "normal"],
-      "primary_language": "typescript",
-      "reason": "98k stars; large enterprise framework with complex DI and compilation internals"
-    },
-    {
-      "name": "supabase-js",
-      "npm_package": "@supabase/supabase-js",
-      "github_org": "supabase",
-      "github_repo": "supabase-js",
-      "git_url": "https://github.com/supabase/supabase-js.git",
-      "latest_stable_tag": "v2.49.1",
-      "category": "library",
-      "quality_tier": "medium",
-      "repo_size": "medium",
-      "test_sets": ["full"],
-      "primary_language": "typescript",
-      "reason": "Real-world backend client with mixed complexity across auth, realtime, and storage modules"
-    },
-    {
-      "name": "excalidraw",
-      "npm_package": "@excalidraw/excalidraw",
-      "github_org": "excalidraw",
-      "github_repo": "excalidraw",
-      "git_url": "https://github.com/excalidraw/excalidraw.git",
-      "latest_stable_tag": "v0.17.6",
+      "name": "keystonejs",
+      "npm_package": "@keystone-6/core",
+      "github_org": "keystonejs",
+      "github_repo": "keystone",
+      "git_url": "https://github.com/keystonejs/keystone.git",
+      "latest_stable_tag": "v6.5.0",
       "category": "application",
       "quality_tier": "medium",
       "repo_size": "large",
-      "test_sets": ["full", "normal", "quick"],
+      "test_sets": [
+        "full"
+      ],
       "primary_language": "typescript",
-      "reason": "90k stars; complex canvas/drawing state logic, good medium-complexity real-world app target"
+      "reason": "Complex schema-to-GraphQL generation pipeline has some messy areas worth measuring"
     },
     {
-      "name": "n8n",
-      "npm_package": "n8n",
-      "github_org": "n8n-io",
-      "github_repo": "n8n",
-      "git_url": "https://github.com/n8n-io/n8n.git",
-      "latest_stable_tag": "v1.75.2",
-      "category": "application",
-      "quality_tier": "medium",
-      "repo_size": "large",
-      "test_sets": ["full", "normal"],
-      "primary_language": "typescript",
-      "reason": "52k stars; large workflow engine with complex node execution and credential handling"
-    },
-    {
-      "name": "tailwindcss",
-      "npm_package": "tailwindcss",
-      "github_org": "tailwindlabs",
-      "github_repo": "tailwindcss",
-      "git_url": "https://github.com/tailwindlabs/tailwindcss.git",
-      "latest_stable_tag": "v4.0.6",
-      "category": "framework-and-build-tool",
-      "quality_tier": "high",
-      "repo_size": "medium",
-      "test_sets": ["full"],
-      "primary_language": "typescript",
-      "reason": "84k stars; well-engineered CSS parser and utility generator"
-    },
-    {
-      "name": "ant-design",
-      "npm_package": "antd",
-      "github_org": "ant-design",
-      "github_repo": "ant-design",
-      "git_url": "https://github.com/ant-design/ant-design.git",
-      "latest_stable_tag": "v5.24.0",
+      "name": "koa",
+      "npm_package": "koa",
+      "github_org": "koajs",
+      "github_repo": "koa",
+      "git_url": "https://github.com/koajs/koa.git",
+      "latest_stable_tag": "v2.15.3",
       "category": "framework-and-build-tool",
       "quality_tier": "medium",
-      "repo_size": "large",
-      "test_sets": ["full", "normal"],
-      "primary_language": "typescript",
-      "reason": "92k stars; large component library with complex theme system and form internals"
-    },
-    {
-      "name": "deno",
-      "npm_package": null,
-      "github_org": "denoland",
-      "github_repo": "deno",
-      "git_url": "https://github.com/denoland/deno.git",
-      "latest_stable_tag": "v2.2.0",
-      "category": "application",
-      "quality_tier": "high",
-      "repo_size": "large",
-      "test_sets": ["full", "normal"],
-      "primary_language": "typescript",
-      "reason": "106k stars; TypeScript-native runtime with well-structured Rust/TS codebase"
+      "repo_size": "small",
+      "test_sets": [
+        "full",
+        "normal",
+        "quick"
+      ],
+      "primary_language": "javascript",
+      "reason": "Cleaner than Express but same vintage; context.js has grown complex over time"
     },
     {
       "name": "lodash",
@@ -1003,9 +578,363 @@
       "category": "library",
       "quality_tier": "medium",
       "repo_size": "small",
-      "test_sets": ["full"],
+      "test_sets": [
+        "full",
+        "normal"
+      ],
       "primary_language": "javascript",
       "reason": "Most downloaded npm package; utility functions with some complex internal memoization"
+    },
+    {
+      "name": "luxon",
+      "npm_package": "luxon",
+      "github_org": "moment",
+      "github_repo": "luxon",
+      "git_url": "https://github.com/moment/luxon.git",
+      "latest_stable_tag": "v3.5.0",
+      "category": "library",
+      "quality_tier": "medium",
+      "repo_size": "medium",
+      "test_sets": [
+        "full"
+      ],
+      "primary_language": "javascript",
+      "reason": "Moment team rewrite — better than Moment but still heavier than dayjs or date-fns"
+    },
+    {
+      "name": "mobx",
+      "npm_package": "mobx",
+      "github_org": "mobxjs",
+      "github_repo": "mobx",
+      "git_url": "https://github.com/mobxjs/mobx.git",
+      "latest_stable_tag": "v6.13.5",
+      "category": "library",
+      "quality_tier": "medium",
+      "repo_size": "medium",
+      "test_sets": [
+        "full"
+      ],
+      "primary_language": "typescript",
+      "reason": "Observable tracking internals are complex; useful medium tier between Zustand and Redux"
+    },
+    {
+      "name": "mocha",
+      "npm_package": "mocha",
+      "github_org": "mochajs",
+      "github_repo": "mocha",
+      "git_url": "https://github.com/mochajs/mocha.git",
+      "latest_stable_tag": "v10.8.2",
+      "category": "framework-and-build-tool",
+      "quality_tier": "low",
+      "repo_size": "small",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "javascript",
+      "reason": "Old patterns in runner and reporter internals; complex option parsing"
+    },
+    {
+      "name": "moment",
+      "npm_package": "moment",
+      "github_org": "moment",
+      "github_repo": "moment",
+      "git_url": "https://github.com/moment/moment.git",
+      "latest_stable_tag": "v2.30.1",
+      "category": "library",
+      "quality_tier": "low",
+      "repo_size": "small",
+      "test_sets": [
+        "full",
+        "normal",
+        "quick"
+      ],
+      "primary_language": "javascript",
+      "reason": "Deprecated by maintainers; notoriously bloated timezone logic — canonical example of high complexity codebase"
+    },
+    {
+      "name": "mongodb-node-driver",
+      "npm_package": "mongodb",
+      "github_org": "mongodb",
+      "github_repo": "node-mongodb-native",
+      "git_url": "https://github.com/mongodb/node-mongodb-native.git",
+      "latest_stable_tag": "v6.13.0",
+      "category": "library",
+      "quality_tier": "low",
+      "repo_size": "medium",
+      "test_sets": [
+        "full"
+      ],
+      "primary_language": "typescript",
+      "reason": "Driver code has many deeply nested conditional paths for connection pooling and cursor management"
+    },
+    {
+      "name": "n8n",
+      "npm_package": "n8n",
+      "github_org": "n8n-io",
+      "github_repo": "n8n",
+      "git_url": "https://github.com/n8n-io/n8n.git",
+      "latest_stable_tag": "v1.75.2",
+      "category": "application",
+      "quality_tier": "medium",
+      "repo_size": "large",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "typescript",
+      "reason": "52k stars; large workflow engine with complex node execution and credential handling"
+    },
+    {
+      "name": "nestjs",
+      "npm_package": "@nestjs/core",
+      "github_org": "nestjs",
+      "github_repo": "nest",
+      "git_url": "https://github.com/nestjs/nest.git",
+      "latest_stable_tag": "v11.0.1",
+      "category": "framework-and-build-tool",
+      "quality_tier": "medium",
+      "repo_size": "medium",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "typescript",
+      "reason": "Heavy decorator metadata internals create non-trivial complexity; useful medium-tier benchmark"
+    },
+    {
+      "name": "next.js",
+      "npm_package": "next",
+      "github_org": "vercel",
+      "github_repo": "next.js",
+      "git_url": "https://github.com/vercel/next.js.git",
+      "latest_stable_tag": "v15.1.7",
+      "category": "framework-and-build-tool",
+      "quality_tier": "medium",
+      "repo_size": "large",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "typescript",
+      "reason": "135k stars; large meta-framework with some complex compiler and router internals"
+    },
+    {
+      "name": "nodemon",
+      "npm_package": "nodemon",
+      "github_org": "remy",
+      "github_repo": "nodemon",
+      "git_url": "https://github.com/remy/nodemon.git",
+      "latest_stable_tag": "v3.1.14",
+      "category": "application",
+      "quality_tier": "low",
+      "repo_size": "small",
+      "test_sets": [
+        "full",
+        "normal",
+        "quick"
+      ],
+      "primary_language": "javascript",
+      "reason": "Aging file watcher with legacy patterns in config resolution and process management; complex for its small size"
+    },
+    {
+      "name": "npkill",
+      "npm_package": "npkill",
+      "github_org": "voidcosmos",
+      "github_repo": "npkill",
+      "git_url": "https://github.com/voidcosmos/npkill.git",
+      "latest_stable_tag": "v0.12.2",
+      "category": "application",
+      "quality_tier": "medium",
+      "repo_size": "small",
+      "test_sets": [
+        "full",
+        "normal",
+        "quick"
+      ],
+      "primary_language": "typescript",
+      "reason": "Interactive CLI to find and remove node_modules; small codebase with moderate file-scanning complexity"
+    },
+    {
+      "name": "pdf.js",
+      "npm_package": "pdfjs-dist",
+      "github_org": "mozilla",
+      "github_repo": "pdf.js",
+      "git_url": "https://github.com/mozilla/pdf.js.git",
+      "latest_stable_tag": "v5.4.624",
+      "category": "library",
+      "quality_tier": "low",
+      "repo_size": "large",
+      "test_sets": [
+        "full"
+      ],
+      "primary_language": "javascript",
+      "reason": "Complex PDF parsing and rendering with deeply nested conditional paths; high cyclomatic complexity throughout"
+    },
+    {
+      "name": "pino",
+      "npm_package": "pino",
+      "github_org": "pinojs",
+      "github_repo": "pino",
+      "git_url": "https://github.com/pinojs/pino.git",
+      "latest_stable_tag": "v9.6.0",
+      "category": "library",
+      "quality_tier": "high",
+      "repo_size": "medium",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "javascript",
+      "reason": "Performance-focused JSON logger; clean internals with minimal branching"
+    },
+    {
+      "name": "pm2",
+      "npm_package": "pm2",
+      "github_org": "pm2-hive",
+      "github_repo": "pm2",
+      "git_url": "https://github.com/pm2-hive/pm2.git",
+      "latest_stable_tag": "v5.4.3",
+      "category": "application",
+      "quality_tier": "low",
+      "repo_size": "medium",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "javascript",
+      "reason": "Process manager daemon/IPC code has long functions and complex branching in God.js"
+    },
+    {
+      "name": "prettier",
+      "npm_package": "prettier",
+      "github_org": "prettier",
+      "github_repo": "prettier",
+      "git_url": "https://github.com/prettier/prettier.git",
+      "latest_stable_tag": "v3.4.2",
+      "category": "framework-and-build-tool",
+      "quality_tier": "high",
+      "repo_size": "medium",
+      "test_sets": [
+        "full"
+      ],
+      "primary_language": "javascript",
+      "reason": "Very high test coverage, good separation of concerns, well-maintained over many years"
+    },
+    {
+      "name": "prisma",
+      "npm_package": "@prisma/client",
+      "github_org": "prisma",
+      "github_repo": "prisma",
+      "git_url": "https://github.com/prisma/prisma.git",
+      "latest_stable_tag": "v6.3.1",
+      "category": "framework-and-build-tool",
+      "quality_tier": "medium",
+      "repo_size": "large",
+      "test_sets": [
+        "full"
+      ],
+      "primary_language": "typescript",
+      "reason": "Large codebase with Rust engine bridging; some complex query pipeline code worth measuring"
+    },
+    {
+      "name": "redux",
+      "npm_package": "redux",
+      "github_org": "reduxjs",
+      "github_repo": "redux",
+      "git_url": "https://github.com/reduxjs/redux.git",
+      "latest_stable_tag": "v5.0.1",
+      "category": "library",
+      "quality_tier": "medium",
+      "repo_size": "medium",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "typescript",
+      "reason": "Core is clean, but middleware/enhancer composition adds layers of complexity"
+    },
+    {
+      "name": "redwoodjs",
+      "npm_package": "@redwoodjs/core",
+      "github_org": "redwoodjs",
+      "github_repo": "redwood",
+      "git_url": "https://github.com/redwoodjs/redwood.git",
+      "latest_stable_tag": "v8.4.1",
+      "category": "framework-and-build-tool",
+      "quality_tier": "medium",
+      "repo_size": "large",
+      "test_sets": [
+        "full"
+      ],
+      "primary_language": "typescript",
+      "reason": "Full-stack ambition creates some messy seams between CLI, API, and web layers"
+    },
+    {
+      "name": "remix",
+      "npm_package": "@remix-run/react",
+      "github_org": "remix-run",
+      "github_repo": "remix",
+      "git_url": "https://github.com/remix-run/remix.git",
+      "latest_stable_tag": "v2.15.2",
+      "category": "framework-and-build-tool",
+      "quality_tier": "medium",
+      "repo_size": "medium",
+      "test_sets": [
+        "full"
+      ],
+      "primary_language": "typescript",
+      "reason": "Generally solid but some compiler and adapter code is densely conditional"
+    },
+    {
+      "name": "request",
+      "npm_package": "request",
+      "github_org": "request",
+      "github_repo": "request",
+      "git_url": "https://github.com/request/request.git",
+      "latest_stable_tag": "v2.88.2",
+      "category": "library",
+      "quality_tier": "low",
+      "repo_size": "small",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "javascript",
+      "reason": "Deprecated; deep callback nesting and high complexity — direct comparison target for got"
+    },
+    {
+      "name": "rocketchat",
+      "npm_package": null,
+      "github_org": "RocketChat",
+      "github_repo": "Rocket.Chat",
+      "git_url": "https://github.com/RocketChat/Rocket.Chat.git",
+      "latest_stable_tag": "8.1.1",
+      "category": "application",
+      "quality_tier": "low",
+      "repo_size": "large",
+      "test_sets": [
+        "full"
+      ],
+      "primary_language": "typescript",
+      "reason": "Large chat platform with complex legacy patterns in real-time messaging, permissions, and federation code"
+    },
+    {
+      "name": "rrule",
+      "npm_package": "rrule",
+      "github_org": "jakubroztocil",
+      "github_repo": "rrule",
+      "git_url": "https://github.com/jakubroztocil/rrule.git",
+      "latest_stable_tag": "v2.8.1",
+      "category": "library",
+      "quality_tier": "medium",
+      "repo_size": "small",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "typescript",
+      "reason": "iCalendar recurrence rule parsing — inherently complex domain, tested but intricate branching"
     },
     {
       "name": "rxjs",
@@ -1017,65 +946,428 @@
       "category": "library",
       "quality_tier": "medium",
       "repo_size": "medium",
-      "test_sets": ["full"],
+      "test_sets": [
+        "full"
+      ],
       "primary_language": "typescript",
       "reason": "Operator chaining internals and scheduler code have moderate complexity"
     },
     {
-      "name": "eslint",
-      "npm_package": "eslint",
-      "github_org": "eslint",
-      "github_repo": "eslint",
-      "git_url": "https://github.com/eslint/eslint.git",
-      "latest_stable_tag": "v9.20.0",
+      "name": "sequelize",
+      "npm_package": "sequelize",
+      "github_org": "sequelize",
+      "github_repo": "sequelize",
+      "git_url": "https://github.com/sequelize/sequelize.git",
+      "latest_stable_tag": "v6.37.5",
+      "category": "framework-and-build-tool",
+      "quality_tier": "low",
+      "repo_size": "medium",
+      "test_sets": [
+        "full"
+      ],
+      "primary_language": "javascript",
+      "reason": "Query builder dialect handling has massive branching trees and significant historical debt"
+    },
+    {
+      "name": "signale",
+      "npm_package": "signale",
+      "github_org": "klaussinani",
+      "github_repo": "signale",
+      "git_url": "https://github.com/klaussinani/signale.git",
+      "latest_stable_tag": "v1.4.0",
+      "category": "library",
+      "quality_tier": "high",
+      "repo_size": "small",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "javascript",
+      "reason": "Small, clean, extensible logger — good low-complexity logging baseline"
+    },
+    {
+      "name": "slidev",
+      "npm_package": "@slidev/cli",
+      "github_org": "slidevjs",
+      "github_repo": "slidev",
+      "git_url": "https://github.com/slidevjs/slidev.git",
+      "latest_stable_tag": "v52.12.0",
+      "category": "application",
+      "quality_tier": "high",
+      "repo_size": "medium",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "typescript",
+      "reason": "Well-maintained presentation tool with clean architecture; good medium high-quality application baseline"
+    },
+    {
+      "name": "socket.io",
+      "npm_package": "socket.io",
+      "github_org": "socketio",
+      "github_repo": "socket.io",
+      "git_url": "https://github.com/socketio/socket.io.git",
+      "latest_stable_tag": "v4.8.1",
+      "category": "library",
+      "quality_tier": "low",
+      "repo_size": "medium",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "typescript",
+      "reason": "Real-time event/state handling complexity; room and namespace management logic has high branching"
+    },
+    {
+      "name": "storybook",
+      "npm_package": "storybook",
+      "github_org": "storybookjs",
+      "github_repo": "storybook",
+      "git_url": "https://github.com/storybookjs/storybook.git",
+      "latest_stable_tag": "v8.5.3",
+      "category": "application",
+      "quality_tier": "medium",
+      "repo_size": "large",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "typescript",
+      "reason": "Massive monorepo with mixed quality across packages — good test for per-package complexity variance"
+    },
+    {
+      "name": "strapi",
+      "npm_package": "@strapi/strapi",
+      "github_org": "strapi",
+      "github_repo": "strapi",
+      "git_url": "https://github.com/strapi/strapi.git",
+      "latest_stable_tag": "v5.8.0",
+      "category": "application",
+      "quality_tier": "medium",
+      "repo_size": "large",
+      "test_sets": [
+        "full"
+      ],
+      "primary_language": "typescript",
+      "reason": "Mixed TS quality across modules; some plugin loader paths are more chaotic than others"
+    },
+    {
+      "name": "supabase-js",
+      "npm_package": "@supabase/supabase-js",
+      "github_org": "supabase",
+      "github_repo": "supabase-js",
+      "git_url": "https://github.com/supabase/supabase-js.git",
+      "latest_stable_tag": "v2.49.1",
+      "category": "library",
+      "quality_tier": "medium",
+      "repo_size": "medium",
+      "test_sets": [
+        "full"
+      ],
+      "primary_language": "typescript",
+      "reason": "Real-world backend client with mixed complexity across auth, realtime, and storage modules"
+    },
+    {
+      "name": "superstruct",
+      "npm_package": "superstruct",
+      "github_org": "ianstormtaylor",
+      "github_repo": "superstruct",
+      "git_url": "https://github.com/ianstormtaylor/superstruct.git",
+      "latest_stable_tag": "v2.0.2",
+      "category": "library",
+      "quality_tier": "high",
+      "repo_size": "small",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "typescript",
+      "reason": "Functional style, minimal surface area; good structural validation baseline"
+    },
+    {
+      "name": "tailwindcss",
+      "npm_package": "tailwindcss",
+      "github_org": "tailwindlabs",
+      "github_repo": "tailwindcss",
+      "git_url": "https://github.com/tailwindlabs/tailwindcss.git",
+      "latest_stable_tag": "v4.0.6",
+      "category": "framework-and-build-tool",
+      "quality_tier": "high",
+      "repo_size": "medium",
+      "test_sets": [
+        "full"
+      ],
+      "primary_language": "typescript",
+      "reason": "84k stars; well-engineered CSS parser and utility generator"
+    },
+    {
+      "name": "tanstack-query",
+      "npm_package": "@tanstack/query-core",
+      "github_org": "TanStack",
+      "github_repo": "query",
+      "git_url": "https://github.com/TanStack/query.git",
+      "latest_stable_tag": "v5.66.0",
+      "category": "library",
+      "quality_tier": "high",
+      "repo_size": "medium",
+      "test_sets": [
+        "full"
+      ],
+      "primary_language": "typescript",
+      "reason": "Clean async state patterns, good abstraction layering, framework-agnostic core with high test coverage"
+    },
+    {
+      "name": "three.js",
+      "npm_package": "three",
+      "github_org": "mrdoob",
+      "github_repo": "three.js",
+      "git_url": "https://github.com/mrdoob/three.js.git",
+      "latest_stable_tag": "r183",
+      "category": "library",
+      "quality_tier": "medium",
+      "repo_size": "large",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "javascript",
+      "reason": "111k stars; massive 3D library with moderate quality — clean API but complex renderer and math internals"
+    },
+    {
+      "name": "trpc",
+      "npm_package": "@trpc/server",
+      "github_org": "trpc",
+      "github_repo": "trpc",
+      "git_url": "https://github.com/trpc/trpc.git",
+      "latest_stable_tag": "v11.0.0",
+      "category": "framework-and-build-tool",
+      "quality_tier": "high",
+      "repo_size": "medium",
+      "test_sets": [
+        "full"
+      ],
+      "primary_language": "typescript",
+      "reason": "Clean monorepo, typed end-to-end, well-decomposed modules with high test coverage"
+    },
+    {
+      "name": "typeorm",
+      "npm_package": "typeorm",
+      "github_org": "typeorm",
+      "github_repo": "typeorm",
+      "git_url": "https://github.com/typeorm/typeorm.git",
+      "latest_stable_tag": "v0.3.20",
       "category": "framework-and-build-tool",
       "quality_tier": "medium",
       "repo_size": "medium",
-      "test_sets": ["full"],
-      "primary_language": "javascript",
-      "reason": "Rule engine and source-code traversal has moderate complexity; good mid-tier tooling baseline"
+      "test_sets": [
+        "full"
+      ],
+      "primary_language": "typescript",
+      "reason": "Decorator/metadata system has complex resolution paths; QueryBuilder internals score high on cyclomatic complexity"
     },
     {
-      "name": "chalk",
-      "npm_package": "chalk",
-      "github_org": "chalk",
-      "github_repo": "chalk",
-      "git_url": "https://github.com/chalk/chalk.git",
-      "latest_stable_tag": "v5.4.1",
+      "name": "typescript",
+      "npm_package": "typescript",
+      "github_org": "microsoft",
+      "github_repo": "TypeScript",
+      "git_url": "https://github.com/microsoft/TypeScript.git",
+      "latest_stable_tag": "v5.7.3",
       "category": "library",
       "quality_tier": "high",
-      "repo_size": "small",
-      "test_sets": ["full", "normal"],
-      "primary_language": "javascript",
-      "reason": "Well-maintained terminal styling library; minimal and clean"
+      "repo_size": "large",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "typescript",
+      "reason": "The language itself — exemplary compiler architecture with comprehensive tests"
     },
     {
-      "name": "dotenv",
-      "npm_package": "dotenv",
-      "github_org": "motdotla",
-      "github_repo": "dotenv",
-      "git_url": "https://github.com/motdotla/dotenv.git",
-      "latest_stable_tag": "v16.4.7",
-      "category": "library",
-      "quality_tier": "high",
-      "repo_size": "small",
-      "test_sets": ["full", "normal"],
-      "primary_language": "javascript",
-      "reason": "Zero-dependency env loader; minimal complexity — good sanity-check baseline"
-    },
-    {
-      "name": "commander",
-      "npm_package": "commander",
-      "github_org": "tj",
-      "github_repo": "commander.js",
-      "git_url": "https://github.com/tj/commander.js.git",
-      "latest_stable_tag": "v13.1.0",
+      "name": "undici",
+      "npm_package": "undici",
+      "github_org": "nodejs",
+      "github_repo": "undici",
+      "git_url": "https://github.com/nodejs/undici.git",
+      "latest_stable_tag": "v7.3.0",
       "category": "library",
       "quality_tier": "medium",
-      "repo_size": "small",
-      "test_sets": ["full", "normal", "quick"],
+      "repo_size": "medium",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
       "primary_language": "javascript",
-      "reason": "CLI option parsing has moderate complexity; useful for testing tooling-category code"
+      "reason": "High-performance Node.js HTTP client; complex connection pool internals justify medium tier"
+    },
+    {
+      "name": "valibot",
+      "npm_package": "valibot",
+      "github_org": "fabian-hiller",
+      "github_repo": "valibot",
+      "git_url": "https://github.com/fabian-hiller/valibot.git",
+      "latest_stable_tag": "v1.0.0",
+      "category": "library",
+      "quality_tier": "high",
+      "repo_size": "small",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "typescript",
+      "reason": "Even smaller than Zod, very clean modular design — good high-quality validation comparison"
+    },
+    {
+      "name": "verdaccio",
+      "npm_package": "verdaccio",
+      "github_org": "verdaccio",
+      "github_repo": "verdaccio",
+      "git_url": "https://github.com/verdaccio/verdaccio.git",
+      "latest_stable_tag": "v6.2.9",
+      "category": "application",
+      "quality_tier": "medium",
+      "repo_size": "medium",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "typescript",
+      "reason": "Private npm registry with moderate complexity in package storage and auth handling"
+    },
+    {
+      "name": "vite",
+      "npm_package": "vite",
+      "github_org": "vitejs",
+      "github_repo": "vite",
+      "git_url": "https://github.com/vitejs/vite.git",
+      "latest_stable_tag": "v6.1.0",
+      "category": "framework-and-build-tool",
+      "quality_tier": "high",
+      "repo_size": "medium",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "typescript",
+      "reason": "Exemplary plugin architecture, clean TS strictness, used as high-quality baseline in complexity analysis"
+    },
+    {
+      "name": "vitest",
+      "npm_package": "vitest",
+      "github_org": "vitest-dev",
+      "github_repo": "vitest",
+      "git_url": "https://github.com/vitest-dev/vitest.git",
+      "latest_stable_tag": "v3.0.5",
+      "category": "framework-and-build-tool",
+      "quality_tier": "high",
+      "repo_size": "medium",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "typescript",
+      "reason": "Modern testing framework built on Vite, clean architecture, eats its own cooking for test coverage"
+    },
+    {
+      "name": "vscode",
+      "npm_package": null,
+      "github_org": "microsoft",
+      "github_repo": "vscode",
+      "git_url": "https://github.com/microsoft/vscode.git",
+      "latest_stable_tag": "1.96.4",
+      "category": "application",
+      "quality_tier": "high",
+      "repo_size": "large",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "typescript",
+      "reason": "Top GitHub TS repo by contributors; large real-world codebase, excellent quality benchmark"
+    },
+    {
+      "name": "vue-core",
+      "npm_package": "vue",
+      "github_org": "vuejs",
+      "github_repo": "core",
+      "git_url": "https://github.com/vuejs/core.git",
+      "latest_stable_tag": "v3.5.13",
+      "category": "framework-and-build-tool",
+      "quality_tier": "high",
+      "repo_size": "large",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "typescript",
+      "reason": "210k stars; clean reactivity system architecture, well-tested"
+    },
+    {
+      "name": "webpack",
+      "npm_package": "webpack",
+      "github_org": "webpack",
+      "github_repo": "webpack",
+      "git_url": "https://github.com/webpack/webpack.git",
+      "latest_stable_tag": "v5.97.1",
+      "category": "framework-and-build-tool",
+      "quality_tier": "low",
+      "repo_size": "large",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "javascript",
+      "reason": "Compilation.js and plugin resolution have deeply nested logic; functions with cyclomatic complexity 20-50+"
+    },
+    {
+      "name": "winston",
+      "npm_package": "winston",
+      "github_org": "winstonjs",
+      "github_repo": "winston",
+      "git_url": "https://github.com/winstonjs/winston.git",
+      "latest_stable_tag": "v3.17.0",
+      "category": "library",
+      "quality_tier": "medium",
+      "repo_size": "medium",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "javascript",
+      "reason": "Transport system has messy branching and some convoluted stream handling"
+    },
+    {
+      "name": "wretch",
+      "npm_package": "wretch",
+      "github_org": "elbywan",
+      "github_repo": "wretch",
+      "git_url": "https://github.com/elbywan/wretch.git",
+      "latest_stable_tag": "v2.11.0",
+      "category": "library",
+      "quality_tier": "high",
+      "repo_size": "medium",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "typescript",
+      "reason": "Thin fetch wrapper; minimal complexity — good low-complexity HTTP baseline"
+    },
+    {
+      "name": "xstate",
+      "npm_package": "xstate",
+      "github_org": "statelyai",
+      "github_repo": "xstate",
+      "git_url": "https://github.com/statelyai/xstate.git",
+      "latest_stable_tag": "v5.28.0",
+      "category": "library",
+      "quality_tier": "medium",
+      "repo_size": "medium",
+      "test_sets": [
+        "full"
+      ],
+      "primary_language": "typescript",
+      "reason": "State machines are inherently complex but well-structured; complexity is domain-justified"
     },
     {
       "name": "yargs",
@@ -1087,9 +1379,63 @@
       "category": "library",
       "quality_tier": "medium",
       "repo_size": "small",
-      "test_sets": ["full", "normal"],
+      "test_sets": [
+        "full",
+        "normal"
+      ],
       "primary_language": "typescript",
       "reason": "Feature-rich CLI parser; more complex internals than commander"
+    },
+    {
+      "name": "yup",
+      "npm_package": "yup",
+      "github_org": "jquense",
+      "github_repo": "yup",
+      "git_url": "https://github.com/jquense/yup.git",
+      "latest_stable_tag": "v1.6.1",
+      "category": "library",
+      "quality_tier": "medium",
+      "repo_size": "medium",
+      "test_sets": [
+        "full"
+      ],
+      "primary_language": "typescript",
+      "reason": "Similar to Joi; some messy async validation resolution paths worth measuring against Zod"
+    },
+    {
+      "name": "zod",
+      "npm_package": "zod",
+      "github_org": "colinhacks",
+      "github_repo": "zod",
+      "git_url": "https://github.com/colinhacks/zod.git",
+      "latest_stable_tag": "v3.24.1",
+      "category": "library",
+      "quality_tier": "high",
+      "repo_size": "small",
+      "test_sets": [
+        "full",
+        "normal",
+        "quick"
+      ],
+      "primary_language": "typescript",
+      "reason": "Near-zero unnecessary branching, minimal cyclomatic complexity, ideal high-quality validation baseline"
+    },
+    {
+      "name": "zustand",
+      "npm_package": "zustand",
+      "github_org": "pmndrs",
+      "github_repo": "zustand",
+      "git_url": "https://github.com/pmndrs/zustand.git",
+      "latest_stable_tag": "v5.0.3",
+      "category": "library",
+      "quality_tier": "high",
+      "repo_size": "small",
+      "test_sets": [
+        "full",
+        "normal"
+      ],
+      "primary_language": "typescript",
+      "reason": "Tiny implementation; almost no complexity — ideal high-quality state management baseline"
     }
   ]
 }
