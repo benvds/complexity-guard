@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 Phase: 22 of 22 (Cross-Compilation, CI, and Release) — COMPLETE
 Plan: 3 of 3 in phase 22 — plan 03 complete
 Status: Phase 22-03 COMPLETE — documentation updates for Rust binary (README, docs, releasing, publication READMEs)
-Last activity: 2026-02-26 - Completed quick task 27: add missing combo repos and restrict quick set to small repos
+Last activity: 2026-02-26 - Completed quick task 28: add license field to all repos in public-projects.json
 
 Progress: [█████████░] 75% (v0.8 milestone)
 
@@ -112,12 +112,13 @@ Recent decisions affecting v0.8:
 | 25 | Create a Claude Code skill for complexity-guard CLI | 2026-02-26 | 0855eac | [25-create-a-claude-skill-for-complexity-gua](./quick/25-create-a-claude-skill-for-complexity-gua/) |
 | 26 | Restructure public-projects.json with categories, repo_size, test_sets | 2026-02-26 | 00af450 | [26-improve-public-projects-json-restructure](./quick/26-improve-public-projects-json-restructure/) |
 | 27 | Add 8 missing combo repos and restrict quick set to small repos | 2026-02-26 | b8f0412 | [27-add-missing-combo-repos-and-restrict-qui](./quick/27-add-missing-combo-repos-and-restrict-qui/) |
+| 28 | Add license field to all repos in public-projects.json | 2026-02-26 | 62457fb | [28-add-license-field-to-all-repos-in-public](./quick/28-add-license-field-to-all-repos-in-public/) |
 
 ## Session Continuity
 
-Last session: 2026-02-26 (quick task 27)
-Stopped at: Completed quick task 27 — added 8 repos, restricted quick set to 9 small repos
-Resume with: All 27 combos populated; quick set ready for fast benchmarks
+Last session: 2026-02-26 (quick task 28)
+Stopped at: Completed quick task 28 — added SPDX license field to all 84 repos, fixed pm2 org
+Resume with: All repos have license metadata; ready for next task
 
 **Remaining phases to execute:**
 - Phase 19: CLI, Config, Output Formats — COMPLETE (4/4)
@@ -134,4 +135,4 @@ Resume with: All 27 combos populated; quick set ready for fast benchmarks
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-26 after quick task 27 completion (add missing combo repos, restrict quick set)*
+*Last updated: 2026-02-26 after quick task 28 completion (add license field to all repos)*
