@@ -137,6 +137,33 @@
       {% endif %}
     </section>
     {% endif %}
+
+    {% if skipped %}
+    <section class="skipped-section">
+      <h2>Skipped Items ({{ skipped.count }})</h2>
+      <p style="color:var(--muted);font-size:0.85rem;margin-bottom:0.5rem">These files or functions exceeded the size limit and were not analyzed. Files &gt; 10,000 lines and functions &gt; 5,000 lines are skipped to prevent excessive memory use or analysis timeouts.</p>
+      <table class="clone-table">
+        <thead><tr>
+          <th>Path</th>
+          <th>Item</th>
+          <th>Reason</th>
+          <th>Lines</th>
+          <th>Max</th>
+        </tr></thead>
+        <tbody>
+          {% for item in skipped.items %}
+          <tr>
+            <td>{{ item.path }}</td>
+            <td>{% if item.item_name %}{{ item.item_name }}{% if item.start_line > 0 %}:{{ item.start_line }}{% endif %}{% else %}&mdash;{% endif %}</td>
+            <td><span class="score-badge warning">{{ item.reason }}</span></td>
+            <td>{{ item.lines }}</td>
+            <td>{{ item.max_lines }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+    {% endif %}
   </main>
 
   <footer>

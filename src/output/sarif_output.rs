@@ -1,6 +1,6 @@
 use crate::cli::ResolvedConfig;
 use crate::output::console::{function_violations, Severity};
-use crate::types::{DuplicationResult, FileAnalysisResult};
+use crate::types::{DuplicationResult, FileAnalysisResult, SkippedItem};
 
 const SARIF_SCHEMA: &str =
     "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json";
@@ -21,6 +21,7 @@ const RULE_PARAM_COUNT: usize = 7;
 const RULE_NESTING_DEPTH: usize = 8;
 const RULE_HEALTH_SCORE: usize = 9;
 const RULE_DUPLICATION: usize = 10;
+const RULE_SKIPPED: usize = 11;
 
 // --- SARIF 2.1.0 hand-rolled structs ---
 
@@ -288,6 +289,20 @@ fn build_rules() -> Vec<SarifRule> {
                 text: "Eliminate code duplication by extracting duplicated logic into shared functions, utilities, or modules. Type 2 clones (structurally identical with different variable names) can often be generalized with parameters.",
             },
         },
+        // RULE 11: Skipped
+        SarifRule {
+            id: "complexity-guard/skipped",
+            name: "FileTooLargeSkipped",
+            short_description: SarifMessage { text: "File or function skipped due to size limit" },
+            full_description: SarifMessage {
+                text: "A file exceeded the maximum line count (10,000 lines) or a function exceeded the maximum line count (5,000 lines) and was skipped to prevent stack overflows, excessive memory use, or analysis timeouts. This commonly occurs with auto-generated code, minified bundles, or unusually large source files.",
+            },
+            default_configuration: SarifConfiguration { level: "note" },
+            help_uri: "https://github.com/benvds/complexity-guard/blob/main/docs/cli-reference.md#size-limits",
+            help: SarifMessage {
+                text: "Consider excluding auto-generated or minified files from analysis using --exclude patterns or the files.exclude config option. If this is a real source file, consider splitting it into smaller modules.",
+            },
+        },
     ]
 }
 
@@ -305,6 +320,7 @@ fn rule_id_to_index(rule_id: &str) -> usize {
         "complexity-guard/nesting-depth" => RULE_NESTING_DEPTH,
         "complexity-guard/health-score" => RULE_HEALTH_SCORE,
         "complexity-guard/duplication" => RULE_DUPLICATION,
+        "complexity-guard/skipped" => RULE_SKIPPED,
         _ => 0,
     }
 }
@@ -323,6 +339,7 @@ fn rule_id_static(rule_id: &str) -> &'static str {
         "complexity-guard/nesting-depth" => "complexity-guard/nesting-depth",
         "complexity-guard/health-score" => "complexity-guard/health-score",
         "complexity-guard/duplication" => "complexity-guard/duplication",
+        "complexity-guard/skipped" => "complexity-guard/skipped",
         _ => "complexity-guard/cyclomatic",
     }
 }
@@ -337,12 +354,14 @@ fn severity_to_level(severity: &Severity) -> &'static str {
 
 /// Render SARIF 2.1.0 output from analysis results.
 ///
-/// Produces a valid SARIF log with all 11 rule definitions and results for
+/// Produces a valid SARIF log with all 12 rule definitions and results for
 /// every threshold violation detected across all analyzed files.
+/// Skipped files and functions are reported as "note" level results.
 pub fn render_sarif(
     files: &[FileAnalysisResult],
     duplication: Option<&DuplicationResult>,
     config: &ResolvedConfig,
+    skipped: &[SkippedItem],
 ) -> anyhow::Result<String> {
     let rules = build_rules();
     let mut sarif_results: Vec<SarifResult> = Vec::new();
@@ -451,6 +470,40 @@ pub fn render_sarif(
         }
     }
 
+    // Build skipped item results as "note" level results
+    for item in skipped {
+        let uri = item.path.to_string_lossy().to_string();
+        let message_text = match &item.reason {
+            crate::types::SkipReason::FileTooLarge { lines, max_lines } => {
+                format!("File skipped: {lines} lines exceeds maximum of {max_lines}")
+            }
+            crate::types::SkipReason::FunctionTooLarge { lines, max_lines } => {
+                let fn_name = item.function_name.as_deref().unwrap_or("<unknown>");
+                format!(
+                    "Function '{fn_name}' skipped: {lines} lines exceeds maximum of {max_lines}"
+                )
+            }
+        };
+        let start_line = if item.start_line == 0 { 1 } else { item.start_line };
+        sarif_results.push(SarifResult {
+            rule_id: "complexity-guard/skipped",
+            rule_index: RULE_SKIPPED,
+            level: "note",
+            message: SarifOwnedMessage { text: message_text },
+            locations: vec![SarifLocation {
+                physical_location: SarifPhysicalLocation {
+                    artifact_location: SarifArtifactLocation { uri },
+                    region: SarifRegion {
+                        start_line,
+                        start_column: 1,
+                        end_line: start_line,
+                    },
+                },
+            }],
+            related_locations: None,
+        });
+    }
+
     let log = SarifLog {
         schema: SARIF_SCHEMA,
         version: SARIF_VERSION,
@@ -535,7 +588,7 @@ mod tests {
     fn sarif_output_parses_as_valid_json() {
         let files = vec![make_file("src/foo.ts", vec![make_func_ok()])];
         let config = ResolvedConfig::default();
-        let output = render_sarif(&files, None, &config).unwrap();
+        let output = render_sarif(&files, None, &config, &[]).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&output).unwrap();
         assert!(parsed.is_object());
     }
@@ -544,7 +597,7 @@ mod tests {
     fn sarif_output_has_schema_field() {
         let files: Vec<FileAnalysisResult> = vec![];
         let config = ResolvedConfig::default();
-        let output = render_sarif(&files, None, &config).unwrap();
+        let output = render_sarif(&files, None, &config, &[]).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&output).unwrap();
         let schema = parsed["$schema"].as_str().unwrap();
         assert!(
@@ -557,26 +610,26 @@ mod tests {
     fn sarif_output_has_correct_version() {
         let files: Vec<FileAnalysisResult> = vec![];
         let config = ResolvedConfig::default();
-        let output = render_sarif(&files, None, &config).unwrap();
+        let output = render_sarif(&files, None, &config, &[]).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&output).unwrap();
         assert_eq!(parsed["version"].as_str().unwrap(), "2.1.0");
     }
 
     #[test]
-    fn sarif_output_has_11_rules() {
+    fn sarif_output_has_12_rules() {
         let files: Vec<FileAnalysisResult> = vec![];
         let config = ResolvedConfig::default();
-        let output = render_sarif(&files, None, &config).unwrap();
+        let output = render_sarif(&files, None, &config, &[]).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&output).unwrap();
         let rules = &parsed["runs"][0]["tool"]["driver"]["rules"];
-        assert_eq!(rules.as_array().unwrap().len(), 11);
+        assert_eq!(rules.as_array().unwrap().len(), 12);
     }
 
     #[test]
     fn sarif_output_rule_ids_match_zig_source() {
         let files: Vec<FileAnalysisResult> = vec![];
         let config = ResolvedConfig::default();
-        let output = render_sarif(&files, None, &config).unwrap();
+        let output = render_sarif(&files, None, &config, &[]).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&output).unwrap();
         let rules = parsed["runs"][0]["tool"]["driver"]["rules"]
             .as_array()
@@ -593,13 +646,14 @@ mod tests {
         assert_eq!(rule_ids[8], "complexity-guard/nesting-depth");
         assert_eq!(rule_ids[9], "complexity-guard/health-score");
         assert_eq!(rule_ids[10], "complexity-guard/duplication");
+        assert_eq!(rule_ids[11], "complexity-guard/skipped");
     }
 
     #[test]
     fn sarif_output_camelcase_field_names() {
         let files: Vec<FileAnalysisResult> = vec![];
         let config = ResolvedConfig::default();
-        let output = render_sarif(&files, None, &config).unwrap();
+        let output = render_sarif(&files, None, &config, &[]).unwrap();
         // Driver camelCase fields
         assert!(
             output.contains("\"informationUri\""),
@@ -628,7 +682,7 @@ mod tests {
             vec![make_func_with_violation()],
         )];
         let config = ResolvedConfig::default();
-        let output = render_sarif(&files, None, &config).unwrap();
+        let output = render_sarif(&files, None, &config, &[]).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&output).unwrap();
         let results = parsed["runs"][0]["results"].as_array().unwrap();
         // Should have at least cyclomatic, cognitive, and halstead-volume violations
@@ -661,7 +715,7 @@ mod tests {
             vec![make_func_with_violation()],
         )];
         let config = ResolvedConfig::default();
-        let output = render_sarif(&files, None, &config).unwrap();
+        let output = render_sarif(&files, None, &config, &[]).unwrap();
         assert!(
             output.contains("\"physicalLocation\""),
             "expected physicalLocation"
@@ -681,7 +735,7 @@ mod tests {
     fn sarif_no_results_for_ok_functions() {
         let files = vec![make_file("src/ok.ts", vec![make_func_ok()])];
         let config = ResolvedConfig::default();
-        let output = render_sarif(&files, None, &config).unwrap();
+        let output = render_sarif(&files, None, &config, &[]).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&output).unwrap();
         let results = parsed["runs"][0]["results"].as_array().unwrap();
         assert!(results.is_empty(), "expected no results for ok functions");
@@ -694,7 +748,7 @@ mod tests {
             vec![make_func_with_violation()],
         )];
         let config = ResolvedConfig::default();
-        let output = render_sarif(&files, None, &config).unwrap();
+        let output = render_sarif(&files, None, &config, &[]).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&output).unwrap();
         let results = parsed["runs"][0]["results"].as_array().unwrap();
         // cyclomatic=25 exceeds error threshold 20 -> level should be "error"

@@ -128,7 +128,7 @@ fn main() {
 
     // Parallel analysis
     let start = std::time::Instant::now();
-    let (files, has_parse_errors) = complexity_guard::pipeline::analyze_files_parallel(
+    let (files, has_parse_errors, skipped) = complexity_guard::pipeline::analyze_files_parallel(
         &discovered,
         &analysis_config,
         resolved.threads,
@@ -175,9 +175,23 @@ fn main() {
 
     // Render output in the requested format
     let output_result: Result<Option<String>, anyhow::Error> = match resolved.format.as_str() {
-        "json" => render_json(&files, duplication_result.as_ref(), &resolved, elapsed_ms).map(Some),
-        "sarif" => render_sarif(&files, duplication_result.as_ref(), &resolved).map(Some),
-        "html" => render_html(&files, duplication_result.as_ref(), &resolved, elapsed_ms).map(Some),
+        "json" => {
+            render_json(&files, duplication_result.as_ref(), &resolved, elapsed_ms, &skipped)
+                .map(Some)
+        }
+        "sarif" => {
+            render_sarif(&files, duplication_result.as_ref(), &resolved, &skipped).map(Some)
+        }
+        "html" => {
+            render_html(
+                &files,
+                duplication_result.as_ref(),
+                &resolved,
+                elapsed_ms,
+                &skipped,
+            )
+            .map(Some)
+        }
         _ => {
             // console format (default) and unknown formats fall through to console
             if resolved.format != "console" {
@@ -191,6 +205,7 @@ fn main() {
                 duplication_result.as_ref(),
                 &resolved,
                 &mut std::io::stdout(),
+                &skipped,
             ) {
                 Ok(_) => Ok(None), // console writes directly to stdout
                 Err(e) => Err(e),

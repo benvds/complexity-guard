@@ -2,7 +2,7 @@ use minijinja::{context, Environment};
 
 use crate::cli::ResolvedConfig;
 use crate::output::console::function_violations;
-use crate::types::{DuplicationResult, FileAnalysisResult, FunctionAnalysisResult};
+use crate::types::{DuplicationResult, FileAnalysisResult, FunctionAnalysisResult, SkipReason, SkippedItem};
 
 const CSS: &str = include_str!("assets/report.css");
 const JS: &str = include_str!("assets/report.js");
@@ -121,11 +121,13 @@ fn worst_status_for_file(file: &FileAnalysisResult, config: &ResolvedConfig) -> 
 ///
 /// CSS and JS are embedded inline — no external requests are made.
 /// The duplication section is included only when duplication data is present.
+/// The skipped section is included only when skipped items are non-empty.
 pub fn render_html(
     files: &[FileAnalysisResult],
     duplication: Option<&DuplicationResult>,
     config: &ResolvedConfig,
     elapsed_ms: u64,
+    skipped: &[SkippedItem],
 ) -> anyhow::Result<String> {
     let mut env = Environment::new();
     env.add_template("report", TEMPLATE)?;
@@ -271,6 +273,43 @@ pub fn render_html(
         })
         .collect();
 
+    // Build skipped context (None serializes as falsy in minijinja)
+    let skipped_ctx: Option<minijinja::Value> = if skipped.is_empty() {
+        None
+    } else {
+        let skipped_items: Vec<minijinja::Value> = skipped
+            .iter()
+            .map(|item| {
+                let path_str = item.path.to_string_lossy().to_string();
+                let (reason_label, lines, max_lines, item_name) = match &item.reason {
+                    SkipReason::FileTooLarge { lines, max_lines } => {
+                        ("file too large".to_string(), *lines, *max_lines, None::<String>)
+                    }
+                    SkipReason::FunctionTooLarge { lines, max_lines } => {
+                        (
+                            "function too large".to_string(),
+                            *lines as usize,
+                            *max_lines as usize,
+                            item.function_name.clone(),
+                        )
+                    }
+                };
+                context! {
+                    path => path_str,
+                    item_name => item_name.unwrap_or_default(),
+                    start_line => item.start_line,
+                    reason => reason_label,
+                    lines => lines,
+                    max_lines => max_lines,
+                }
+            })
+            .collect();
+        Some(context! {
+            items => skipped_items,
+            count => skipped.len(),
+        })
+    };
+
     // Build duplication context (None serializes as falsy in minijinja)
     let dup_ctx: Option<minijinja::Value> = duplication.map(|dup| {
         let groups: Vec<minijinja::Value> = dup
@@ -332,6 +371,7 @@ pub fn render_html(
         hotspots => hotspots,
         files => file_contexts,
         duplication => dup_ctx,
+        skipped => skipped_ctx,
         timestamp => timestamp,
     };
 
@@ -412,7 +452,7 @@ mod tests {
     fn html_output_contains_doctype() {
         let files = vec![make_file("src/foo.ts", vec![make_func()])];
         let config = ResolvedConfig::default();
-        let output = render_html(&files, None, &config, 42).unwrap();
+        let output = render_html(&files, None, &config, 42, &[]).unwrap();
         assert!(output.contains("<!DOCTYPE html>"), "expected DOCTYPE html");
     }
 
@@ -420,7 +460,7 @@ mod tests {
     fn html_output_has_embedded_css() {
         let files: Vec<FileAnalysisResult> = vec![];
         let config = ResolvedConfig::default();
-        let output = render_html(&files, None, &config, 10).unwrap();
+        let output = render_html(&files, None, &config, 10, &[]).unwrap();
         assert!(output.contains("<style>"), "expected <style> block");
         assert!(
             output.contains("prefers-color-scheme"),
@@ -432,7 +472,7 @@ mod tests {
     fn html_output_has_embedded_js() {
         let files: Vec<FileAnalysisResult> = vec![];
         let config = ResolvedConfig::default();
-        let output = render_html(&files, None, &config, 10).unwrap();
+        let output = render_html(&files, None, &config, 10, &[]).unwrap();
         assert!(output.contains("<script>"), "expected <script> block");
         assert!(
             output.contains("sortTable"),
@@ -444,7 +484,7 @@ mod tests {
     fn html_output_no_external_url_refs() {
         let files = vec![make_file("src/foo.ts", vec![make_func()])];
         let config = ResolvedConfig::default();
-        let output = render_html(&files, None, &config, 10).unwrap();
+        let output = render_html(&files, None, &config, 10, &[]).unwrap();
         // No external link/script/img tags with http/https src
         assert!(
             !output.contains("<link rel=\"stylesheet\""),
@@ -465,7 +505,7 @@ mod tests {
         let files = vec![make_file("src/foo.ts", vec![make_func()])];
         let config = ResolvedConfig::default();
         let dup = make_dup();
-        let output = render_html(&files, Some(&dup), &config, 10).unwrap();
+        let output = render_html(&files, Some(&dup), &config, 10, &[]).unwrap();
         assert!(
             output.contains("Code Duplication") || output.contains("duplication-section"),
             "expected duplication section when duplication data present"
@@ -480,7 +520,7 @@ mod tests {
     fn html_output_excludes_duplication_section_when_absent() {
         let files = vec![make_file("src/foo.ts", vec![make_func()])];
         let config = ResolvedConfig::default();
-        let output = render_html(&files, None, &config, 10).unwrap();
+        let output = render_html(&files, None, &config, 10, &[]).unwrap();
         // The duplication section heading "Code Duplication" only appears in the HTML section,
         // not in the CSS. When no duplication data, the {% if duplication %} block is not rendered.
         assert!(
@@ -498,7 +538,7 @@ mod tests {
     fn html_output_contains_file_path() {
         let files = vec![make_file("src/mymodule.ts", vec![make_func()])];
         let config = ResolvedConfig::default();
-        let output = render_html(&files, None, &config, 10).unwrap();
+        let output = render_html(&files, None, &config, 10, &[]).unwrap();
         assert!(
             output.contains("src/mymodule.ts"),
             "expected file path in output"
@@ -509,7 +549,7 @@ mod tests {
     fn html_output_contains_function_name() {
         let files = vec![make_file("src/foo.ts", vec![make_func()])];
         let config = ResolvedConfig::default();
-        let output = render_html(&files, None, &config, 10).unwrap();
+        let output = render_html(&files, None, &config, 10, &[]).unwrap();
         assert!(
             output.contains("myFunction"),
             "expected function name in output"
@@ -520,7 +560,7 @@ mod tests {
     fn html_output_contains_complexity_guard_branding() {
         let files: Vec<FileAnalysisResult> = vec![];
         let config = ResolvedConfig::default();
-        let output = render_html(&files, None, &config, 10).unwrap();
+        let output = render_html(&files, None, &config, 10, &[]).unwrap();
         assert!(
             output.contains("ComplexityGuard"),
             "expected ComplexityGuard in output"

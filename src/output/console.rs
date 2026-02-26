@@ -3,7 +3,7 @@ use std::io::Write;
 use owo_colors::OwoColorize;
 
 use crate::cli::ResolvedConfig;
-use crate::types::{DuplicationResult, FileAnalysisResult, FunctionAnalysisResult};
+use crate::types::{DuplicationResult, FileAnalysisResult, FunctionAnalysisResult, SkipReason, SkippedItem};
 
 /// Severity level for a single threshold violation.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -390,11 +390,13 @@ fn render_function_line(
 /// Each function gets ONE line showing the worst severity across all metrics.
 /// Respects config.quiet (errors only) and config.verbose (show ok functions).
 /// Color output is controlled by config.color.
+/// Skipped items are always shown when non-empty (even in quiet mode).
 pub fn render_console(
     files: &[FileAnalysisResult],
     duplication: Option<&DuplicationResult>,
     config: &ResolvedConfig,
     writer: &mut dyn Write,
+    skipped: &[SkippedItem],
 ) -> anyhow::Result<()> {
     let use_color = should_use_color(config.color);
 
@@ -476,18 +478,27 @@ pub fn render_console(
         }
     }
 
-    // In quiet mode, only show verdict
+    // In quiet mode, only show verdict (but still show skipped below)
     if config.quiet {
         render_verdict(writer, total_errors, total_warnings, use_color)?;
+        render_skipped_section(writer, skipped, use_color)?;
         return Ok(());
     }
 
     // Summary section
     let file_count = files.len();
-    writeln!(
-        writer,
-        "Analyzed {file_count} files, {total_functions} functions"
-    )?;
+    let skipped_count = skipped.len();
+    if skipped_count > 0 {
+        writeln!(
+            writer,
+            "Analyzed {file_count} files, {total_functions} functions ({skipped_count} skipped)"
+        )?;
+    } else {
+        writeln!(
+            writer,
+            "Analyzed {file_count} files, {total_functions} functions"
+        )?;
+    }
 
     // Health score (integer, no decimal — matching Zig format)
     if health_count > 0 {
@@ -591,6 +602,47 @@ pub fn render_console(
     writeln!(writer)?;
     render_verdict(writer, total_errors, total_warnings, use_color)?;
 
+    // Skipped section (always shown when non-empty)
+    render_skipped_section(writer, skipped, use_color)?;
+
+    Ok(())
+}
+
+/// Renders the skipped items section.
+fn render_skipped_section(
+    writer: &mut dyn Write,
+    skipped: &[SkippedItem],
+    use_color: bool,
+) -> anyhow::Result<()> {
+    if skipped.is_empty() {
+        return Ok(());
+    }
+
+    writeln!(writer)?;
+    let header = format!("Skipped ({} item{}):", skipped.len(), if skipped.len() == 1 { "" } else { "s" });
+    if use_color {
+        writeln!(writer, "{}", header.yellow())?;
+    } else {
+        writeln!(writer, "{header}")?;
+    }
+
+    for item in skipped {
+        let path_str = item.path.display().to_string();
+        let description = match &item.reason {
+            SkipReason::FileTooLarge { lines, max_lines } => {
+                format!("{path_str} — file too large ({lines} lines, max {max_lines})")
+            }
+            SkipReason::FunctionTooLarge { lines, max_lines } => {
+                let fn_name = item.function_name.as_deref().unwrap_or("<unknown>");
+                format!(
+                    "{path_str}:{} — function '{fn_name}' too large ({lines} lines, max {max_lines})",
+                    item.start_line
+                )
+            }
+        };
+        writeln!(writer, "  {description}")?;
+    }
+
     Ok(())
 }
 
@@ -690,7 +742,7 @@ mod tests {
         let file = make_file("src/example.ts", vec![func]);
         let config = default_config();
         let mut buf = Vec::new();
-        render_console(&[file], None, &config, &mut buf).unwrap();
+        render_console(&[file], None, &config, &mut buf, &[]).unwrap();
         let output = String::from_utf8(buf).unwrap();
 
         assert!(
@@ -718,7 +770,7 @@ mod tests {
         let file = make_file("src/big.ts", vec![func]);
         let config = default_config();
         let mut buf = Vec::new();
-        render_console(&[file], None, &config, &mut buf).unwrap();
+        render_console(&[file], None, &config, &mut buf, &[]).unwrap();
         let output = String::from_utf8(buf).unwrap();
 
         // The file section (before the blank line after it) should have exactly one indented line
@@ -747,7 +799,7 @@ mod tests {
         let file = make_file("src/big.ts", vec![func]);
         let config = default_config();
         let mut buf = Vec::new();
-        render_console(&[file], None, &config, &mut buf).unwrap();
+        render_console(&[file], None, &config, &mut buf, &[]).unwrap();
         let output = String::from_utf8(buf).unwrap();
 
         assert!(output.contains("error"), "Should contain error severity");
@@ -766,7 +818,7 @@ mod tests {
         let file = make_file("src/mixed.ts", vec![func]);
         let config = default_config();
         let mut buf = Vec::new();
-        render_console(&[file], None, &config, &mut buf).unwrap();
+        render_console(&[file], None, &config, &mut buf, &[]).unwrap();
         let output = String::from_utf8(buf).unwrap();
 
         // Should show error symbol since cognitive 30 >= error threshold 25
@@ -785,7 +837,7 @@ mod tests {
         let file = make_file("src/test.ts", vec![func1, func2, func3]);
         let config = default_config();
         let mut buf = Vec::new();
-        render_console(&[file], None, &config, &mut buf).unwrap();
+        render_console(&[file], None, &config, &mut buf, &[]).unwrap();
         let output = String::from_utf8(buf).unwrap();
 
         assert!(
@@ -804,7 +856,7 @@ mod tests {
         let mut config = default_config();
         config.verbose = true;
         let mut buf = Vec::new();
-        render_console(&[file], None, &config, &mut buf).unwrap();
+        render_console(&[file], None, &config, &mut buf, &[]).unwrap();
         let output = String::from_utf8(buf).unwrap();
 
         assert!(output.contains("Health:"), "Should show health label");
@@ -827,7 +879,7 @@ mod tests {
         let file = make_file("src/test.ts", vec![func1, func2, func3]);
         let config = default_config();
         let mut buf = Vec::new();
-        render_console(&[file], None, &config, &mut buf).unwrap();
+        render_console(&[file], None, &config, &mut buf, &[]).unwrap();
         let output = String::from_utf8(buf).unwrap();
 
         assert!(
@@ -843,7 +895,7 @@ mod tests {
         let mut config = default_config();
         config.quiet = true;
         let mut buf = Vec::new();
-        render_console(&[file], None, &config, &mut buf).unwrap();
+        render_console(&[file], None, &config, &mut buf, &[]).unwrap();
         let output = String::from_utf8(buf).unwrap();
 
         // Quiet mode suppresses warning-only file sections
@@ -865,7 +917,7 @@ mod tests {
         let mut config = default_config();
         config.verbose = true;
         let mut buf = Vec::new();
-        render_console(&[file], None, &config, &mut buf).unwrap();
+        render_console(&[file], None, &config, &mut buf, &[]).unwrap();
         let output = String::from_utf8(buf).unwrap();
 
         assert!(output.contains("✓"), "Verbose mode should show ok symbol");
@@ -886,7 +938,7 @@ mod tests {
         let file = make_file("src/clean.ts", vec![func]);
         let config = default_config();
         let mut buf = Vec::new();
-        render_console(&[file], None, &config, &mut buf).unwrap();
+        render_console(&[file], None, &config, &mut buf, &[]).unwrap();
         let output = String::from_utf8(buf).unwrap();
 
         // File section header should NOT appear since no violations
@@ -904,7 +956,7 @@ mod tests {
         let file = make_file("src/clean.ts", vec![func]);
         let config = default_config();
         let mut buf = Vec::new();
-        render_console(&[file], None, &config, &mut buf).unwrap();
+        render_console(&[file], None, &config, &mut buf, &[]).unwrap();
         let output = String::from_utf8(buf).unwrap();
 
         assert!(
@@ -919,7 +971,7 @@ mod tests {
         let file = make_file("src/big.ts", vec![func]);
         let config = default_config();
         let mut buf = Vec::new();
-        render_console(&[file], None, &config, &mut buf).unwrap();
+        render_console(&[file], None, &config, &mut buf, &[]).unwrap();
         let output = String::from_utf8(buf).unwrap();
 
         assert!(output.contains("✗"), "Should show error verdict symbol");
@@ -997,7 +1049,7 @@ mod tests {
         let file2 = make_file("src/b.ts", vec![func2]);
         let config = default_config();
         let mut buf = Vec::new();
-        render_console(&[file1, file2], None, &config, &mut buf).unwrap();
+        render_console(&[file1, file2], None, &config, &mut buf, &[]).unwrap();
         let output = String::from_utf8(buf).unwrap();
 
         assert!(

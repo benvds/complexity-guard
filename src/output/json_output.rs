@@ -1,6 +1,6 @@
 use crate::cli::ResolvedConfig;
 use crate::output::console::{function_violations, Severity};
-use crate::types::{DuplicationResult, FileAnalysisResult};
+use crate::types::{DuplicationResult, FileAnalysisResult, SkipReason, SkippedItem};
 
 /// Duplication thresholds used for computing per-file and project status.
 /// These match the Zig defaults since ResolvedConfig does not currently carry
@@ -11,6 +11,21 @@ const DUP_PROJECT_WARNING: f64 = 3.0;
 const DUP_PROJECT_ERROR: f64 = 5.0;
 
 // --- JSON output structs matching Zig schema exactly ---
+
+/// A skipped file or function entry in JSON output.
+#[derive(serde::Serialize)]
+pub struct JsonSkippedItem {
+    pub path: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub function_name: Option<String>,
+    pub start_line: usize,
+    /// Human-readable: "file_too_large" or "function_too_large"
+    pub reason: String,
+    /// Actual line count of the skipped item
+    pub lines: usize,
+    /// Configured maximum line count threshold
+    pub max_lines: usize,
+}
 
 /// Top-level JSON output matching the Zig JsonOutput struct.
 ///
@@ -23,6 +38,8 @@ pub struct JsonOutput {
     pub files: Vec<JsonFileOutput>,
     pub metadata: JsonMetadata,
     pub duplication: Option<JsonDuplicationOutput>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub skipped: Option<Vec<JsonSkippedItem>>,
 }
 
 /// Summary statistics for the entire run.
@@ -35,6 +52,7 @@ pub struct JsonSummary {
     /// "pass", "warning", or "error"
     pub status: String,
     pub health_score: f64,
+    pub skipped_count: usize,
 }
 
 /// Per-file output matching the Zig JsonFileOutput struct.
@@ -128,11 +146,13 @@ fn duplication_status(pct: f64, warning: f64, error: f64) -> String {
 ///
 /// Sets `timestamp` to current Unix epoch seconds and `version` from CARGO_PKG_VERSION.
 /// The `duplication` field is `null` when `duplication` is None.
+/// The `skipped` field is omitted when the list is empty.
 pub fn render_json(
     files: &[FileAnalysisResult],
     duplication: Option<&DuplicationResult>,
     config: &ResolvedConfig,
     elapsed_ms: u64,
+    skipped: &[SkippedItem],
 ) -> anyhow::Result<String> {
     let mut total_warnings: u32 = 0;
     let mut total_errors: u32 = 0;
@@ -296,6 +316,35 @@ pub fn render_json(
         }
     });
 
+    // Build skipped items list for JSON output
+    let json_skipped: Option<Vec<JsonSkippedItem>> = if skipped.is_empty() {
+        None
+    } else {
+        Some(
+            skipped
+                .iter()
+                .map(|item| {
+                    let (reason, lines, max_lines) = match &item.reason {
+                        SkipReason::FileTooLarge { lines, max_lines } => {
+                            ("file_too_large".to_string(), *lines, *max_lines)
+                        }
+                        SkipReason::FunctionTooLarge { lines, max_lines } => {
+                            ("function_too_large".to_string(), *lines as usize, *max_lines as usize)
+                        }
+                    };
+                    JsonSkippedItem {
+                        path: item.path.to_string_lossy().to_string(),
+                        function_name: item.function_name.clone(),
+                        start_line: item.start_line,
+                        reason,
+                        lines,
+                        max_lines,
+                    }
+                })
+                .collect(),
+        )
+    };
+
     let output = JsonOutput {
         version: env!("CARGO_PKG_VERSION").to_string(),
         timestamp,
@@ -306,6 +355,7 @@ pub fn render_json(
             errors: total_errors,
             status: summary_status,
             health_score: avg_health,
+            skipped_count: skipped.len(),
         },
         files: json_files,
         metadata: JsonMetadata {
@@ -313,6 +363,7 @@ pub fn render_json(
             thread_count: config.threads,
         },
         duplication: json_duplication,
+        skipped: json_skipped,
     };
 
     Ok(serde_json::to_string_pretty(&output)?)
@@ -373,7 +424,7 @@ mod tests {
         let func = make_func("myFunc", 10, 3, 2, 88.0);
         let file = make_file("src/foo.ts", vec![func]);
         let config = default_config();
-        let json_str = render_json(&[file], None, &config, 45).unwrap();
+        let json_str = render_json(&[file], None, &config, 45, &[]).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&json_str).unwrap();
 
         // Top-level fields
@@ -433,7 +484,7 @@ mod tests {
         let func = make_func("simpleFunc", 5, 3, 2, 95.0);
         let file = make_file("src/clean.ts", vec![func]);
         let config = default_config();
-        let json_str = render_json(&[file], None, &config, 10).unwrap();
+        let json_str = render_json(&[file], None, &config, 10, &[]).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&json_str).unwrap();
 
         let func_status = parsed["files"][0]["functions"][0]["status"]
@@ -457,7 +508,7 @@ mod tests {
         let func = make_func("warnFunc", 10, 12, 5, 72.0);
         let file = make_file("src/warn.ts", vec![func]);
         let config = default_config();
-        let json_str = render_json(&[file], None, &config, 10).unwrap();
+        let json_str = render_json(&[file], None, &config, 10, &[]).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&json_str).unwrap();
 
         let func_status = parsed["files"][0]["functions"][0]["status"]
@@ -475,7 +526,7 @@ mod tests {
         let func = make_func("errFunc", 25, 25, 5, 40.0);
         let file = make_file("src/error.ts", vec![func]);
         let config = default_config();
-        let json_str = render_json(&[file], None, &config, 10).unwrap();
+        let json_str = render_json(&[file], None, &config, 10, &[]).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&json_str).unwrap();
 
         let func_status = parsed["files"][0]["functions"][0]["status"]
@@ -494,7 +545,7 @@ mod tests {
         let func_err = make_func("bad", 20, 25, 5, 40.0);
         let file = make_file("src/mixed.ts", vec![func_ok, func_err]);
         let config = default_config();
-        let json_str = render_json(&[file], None, &config, 10).unwrap();
+        let json_str = render_json(&[file], None, &config, 10, &[]).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&json_str).unwrap();
 
         assert_eq!(parsed["summary"]["status"].as_str().unwrap(), "error");
@@ -507,7 +558,7 @@ mod tests {
         let func = make_func("f", 1, 2, 1, 90.0);
         let file = make_file("src/a.ts", vec![func]);
         let config = default_config();
-        let json_str = render_json(&[file], None, &config, 5).unwrap();
+        let json_str = render_json(&[file], None, &config, 5, &[]).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&json_str).unwrap();
 
         assert!(
@@ -528,7 +579,7 @@ mod tests {
             cloned_tokens: 150,
             duplication_percentage: 15.0,
         };
-        let json_str = render_json(&[file], Some(&dup), &config, 5).unwrap();
+        let json_str = render_json(&[file], Some(&dup), &config, 5, &[]).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&json_str).unwrap();
 
         // Verify Zig schema fields are present
@@ -596,7 +647,7 @@ mod tests {
             cloned_tokens: 25,
             duplication_percentage: 50.0,
         };
-        let json_str = render_json(&[file], Some(&dup), &config, 5).unwrap();
+        let json_str = render_json(&[file], Some(&dup), &config, 5, &[]).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&json_str).unwrap();
         let dup_obj = &parsed["duplication"];
 
@@ -672,7 +723,7 @@ mod tests {
         let func = make_func("f", 1, 2, 1, 90.0);
         let file = make_file("src/a.ts", vec![func]);
         let config = default_config();
-        let json_str = render_json(&[file], None, &config, 5).unwrap();
+        let json_str = render_json(&[file], None, &config, 5, &[]).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&json_str).unwrap();
 
         let ts = parsed["timestamp"].as_u64().unwrap();
@@ -690,7 +741,7 @@ mod tests {
         let func = make_func("f", 1, 2, 1, 90.0);
         let file = make_file("src/a.ts", vec![func]);
         let config = default_config();
-        let json_str = render_json(&[file], None, &config, 5).unwrap();
+        let json_str = render_json(&[file], None, &config, 5, &[]).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&json_str).unwrap();
 
         assert_eq!(
@@ -705,7 +756,7 @@ mod tests {
         let func = make_func("f", 1, 2, 1, 90.0);
         let file = make_file("src/a.ts", vec![func]);
         let config = default_config();
-        let json_str = render_json(&[file], None, &config, 123).unwrap();
+        let json_str = render_json(&[file], None, &config, 123, &[]).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&json_str).unwrap();
 
         assert_eq!(parsed["metadata"]["elapsed_ms"].as_u64().unwrap(), 123);
@@ -716,7 +767,7 @@ mod tests {
         let func = make_func("myFunc", 10, 3, 2, 88.0);
         let file = make_file("src/foo.ts", vec![func]);
         let config = default_config();
-        let json_str = render_json(&[file], None, &config, 45).unwrap();
+        let json_str = render_json(&[file], None, &config, 45, &[]).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&json_str).unwrap();
 
         let func_obj = &parsed["files"][0]["functions"][0];
@@ -734,7 +785,7 @@ mod tests {
         let func = make_func("f", 1, 2, 1, 90.0);
         let file = make_file("src/foo.ts", vec![func]);
         let config = default_config();
-        let json_str = render_json(&[file], None, &config, 10).unwrap();
+        let json_str = render_json(&[file], None, &config, 10, &[]).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&json_str).unwrap();
 
         let file_obj = &parsed["files"][0];

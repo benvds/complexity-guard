@@ -326,6 +326,35 @@ pub struct AnalysisConfig {
     pub duplication: DuplicationConfig,
 }
 
+// --- Size guard types ---
+
+/// Maximum file line count before the file is skipped entirely.
+pub const MAX_FILE_LINES: usize = 10_000;
+/// Maximum function line count before the function is skipped.
+pub const MAX_FUNCTION_LINES: u32 = 5_000;
+
+/// Reason a file or function was skipped during analysis.
+#[derive(Debug, Clone, serde::Serialize)]
+pub enum SkipReason {
+    /// File exceeded the maximum line count threshold.
+    FileTooLarge { lines: usize, max_lines: usize },
+    /// Function exceeded the maximum line count threshold.
+    FunctionTooLarge { lines: u32, max_lines: u32 },
+}
+
+/// A file or function that was skipped during analysis.
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct SkippedItem {
+    /// File path (always present).
+    pub path: PathBuf,
+    /// Function name (None for file-level skips).
+    pub function_name: Option<String>,
+    /// Line number where the skipped item starts (1-indexed; 0 for file-level).
+    pub start_line: usize,
+    /// Why the item was skipped.
+    pub reason: SkipReason,
+}
+
 // TESTS
 
 #[cfg(test)]

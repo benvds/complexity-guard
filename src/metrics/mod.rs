@@ -7,7 +7,10 @@ pub mod structural;
 
 use std::path::Path;
 
-use crate::types::{AnalysisConfig, FileAnalysisResult, FunctionAnalysisResult, ParseError};
+use crate::types::{
+    AnalysisConfig, FileAnalysisResult, FunctionAnalysisResult, ParseError, SkipReason,
+    SkippedItem, MAX_FUNCTION_LINES,
+};
 
 /// Function node types recognized by tree-sitter for TypeScript/JavaScript.
 ///
@@ -66,10 +69,13 @@ pub fn extract_function_name<'a>(node: &tree_sitter::Node<'a>, source: &'a [u8])
 /// Runs all metric analyzers on the same parsed tree in a single pass,
 /// merges per-function results, computes health scores, and embeds
 /// the token sequence for subsequent duplication detection.
+///
+/// Functions exceeding `MAX_FUNCTION_LINES` are excluded from the result and
+/// returned in the `Vec<SkippedItem>` alongside the analysis result.
 pub fn analyze_file(
     path: &Path,
     config: &AnalysisConfig,
-) -> Result<FileAnalysisResult, ParseError> {
+) -> Result<(FileAnalysisResult, Vec<SkippedItem>), ParseError> {
     let language = crate::parser::select_language(path)?;
     let source = std::fs::read(path)?;
 
@@ -114,15 +120,30 @@ pub fn analyze_file(
         "structural and cyclomatic function counts must match"
     );
 
-    // Merge per-function results and compute health scores
+    // Merge per-function results and compute health scores, skipping oversized functions
     let mut functions = Vec::with_capacity(func_count);
     let mut function_scores = Vec::with_capacity(func_count);
+    let mut skipped_functions: Vec<SkippedItem> = Vec::new();
 
     for i in 0..func_count {
         let cycl = &cyclomatic_results[i];
         let cogn = &cognitive_results[i];
         let hal = &halstead_results[i];
         let struc = &structural_results[i];
+
+        // Skip functions that exceed the line count limit
+        if struc.function_length > MAX_FUNCTION_LINES {
+            skipped_functions.push(SkippedItem {
+                path: path.to_path_buf(),
+                function_name: Some(cycl.name.clone()),
+                start_line: cycl.start_line,
+                reason: SkipReason::FunctionTooLarge {
+                    lines: struc.function_length,
+                    max_lines: MAX_FUNCTION_LINES,
+                },
+            });
+            continue;
+        }
 
         let health_score = scoring::compute_function_score(
             cycl.complexity,
@@ -158,15 +179,18 @@ pub fn analyze_file(
 
     let file_score = scoring::compute_file_score(&function_scores);
 
-    Ok(FileAnalysisResult {
-        path: path.to_path_buf(),
-        functions,
-        tokens,
-        file_score,
-        file_length: file_structural.file_length,
-        export_count: file_structural.export_count,
-        error: has_error,
-    })
+    Ok((
+        FileAnalysisResult {
+            path: path.to_path_buf(),
+            functions,
+            tokens,
+            file_score,
+            file_length: file_structural.file_length,
+            export_count: file_structural.export_count,
+            error: has_error,
+        },
+        skipped_functions,
+    ))
 }
 
 // TESTS
@@ -226,7 +250,7 @@ mod tests {
         let fixture_path =
             Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/naming-edge-cases.ts");
         let config = AnalysisConfig::default();
-        let result = analyze_file(&fixture_path, &config).unwrap();
+        let (result, _skipped) = analyze_file(&fixture_path, &config).unwrap();
 
         let names: Vec<&str> = result.functions.iter().map(|f| f.name.as_str()).collect();
 
@@ -308,7 +332,7 @@ mod tests {
         let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("tests/fixtures/typescript/simple_function.ts");
         let config = AnalysisConfig::default();
-        let result = analyze_file(&fixture_path, &config).unwrap();
+        let (result, _skipped) = analyze_file(&fixture_path, &config).unwrap();
 
         // simple_function.ts has 1 function: greet
         assert_eq!(result.functions.len(), 1);
@@ -348,7 +372,7 @@ mod tests {
         let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("tests/fixtures/typescript/cyclomatic_cases.ts");
         let config = AnalysisConfig::default();
-        let result = analyze_file(&fixture_path, &config).unwrap();
+        let (result, _skipped) = analyze_file(&fixture_path, &config).unwrap();
 
         // Verify cyclomatic values match fixture expectations
         let find = |name: &str| result.functions.iter().find(|f| f.name == name);
@@ -378,7 +402,7 @@ mod tests {
         let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("tests/fixtures/typescript/cognitive_cases.ts");
         let config = AnalysisConfig::default();
-        let result = analyze_file(&fixture_path, &config).unwrap();
+        let (result, _skipped) = analyze_file(&fixture_path, &config).unwrap();
 
         let find = |name: &str| result.functions.iter().find(|f| f.name == name);
 
@@ -405,7 +429,7 @@ mod tests {
         let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("tests/fixtures/typescript/halstead_cases.ts");
         let config = AnalysisConfig::default();
-        let result = analyze_file(&fixture_path, &config).unwrap();
+        let (result, _skipped) = analyze_file(&fixture_path, &config).unwrap();
 
         let find = |name: &str| result.functions.iter().find(|f| f.name == name);
 
@@ -431,7 +455,7 @@ mod tests {
         let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("tests/fixtures/typescript/structural_cases.ts");
         let config = AnalysisConfig::default();
-        let result = analyze_file(&fixture_path, &config).unwrap();
+        let (result, _skipped) = analyze_file(&fixture_path, &config).unwrap();
 
         let find = |name: &str| result.functions.iter().find(|f| f.name == name);
 
@@ -457,7 +481,7 @@ mod tests {
         let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("tests/fixtures/typescript/simple_function.ts");
         let config = AnalysisConfig::default();
-        let result = analyze_file(&fixture_path, &config).unwrap();
+        let (result, _skipped) = analyze_file(&fixture_path, &config).unwrap();
 
         assert!(
             !result.tokens.is_empty(),
@@ -470,7 +494,7 @@ mod tests {
         let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("tests/fixtures/typescript/simple_function.ts");
         let config = AnalysisConfig::default();
-        let result = analyze_file(&fixture_path, &config).unwrap();
+        let (result, _skipped) = analyze_file(&fixture_path, &config).unwrap();
 
         assert!(
             result.file_score >= 0.0 && result.file_score <= 100.0,
