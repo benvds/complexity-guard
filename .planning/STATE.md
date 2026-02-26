@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 Phase: 22 of 22 (Cross-Compilation, CI, and Release) — COMPLETE
 Plan: 3 of 3 in phase 22 — plan 03 complete
 Status: Phase 22-03 COMPLETE — documentation updates for Rust binary (README, docs, releasing, publication READMEs)
-Last activity: 2026-02-25 - Completed quick task 24: restore benchmarks/ directory from main with Rust build commands
+Last activity: 2026-02-26 - Completed quick task 25: create a Claude Code skill for complexity guard
 
 Progress: [█████████░] 75% (v0.8 milestone)
 
@@ -132,4 +132,4 @@ Resume with: Claude Code skill available at .claude/skills/complexity-guard/SKIL
 
 ---
 *State initialized: 2026-02-14*
-*Last updated: 2026-02-25 after quick task 24 completion (benchmarks/ restored with Rust build commands, historical baselines preserved)*
+*Last updated: 2026-02-26 after quick task 25 completion (Claude Code skill for complexity-guard CLI)*
