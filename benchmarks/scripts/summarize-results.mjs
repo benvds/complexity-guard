@@ -267,7 +267,7 @@ function main() {
   // Discover hyperfine result files
   const allFiles = fs.readdirSync(resultsDir).map(f => path.join(resultsDir, f));
   const suiteFiles = allFiles.filter(f =>
-    f.endsWith('-quick.json') || f.endsWith('-full.json') || f.endsWith('-stress.json')
+    f.endsWith('-quick.json') || f.endsWith('-normal.json') || f.endsWith('-full.json') || f.endsWith('-stress.json')
   ).sort();
 
   const benchmarkResults = [];
