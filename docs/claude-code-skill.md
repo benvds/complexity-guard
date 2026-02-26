@@ -4,7 +4,7 @@ ComplexityGuard ships with a Claude Code skill that lets AI coding agents discov
 
 ## What it is
 
-A Claude Code skill is a compact reference file (`.claude/skills/<name>/SKILL.md`) that Claude Code reads on demand. When you use Claude Code in a project with the skill installed, Claude can answer questions about ComplexityGuard's CLI interface, flags, configuration options, and common recipes without you pasting documentation manually.
+A Claude Code skill is a compact reference file (`skills/<name>/SKILL.md`) that Claude Code reads on demand. When you use Claude Code in a project with the skill installed, Claude can answer questions about ComplexityGuard's CLI interface, flags, configuration options, and common recipes without you pasting documentation manually.
 
 ## Why it matters
 
@@ -12,21 +12,21 @@ CLI tools face context bloat when agents need to understand their full capabilit
 
 ## Installation
 
-Copy the `.claude/skills/complexity-guard/` directory into your project's `.claude/skills/` directory:
+Copy the `skills/complexity-guard/` directory into your project's `.claude/skills/` directory:
 
 ```sh
 # From inside the complexity-guard repo
-cp -r .claude/skills/complexity-guard/ /path/to/your-project/.claude/skills/
+cp -r skills/complexity-guard/ /path/to/your-project/.claude/skills/
 
 # Or if complexity-guard is already installed globally via npm,
 # find the skill in the package directory and copy it
 ```
 
-The skill is located at `.claude/skills/complexity-guard/SKILL.md` in the ComplexityGuard repository.
+The skill is located at `skills/complexity-guard/SKILL.md` in the ComplexityGuard repository.
 
 ## How it works
 
-When Claude Code detects a `.claude/skills/` directory in your project, it lists available skills and can read any of them on demand. The complexity-guard skill tells Claude:
+When Claude Code detects a `skills/` directory in your project, it lists available skills and can read any of them on demand. The complexity-guard skill tells Claude:
 
 - All CLI flags and what they do
 - Output formats (console, json, sarif, html)
@@ -51,7 +51,7 @@ Claude will reference the skill to answer accurately without you needing to prov
 
 ## Skill location
 
-The skill file is at: `.claude/skills/complexity-guard/SKILL.md`
+The skill file is at: `skills/complexity-guard/SKILL.md`
 
 It covers the complete CLI interface in under 400 lines — designed to fit in context without bloat.
 

@@ -5,7 +5,7 @@ type: execute
 wave: 1
 depends_on: []
 files_modified:
-  - .claude/skills/complexity-guard/SKILL.md
+  - skills/complexity-guard/SKILL.md
   - docs/claude-code-skill.md
   - README.md
   - publication/npm/README.md
@@ -19,12 +19,12 @@ requirements: [QUICK-25]
 
 must_haves:
   truths:
-    - "Claude Code can discover the complexity-guard skill from .claude/skills/"
+    - "Claude Code can discover the complexity-guard skill from skills/"
     - "The skill SKILL.md contains all CLI commands, flags, config options, output formats, and exit codes"
     - "A documentation page explains how to install and use the skill"
     - "README.md links to the skill documentation"
   artifacts:
-    - path: ".claude/skills/complexity-guard/SKILL.md"
+    - path: "skills/complexity-guard/SKILL.md"
       provides: "Claude Code skill definition for complexity-guard CLI"
       contains: "name: complexity-guard"
     - path: "docs/claude-code-skill.md"
@@ -39,16 +39,16 @@ must_haves:
       via: "markdown link in Documentation section"
       pattern: "claude-code-skill"
     - from: "docs/claude-code-skill.md"
-      to: ".claude/skills/complexity-guard/SKILL.md"
+      to: "skills/complexity-guard/SKILL.md"
       via: "references skill location"
-      pattern: "\\.claude/skills/complexity-guard"
+      pattern: "\\skills/complexity-guard"
 ---
 
 <objective>
 Create a Claude Code skill for the ComplexityGuard CLI tool so coding agents can discover and use it without context bloat.
 
 Purpose: CLI tools benefit from skills because agents need to understand capabilities without loading full documentation into context. The skill lets Claude Code query on-demand.
-Output: SKILL.md in .claude/skills/complexity-guard/, a docs page explaining usage, README updates.
+Output: SKILL.md in skills/complexity-guard/, a docs page explaining usage, README updates.
 </objective>
 
 <execution_context>
@@ -67,9 +67,9 @@ Output: SKILL.md in .claude/skills/complexity-guard/, a docs page explaining usa
 
 <task type="auto">
   <name>Task 1: Create the Claude Code skill SKILL.md</name>
-  <files>.claude/skills/complexity-guard/SKILL.md</files>
+  <files>skills/complexity-guard/SKILL.md</files>
   <action>
-Create `.claude/skills/complexity-guard/SKILL.md` following the Claude Code skill format.
+Create `skills/complexity-guard/SKILL.md` following the Claude Code skill format.
 
 YAML frontmatter:
 ```yaml
@@ -131,10 +131,10 @@ Do NOT include `allowed-tools` since complexity-guard is a standard CLI binary, 
   <verify>
 Test the file exists, has valid YAML frontmatter, and is under 500 lines:
 ```
-test -f .claude/skills/complexity-guard/SKILL.md && head -5 .claude/skills/complexity-guard/SKILL.md | grep -q "name: complexity-guard" && wc -l < .claude/skills/complexity-guard/SKILL.md
+test -f skills/complexity-guard/SKILL.md && head -5 skills/complexity-guard/SKILL.md | grep -q "name: complexity-guard" && wc -l < skills/complexity-guard/SKILL.md
 ```
   </verify>
-  <done>SKILL.md exists at .claude/skills/complexity-guard/SKILL.md with valid frontmatter (name, description) and comprehensive CLI reference under 500 lines.</done>
+  <done>SKILL.md exists at skills/complexity-guard/SKILL.md with valid frontmatter (name, description) and comprehensive CLI reference under 500 lines.</done>
 </task>
 
 <task type="auto">
@@ -157,10 +157,10 @@ Title: "Claude Code Skill"
 Explain:
 - What it is: A Claude Code skill that lets coding agents discover and use ComplexityGuard without loading full docs into context
 - Why it matters: CLI tools face context bloat when agents need to understand capabilities; skills enable on-demand discovery
-- How to install: Copy `.claude/skills/complexity-guard/` into your project's `.claude/skills/` directory, or if complexity-guard is already a dependency/installed, the skill is available at the repo level
+- How to install: Copy `skills/complexity-guard/` into your project's `skills/` directory, or if complexity-guard is already a dependency/installed, the skill is available at the repo level
 - How it works: When you use Claude Code in a project with the skill installed, Claude can reference ComplexityGuard's CLI interface, flags, config options, and common recipes without you pasting docs
 - Example interactions: "Analyze the complexity of src/", "Set up a health score baseline", "Add complexity checks to my CI pipeline", "Find the most complex functions in JSON format"
-- Link to the SKILL.md location: `.claude/skills/complexity-guard/SKILL.md`
+- Link to the SKILL.md location: `skills/complexity-guard/SKILL.md`
 - Link back to CLI Reference for full details
 
 Keep concise — under 80 lines.
@@ -196,12 +196,12 @@ test -f docs/claude-code-skill.md && grep -q "claude-code-skill" README.md && gr
 </tasks>
 
 <verification>
-- `.claude/skills/complexity-guard/SKILL.md` exists with valid YAML frontmatter
+- `skills/complexity-guard/SKILL.md` exists with valid YAML frontmatter
 - SKILL.md is under 500 lines and covers all CLI flags, config schema, exit codes, and common recipes
 - `docs/claude-code-skill.md` exists with clear install/usage instructions
 - `README.md` Documentation section includes Claude Code Skill link
 - Publication READMEs include matching link
-- `grep -r "complexity-guard" .claude/skills/` returns the SKILL.md
+- `grep -r "complexity-guard" skills/` returns the SKILL.md
 </verification>
 
 <success_criteria>

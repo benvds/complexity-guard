@@ -115,7 +115,7 @@ Recent decisions affecting v0.8:
 
 Last session: 2026-02-26 (quick task 25)
 Stopped at: Completed quick task 25 — Claude Code skill for complexity-guard CLI
-Resume with: Claude Code skill available at .claude/skills/complexity-guard/SKILL.md
+Resume with: Claude Code skill available at skills/complexity-guard/SKILL.md
 
 **Remaining phases to execute:**
 - Phase 19: CLI, Config, Output Formats — COMPLETE (4/4)

@@ -12,7 +12,7 @@ tech_stack:
   patterns: [claude-code-skill-format]
 key_files:
   created:
-    - .claude/skills/complexity-guard/SKILL.md
+    - skills/complexity-guard/SKILL.md
     - docs/claude-code-skill.md
   modified:
     - README.md
@@ -27,7 +27,7 @@ metrics:
 
 # Quick Task 25: Create a Claude Code Skill for ComplexityGuard Summary
 
-**One-liner:** Claude Code skill at `.claude/skills/complexity-guard/SKILL.md` with full CLI reference, config schema, jq recipes, and metric descriptions in 305 lines.
+**One-liner:** Claude Code skill at `skills/complexity-guard/SKILL.md` with full CLI reference, config schema, jq recipes, and metric descriptions in 305 lines.
 
 ## What Was Built
 
@@ -37,7 +37,7 @@ A Claude Code skill that lets AI agents discover and use ComplexityGuard without
 
 | Artifact | Description |
 |----------|-------------|
-| `.claude/skills/complexity-guard/SKILL.md` | Claude Code skill definition — complete CLI reference |
+| `skills/complexity-guard/SKILL.md` | Claude Code skill definition — complete CLI reference |
 | `docs/claude-code-skill.md` | User-facing documentation on what the skill is and how to install it |
 | `README.md` | Added Claude Code Skill link to Documentation section |
 | `publication/npm/README.md` | Added Claude Code Skill link to Links section |
@@ -46,7 +46,7 @@ A Claude Code skill that lets AI agents discover and use ComplexityGuard without
 
 | Task | Description | Commit |
 |------|-------------|--------|
-| 1 | Create `.claude/skills/complexity-guard/SKILL.md` | 01c4302 |
+| 1 | Create `skills/complexity-guard/SKILL.md` | 01c4302 |
 | 2 | Create `docs/claude-code-skill.md` and update READMEs | 0855eac |
 
 ## Deviations from Plan
@@ -56,7 +56,7 @@ None — plan executed exactly as written. Publication package READMEs (darwin-a
 ## Self-Check: PASSED
 
 Files verified:
-- `.claude/skills/complexity-guard/SKILL.md` — exists, 305 lines, valid YAML frontmatter with `name: complexity-guard`
+- `skills/complexity-guard/SKILL.md` — exists, 305 lines, valid YAML frontmatter with `name: complexity-guard`
 - `docs/claude-code-skill.md` — exists, contains "Claude Code" and skill location reference
 - `README.md` — contains "claude-code-skill" link in Documentation section
 - `publication/npm/README.md` — contains "claude-code-skill" link
