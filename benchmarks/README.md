@@ -1,19 +1,17 @@
 # ComplexityGuard Benchmarks
 
-Performance and metric accuracy benchmarks comparing ComplexityGuard against
-[FTA](https://ftaproject.dev/) (Fast TypeScript Analyzer) across real-world
-TypeScript and JavaScript projects.
+Performance benchmarks for ComplexityGuard across real-world TypeScript and
+JavaScript projects.
 
 ## Prerequisites
 
-- **Rust stable toolchain** — for building ComplexityGuard (`cargo build --release`)
-- **Node.js / npm** — FTA is auto-installed per benchmark run (no global install needed)
-- **[hyperfine](https://github.com/sharkdp/hyperfine)** — for statistical benchmarking
+- **Rust stable toolchain** -- for building ComplexityGuard (`cargo build --release`)
+- **[hyperfine](https://github.com/sharkdp/hyperfine)** -- for statistical benchmarking
   ```sh
   cargo install hyperfine
   # or on macOS: brew install hyperfine
   ```
-- **jq** — for JSON extraction in shell scripts
+- **jq** -- for JSON extraction in shell scripts
   ```sh
   sudo apt install jq   # Linux
   brew install jq       # macOS
@@ -21,17 +19,14 @@ TypeScript and JavaScript projects.
 
 ## Quick Start
 
-Run the complete quick-suite benchmark in three commands:
+Run the complete quick-suite benchmark in two commands:
 
 ```sh
-# 1. Clone benchmark projects (10 projects, quick suite)
+# 1. Clone benchmark projects (quick suite)
 bash benchmarks/scripts/setup.sh --suite quick
 
-# 2. End-to-end hyperfine speed + memory benchmark (CG vs FTA)
+# 2. End-to-end hyperfine speed + memory benchmark
 bash benchmarks/scripts/bench-quick.sh
-
-# 3. Metric accuracy comparison (how well do CG and FTA agree on rankings?)
-bash benchmarks/scripts/compare-metrics.sh --suite quick
 ```
 
 Then summarize results:
@@ -45,12 +40,11 @@ node benchmarks/scripts/summarize-results.mjs benchmarks/results/baseline-$(date
 | Script | Purpose | Output |
 |--------|---------|--------|
 | `setup.sh [--suite quick\|full\|stress]` | Clone benchmark project repositories with caching | `benchmarks/projects/<name>/` |
-| `bench-quick.sh` | End-to-end hyperfine benchmark, quick suite (10 projects) | `results/*/`*`-quick.json`* |
-| `bench-full.sh` | End-to-end hyperfine benchmark, all 76 projects | `results/*/`*`-full.json`* |
+| `bench-quick.sh` | End-to-end hyperfine benchmark, quick suite | `results/*/`*`-quick.json`* |
+| `bench-full.sh` | End-to-end hyperfine benchmark, all projects | `results/*/`*`-full.json`* |
 | `bench-stress.sh` | Hyperfine benchmark, massive repos (vscode, typescript) | `results/*/`*`-stress.json`* |
-| `compare-metrics.sh [--suite ...]` | Run both tools, compare per-file metrics with tolerance bands | `results/*/metric-accuracy.json` |
-| `compare-metrics.mjs <cg> <fta> <proj>` | Per-project metric comparison (called by compare-metrics.sh) | JSON to stdout |
-| `summarize-results.mjs <results-dir>` | Aggregate hyperfine + accuracy results into markdown tables | Markdown to stdout |
+| `bench-duplication.sh` | Benchmark duplication detection overhead (with/without `--duplication`) | `/tmp/bench-dup-*.json` |
+| `summarize-results.mjs <results-dir>` | Aggregate hyperfine results into markdown tables | Markdown to stdout |
 
 ## Suite Tiers
 
@@ -58,7 +52,7 @@ node benchmarks/scripts/summarize-results.mjs benchmarks/results/baseline-$(date
 |-------|----------|-------------------|-------------|
 | quick | 10 | ~5 min | Representative set: zod, got, dayjs, vite, nestjs, webpack, vscode + 3 |
 | full | 76 | ~60 min | Complete set from `public-projects.json` |
-| stress | 2–3 | ~30 min | Massive repos only: vscode, typescript (tests scale ceiling) |
+| stress | 2-3 | ~30 min | Massive repos only: vscode, typescript (tests scale ceiling) |
 
 The quick suite is the default. It covers the full size range from small
 libraries (got: 68 files) to massive projects (vscode: 5,000+ files).
@@ -69,11 +63,10 @@ libraries (got: 68 files) to massive projects (vscode: 5,000+ files).
 benchmarks/results/
   baseline-2026-02-21/          # Timestamped baseline directory
     system-info.json              # Hardware specs captured during benchmark run
-    zod-quick.json              # hyperfine JSON: CG vs FTA timings for zod
-    got-quick.json              # hyperfine JSON: CG vs FTA timings for got
+    zod-quick.json              # hyperfine JSON: CG timings for zod
+    got-quick.json              # hyperfine JSON: CG timings for got
     ...
-    vscode-quick.json           # hyperfine JSON: CG vs FTA timings for vscode
-    metric-accuracy.json        # CG vs FTA metric comparison across all projects
+    vscode-quick.json           # hyperfine JSON: CG timings for vscode
 ```
 
 ### Hyperfine JSON Schema
@@ -91,53 +84,12 @@ Each `*-quick.json` / `*-full.json` / `*-stress.json` file follows the
       "median": 0.290,
       "times": [...],
       "memory_usage_byte": [...]
-    },
-    {
-      "command": "<fta command>",
-      "mean": 0.150,
-      "stddev": 0.003,
-      ...
     }
   ]
 }
 ```
 
-`results[0]` is always CG; `results[1]` is always FTA.
-
-### Metric Accuracy JSON Schema (`metric-accuracy.json`)
-
-```json
-[
-  {
-    "project": "zod",
-    "files_compared": 169,
-    "files_cg_only": 3,
-    "files_fta_only": 0,
-    "cyclomatic": {
-      "within_tolerance_pct": 17.2,
-      "mean_diff_pct": 57.3,
-      "ranking_correlation": 0.719
-    },
-    "halstead_volume": {
-      "within_tolerance_pct": 4.1,
-      "mean_diff_pct": 70.2,
-      "ranking_correlation": 0.901
-    },
-    "line_count": {
-      "within_tolerance_pct": 94.1,
-      "mean_diff_pct": 7.8,
-      "ranking_correlation": 0.930
-    },
-    "methodology": {
-      "cg_aggregation": "sum of per-function values",
-      "fta_granularity": "file-level",
-      "cyclomatic_tolerance": 25.0,
-      "halstead_tolerance": 30.0,
-      "note": "FTA uses SWC parser; CG uses tree-sitter. Different tokenization causes expected divergence."
-    }
-  }
-]
-```
+`results[0]` is the ComplexityGuard benchmark.
 
 ### System Info JSON Schema (`system-info.json`)
 
@@ -168,44 +120,20 @@ writes `system-info.json` (subsequent scripts skip if the file already exists).
 
 ## Interpreting Results
 
-### Speed (Speedup Ratio)
+### Speed
 
-`summarize-results.mjs` reports speedup as `CG time / FTA time`:
+`summarize-results.mjs` reports wall-clock analysis time in milliseconds for
+ComplexityGuard across each benchmark project. Times are the mean of multiple
+hyperfine runs with standard deviation.
 
-- **> 1.0**: FTA is faster than CG (e.g., 1.4x = FTA takes 71% of CG's time)
-- **< 1.0**: CG is faster than FTA
-- **= 1.0**: Equal performance
+**Parallel analysis (default):** CG uses rayon for parallel file processing.
+Pass `--threads 1` for single-threaded baseline comparison.
 
-**CG with parallel analysis:** CG uses rayon for parallel file processing (the default). It is 1.5-3.1x faster than FTA across the quick suite. Pass --threads 1 for single-threaded baseline comparison.
+### Memory
 
-### Memory (Memory Ratio)
-
-Memory ratio = `FTA RSS / CG RSS`. FTA requires a Node.js runtime (V8 overhead) and
-SWC compiled via WebAssembly. CG has no runtime — it's a native Rust binary.
-
-- Smaller projects: FTA uses ~2x more memory (V8 baseline cost)
-- Large projects: memory converges (file content dominates V8 overhead)
-
-### Metric Accuracy (Ranking Correlation)
-
-CG operates at **function level** and aggregates to file level for comparison.
-FTA operates at **file level** natively.
-
-**Ranking correlation** (Spearman's rho): how well do CG and FTA agree on which
-files are most complex? This matters for code review prioritization:
-
-- **0.8–1.0**: Strong agreement — teams using either tool will focus on the same files
-- **0.5–0.8**: Moderate agreement — same general direction but different specifics
-- **< 0.5**: Weak agreement — tools have fundamentally different complexity models
-
-**Within-tolerance percentage**: what fraction of files have CG and FTA values
-within the tolerance band (25% for cyclomatic, 30% for halstead, 20% for line count)?
-
-**Why values diverge:**
-- CG uses tree-sitter; FTA uses SWC — different parsers produce different token counts
-- CG's cyclomatic: sum of per-function values; FTA's cyclo: file-level single pass
-- Halstead in particular diverges because SWC and tree-sitter classify operator/operand
-  tokens differently (e.g., type annotations, template literals)
+Peak RSS memory usage for ComplexityGuard in MB. CG is a native Rust binary with
+no runtime dependencies -- memory usage scales with the number and size of files
+being analyzed.
 
 ## Adding New Benchmark Runs
 
@@ -216,7 +144,6 @@ a new timestamped directory:
 # After performance-affecting changes are merged:
 bash benchmarks/scripts/setup.sh --suite quick
 bash benchmarks/scripts/bench-quick.sh
-bash benchmarks/scripts/compare-metrics.sh --suite quick
 node benchmarks/scripts/summarize-results.mjs benchmarks/results/baseline-$(date +%Y-%m-%d)/
 ```
 
@@ -240,6 +167,6 @@ range of real-world TypeScript/JavaScript codebases:
 
 | Size tier | Example projects | Files |
 |-----------|-----------------|-------|
-| Small | got, dayjs | 68–283 |
-| Medium | zod, vite, nestjs | 169–1,624 |
+| Small | got, dayjs | 68-283 |
+| Medium | zod, vite, nestjs | 169-1,624 |
 | Large | webpack, vscode | 5,000+ |

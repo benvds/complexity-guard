@@ -1,37 +1,35 @@
 # Performance Benchmarks
 
 ComplexityGuard is a native Rust binary with no runtime dependencies. This page documents its
-performance characteristics measured against [FTA](https://ftaproject.dev/) (Fast TypeScript
-Analyzer), a Node.js-based alternative tool, across real-world TypeScript and JavaScript projects.
+performance characteristics measured across real-world TypeScript and JavaScript projects.
 
-The short version: CG is 1.5–3.1x faster than FTA with parallel analysis enabled (the default).
-CG uses 1.2–2.2x less memory than FTA because FTA requires a Node.js/V8 runtime.
+The short version: CG analyzes even the largest TypeScript codebases in seconds with parallel
+analysis across all CPU cores.
 
 ## Key Findings
 
 ### Speed
 
-CG is faster than FTA on all quick-suite projects with parallel analysis (the default):
+CG analysis times across quick-suite projects with parallel analysis (the default):
 
-| Project | CG (ms) | FTA (ms) | Speedup | Project Size |
-|---------|---------|---------|---------|-------------|
-| got | 37 ± 4 | 106 ± 4 | 2.9x CG | 68 files |
-| dayjs | 56 ± 2 | 139 ± 2 | 2.5x CG | 283 files |
-| zod | 82 ± 3 | 154 ± 2 | 1.9x CG | 169 files |
-| vite | 131 ± 4 | 411 ± 8 | 3.1x CG | 1,182 files |
-| nestjs | 145 ± 3 | 424 ± 7 | 2.9x CG | 1,653 files |
-| webpack | 678 ± 49 | 1,320 ± 13 | 1.9x CG | 6,889 files |
-| vscode | 3,394 ± 124 | 5,218 ± 96 | 1.5x CG | 5,071 files |
+| Project | CG (ms) | Project Size |
+|---------|---------|-------------|
+| got | 37 +/- 4 | 68 files |
+| dayjs | 56 +/- 2 | 283 files |
+| zod | 82 +/- 3 | 169 files |
+| vite | 131 +/- 4 | 1,182 files |
+| nestjs | 145 +/- 3 | 1,653 files |
+| webpack | 678 +/- 49 | 6,889 files |
+| vscode | 3,394 +/- 124 | 5,071 files |
 
-**Mean: CG is 2.4x faster than FTA** across the quick suite.
+**Mean analysis time: 661 ms across the quick suite.**
 
-The advantage is largest on medium-sized projects (vite at 3.1x, nestjs at 2.9x) where CG's
-multi-threaded analysis scales well relative to project size. Even the largest project (vscode,
+Analysis time scales with project size. Even the largest project (vscode,
 5,071 files) analyzes in 3.4 seconds.
 
 ### Parallelization Impact
 
-Parallel analysis delivers 2.6–5.8x speedup over single-threaded mode:
+Parallel analysis delivers 2.6-5.8x speedup over single-threaded mode:
 
 | Project | Single-threaded (ms) | Parallel (ms) | Speedup | Files |
 |---------|---------------------|---------------|---------|-------|
@@ -48,44 +46,22 @@ vscode (5.8x) where CG can saturate all cores with file-level parallelism.
 
 ### Memory
 
-CG uses significantly less memory than FTA for small and medium projects:
+CG memory usage across quick-suite projects:
 
-| Project | CG Mem (MB) | FTA Mem (MB) | Ratio |
-|---------|------------|--------------|-------|
-| got | 21.0 | 46.6 | 2.2x FTA |
-| dayjs | 29.8 | 46.6 | 1.6x FTA |
-| zod | 38.7 | 46.5 | 1.2x FTA |
-| vite | 71.8 | 71.8 | 1.0x |
-| nestjs | 91.1 | 91.1 | 1.0x |
-| webpack | 209.0 | 209.0 | 1.0x |
-| vscode | 1,891.2 | 1,891.2 | 1.0x |
+| Project | CG Mem (MB) |
+|---------|------------|
+| got | 21.0 |
+| dayjs | 29.8 |
+| zod | 38.7 |
+| vite | 71.8 |
+| nestjs | 91.1 |
+| webpack | 209.0 |
+| vscode | 1,891.2 |
 
-**Mean: FTA uses 1.3x more memory than CG.**
+**Mean CG memory: 336 MB across the quick suite.**
 
-Memory advantage is clearest on small projects (2.2x for `got`) where FTA's Node.js/V8 baseline
-overhead (~46 MB) dominates. For large repos, both tools are bounded by the file content they
-must hold in memory, and the advantage shrinks.
-
-### Metric Accuracy
-
-CG and FTA measure similar concepts but with different granularity and parsers. The key metric
-for comparing their utility is **ranking correlation** — do both tools agree on which files are
-most complex?
-
-| Project | Files | Cyclomatic Rank Corr | Halstead Rank Corr | Line Count Agree |
-|---------|-------|---------------------|-------------------|-----------------|
-| got | 68 | 0.560 | 0.890 | 82% |
-| dayjs | 283 | 0.797 | 0.702 | 92% |
-| zod | 169 | 0.719 | 0.901 | 94% |
-| vite | 1,149 | 0.695 | 0.748 | 84% |
-| nestjs | 1,624 | 0.548 | 0.732 | 84% |
-| webpack | 6,555 | 0.544 | 0.550 | 76% |
-| vscode | 5,002 | 0.891 | 0.775 | 74% |
-
-**Ranking correlations are moderate to strong** (0.55–0.90 for cyclomatic, 0.55–0.90 for
-Halstead). This means CG and FTA generally agree on which files are most complex, even though
-absolute values diverge due to parser and aggregation differences. Line count agreement is
-strongest (74–94% within ±20% tolerance).
+Memory usage scales with the number and size of files being analyzed. CG is a native Rust binary
+with no runtime dependencies, so there is no interpreter or VM baseline overhead.
 
 ---
 
@@ -109,14 +85,13 @@ System specs are automatically captured in `system-info.json` alongside benchmar
 | Tool | Version |
 |------|---------|
 | ComplexityGuard | 0.8.0 |
-| FTA (fta-cli) | 3.0.0 |
 | hyperfine | 1.20.0 |
 
 ### Statistical Approach
 
 - **Quick/full suites:** 15 benchmark runs per project, 3 warmup runs (discarded)
 - **Stress suite:** 5 runs per project, 1 warmup run
-- hyperfine reports mean ± standard deviation across runs
+- hyperfine reports mean +/- standard deviation across runs
 - Memory measured as peak RSS per run (from `/proc/<pid>/status`); mean across runs reported
 
 ### Suite Composition
@@ -132,45 +107,29 @@ nestjs), and large (webpack, vscode).
 
 ### Benchmark Commands
 
-Each hyperfine invocation runs both tools back-to-back on the same project directory:
+Each hyperfine invocation benchmarks ComplexityGuard on a project directory:
 
 ```sh
-# CG command (parallel, default — uses all CPU cores)
+# CG command (parallel, default -- uses all CPU cores)
 complexity-guard --format json --fail-on none <project-dir>
 
-# CG command (single-threaded — for baseline comparison)
+# CG command (single-threaded -- for baseline comparison)
 complexity-guard --threads 1 --format json --fail-on none <project-dir>
-
-# FTA command
-fta --json --exclude-under 0 <project-dir>
 ```
 
-Flags chosen for fair comparison:
+Flags chosen for benchmarking:
 - `--fail-on none` (CG): disables threshold-based exit codes so CI violations don't abort hyperfine
 - `--ignore-failure` (hyperfine): CG may still exit 1 for error-level violations; this flag prevents
   hyperfine from treating non-zero exit as measurement failure
-- `--exclude-under 0` (FTA): disables FTA's default minimum-lines-per-file filter so both tools
-  analyze the same file set
-- `--format json` (CG): JSON output mode (vs. console), matching FTA's `--json` output mode
+- `--format json` (CG): JSON output mode (vs. console)
 
 ### Important Caveats
 
 1. **Parallel by default.** CG benchmarks use the default parallel mode (all CPU cores). Pass
    `--threads 1` for single-threaded baseline comparison. Results will vary by core count.
 
-2. **Different granularity.** CG analyzes at function level and provides per-function metrics.
-   FTA analyzes at file level. For comparison, CG's per-function values are summed to file level.
-   This aggregation explains why absolute values diverge even when rankings agree.
-
-3. **Different parsers.** CG uses tree-sitter; FTA uses SWC. Different tokenization rules affect
-   Halstead operator/operand classification, particularly for:
-   - TypeScript type annotations (CG excludes them; FTA may include differently)
-   - Template literals and tagged templates
-   - Optional chaining (`?.`) and nullish coalescing (`??`)
-
-4. **FTA counts cyclomatic differently.** FTA's `cyclo` is a single-pass file-level count, not
-   a sum of per-function cyclomatic values. The aggregation produces similar rankings but
-   different absolute numbers.
+2. **Benchmarks measure wall-clock time** for a full analysis pass (file discovery, parsing,
+   metric computation, and output serialization). Times include all overhead.
 
 ---
 
@@ -201,11 +160,11 @@ The overhead varies widely across projects:
 ### When to Use `--duplication`
 
 Given the overhead, use duplication detection:
-- **In CI for periodic audits** (daily or on PR, not every commit) — `complexity-guard --duplication src/`
+- **In CI for periodic audits** (daily or on PR, not every commit) -- `complexity-guard --duplication src/`
 - **During refactoring sessions** to find copy-paste candidates
 - **In pre-merge gates** when reducing technical debt is a priority
 
-Avoid on very large repos (webpack/vscode scale) in fast CI pipelines — the re-parse overhead will dominate. For those cases, consider running duplication analysis in a separate, less frequent CI job.
+Avoid on very large repos (webpack/vscode scale) in fast CI pipelines -- the re-parse overhead will dominate. For those cases, consider running duplication analysis in a separate, less frequent CI job.
 
 ---
 
@@ -213,7 +172,7 @@ Avoid on very large repos (webpack/vscode scale) in fast CI pipelines — the re
 
 ### v0.8: Rust Implementation (current)
 
-The current benchmarks reflect ComplexityGuard v0.8 (Rust) with parallel analysis enabled (the default). Historical benchmark data comparing Zig v1.0 vs Rust v0.8 is preserved in git history (quick task 22, `bench-rust-vs-zig.sh`). Key finding: Rust is 1.5–3.1x faster than Zig with parallel analysis.
+The current benchmarks reflect ComplexityGuard v0.8 (Rust) with parallel analysis enabled (the default). Historical benchmark data comparing Zig v1.0 vs Rust v0.8 is preserved in git history (quick task 22, `bench-rust-vs-zig.sh`). Key finding: Rust is significantly faster with parallel analysis.
 
 ### Schema Version
 
@@ -223,5 +182,3 @@ before/after comparisons require no format conversion.
 The schema consists of:
 - hyperfine JSON format (from `hyperfine --export-json`)
 - CG JSON output (`--format json`)
-- FTA JSON output (`--json`)
-- `metric-accuracy.json` (produced by compare-metrics script)
