@@ -1,7 +1,8 @@
 # Release workflow - triggered by v* tag push or manual dispatch
 #
-# Builds Rust binaries for all 5 release targets, creates archives, and
-# publishes a GitHub Release with the archives attached.
+# Builds Rust binaries for all 5 release targets, creates archives,
+# publishes a GitHub Release with the archives attached, and publishes
+# npm packages (main + 5 platform packages).
 #
 # Triggers:
 #   - Tag push: Push a v* tag (e.g., via scripts/release.sh)
@@ -189,3 +190,89 @@ jobs:
           files: |
             complexity-guard-*.tar.gz
             complexity-guard-*.zip
+
+  # Job 4: Publish npm packages (main + 5 platform packages)
+  npm-publish:
+    runs-on: ubuntu-latest
+    needs: [validate, release]
+    permissions:
+      id-token: write # Required for OIDC trusted publishing
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+
+      - name: Update npm for provenance support
+        run: npm install -g npm@latest
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: Extract binaries to platform packages
+        run: |
+          # Extract Linux x64
+          tar xzf complexity-guard-linux-x86_64-musl.tar.gz -C publication/npm/packages/linux-x64/
+
+          # Extract Linux ARM64
+          tar xzf complexity-guard-linux-aarch64-musl.tar.gz -C publication/npm/packages/linux-arm64/
+
+          # Extract macOS x64
+          tar xzf complexity-guard-macos-x86_64.tar.gz -C publication/npm/packages/darwin-x64/
+
+          # Extract macOS ARM64
+          tar xzf complexity-guard-macos-aarch64.tar.gz -C publication/npm/packages/darwin-arm64/
+
+          # Extract Windows x64
+          unzip -o complexity-guard-windows-x86_64.zip -d publication/npm/packages/windows-x64/
+
+          # Verify all binaries extracted
+          for pkg in linux-x64 linux-arm64 darwin-x64 darwin-arm64; do
+            if [ ! -f "publication/npm/packages/$pkg/complexity-guard" ]; then
+              echo "Error: Binary missing in publication/npm/packages/$pkg/"
+              exit 1
+            fi
+          done
+
+          if [ ! -f "publication/npm/packages/windows-x64/complexity-guard.exe" ]; then
+            echo "Error: Binary missing in publication/npm/packages/windows-x64/"
+            exit 1
+          fi
+
+      - name: Update version in all package.json files
+        run: |
+          VERSION="${{ needs.validate.outputs.version }}"
+
+          # Update main package.json
+          sed -i.bak "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" publication/npm/package.json
+          rm publication/npm/package.json.bak
+
+          # Update platform packages
+          for pkg in publication/npm/packages/darwin-arm64 publication/npm/packages/darwin-x64 publication/npm/packages/linux-arm64 publication/npm/packages/linux-x64 publication/npm/packages/windows-x64; do
+            sed -i.bak "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" "$pkg/package.json"
+            rm "$pkg/package.json.bak"
+          done
+
+          # Update optionalDependencies versions in main package.json
+          sed -i.bak -E "s/\"@complexity-guard\/(darwin-arm64|darwin-x64|linux-arm64|linux-x64|windows-x64)\": \".*\"/\"@complexity-guard\/\1\": \"$VERSION\"/g" publication/npm/package.json
+          rm publication/npm/package.json.bak
+
+      - name: Publish platform packages to npm
+        run: |
+          for pkg in publication/npm/packages/darwin-arm64 publication/npm/packages/darwin-x64 publication/npm/packages/linux-arm64 publication/npm/packages/linux-x64 publication/npm/packages/windows-x64; do
+            echo "Publishing $pkg..."
+            cd "$pkg"
+            npm publish --access public --provenance
+            cd -
+          done
+
+      - name: Publish main package to npm
+        run: |
+          cd publication/npm && npm publish --access public --provenance
