@@ -109,12 +109,13 @@ Recent decisions affecting v0.8:
 | 22 | Create benchmark script comparing Rust vs Zig binaries | 2026-02-25 | 54154f5 | [22-create-benchmark-script-comparing-rust-v](./quick/22-create-benchmark-script-comparing-rust-v/) |
 | 23 | Adopt Rust as sole language: remove Zig, promote Rust to root, create ADR | 2026-02-25 | 5e25696 | [23-rust-is-faster-so-were-going-with-rust-d](./quick/23-rust-is-faster-so-were-going-with-rust-d/) |
 | 24 | Restore benchmarks/ directory from main with Rust build commands | 2026-02-25 | 91c487e | [24-restore-benchmarks-and-scripts-from-main](./quick/24-restore-benchmarks-and-scripts-from-main/) |
+| 25 | Create a Claude Code skill for complexity-guard CLI | 2026-02-26 | 0855eac | [25-create-a-claude-skill-for-complexity-gua](./quick/25-create-a-claude-skill-for-complexity-gua/) |
 
 ## Session Continuity
 
-Last session: 2026-02-25 (quick task 24)
-Stopped at: Completed quick task 24 — restored benchmarks/ directory with Rust build commands
-Resume with: Benchmarks restored. Run setup.sh + bench-quick.sh for new baselines.
+Last session: 2026-02-26 (quick task 25)
+Stopped at: Completed quick task 25 — Claude Code skill for complexity-guard CLI
+Resume with: Claude Code skill available at .claude/skills/complexity-guard/SKILL.md
 
 **Remaining phases to execute:**
 - Phase 19: CLI, Config, Output Formats — COMPLETE (4/4)
