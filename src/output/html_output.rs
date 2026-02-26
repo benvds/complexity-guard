@@ -14,7 +14,7 @@ const TOOL_VERSION: &str = env!("CARGO_PKG_VERSION");
 fn score_class(score: f64) -> &'static str {
     if score >= 80.0 {
         "ok"
-    } else if score >= 50.0 {
+    } else if score >= 60.0 {
         "warning"
     } else {
         "error"

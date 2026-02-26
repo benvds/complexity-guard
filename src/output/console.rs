@@ -496,7 +496,7 @@ pub fn render_console(
         let health_line = if use_color {
             if avg_health >= 80.0 {
                 health_str.green().to_string()
-            } else if avg_health >= 50.0 {
+            } else if avg_health >= 60.0 {
                 health_str.yellow().to_string()
             } else {
                 health_str.red().to_string()

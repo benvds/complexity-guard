@@ -8,41 +8,43 @@ The score is designed for CI enforcement: set a baseline, keep it from dropping,
 
 The pipeline has three stages:
 
-1. **Normalize** — Each raw metric value is converted to a 0-100 sub-score using a sigmoid curve
+1. **Normalize** — Each raw metric value is converted to a 0-100 sub-score using a piecewise linear function
 2. **Weight** — Sub-scores are combined using configurable weights into a per-function score
 3. **Aggregate** — Function scores roll up into file scores, then into a project score
 
 ## The Formula
 
-### Sigmoid Normalization
+### Piecewise Linear Normalization
 
-Each metric value is normalized with:
+Each metric value is normalized with a 3-segment linear function anchored at the warning and error thresholds:
 
 ```
-sub_score = 100 / (1 + exp(k * (x - x0)))
+score(x) =
+  x <= 0:         100
+  0 < x <= warn:  100 - 20 * (x / warn)
+  warn < x <= err: 80 - 20 * ((x - warn) / (err - warn))
+  x > err:         max(0, 60 - 60 * ((x - err) / err))
 ```
 
-Where:
-- `x` is the raw metric value (e.g. cyclomatic complexity = 12)
-- `x0` is the **warning threshold** — at this value, `sub_score` is exactly 50.0
-- `k = ln(4) / (error_threshold - warning_threshold)` — controls the slope
-
-This means:
-- A value at or below the warning threshold scores 50 or above
-- A value at the error threshold scores ~20
-- Very low values (approaching 0) score ~100
-- Very high values approach 0
+Key properties:
+- `score(0) = 100` — zero complexity is perfect
+- `score(warning) = 80` — boundary between "good" and "ok"
+- `score(error) = 60` — boundary between "ok" and "bad"
+- `score(2 * error) = 0` — floor
+- Monotonically decreasing, continuous, no jumps
+- Full 0-100 range is reachable
 
 ### Example: Cyclomatic Complexity (warning=10, error=20)
 
 | Cyclomatic | Sub-score |
 |------------|-----------|
-| 1          | ~99       |
-| 5          | ~88       |
-| 10         | 50        |
-| 15         | ~20       |
-| 20         | ~11       |
-| 30         | ~3        |
+| 0          | 100       |
+| 5          | 90        |
+| 10         | 80        |
+| 15         | 70        |
+| 20         | 60        |
+| 30         | 30        |
+| 40         | 0         |
 
 ### Metric Families
 
@@ -229,11 +231,12 @@ The health score is a continuous number — there are no letter grades.
 
 | Range | Color | Meaning |
 |-------|-------|---------|
-| 80 – 100 | Green | Healthy — complexity is under control |
-| 50 – 79 | Yellow | Needs attention — some functions are complex |
-| 0 – 49 | Red | Critical — significant complexity debt |
+| 90 – 100 | Green | Almost perfect — minimal complexity |
+| 80 – 89 | Green | Good — complexity is under control |
+| 60 – 79 | Yellow | OK — some functions need attention |
+| 0 – 59 | Red | Bad — significant complexity debt |
 
-These ranges are a rough guide, not hard rules. A score of 79 and a score of 81 represent essentially the same codebase — the goal is the trend, not the exact number.
+These ranges map directly to the scoring formula: a score of 80 means all metrics are at their warning thresholds, and 60 means all metrics are at their error thresholds. The goal is the trend, not the exact number.
 
 A healthy workflow: start where you are, commit to not regressing (baseline), and chip away at high-complexity functions over time.
 

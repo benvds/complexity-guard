@@ -1,16 +1,17 @@
 {
-  "version": "0.8.0",
+  "version": "0.9.1",
+  "timestamp": 1772109593,
   "summary": {
     "files_analyzed": 1,
     "total_functions": 2,
     "warnings": 2,
     "errors": 0,
     "status": "warning",
-    "health_score": 79.43643525140624
+    "health_score": 96.67124170232458
   },
   "files": [
     {
-      "path": "../tests/fixtures/javascript/callback_patterns.js",
+      "path": "tests/fixtures/javascript/callback_patterns.js",
       "functions": [
         {
           "name": "processQueue",
@@ -26,7 +27,7 @@
           "nesting_depth": 0,
           "line_count": 27,
           "params_count": 3,
-          "health_score": 79.23538902094324,
+          "health_score": 96.76428946871214,
           "status": "warning"
         },
         {
@@ -43,7 +44,7 @@
           "nesting_depth": 1,
           "line_count": 4,
           "params_count": 2,
-          "health_score": 79.63748148186922,
+          "health_score": 96.57819393593701,
           "status": "ok"
         }
       ],
@@ -52,6 +53,7 @@
     }
   ],
   "metadata": {
+    "elapsed_ms": 0,
     "thread_count": 10
   },
   "duplication": null

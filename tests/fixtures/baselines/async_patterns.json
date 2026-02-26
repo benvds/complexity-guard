@@ -1,16 +1,17 @@
 {
-  "version": "0.8.0",
+  "version": "0.9.1",
+  "timestamp": 1772109593,
   "summary": {
     "files_analyzed": 1,
     "total_functions": 1,
     "warnings": 1,
     "errors": 0,
     "status": "warning",
-    "health_score": 60.816639860626225
+    "health_score": 86.34482942490347
   },
   "files": [
     {
-      "path": "../tests/fixtures/typescript/async_patterns.ts",
+      "path": "tests/fixtures/typescript/async_patterns.ts",
       "functions": [
         {
           "name": "fetchUserData",
@@ -26,7 +27,7 @@
           "nesting_depth": 2,
           "line_count": 19,
           "params_count": 2,
-          "health_score": 60.816639860626225,
+          "health_score": 86.34482942490347,
           "status": "warning"
         }
       ],
@@ -35,6 +36,7 @@
     }
   ],
   "metadata": {
+    "elapsed_ms": 0,
     "thread_count": 10
   },
   "duplication": null

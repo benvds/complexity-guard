@@ -1,16 +1,17 @@
 {
-  "version": "0.8.0",
+  "version": "0.9.1",
+  "timestamp": 1772109593,
   "summary": {
     "files_analyzed": 1,
     "total_functions": 1,
     "warnings": 2,
     "errors": 2,
     "status": "error",
-    "health_score": 34.010384450594536
+    "health_score": 62.72176421917576
   },
   "files": [
     {
-      "path": "../tests/fixtures/typescript/complex_nested.ts",
+      "path": "tests/fixtures/typescript/complex_nested.ts",
       "functions": [
         {
           "name": "processData",
@@ -26,7 +27,7 @@
           "nesting_depth": 7,
           "line_count": 14,
           "params_count": 2,
-          "health_score": 34.010384450594536,
+          "health_score": 62.72176421917576,
           "status": "error"
         }
       ],
@@ -35,6 +36,7 @@
     }
   ],
   "metadata": {
+    "elapsed_ms": 0,
     "thread_count": 10
   },
   "duplication": null

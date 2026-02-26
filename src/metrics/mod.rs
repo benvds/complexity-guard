@@ -329,7 +329,7 @@ mod tests {
         assert_eq!(greet.nesting_depth, 0);
 
         // Health score should match Zig output
-        assert_float_eq(greet.health_score, 82.71258735483063, "greet health_score");
+        assert_float_eq(greet.health_score, 99.01833333333332, "greet health_score");
 
         // File-level metrics
         assert_eq!(result.file_length, 2);
