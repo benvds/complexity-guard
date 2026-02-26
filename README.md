@@ -74,6 +74,22 @@ Top Halstead volume hotspots:
 
 <a href="docs/examples/cxg.html"><img src="docs/images/html-report.png" alt="HTML report with dashboard, treemap, and file breakdown" width="400"></a>
 
+## Benchmarks
+
+Analyzed across 83 open-source projects (107k files, 321k functions). Selection of results on Apple M1 Max with parallel analysis:
+
+| Project | Files | Functions | Time (ms) | Health Score |
+|---------|------:|----------:|----------:|-------------:|
+| lodash | 26 | 79 | 13 ± 1 | 92.4 |
+| axios | 160 | 472 | 22 ± 2 | 95.8 |
+| excalidraw | 380 | 1,909 | 74 ± 6 | 92.0 |
+| tanstack-query | 721 | 1,371 | 86 ± 5 | 95.0 |
+| vite | 1,182 | 2,639 | 83 ± 4 | 95.4 |
+| three.js | 1,537 | 10,133 | 705 ± 190 | 93.2 |
+| vscode | 5,071 | 59,316 | 3,281 ± 418 | 94.1 |
+
+See the [full benchmark results](docs/benchmarks.md) for all 83 projects.
+
 ## Features
 
 - **Cyclomatic Complexity**: McCabe metric counting independent code paths — measures testability

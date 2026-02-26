@@ -2,23 +2,47 @@
 
 Fast complexity analysis for TypeScript/JavaScript — single static binary built with Rust, zero dependencies.
 
-## Install
+## Quick Start
+
+Install ComplexityGuard:
 
 ```sh
-# Global install (CLI access from anywhere)
+# npm (global install)
 npm install -g complexity-guard
 
-# Local/CI install (project dependency)
+# npm (local/CI install)
 npm install --save-dev complexity-guard
+
+# Direct download (Rust binary — all platforms)
+# Download the archive for your platform from GitHub Releases:
+# https://github.com/benvds/complexity-guard/releases
+#
+# Available platforms:
+#   complexity-guard-linux-x86_64-musl.tar.gz    (Linux x86_64)
+#   complexity-guard-linux-aarch64-musl.tar.gz   (Linux ARM64)
+#   complexity-guard-macos-x86_64.tar.gz         (macOS Intel)
+#   complexity-guard-macos-aarch64.tar.gz        (macOS Apple Silicon)
+#   complexity-guard-windows-x86_64.zip          (Windows x64)
+#
+# Extract and install (macOS/Linux):
+tar xzf complexity-guard-*.tar.gz
+chmod +x complexity-guard
+sudo mv complexity-guard /usr/local/bin/
 ```
 
-## Usage
+Run analysis on your codebase:
 
 ```sh
 complexity-guard src/
 ```
 
-### Example Output
+Set up health score tracking (analyzes your code, suggests weights, saves baseline):
+
+```sh
+complexity-guard --init src/
+```
+
+## Example Output
 
 ```
 src/auth/login.ts
@@ -45,23 +69,59 @@ Top Halstead volume hotspots:
 ✗ 4 problems (1 errors, 3 warnings)
 ```
 
+## Benchmarks
+
+Analyzed across 83 open-source projects (107k files, 321k functions). Selection of results on Apple M1 Max with parallel analysis:
+
+| Project | Files | Functions | Time (ms) | Health Score |
+|---------|------:|----------:|----------:|-------------:|
+| lodash | 26 | 79 | 13 ± 1 | 92.4 |
+| axios | 160 | 472 | 22 ± 2 | 95.8 |
+| excalidraw | 380 | 1,909 | 74 ± 6 | 92.0 |
+| tanstack-query | 721 | 1,371 | 86 ± 5 | 95.0 |
+| vite | 1,182 | 2,639 | 83 ± 4 | 95.4 |
+| three.js | 1,537 | 10,133 | 705 ± 190 | 93.2 |
+| vscode | 5,071 | 59,316 | 3,281 ± 418 | 94.1 |
+
+See the [full benchmark results](https://github.com/benvds/complexity-guard/blob/main/docs/benchmarks.md) for all 83 projects.
+
 ## Features
 
 - **Cyclomatic Complexity**: McCabe metric counting independent code paths — measures testability
 - **Cognitive Complexity**: SonarSource-based metric with nesting depth penalties — measures understandability
 - **Halstead Metrics**: Information-theoretic vocabulary density, volume, difficulty, effort, and estimated bugs
 - **Structural Metrics**: Function length, parameter count, nesting depth, file length, and export count
-- **Duplication Detection**: Rabin-Karp rolling hash detects Type 1 and Type 2 code clones across files — enable with `--duplication`
+- **Duplication Detection**: Rabin-Karp rolling hash detects Type 1 and Type 2 code clones across files — enable with `--duplication` (see [duplication docs](https://github.com/benvds/complexity-guard/blob/main/docs/duplication-detection.md))
 - **Composite Health Score**: Single 0–100 score combining all metric families with configurable weights — enforce in CI with `--fail-health-below`
 - **Console + JSON + SARIF + HTML Output**: Human-readable terminal display, machine-readable JSON, SARIF 2.1.0 for GitHub Code Scanning, and self-contained HTML reports with interactive dashboard, treemap visualization, and sortable metric tables
-- **Multi-threaded Parallel Analysis**: Analyzes files concurrently across all CPU cores by default; use `--threads N` to control thread count
+- **Parallel Analysis**: Analyzes files concurrently across all CPU cores by default — use `--threads N` to control thread count or `--threads 1` for single-threaded mode
 - **Configurable Thresholds**: Warning and error levels for all metric families, customizable per project
 - **Selective Metrics**: Use `--metrics cyclomatic,halstead` to compute only specific families
 - **Zero Config**: Works out of the box with sensible defaults, optional `.complexityguard.json` for customization
-- **Single Binary**: No runtime dependencies, runs offline, fast startup
-- **Low Memory Footprint**: 1.2–2.2x less memory than Node.js-based tools on small and medium projects
+- **Single Binary**: No runtime dependencies, runs offline, fast startup — under 300ms on mid-size projects
+- **Fast**: Analyzes thousands of files in seconds with parallel analysis across all CPU cores (see [benchmarks](https://github.com/benvds/complexity-guard/blob/main/docs/benchmarks.md))
+- **Low Memory Footprint**: 1.2–2.2x less memory than Node.js-based tools on small and medium projects (see [benchmarks](https://github.com/benvds/complexity-guard/blob/main/docs/benchmarks.md))
 - **Error-Tolerant Parsing**: Tree-sitter based parser handles syntax errors gracefully, continues analysis on remaining files
-- **Automatic Safety Limits**: Files > 10,000 lines and functions > 5,000 lines are skipped and reported in output — prevents crashes on auto-generated code or minified bundles
+- **Automatic Safety Limits**: Files > 10,000 lines and functions > 5,000 lines are skipped and reported in output — prevents crashes on auto-generated code or minified bundles (see [Size Limits](https://github.com/benvds/complexity-guard/blob/main/docs/cli-reference.md#size-limits))
+
+## Documentation
+
+- **[Getting Started](https://github.com/benvds/complexity-guard/blob/main/docs/getting-started.md)** — Installation, first analysis, configuration basics
+- **[CLI Reference](https://github.com/benvds/complexity-guard/blob/main/docs/cli-reference.md)** — All flags, config options, exit codes
+- **[Examples](https://github.com/benvds/complexity-guard/blob/main/docs/examples.md)** — Real-world usage patterns, CI integration recipes
+- **[SARIF Output](https://github.com/benvds/complexity-guard/blob/main/docs/sarif-output.md)** — GitHub Code Scanning integration with inline PR annotations
+- **[HTML Reports](https://github.com/benvds/complexity-guard/blob/main/docs/examples.md#html-reports)** — Self-contained interactive reports for sharing with stakeholders
+- **[Performance Benchmarks](https://github.com/benvds/complexity-guard/blob/main/docs/benchmarks.md)** — Speed and memory benchmarks across real-world projects
+- **[Claude Code Skill](https://github.com/benvds/complexity-guard/blob/main/docs/claude-code-skill.md)** — Use ComplexityGuard with Claude Code AI agents
+
+### Metrics
+
+- **[Health Score](https://github.com/benvds/complexity-guard/blob/main/docs/health-score.md)** — Composite 0–100 score, formula, weights, and baseline + ratchet workflow
+- **[Cyclomatic Complexity](https://github.com/benvds/complexity-guard/blob/main/docs/cyclomatic-complexity.md)** — Path counting for testability, ESLint-aligned rules
+- **[Cognitive Complexity](https://github.com/benvds/complexity-guard/blob/main/docs/cognitive-complexity.md)** — Nesting-aware readability metric from SonarSource
+- **[Halstead Metrics](https://github.com/benvds/complexity-guard/blob/main/docs/halstead-metrics.md)** — Vocabulary density, volume, difficulty, effort, estimated bugs
+- **[Structural Metrics](https://github.com/benvds/complexity-guard/blob/main/docs/structural-metrics.md)** — Function length, parameters, nesting depth, file length, exports
+- **[Duplication Detection](https://github.com/benvds/complexity-guard/blob/main/docs/duplication-detection.md)** — Rabin-Karp clone detection, Type 1/2 clones, thresholds (opt-in)
 
 ## Configuration
 
@@ -77,29 +137,38 @@ Create a `.complexityguard.json` file in your project root to customize behavior
     "cyclomatic": { "warning": 10, "error": 20 },
     "cognitive": { "warning": 15, "error": 25 },
     "halstead_volume": { "warning": 500, "error": 1000 },
+    "halstead_difficulty": { "warning": 10, "error": 20 },
     "halstead_effort": { "warning": 5000, "error": 10000 },
+    "halstead_bugs": { "warning": 0.5, "error": 2.0 },
     "function_length": { "warning": 25, "error": 50 },
     "params": { "warning": 3, "error": 6 },
-    "nesting": { "warning": 3, "error": 5 }
+    "nesting": { "warning": 3, "error": 5 },
+    "file_length": { "warning": 300, "error": 600 },
+    "exports": { "warning": 15, "error": 30 },
+    "duplication": { "file_warning": 15.0, "file_error": 25.0, "project_warning": 5.0, "project_error": 10.0 }
   },
   "counting_rules": {
     "logical_operators": true,
     "nullish_coalescing": true,
     "optional_chaining": true,
     "switch_case_mode": "perCase"
-  }
+  },
+  "weights": {
+    "cognitive": 0.30,
+    "cyclomatic": 0.20,
+    "halstead": 0.15,
+    "structural": 0.15
+  },
+  "analysis": {
+    "threads": 4,
+    "duplication_enabled": false
+  },
+  "baseline": 73.2
 }
 ```
 
-## Links
-
-- [GitHub](https://github.com/benvds/complexity-guard)
-- [Documentation](https://github.com/benvds/complexity-guard#documentation)
-- [Claude Code Skill](https://github.com/benvds/complexity-guard/blob/main/docs/claude-code-skill.md) — Use ComplexityGuard with Claude Code AI agents
-- [SARIF Output / GitHub Code Scanning](https://github.com/benvds/complexity-guard/blob/main/docs/sarif-output.md)
-- [HTML Reports](https://github.com/benvds/complexity-guard/blob/main/docs/examples.md#html-reports)
-- [Performance Benchmarks](https://github.com/benvds/complexity-guard/blob/main/docs/benchmarks.md)
+See the [CLI Reference](https://github.com/benvds/complexity-guard/blob/main/docs/cli-reference.md) for complete configuration options.
 
 ## License
 
-MIT
+[MIT](https://github.com/benvds/complexity-guard/blob/main/LICENSE)
