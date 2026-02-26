@@ -94,6 +94,7 @@ Recent decisions affecting v0.8:
 
 1. **Add multi-language support via language profile abstraction** (general) — Refactor hardcoded TS/JS assumptions into a `LanguageProfile` abstraction to enable tree-sitter multi-language support
 2. **Document Homebrew SHA256 update process** (docs) — Document placeholder mechanism, manual tap push step, and create helper script for SHA256 verification
+3. **Add cargo install publication via crates.io** (general) — Publish crate to crates.io to enable `cargo install complexity-guard` as an additional distribution channel
 
 ### Blockers/Concerns
 
