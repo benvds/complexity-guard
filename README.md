@@ -101,6 +101,7 @@ Top Halstead volume hotspots:
 - **[HTML Reports](docs/examples.md#html-reports)** — Self-contained interactive reports for sharing with stakeholders
 - **[Performance Benchmarks](docs/benchmarks.md)** — Speed and memory comparison vs FTA across real-world projects
 - **[Releasing](docs/releasing.md)** — Release process, publishing, version management
+- **[Claude Code Skill](docs/claude-code-skill.md)** — Use ComplexityGuard with Claude Code AI agents
 
 ### Metrics
 

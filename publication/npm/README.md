@@ -94,6 +94,7 @@ Create a `.complexityguard.json` file in your project root to customize behavior
 
 - [GitHub](https://github.com/benvds/complexity-guard)
 - [Documentation](https://github.com/benvds/complexity-guard#documentation)
+- [Claude Code Skill](https://github.com/benvds/complexity-guard/blob/main/docs/claude-code-skill.md) — Use ComplexityGuard with Claude Code AI agents
 - [SARIF Output / GitHub Code Scanning](https://github.com/benvds/complexity-guard/blob/main/docs/sarif-output.md)
 - [HTML Reports](https://github.com/benvds/complexity-guard/blob/main/docs/examples.md#html-reports)
 - [Performance Benchmarks](https://github.com/benvds/complexity-guard/blob/main/docs/benchmarks.md)
