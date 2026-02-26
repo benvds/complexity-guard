@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-02-26
+
+### Fixed
+
+- Restore npm-publish job to release workflow
+
 ## [0.9.0] - 2026-02-25
 
 ### Added
@@ -252,7 +258,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tree-sitter based parsing with error-tolerant syntax handling
 - CLI with --help, --version, --verbose, --quiet, --format, --output, --config, --init flags
 
-[Unreleased]: https://github.com/benvds/complexity-guard/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/benvds/complexity-guard/compare/v0.9.1...HEAD
+[0.9.1]: https://github.com/benvds/complexity-guard/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/benvds/complexity-guard/compare/v0.7.0...v0.9.0
 [0.7.0]: https://github.com/benvds/complexity-guard/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/benvds/complexity-guard/compare/v0.5.0...v0.6.0
