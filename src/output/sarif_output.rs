@@ -484,7 +484,11 @@ pub fn render_sarif(
                 )
             }
         };
-        let start_line = if item.start_line == 0 { 1 } else { item.start_line };
+        let start_line = if item.start_line == 0 {
+            1
+        } else {
+            item.start_line
+        };
         sarif_results.push(SarifResult {
             rule_id: "complexity-guard/skipped",
             rule_index: RULE_SKIPPED,

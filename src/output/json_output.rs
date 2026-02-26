@@ -328,9 +328,11 @@ pub fn render_json(
                         SkipReason::FileTooLarge { lines, max_lines } => {
                             ("file_too_large".to_string(), *lines, *max_lines)
                         }
-                        SkipReason::FunctionTooLarge { lines, max_lines } => {
-                            ("function_too_large".to_string(), *lines as usize, *max_lines as usize)
-                        }
+                        SkipReason::FunctionTooLarge { lines, max_lines } => (
+                            "function_too_large".to_string(),
+                            *lines as usize,
+                            *max_lines as usize,
+                        ),
                     };
                     JsonSkippedItem {
                         path: item.path.to_string_lossy().to_string(),

@@ -2,7 +2,9 @@ use minijinja::{context, Environment};
 
 use crate::cli::ResolvedConfig;
 use crate::output::console::function_violations;
-use crate::types::{DuplicationResult, FileAnalysisResult, FunctionAnalysisResult, SkipReason, SkippedItem};
+use crate::types::{
+    DuplicationResult, FileAnalysisResult, FunctionAnalysisResult, SkipReason, SkippedItem,
+};
 
 const CSS: &str = include_str!("assets/report.css");
 const JS: &str = include_str!("assets/report.js");
@@ -282,17 +284,18 @@ pub fn render_html(
             .map(|item| {
                 let path_str = item.path.to_string_lossy().to_string();
                 let (reason_label, lines, max_lines, item_name) = match &item.reason {
-                    SkipReason::FileTooLarge { lines, max_lines } => {
-                        ("file too large".to_string(), *lines, *max_lines, None::<String>)
-                    }
-                    SkipReason::FunctionTooLarge { lines, max_lines } => {
-                        (
-                            "function too large".to_string(),
-                            *lines as usize,
-                            *max_lines as usize,
-                            item.function_name.clone(),
-                        )
-                    }
+                    SkipReason::FileTooLarge { lines, max_lines } => (
+                        "file too large".to_string(),
+                        *lines,
+                        *max_lines,
+                        None::<String>,
+                    ),
+                    SkipReason::FunctionTooLarge { lines, max_lines } => (
+                        "function too large".to_string(),
+                        *lines as usize,
+                        *max_lines as usize,
+                        item.function_name.clone(),
+                    ),
                 };
                 context! {
                     path => path_str,

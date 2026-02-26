@@ -3,7 +3,9 @@ use std::io::Write;
 use owo_colors::OwoColorize;
 
 use crate::cli::ResolvedConfig;
-use crate::types::{DuplicationResult, FileAnalysisResult, FunctionAnalysisResult, SkipReason, SkippedItem};
+use crate::types::{
+    DuplicationResult, FileAnalysisResult, FunctionAnalysisResult, SkipReason, SkippedItem,
+};
 
 /// Severity level for a single threshold violation.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -619,7 +621,11 @@ fn render_skipped_section(
     }
 
     writeln!(writer)?;
-    let header = format!("Skipped ({} item{}):", skipped.len(), if skipped.len() == 1 { "" } else { "s" });
+    let header = format!(
+        "Skipped ({} item{}):",
+        skipped.len(),
+        if skipped.len() == 1 { "" } else { "s" }
+    );
     if use_color {
         writeln!(writer, "{}", header.yellow())?;
     } else {
