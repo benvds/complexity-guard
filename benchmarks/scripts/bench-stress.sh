@@ -133,6 +133,12 @@ echo "Warmup runs: 1 | Benchmark runs: 5 | Timeout: 5 minutes per invocation"
 echo ""
 
 declare -A CG_MEAN
+declare -A CG_FILES
+declare -A CG_FUNCS
+declare -A CG_CYC
+declare -A CG_COG
+declare -A CG_HAL
+declare -A CG_SCORE
 
 for project in "${STRESS_SUITE[@]}"; do
   PROJECT_DIR="$PROJECTS_DIR/$project"
@@ -172,19 +178,37 @@ for project in "${STRESS_SUITE[@]}"; do
     fi
   fi
 
+  # Extract analysis metrics from JSON
+  if [[ -f "$ANALYSIS_JSON" ]]; then
+    CG_FILES[$project]=$(jq -r '.summary.files_analyzed // 0' "$ANALYSIS_JSON" 2>/dev/null || echo "0")
+    CG_FUNCS[$project]=$(jq -r '.summary.total_functions // 0' "$ANALYSIS_JSON" 2>/dev/null || echo "0")
+    CG_SCORE[$project]=$(jq -r '.summary.health_score // 0 | . * 10 | round / 10' "$ANALYSIS_JSON" 2>/dev/null || echo "0")
+    CG_CYC[$project]=$(jq -r '[.files[].functions[]?.cyclomatic // 0] | if length > 0 then add / length | . * 10 | round / 10 else 0 end' "$ANALYSIS_JSON" 2>/dev/null || echo "0")
+    CG_COG[$project]=$(jq -r '[.files[].functions[]?.cognitive // 0] | if length > 0 then add / length | . * 10 | round / 10 else 0 end' "$ANALYSIS_JSON" 2>/dev/null || echo "0")
+    CG_HAL[$project]=$(jq -r '[.files[].functions[]?.halstead_volume // 0] | if length > 0 then add / length | round else 0 end' "$ANALYSIS_JSON" 2>/dev/null || echo "0")
+  fi
+
   echo ""
 done
 
 # Print summary table
-echo "=== Summary: Mean Wall-Clock Time (ms) ==="
-printf "%-15s %12s\n" "Project" "CG (ms)"
-printf "%-15s %12s\n" "-------" "-------"
+echo "=== Summary ==="
+printf "%-15s %7s %7s %12s %6s %6s %9s %7s\n" "Project" "Files" "Funcs" "CG (ms)" "Cyc" "Cog" "Halstead" "Score"
+printf "%-15s %7s %7s %12s %6s %6s %9s %7s\n" "-------" "-----" "-----" "-------" "---" "---" "--------" "-----"
 for project in "${STRESS_SUITE[@]}"; do
   if [[ -n "${CG_MEAN[$project]:-}" ]]; then
-    cg_ms="${CG_MEAN[$project]}"
-    printf "%-15s %12s\n" "$project" "${cg_ms}ms"
+    printf "%-15s %7s %7s %12s %6s %6s %9s %7s\n" \
+      "$project" \
+      "${CG_FILES[$project]:-"-"}" \
+      "${CG_FUNCS[$project]:-"-"}" \
+      "${CG_MEAN[$project]}ms" \
+      "${CG_CYC[$project]:-"-"}" \
+      "${CG_COG[$project]:-"-"}" \
+      "${CG_HAL[$project]:-"-"}" \
+      "${CG_SCORE[$project]:-"-"}"
   fi
 done
 
 echo ""
 echo "Results saved to: $RESULTS_DIR"
+echo "Run 'node benchmarks/scripts/summarize-results.mjs $RESULTS_DIR' for detailed summary."
