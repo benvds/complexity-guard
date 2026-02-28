@@ -33,12 +33,6 @@ Run analysis on your codebase:
 complexity-guard src/
 ```
 
-Set up health score tracking (analyzes your code, suggests weights, saves baseline):
-
-```sh
-complexity-guard --init src/
-```
-
 ## Example Output
 
 ```
@@ -139,35 +133,30 @@ Create a `.complexityguard.json` file in your project root to customize behavior
     "include": ["src/**/*.ts", "src/**/*.tsx"],
     "exclude": ["**/*.test.ts", "**/*.spec.ts", "node_modules/**"]
   },
-  "thresholds": {
-    "cyclomatic": { "warning": 10, "error": 20 },
-    "cognitive": { "warning": 15, "error": 25 },
-    "halstead_volume": { "warning": 500, "error": 1000 },
-    "halstead_difficulty": { "warning": 10, "error": 20 },
-    "halstead_effort": { "warning": 5000, "error": 10000 },
-    "halstead_bugs": { "warning": 0.5, "error": 2.0 },
-    "function_length": { "warning": 25, "error": 50 },
-    "params": { "warning": 3, "error": 6 },
-    "nesting": { "warning": 3, "error": 5 },
-    "file_length": { "warning": 300, "error": 600 },
-    "exports": { "warning": 15, "error": 30 },
-    "duplication": { "file_warning": 15.0, "file_error": 25.0, "project_warning": 5.0, "project_error": 10.0 }
-  },
-  "counting_rules": {
-    "logical_operators": true,
-    "nullish_coalescing": true,
-    "optional_chaining": true,
-    "switch_case_mode": "perCase"
+  "analysis": {
+    "thresholds": {
+      "cyclomatic": { "warning": 10, "error": 20 },
+      "cognitive": { "warning": 15, "error": 25 },
+      "halstead_volume": { "warning": 500, "error": 1000 },
+      "halstead_difficulty": { "warning": 10, "error": 20 },
+      "halstead_effort": { "warning": 5000, "error": 10000 },
+      "halstead_bugs": { "warning": 0.5, "error": 1.0 },
+      "line_count": { "warning": 25, "error": 50 },
+      "params_count": { "warning": 3, "error": 6 },
+      "nesting_depth": { "warning": 3, "error": 5 },
+      "file_length": { "warning": 300, "error": 600 },
+      "export_count": { "warning": 15, "error": 30 },
+      "duplication": { "file_warning": 15.0, "file_error": 25.0, "project_warning": 5.0, "project_error": 10.0 }
+    },
+    "threads": 4,
+    "duplication_enabled": false
   },
   "weights": {
     "cognitive": 0.30,
     "cyclomatic": 0.20,
     "halstead": 0.15,
-    "structural": 0.15
-  },
-  "analysis": {
-    "threads": 4,
-    "duplication_enabled": false
+    "structural": 0.15,
+    "duplication": 0.20
   },
   "baseline": 73.2
 }

@@ -1,7 +1,5 @@
 # Examples
 
-> **Note:** ComplexityGuard is built with Rust. All examples below work with the current binary.
-
 Real-world usage patterns, CI integration recipes, and configuration examples for ComplexityGuard.
 
 ## Basic Usage
@@ -291,15 +289,12 @@ complexity-guard --format json src/ | jq '[.files[].functions[]] | sort_by(.heal
 Set a baseline once, then enforce it in CI to prevent regression:
 
 ```sh
-# Step 1: Generate a default config file
-complexity-guard --init
-
-# Step 2: Check your current score
+# Step 1: Check your current score
 complexity-guard --format json src/ | jq '.summary.health_score'
 # e.g. 73.2
 ```
 
-Edit `.complexityguard.json` to add the baseline field:
+Edit (or create) `.complexityguard.json` to add the baseline field:
 
 ```json
 {
@@ -386,8 +381,11 @@ start report.html      # Windows
 
 ### HTML Report with Custom Thresholds
 
+Use a config file to set custom thresholds, then generate the HTML report:
+
 ```sh
-complexity-guard --format html --output report.html --error 25 src/
+# Set thresholds in .complexityguard.json, then generate report
+complexity-guard --format html --output report.html src/
 ```
 
 ### HTML Report in CI (Artifact Upload)
@@ -599,14 +597,16 @@ For new projects or teams committed to low complexity:
 
 ```json
 {
-  "thresholds": {
-    "cyclomatic": {
-      "warning": 5,
-      "error": 10
-    },
-    "cognitive": {
-      "warning": 8,
-      "error": 15
+  "analysis": {
+    "thresholds": {
+      "cyclomatic": {
+        "warning": 5,
+        "error": 10
+      },
+      "cognitive": {
+        "warning": 8,
+        "error": 15
+      }
     }
   }
 }
@@ -620,14 +620,16 @@ For existing codebases with high complexity:
 
 ```json
 {
-  "thresholds": {
-    "cyclomatic": {
-      "warning": 20,
-      "error": 40
-    },
-    "cognitive": {
-      "warning": 25,
-      "error": 50
+  "analysis": {
+    "thresholds": {
+      "cyclomatic": {
+        "warning": 20,
+        "error": 40
+      },
+      "cognitive": {
+        "warning": 25,
+        "error": 50
+      }
     }
   }
 }
@@ -687,10 +689,12 @@ For monorepos, create a root config and override per-package:
   "files": {
     "exclude": ["node_modules/**", "**/dist/**", "**/build/**"]
   },
-  "thresholds": {
-    "cyclomatic": {
-      "warning": 10,
-      "error": 20
+  "analysis": {
+    "thresholds": {
+      "cyclomatic": {
+        "warning": 10,
+        "error": 20
+      }
     }
   }
 }
@@ -703,10 +707,12 @@ For monorepos, create a root config and override per-package:
     "include": ["src/**/*.ts"],
     "exclude": ["src/**/*.test.ts"]
   },
-  "thresholds": {
-    "cyclomatic": {
-      "warning": 8,
-      "error": 15
+  "analysis": {
+    "thresholds": {
+      "cyclomatic": {
+        "warning": 8,
+        "error": 15
+      }
     }
   }
 }
@@ -725,22 +731,24 @@ Tighten structural thresholds for clean architecture enforcement:
 
 ```json
 {
-  "thresholds": {
-    "function_length": {
-      "warning": 20,
-      "error": 40
-    },
-    "params": {
-      "warning": 3,
-      "error": 5
-    },
-    "nesting": {
-      "warning": 2,
-      "error": 4
-    },
-    "file_length": {
-      "warning": 200,
-      "error": 400
+  "analysis": {
+    "thresholds": {
+      "line_count": {
+        "warning": 20,
+        "error": 40
+      },
+      "params_count": {
+        "warning": 3,
+        "error": 5
+      },
+      "nesting_depth": {
+        "warning": 2,
+        "error": 4
+      },
+      "file_length": {
+        "warning": 200,
+        "error": 400
+      }
     }
   }
 }
@@ -762,37 +770,16 @@ complexity-guard --format json src/ | jq '.files[].functions[] | select(.params_
 complexity-guard --format json src/ | jq '.files[] | select(.file_length > 300) | {path, file_length}'
 ```
 
-### Classic McCabe Counting
+### Counting Rules (Not Configurable)
 
-For teams that prefer classic McCabe (no modern JavaScript features counted):
+ComplexityGuard uses ESLint-aligned counting rules by default. These rules are hardcoded in the current version and are not configurable via the config file:
 
-```json
-{
-  "counting_rules": {
-    "logical_operators": false,
-    "nullish_coalescing": false,
-    "optional_chaining": false,
-    "switch_case_mode": "switchOnly"
-  }
-}
-```
+- `&&`/`||` operators count toward complexity
+- `??` (nullish coalescing) counts toward complexity
+- `?.` (optional chaining) counts toward complexity
+- Switch statements: each case adds +1 (ESLint behavior)
 
-### ESLint-Aligned Counting (Default)
-
-To explicitly match ESLint's complexity rule:
-
-```json
-{
-  "counting_rules": {
-    "logical_operators": true,
-    "nullish_coalescing": true,
-    "optional_chaining": true,
-    "switch_case_mode": "perCase"
-  }
-}
-```
-
-This is the default, but you can make it explicit in your config.
+This matches the behavior of the ESLint `complexity` rule.
 
 ## Working with JSON Output
 
@@ -1029,14 +1016,14 @@ Configure duplication thresholds in `.complexityguard.json`:
 ```json
 {
   "analysis": {
-    "duplication_enabled": true
-  },
-  "thresholds": {
-    "duplication": {
-      "file_warning": 10.0,
-      "file_error": 20.0,
-      "project_warning": 3.0,
-      "project_error": 8.0
+    "duplication_enabled": true,
+    "thresholds": {
+      "duplication": {
+        "file_warning": 10.0,
+        "file_error": 20.0,
+        "project_warning": 3.0,
+        "project_error": 8.0
+      }
     }
   }
 }

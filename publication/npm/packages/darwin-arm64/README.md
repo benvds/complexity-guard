@@ -21,6 +21,7 @@ npm install -g complexity-guard
 - **Multi-threaded Parallel Analysis** — Analyzes files concurrently across all CPU cores by default; use `--threads N` to control thread count
 - **SARIF Output** — `--format sarif` generates SARIF 2.1.0 for GitHub Code Scanning inline PR annotations
 - **HTML Reports** — `--format html` generates a self-contained interactive report with dashboard, treemap, and sortable metric tables
+- **Automatic Safety Limits** — Files > 10,000 lines and functions > 5,000 lines are skipped and reported — prevents crashes on auto-generated code or minified bundles
 
 ## Links
 
