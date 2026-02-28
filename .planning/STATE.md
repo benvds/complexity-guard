@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 Phase: 22 of 22 (Cross-Compilation, CI, and Release) — COMPLETE
 Plan: 3 of 3 in phase 22 — plan 03 complete
 Status: Phase 22-03 COMPLETE — documentation updates for Rust binary (README, docs, releasing, publication READMEs)
-Last activity: 2026-02-26 - Completed quick task 30: add size guards to skip files > 10,000 lines and functions > 5,000 lines
+Last activity: 2026-02-28 - Completed quick task 31: Update README and docs to reflect actual code
 
 Progress: [█████████░] 75% (v0.8 milestone)
 
