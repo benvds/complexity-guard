@@ -113,6 +113,7 @@ See the [full benchmark results](docs/benchmarks.md) for all 83 projects.
 - **[Performance Benchmarks](docs/benchmarks.md)** — Speed and memory benchmarks across real-world projects
 - **[Releasing](docs/releasing.md)** — Release process, publishing, version management
 - **[Claude Code Skill](docs/claude-code-skill.md)** — Use ComplexityGuard with Claude Code AI agents
+- **[Scoring Algorithms](docs/scoring.md)** — Alternative scoring formulas, comparison scripts, and benchmarking tools
 
 ### Metrics
 
