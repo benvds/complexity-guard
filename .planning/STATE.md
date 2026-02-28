@@ -120,12 +120,13 @@ Recent decisions affecting v0.8:
 | 29 | Remove FTA benchmarking from all scripts and documentation | 2026-02-26 | a011be5 | [29-remove-the-benchmarking-against-the-fta-](./quick/29-remove-the-benchmarking-against-the-fta-/) |
 | 30 | Add size guards to skip files > 10,000 lines and functions > 5,000 lines | 2026-02-26 | b8da1c8 | [30-add-a-fail-safe-to-skip-files-bigger-tha](./quick/30-add-a-fail-safe-to-skip-files-bigger-tha/) |
 | 31 | Update README and docs to reflect actual Rust code (correct config schema, field names, CLI behavior) | 2026-02-28 | 769168a | [31-update-readme-and-docs-to-reflect-actual](./quick/31-update-readme-and-docs-to-reflect-actual/) |
+| 32 | Build scoring algorithm comparison tool to compare 8 algorithms across 84 projects | 2026-02-28 | d013f3b | [32-build-scoring-algorithm-comparison-tool-](./quick/32-build-scoring-algorithm-comparison-tool-/) |
 
 ## Session Continuity
 
-Last session: 2026-02-28 (quick task 31)
-Stopped at: Completed quick task 31 — update README and docs to reflect actual Rust codebase (correct analysis.thresholds schema, field names, CLI behavior)
-Resume with: All docs accurate; ready for next task
+Last session: 2026-02-28 (quick task 32)
+Stopped at: Completed quick task 32 — scoring algorithm comparison tool (compare-scoring.mjs) showing spread 7.9-37.1 across 8 algorithms on 83 real-world projects
+Resume with: Scoring comparison tool available; ready for next task
 
 **Remaining phases to execute:**
 - Phase 19: CLI, Config, Output Formats — COMPLETE (4/4)
