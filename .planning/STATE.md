@@ -122,12 +122,13 @@ Recent decisions affecting v0.8:
 | 31 | Update README and docs to reflect actual Rust code (correct config schema, field names, CLI behavior) | 2026-02-28 | 769168a | [31-update-readme-and-docs-to-reflect-actual](./quick/31-update-readme-and-docs-to-reflect-actual/) |
 | 32 | Build scoring algorithm comparison tool to compare 8 algorithms across 84 projects | 2026-02-28 | d013f3b | [32-build-scoring-algorithm-comparison-tool-](./quick/32-build-scoring-algorithm-comparison-tool-/) |
 | 33 | Add single-run scoring comparison script (score-project.mjs + scoring-algorithms.mjs shared module) | 2026-02-28 | d7dc267 | [33-add-single-run-scoring-comparison-script](./quick/33-add-single-run-scoring-comparison-script/) |
+| 34 | Add docs for scoring scripts and algorithms (docs/scoring.md + README link) | 2026-02-28 | ed1ffa8 | [34-add-docs-for-scoring-scripts-and-explain](./quick/34-add-docs-for-scoring-scripts-and-explain/) |
 
 ## Session Continuity
 
-Last session: 2026-02-28 (quick task 33)
-Stopped at: Completed quick task 33 — score-project.mjs single-run scoring comparison tool with shared scoring-algorithms.mjs module
-Resume with: Single-run scoring tool available; ready for next task
+Last session: 2026-02-28 (quick task 34)
+Stopped at: Completed quick task 34 — docs/scoring.md with 8 algorithm docs, 3 script guides, extension guide; README link added
+Resume with: Scoring docs complete; ready for next task
 
 **Remaining phases to execute:**
 - Phase 19: CLI, Config, Output Formats — COMPLETE (4/4)
