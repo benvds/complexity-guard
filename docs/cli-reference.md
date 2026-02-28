@@ -1,7 +1,5 @@
 # CLI Reference
 
-> **Note:** ComplexityGuard is built with Rust. All CLI flags documented here are implemented in the Rust binary. The `--threads`, `--include`, and `--exclude` flags are fully functional. Build from source with `cargo build --release`.
-
 Complete reference for ComplexityGuard command-line interface, configuration options, and exit codes.
 
 ## Usage
@@ -50,18 +48,16 @@ Display version information.
 
 ```sh
 complexity-guard --version
-# Output: complexityguard 0.1.0
+# Displays the current version number
 ```
 
 **`--init`**
 
-Generate a `.complexityguard.json` configuration file with all available options and sensible defaults. The generated file includes every threshold category, file patterns, metric weights, and a baseline placeholder — edit it to customize for your project.
+Reserved for future use. Currently prints a message and exits. This flag will generate a `.complexityguard.json` configuration file in a future release.
 
 ```sh
 complexity-guard --init
 ```
-
-Creates a comprehensive config file covering all 12 threshold categories (cyclomatic, cognitive, Halstead, structural, duplication), file include/exclude patterns, metric weights, and a baseline placeholder. Edit the generated file to customize for your project.
 
 ### Output
 
@@ -92,17 +88,15 @@ complexity-guard -f json src/
 
 **`-o, --output <FILE>`**
 
-Write output to a file instead of (or in addition to) stdout.
+Write output to a file instead of stdout.
 
 ```sh
 # Write JSON report to file
 complexity-guard --format json --output report.json src/
 
-# Console output also goes to file
+# Console output to file
 complexity-guard --output results.txt src/
 ```
-
-When using JSON format with `--output`, the JSON is written to the file and also printed to stdout.
 
 **`--color`**
 
@@ -180,6 +174,14 @@ complexity-guard --duplication src/
 
 Equivalent to `--metrics duplication` when combined with the default metric set. See [Duplication Detection](duplication-detection.md) for algorithm details, threshold configuration, and output examples.
 
+**`--no-duplication`**
+
+Explicitly disable duplication detection even if `duplication_enabled: true` is set in the config file.
+
+```sh
+complexity-guard --no-duplication src/
+```
+
 **`--threads <N>`**
 
 Set the number of threads for parallel file analysis. Defaults to the number of available CPU cores (auto-detected at runtime). Use `--threads 1` to disable parallelization for debugging or reproducible timing.
@@ -244,14 +246,14 @@ Exclude patterns are applied after include patterns.
 Set the threshold level that causes a non-zero exit code. Options:
 - `error` (default) — Exit non-zero only on errors
 - `warning` — Exit non-zero on warnings or errors
-- `never` — Always exit 0 (success)
+- `none` — Always exit 0 (success)
 
 ```sh
 # Fail on warnings (strict mode for CI)
 complexity-guard --fail-on warning src/
 
 # Never fail (report-only mode)
-complexity-guard --fail-on never src/
+complexity-guard --fail-on none src/
 ```
 
 **`--fail-health-below <N>`**
@@ -284,95 +286,90 @@ complexity-guard --config .complexity-ci.json src/
 complexity-guard -c config/complexity.json src/
 ```
 
-By default, ComplexityGuard searches for `.complexityguard.json` in:
-1. Current directory
-2. Parent directories (up to repository root)
-3. XDG config directory (`~/.config/complexity-guard/config.json`)
+By default, ComplexityGuard searches for `.complexityguard.json` (or `complexityguard.config.json`) starting from the current directory and traversing upward through parent directories until a `.git` boundary is reached.
 
 ## Configuration File
 
-ComplexityGuard uses `.complexityguard.json` for configuration. Generate a default config with `complexity-guard --init`.
+ComplexityGuard uses `.complexityguard.json` (or `complexityguard.config.json`) for configuration.
 
 ### Full Schema
 
 ```json
 {
+  "output": {
+    "format": "console",
+    "file": "report.json"
+  },
+  "analysis": {
+    "metrics": ["cyclomatic", "cognitive", "halstead", "nesting", "line_count", "params_count"],
+    "thresholds": {
+      "cyclomatic": {
+        "warning": 10,
+        "error": 20
+      },
+      "cognitive": {
+        "warning": 15,
+        "error": 25
+      },
+      "halstead_volume": {
+        "warning": 500,
+        "error": 1000
+      },
+      "halstead_difficulty": {
+        "warning": 10,
+        "error": 20
+      },
+      "halstead_effort": {
+        "warning": 5000,
+        "error": 10000
+      },
+      "halstead_bugs": {
+        "warning": 0.5,
+        "error": 1.0
+      },
+      "nesting_depth": {
+        "warning": 3,
+        "error": 5
+      },
+      "line_count": {
+        "warning": 25,
+        "error": 50
+      },
+      "params_count": {
+        "warning": 3,
+        "error": 6
+      },
+      "file_length": {
+        "warning": 300,
+        "error": 600
+      },
+      "export_count": {
+        "warning": 15,
+        "error": 30
+      },
+      "duplication": {
+        "file_warning": 15.0,
+        "file_error": 25.0,
+        "project_warning": 5.0,
+        "project_error": 10.0
+      }
+    },
+    "duplication_enabled": false,
+    "threads": 4
+  },
   "files": {
     "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
     "exclude": ["node_modules/**", "dist/**", "build/**", "**/*.test.ts"]
-  },
-  "thresholds": {
-    "cyclomatic": {
-      "warning": 10,
-      "error": 20
-    },
-    "cognitive": {
-      "warning": 15,
-      "error": 25
-    },
-    "halstead_volume": {
-      "warning": 500,
-      "error": 1000
-    },
-    "halstead_difficulty": {
-      "warning": 10,
-      "error": 20
-    },
-    "halstead_effort": {
-      "warning": 5000,
-      "error": 10000
-    },
-    "halstead_bugs": {
-      "warning": 0.5,
-      "error": 2.0
-    },
-    "function_length": {
-      "warning": 25,
-      "error": 50
-    },
-    "params": {
-      "warning": 3,
-      "error": 6
-    },
-    "nesting": {
-      "warning": 3,
-      "error": 5
-    },
-    "file_length": {
-      "warning": 300,
-      "error": 600
-    },
-    "exports": {
-      "warning": 15,
-      "error": 30
-    },
-    "duplication": {
-      "file_warning": 15.0,
-      "file_error": 25.0,
-      "project_warning": 5.0,
-      "project_error": 10.0
-    }
-  },
-  "counting_rules": {
-    "logical_operators": true,
-    "nullish_coalescing": true,
-    "optional_chaining": true,
-    "switch_case_mode": "perCase"
   },
   "weights": {
     "cognitive": 0.30,
     "cyclomatic": 0.20,
     "halstead": 0.15,
-    "structural": 0.15
+    "structural": 0.15,
+    "duplication": 0.20
   },
-  "baseline": 73.2,
-  "analysis": {
-    "threads": 4,
-    "duplication_enabled": false
-  },
-  "output": {
-    "format": "console"
-  }
+  "overrides": [{ "files": ["pattern"], "analysis": {} }],
+  "baseline": 73.2
 }
 ```
 
@@ -386,121 +383,109 @@ Glob patterns for files to include in analysis. Defaults to all TypeScript/JavaS
 
 Glob patterns for files to exclude from analysis.
 
-**`thresholds.cyclomatic.warning`** (integer)
+**`analysis.thresholds.cyclomatic.warning`** (integer)
 
 Cyclomatic complexity threshold for warnings. Default: `10`.
 
-**`thresholds.cyclomatic.error`** (integer)
+**`analysis.thresholds.cyclomatic.error`** (integer)
 
 Cyclomatic complexity threshold for errors. Default: `20`.
 
-**`thresholds.cognitive.warning`** (integer)
+**`analysis.thresholds.cognitive.warning`** (integer)
 
 Cognitive complexity threshold for warnings. Default: `15` (SonarSource recommendation).
 
-**`thresholds.cognitive.error`** (integer)
+**`analysis.thresholds.cognitive.error`** (integer)
 
 Cognitive complexity threshold for errors. Default: `25` (SonarSource recommendation).
 
 See [Cognitive Complexity](cognitive-complexity.md) for details on how this metric is calculated.
 
-**`thresholds.halstead_volume.warning`** (float)
+**`analysis.thresholds.halstead_volume.warning`** (float)
 
 Halstead volume threshold for warnings. Default: `500`.
 
-**`thresholds.halstead_volume.error`** (float)
+**`analysis.thresholds.halstead_volume.error`** (float)
 
 Halstead volume threshold for errors. Default: `1000`.
 
-**`thresholds.halstead_difficulty.warning`** (float)
+**`analysis.thresholds.halstead_difficulty.warning`** (float)
 
 Halstead difficulty threshold for warnings. Default: `10`.
 
-**`thresholds.halstead_difficulty.error`** (float)
+**`analysis.thresholds.halstead_difficulty.error`** (float)
 
 Halstead difficulty threshold for errors. Default: `20`.
 
-**`thresholds.halstead_effort.warning`** (float)
+**`analysis.thresholds.halstead_effort.warning`** (float)
 
 Halstead effort threshold for warnings. Default: `5000`.
 
-**`thresholds.halstead_effort.error`** (float)
+**`analysis.thresholds.halstead_effort.error`** (float)
 
 Halstead effort threshold for errors. Default: `10000`.
 
-**`thresholds.halstead_bugs.warning`** (float)
+**`analysis.thresholds.halstead_bugs.warning`** (float)
 
 Halstead estimated bugs threshold for warnings. Default: `0.5`.
 
-**`thresholds.halstead_bugs.error`** (float)
+**`analysis.thresholds.halstead_bugs.error`** (float)
 
-Halstead estimated bugs threshold for errors. Default: `2.0`.
+Halstead estimated bugs threshold for errors. Default: `1.0`.
 
 See [Halstead Metrics](halstead-metrics.md) for details on how these are calculated.
 
-**`thresholds.function_length.warning`** (integer)
+**`analysis.thresholds.line_count.warning`** (integer)
 
 Function length (logical lines) threshold for warnings. Default: `25`.
 
-**`thresholds.function_length.error`** (integer)
+**`analysis.thresholds.line_count.error`** (integer)
 
 Function length threshold for errors. Default: `50`.
 
-**`thresholds.params.warning`** (integer)
+**`analysis.thresholds.params_count.warning`** (integer)
 
 Parameter count threshold for warnings. Default: `3`.
 
-**`thresholds.params.error`** (integer)
+**`analysis.thresholds.params_count.error`** (integer)
 
 Parameter count threshold for errors. Default: `6`.
 
-**`thresholds.nesting.warning`** (integer)
+**`analysis.thresholds.nesting_depth.warning`** (integer)
 
 Nesting depth threshold for warnings. Default: `3`.
 
-**`thresholds.nesting.error`** (integer)
+**`analysis.thresholds.nesting_depth.error`** (integer)
 
 Nesting depth threshold for errors. Default: `5`.
 
-**`thresholds.file_length.warning`** (integer)
+**`analysis.thresholds.file_length.warning`** (integer)
 
 File length (logical lines) threshold for warnings. Default: `300`.
 
-**`thresholds.file_length.error`** (integer)
+**`analysis.thresholds.file_length.error`** (integer)
 
 File length threshold for errors. Default: `600`.
 
-**`thresholds.exports.warning`** (integer)
+**`analysis.thresholds.export_count.warning`** (integer)
 
 Export count threshold for warnings. Default: `15`.
 
-**`thresholds.exports.error`** (integer)
+**`analysis.thresholds.export_count.error`** (integer)
 
 Export count threshold for errors. Default: `30`.
 
 See [Structural Metrics](structural-metrics.md) for details on how these are calculated.
 
-**`counting_rules.logical_operators`** (boolean)
-
-Whether to count `&&` and `||` operators toward complexity. Default: `true` (ESLint behavior).
-
-**`counting_rules.nullish_coalescing`** (boolean)
-
-Whether to count `??` operator toward complexity. Default: `true`.
-
-**`counting_rules.optional_chaining`** (boolean)
-
-Whether to count `?.` operator toward complexity. Default: `true`.
-
-**`counting_rules.switch_case_mode`** (string)
-
-How to count switch statements:
-- `"perCase"` (default) — Each case adds +1 (ESLint behavior)
-- `"switchOnly"` — Only the switch itself adds +1 (classic McCabe)
+> **Note:** Cyclomatic counting rules (logical operators, nullish coalescing, optional chaining, switch case mode) follow ESLint defaults and are not configurable in this version. They are hardcoded to the ESLint-aligned behavior: `&&`/`||` count toward complexity, `??` counts, `?.` counts, and switch cases each add +1.
 
 **`output.format`** (string)
 
 Default output format: `"console"`, `"json"`, `"sarif"`, or `"html"`. Default: `"console"`.
+
+**`output.file`** (string)
+
+Default output file path. Equivalent to `--output` on the CLI.
 
 **`weights.cognitive`** (float)
 
@@ -517,6 +502,10 @@ Weight for Halstead volume in the composite health score. Default: `0.15`.
 **`weights.structural`** (float)
 
 Weight for structural metrics (function length, params, nesting depth) in the composite health score. Default: `0.15`.
+
+**`weights.duplication`** (float)
+
+Weight for duplication in the composite health score (only when duplication is enabled). Default: `0.20`.
 
 Weights are normalized to sum to 1.0 before use. Set a weight to `0.0` to exclude that metric from the health score (it is still analyzed and shown in output). See [Health Score](health-score.md) for the full formula and effective weight calculation.
 
@@ -540,19 +529,19 @@ Number of threads to use for parallel file analysis. Default: auto-detect CPU co
 
 Whether to run duplication detection. Default: `false`. Equivalent to passing `--duplication` on the CLI.
 
-**`thresholds.duplication.file_warning`** (float)
+**`analysis.thresholds.duplication.file_warning`** (float)
 
 Per-file duplication percentage that triggers a warning. Default: `15.0`. Only used when duplication detection is enabled.
 
-**`thresholds.duplication.file_error`** (float)
+**`analysis.thresholds.duplication.file_error`** (float)
 
 Per-file duplication percentage that triggers an error. Default: `25.0`. Only used when duplication detection is enabled.
 
-**`thresholds.duplication.project_warning`** (float)
+**`analysis.thresholds.duplication.project_warning`** (float)
 
 Project-wide duplication percentage that triggers a warning. Default: `5.0`. Only used when duplication detection is enabled.
 
-**`thresholds.duplication.project_error`** (float)
+**`analysis.thresholds.duplication.project_error`** (float)
 
 Project-wide duplication percentage that triggers an error. Default: `10.0`. Only used when duplication detection is enabled.
 
@@ -564,7 +553,7 @@ When both a config file and CLI flags are provided, CLI flags take precedence:
 
 ```sh
 # Config sets warning=10, but CLI overrides with --fail-on
-complexity-guard --fail-on never src/  # Won't fail even with errors
+complexity-guard --fail-on none src/  # Won't fail even with errors
 ```
 
 ## Size Limits

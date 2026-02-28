@@ -139,7 +139,7 @@ By default, ComplexityGuard shows only files with warnings or errors. Functions 
 - **Volume**: warning 500, error 1000
 - **Difficulty**: warning 10, error 20
 - **Effort**: warning 5000, error 10000
-- **Bugs (estimated)**: warning 0.5, error 2.0
+- **Bugs (estimated)**: warning 0.5, error 1.0
 
 **Structural metrics:**
 - **Function length**: warning 25 lines, error 50 lines
@@ -171,15 +171,9 @@ ComplexityGuard works great with zero configuration, but you can customize its b
 
 ### Creating a Config File
 
-Use the `--init` command to generate a default configuration file:
+Create a `.complexityguard.json` file in your project root to customize behavior. The `--init` flag is reserved for future use (it currently prints a message and exits).
 
-```sh
-complexity-guard --init
-```
-
-This creates a `.complexityguard.json` file with standard thresholds, default metric weights, and common exclude patterns. You can then adjust the values to suit your project.
-
-This creates a `.complexityguard.json` file:
+Here is an example config file:
 
 ```json
 {
@@ -187,21 +181,17 @@ This creates a `.complexityguard.json` file:
     "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
     "exclude": ["node_modules/**", "dist/**", "build/**"]
   },
-  "thresholds": {
-    "cyclomatic": {
-      "warning": 10,
-      "error": 20
-    },
-    "cognitive": {
-      "warning": 15,
-      "error": 25
+  "analysis": {
+    "thresholds": {
+      "cyclomatic": {
+        "warning": 10,
+        "error": 20
+      },
+      "cognitive": {
+        "warning": 15,
+        "error": 25
+      }
     }
-  },
-  "counting_rules": {
-    "logical_operators": true,
-    "nullish_coalescing": true,
-    "optional_chaining": true,
-    "switch_case_mode": "perCase"
   },
   "weights": {
     "cognitive": 0.30,
@@ -235,30 +225,32 @@ Control which files are analyzed using glob patterns:
 
 ### Threshold Customization
 
-Adjust warning and error thresholds for any metric family to match your team's standards:
+Adjust warning and error thresholds for any metric family to match your team's standards. Thresholds are nested under `analysis.thresholds`:
 
 ```json
 {
-  "thresholds": {
-    "cyclomatic": {
-      "warning": 5,
-      "error": 10
-    },
-    "cognitive": {
-      "warning": 8,
-      "error": 15
-    },
-    "halstead_volume": {
-      "warning": 400,
-      "error": 800
-    },
-    "function_length": {
-      "warning": 20,
-      "error": 40
-    },
-    "nesting": {
-      "warning": 2,
-      "error": 4
+  "analysis": {
+    "thresholds": {
+      "cyclomatic": {
+        "warning": 5,
+        "error": 10
+      },
+      "cognitive": {
+        "warning": 8,
+        "error": 15
+      },
+      "halstead_volume": {
+        "warning": 400,
+        "error": 800
+      },
+      "line_count": {
+        "warning": 20,
+        "error": 40
+      },
+      "nesting_depth": {
+        "warning": 2,
+        "error": 4
+      }
     }
   }
 }
@@ -267,10 +259,12 @@ Adjust warning and error thresholds for any metric family to match your team's s
 **Strict mode** (lower thresholds) catches complexity issues early:
 ```json
 {
-  "thresholds": {
-    "cyclomatic": { "warning": 5, "error": 10 },
-    "cognitive": { "warning": 8, "error": 15 },
-    "function_length": { "warning": 15, "error": 30 }
+  "analysis": {
+    "thresholds": {
+      "cyclomatic": { "warning": 5, "error": 10 },
+      "cognitive": { "warning": 8, "error": 15 },
+      "line_count": { "warning": 15, "error": 30 }
+    }
   }
 }
 ```
@@ -278,44 +272,26 @@ Adjust warning and error thresholds for any metric family to match your team's s
 **Lenient mode** (higher thresholds) for legacy codebases:
 ```json
 {
-  "thresholds": {
-    "cyclomatic": { "warning": 20, "error": 40 },
-    "cognitive": { "warning": 25, "error": 50 },
-    "function_length": { "warning": 50, "error": 100 }
+  "analysis": {
+    "thresholds": {
+      "cyclomatic": { "warning": 20, "error": 40 },
+      "cognitive": { "warning": 25, "error": 50 },
+      "line_count": { "warning": 50, "error": 100 }
+    }
   }
 }
 ```
 
 ### Counting Rules
 
-ComplexityGuard follows ESLint-aligned counting rules by default, but you can customize which language features contribute to complexity:
+ComplexityGuard follows ESLint-aligned counting rules. These rules are hardcoded and not configurable in the current version:
 
-```json
-{
-  "counting_rules": {
-    "logical_operators": true,
-    "nullish_coalescing": true,
-    "optional_chaining": true,
-    "switch_case_mode": "perCase"
-  }
-}
-```
+- `&&` and `||` operators count toward complexity
+- `??` (nullish coalescing) counts toward complexity
+- `?.` (optional chaining) counts toward complexity
+- Switch statements: each case adds +1 (ESLint behavior)
 
-**`logical_operators`** — Count `&&` and `||` operators (default: `true`)
-- When `true`: `if (a && b)` adds +1 for the `if` and +1 for the `&&` = 2
-- When `false`: `if (a && b)` adds only +1 for the `if` = 1
-
-**`nullish_coalescing`** — Count `??` operator (default: `true`)
-- When `true`: `value ?? default` adds +1
-- When `false`: `value ?? default` adds 0
-
-**`optional_chaining`** — Count `?.` operator (default: `true`)
-- When `true`: `obj?.prop?.method?.()` adds +3
-- When `false`: `obj?.prop?.method?.()` adds 0
-
-**`switch_case_mode`** — How to count switch statements (default: `"perCase"`)
-- `"perCase"`: Each case adds +1 (ESLint behavior)
-- `"switchOnly"`: Only the switch itself adds +1 (classic McCabe)
+This matches the ESLint `complexity` rule defaults. Counting rules will be configurable in a future release.
 
 ## HTML Reports
 
@@ -350,15 +326,12 @@ See [SARIF Output](sarif-output.md) for a complete GitHub Actions workflow that 
 Use the health score as a ratchet: set a baseline once, then enforce it in CI to prevent regression.
 
 ```sh
-# Step 1: Generate a default config file
-complexity-guard --init
-
-# Step 2: Check your current score
+# Step 1: Check your current score
 complexity-guard --format json src/ | jq '.summary.health_score'
 # e.g. 73.2
 ```
 
-Edit `.complexityguard.json` to add the baseline field:
+Create a `.complexityguard.json` file and add the baseline field:
 
 ```json
 {
