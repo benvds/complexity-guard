@@ -1,5 +1,7 @@
 # Cyclomatic Complexity
 
+Rust-specific counting rules and defaults are documented in [Rust support](rust-support.md).
+
 Cyclomatic complexity counts the number of independent paths through a function. It was introduced by Thomas J. McCabe, Sr. in 1976 as a measure of *testability*: a function with cyclomatic complexity N needs at least N test cases to achieve full branch coverage. High cyclomatic complexity signals that a function does too many things and is hard to test thoroughly.
 
 ## How It Works

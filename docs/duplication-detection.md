@@ -1,6 +1,8 @@
 # Duplication Detection
 
-Duplication detection finds copy-pasted or structurally identical code blocks across your TypeScript/JavaScript codebase. Where complexity metrics measure individual function complexity, duplication detection measures how much code is being repeated — a key indicator of maintenance burden and technical debt.
+Rust-specific counting rules and defaults are documented in [Rust support](rust-support.md).
+
+Duplication detection finds copy-pasted or structurally identical code blocks across supported source files. Rust tokens are compared with Rust tokens, and JavaScript/TypeScript tokens with JavaScript/TypeScript tokens. Where complexity metrics measure individual function complexity, duplication detection measures how much code is being repeated — a key indicator of maintenance burden and technical debt.
 
 Duplication detection is **opt-in**: it does not run by default because it requires an extra cross-file analysis pass. Enable it with the `--duplication` flag or via config.
 

@@ -550,6 +550,7 @@ mod tests {
 
     fn make_func_ok() -> FunctionAnalysisResult {
         FunctionAnalysisResult {
+            is_rust: false,
             name: "okFunc".to_string(),
             start_line: 1,
             end_line: 10,
@@ -570,6 +571,7 @@ mod tests {
 
     fn make_func_with_violation() -> FunctionAnalysisResult {
         FunctionAnalysisResult {
+            is_rust: false,
             name: "complexFunc".to_string(),
             start_line: 5,
             end_line: 50,

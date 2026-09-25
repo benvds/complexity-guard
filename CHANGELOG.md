@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Analyze Rust source files with language-specific function, branch, structural, Halstead, and duplication rules.
+- Respect `.gitignore` during directory discovery and exclude Cargo `target/` directories.
+- Add Rust-specific default thresholds, JSON language labels, and Rust integration fixtures.
+
 ## [0.10.0] - 2026-02-26
 
 ## [0.9.2] - 2026-02-26

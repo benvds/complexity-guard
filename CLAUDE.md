@@ -2,7 +2,7 @@
 
 ## Project
 
-ComplexityGuard -- a Rust-based code complexity analyzer for TypeScript/JavaScript. Single static binary using tree-sitter for parsing.
+ComplexityGuard -- a Rust-based code complexity analyzer for TypeScript, JavaScript, and Rust. Single static binary using tree-sitter for parsing.
 
 ## Build & Test
 
@@ -28,7 +28,7 @@ src/                    # Rust source code
 Cargo.toml              # Rust project config (single source of truth for version)
 Cargo.lock              # dependency lock file
 tests/                  # integration tests and test fixtures
-  fixtures/             # real-world TS/JS fixture files for testing
+  fixtures/             # TypeScript, JavaScript, and Rust fixture files for testing
   integration_tests.rs  # end-to-end binary tests
   parser_tests.rs       # parser unit tests
 .planning/              # roadmap, requirements, phase plans (do not edit unless asked)

@@ -8,7 +8,7 @@ Complete reference for ComplexityGuard command-line interface, configuration opt
 complexity-guard [OPTIONS] [PATH]...
 ```
 
-Analyze complexity of TypeScript/JavaScript files in the specified paths. If no paths are provided, analyzes the current directory (`.`).
+Analyze complexity of TypeScript, JavaScript, and Rust files in the specified paths. If no paths are provided, analyzes the current directory (`.`).
 
 ## Arguments
 
@@ -28,7 +28,7 @@ complexity-guard src/app.ts src/utils.ts
 complexity-guard .
 ```
 
-Paths can be files or directories. When given a directory, ComplexityGuard recursively finds all TypeScript/JavaScript files (`.ts`, `.tsx`, `.js`, `.jsx`).
+Paths can be files or directories. When given a directory, ComplexityGuard recursively finds `.ts`, `.tsx`, `.js`, `.jsx`, and `.rs` files, respecting `.gitignore` and skipping `target/`. Rust-specific rules and defaults are described in [Rust support](rust-support.md).
 
 ## Flags
 
@@ -358,7 +358,7 @@ ComplexityGuard uses `.complexityguard.json` (or `complexityguard.config.json`) 
     "threads": 4
   },
   "files": {
-    "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+    "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.rs"],
     "exclude": ["node_modules/**", "dist/**", "build/**", "**/*.test.ts"]
   },
   "weights": {
@@ -377,7 +377,7 @@ ComplexityGuard uses `.complexityguard.json` (or `complexityguard.config.json`) 
 
 **`files.include`** (array of strings)
 
-Glob patterns for files to include in analysis. Defaults to all TypeScript/JavaScript files.
+Glob patterns for files to include in analysis. Defaults to all supported TypeScript, JavaScript, and Rust files.
 
 **`files.exclude`** (array of strings)
 

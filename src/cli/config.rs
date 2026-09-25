@@ -111,6 +111,8 @@ pub struct ResolvedConfig {
     pub cyclomatic_error: u32,
     pub cognitive_warning: u32,
     pub cognitive_error: u32,
+    pub rust_cognitive_warning: u32,
+    pub rust_cognitive_error: u32,
     pub halstead_volume_warning: f64,
     pub halstead_volume_error: f64,
     pub halstead_difficulty_warning: f64,
@@ -123,8 +125,12 @@ pub struct ResolvedConfig {
     pub nesting_depth_error: u32,
     pub line_count_warning: u32,
     pub line_count_error: u32,
+    pub rust_line_count_warning: u32,
+    pub rust_line_count_error: u32,
     pub params_count_warning: u32,
     pub params_count_error: u32,
+    pub rust_params_count_warning: u32,
+    pub rust_params_count_error: u32,
     // Threads
     pub threads: u32,
 }
@@ -150,6 +156,8 @@ impl Default for ResolvedConfig {
             cyclomatic_error: 20,
             cognitive_warning: 15,
             cognitive_error: 25,
+            rust_cognitive_warning: 26,
+            rust_cognitive_error: 40,
             halstead_volume_warning: 500.0,
             halstead_volume_error: 1000.0,
             halstead_difficulty_warning: 10.0,
@@ -162,8 +170,12 @@ impl Default for ResolvedConfig {
             nesting_depth_error: 5,
             line_count_warning: 25,
             line_count_error: 50,
+            rust_line_count_warning: 101,
+            rust_line_count_error: 200,
             params_count_warning: 3,
             params_count_error: 6,
+            rust_params_count_warning: 8,
+            rust_params_count_error: 10,
             threads: num_cpus(),
         }
     }
@@ -208,9 +220,11 @@ pub fn resolve_config(config: &Config) -> ResolvedConfig {
             if let Some(t) = &thresholds.cognitive {
                 if let Some(w) = t.warning {
                     resolved.cognitive_warning = w;
+                    resolved.rust_cognitive_warning = w;
                 }
                 if let Some(e) = t.error {
                     resolved.cognitive_error = e;
+                    resolved.rust_cognitive_error = e;
                 }
             }
             if let Some(t) = &thresholds.halstead_volume {
@@ -256,17 +270,21 @@ pub fn resolve_config(config: &Config) -> ResolvedConfig {
             if let Some(t) = &thresholds.line_count {
                 if let Some(w) = t.warning {
                     resolved.line_count_warning = w;
+                    resolved.rust_line_count_warning = w;
                 }
                 if let Some(e) = t.error {
                     resolved.line_count_error = e;
+                    resolved.rust_line_count_error = e;
                 }
             }
             if let Some(t) = &thresholds.params_count {
                 if let Some(w) = t.warning {
                     resolved.params_count_warning = w;
+                    resolved.rust_params_count_warning = w;
                 }
                 if let Some(e) = t.error {
                     resolved.params_count_error = e;
+                    resolved.rust_params_count_error = e;
                 }
             }
         }

@@ -7,9 +7,18 @@ Real-world usage patterns, CI integration recipes, and configuration examples fo
 ### Analyze a Directory
 
 ```sh
-# Analyze all TypeScript/JavaScript files in src/
+# Analyze TypeScript, JavaScript, and Rust files in src/
 complexity-guard src/
 ```
+
+### Analyze a Cargo Workspace
+
+```sh
+complexity-guard .
+complexity-guard --format sarif . > complexity.sarif
+```
+
+The directory scan respects `.gitignore` and skips Cargo's `target/` directory. See [Rust support](rust-support.md) for the source-level treatment of macros and conditional compilation.
 
 Output shows only files with problems by default.
 

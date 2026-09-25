@@ -1,6 +1,6 @@
 # ComplexityGuard
 
-Fast complexity analysis for TypeScript/JavaScript — single static binary built with Rust, zero dependencies.
+Fast complexity analysis for TypeScript, JavaScript, and Rust — single static binary built with Rust, zero runtime dependencies.
 
 ## Quick Start
 
@@ -82,6 +82,7 @@ See the [full benchmark results](https://github.com/benvds/complexity-guard/blob
 ## Features
 
 - **Cyclomatic Complexity**: McCabe metric counting independent code paths — measures testability
+- **Rust Support**: Analyze Cargo packages and workspaces with Rust-specific branch and threshold rules (see [Rust support](https://github.com/benvds/complexity-guard/blob/main/docs/rust-support.md))
 - **Cognitive Complexity**: SonarSource-based metric with nesting depth penalties — measures understandability
 - **Halstead Metrics**: Information-theoretic vocabulary density, volume, difficulty, effort, and estimated bugs
 - **Structural Metrics**: Function length, parameter count, nesting depth, file length, and export count

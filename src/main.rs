@@ -297,6 +297,16 @@ fn build_analysis_config(
         nesting_depth_error: resolved.nesting_depth_error as f64,
     };
 
+    let rust_scoring_thresholds = ScoringThresholds {
+        cognitive_warning: resolved.rust_cognitive_warning as f64,
+        cognitive_error: resolved.rust_cognitive_error as f64,
+        function_length_warning: resolved.rust_line_count_warning as f64,
+        function_length_error: resolved.rust_line_count_error as f64,
+        params_count_warning: resolved.rust_params_count_warning as f64,
+        params_count_error: resolved.rust_params_count_error as f64,
+        ..scoring_thresholds.clone()
+    };
+
     let duplication = DuplicationConfig {
         min_tokens: 25,
         enabled: config
@@ -311,6 +321,7 @@ fn build_analysis_config(
         cognitive,
         scoring_weights,
         scoring_thresholds,
+        rust_scoring_thresholds,
         duplication,
     }
 }

@@ -287,6 +287,8 @@ impl Default for DuplicationConfig {
 /// Combined per-function metrics with health score.
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct FunctionAnalysisResult {
+    /// Selects language-specific default thresholds in report output.
+    pub is_rust: bool,
     pub name: String,
     pub start_line: usize,
     pub end_line: usize,
@@ -317,13 +319,36 @@ pub struct FileAnalysisResult {
 }
 
 /// Combined configuration for all metric analyses.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct AnalysisConfig {
     pub cyclomatic: CyclomaticConfig,
     pub cognitive: CognitiveConfig,
     pub scoring_weights: ScoringWeights,
     pub scoring_thresholds: ScoringThresholds,
+    pub rust_scoring_thresholds: ScoringThresholds,
     pub duplication: DuplicationConfig,
+}
+
+impl Default for AnalysisConfig {
+    fn default() -> Self {
+        let rust_scoring_thresholds = ScoringThresholds {
+            cognitive_warning: 26.0,
+            cognitive_error: 40.0,
+            function_length_warning: 101.0,
+            function_length_error: 200.0,
+            params_count_warning: 8.0,
+            params_count_error: 10.0,
+            ..ScoringThresholds::default()
+        };
+        Self {
+            cyclomatic: CyclomaticConfig::default(),
+            cognitive: CognitiveConfig::default(),
+            scoring_weights: ScoringWeights::default(),
+            scoring_thresholds: ScoringThresholds::default(),
+            rust_scoring_thresholds,
+            duplication: DuplicationConfig::default(),
+        }
+    }
 }
 
 // --- Size guard types ---

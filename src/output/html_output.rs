@@ -406,6 +406,7 @@ mod tests {
 
     fn make_func() -> FunctionAnalysisResult {
         FunctionAnalysisResult {
+            is_rust: false,
             name: "myFunction".to_string(),
             start_line: 10,
             end_line: 25,

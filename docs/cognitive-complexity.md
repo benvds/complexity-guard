@@ -1,5 +1,7 @@
 # Cognitive Complexity
 
+Rust-specific counting rules and defaults are documented in [Rust support](rust-support.md).
+
 Cognitive complexity measures how difficult code is to *understand* — not how many paths exist through it. Where cyclomatic complexity counts branches for testability, cognitive complexity penalizes the mental effort required to read and reason about code. The more nesting, the higher the cost.
 
 Cognitive complexity was created by G. Ann Campbell at SonarSource in 2016, addressing a core limitation of cyclomatic complexity: a deeply nested `if` inside three loops is much harder to understand than a flat sequence of `if` statements, even if both have the same branch count.

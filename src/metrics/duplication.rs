@@ -22,6 +22,54 @@ pub fn tokenize_tree(root: tree_sitter::Node, source: &[u8]) -> Vec<Token> {
     tokens
 }
 
+/// Tokenize Rust source without applying TypeScript type-node exclusions.
+/// Hashes use a language-specific salt so mixed projects do not report
+/// coincidental clones between Rust and JavaScript/TypeScript.
+pub fn tokenize_rust(root: tree_sitter::Node) -> Vec<Token> {
+    let mut tokens = Vec::new();
+    tokenize_rust_node(root, &mut tokens);
+    tokens
+}
+
+fn tokenize_rust_node(node: tree_sitter::Node, tokens: &mut Vec<Token>) {
+    let kind = node.kind();
+    if matches!(
+        kind,
+        "line_comment"
+            | "block_comment"
+            | "attribute_item"
+            | "inner_attribute_item"
+            | "macro_invocation"
+    ) {
+        return;
+    }
+    if node.child_count() == 0 {
+        if is_skipped_kind(kind) {
+            return;
+        }
+        let normalized = if matches!(
+            kind,
+            "identifier" | "field_identifier" | "type_identifier" | "lifetime"
+        ) {
+            "V"
+        } else {
+            kind
+        };
+        tokens.push(Token {
+            kind: normalized,
+            kind_hash: token_hash(normalized) ^ 0x5255_5354_0000_0001,
+            start_byte: node.start_byte(),
+            end_byte: node.end_byte(),
+        });
+        return;
+    }
+    for i in 0..node.child_count() {
+        if let Some(child) = node.child(i as u32) {
+            tokenize_rust_node(child, tokens);
+        }
+    }
+}
+
 /// Recursively collect normalized tokens from an AST node.
 #[allow(clippy::only_used_in_recursion)]
 fn tokenize_node(node: tree_sitter::Node, source: &[u8], tokens: &mut Vec<Token>) {
@@ -256,6 +304,9 @@ fn tokens_match(
     window: usize,
 ) -> bool {
     for i in 0..window {
+        if a_tokens[a_start + i].kind_hash != b_tokens[b_start + i].kind_hash {
+            return false;
+        }
         let a = a_tokens[a_start + i].kind;
         let b = b_tokens[b_start + i].kind;
         // Fast path: pointer equality for static strings from same grammar

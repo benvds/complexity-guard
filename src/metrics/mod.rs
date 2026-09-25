@@ -2,6 +2,7 @@ pub mod cognitive;
 pub mod cyclomatic;
 pub mod duplication;
 pub mod halstead;
+pub mod rust;
 pub mod scoring;
 pub mod structural;
 
@@ -88,6 +89,10 @@ pub fn analyze_file(
     let root = tree.root_node();
     let has_error = root.has_error();
 
+    if path.extension().and_then(|e| e.to_str()) == Some("rs") {
+        return Ok(rust::analyze_file(path, root, &source, has_error, config));
+    }
+
     // Run all metric analyzers on the same root node
     let cyclomatic_results = cyclomatic::analyze_functions(root, &source, &config.cyclomatic);
     let cognitive_results = cognitive::analyze_functions(root, &source);
@@ -159,6 +164,7 @@ pub fn analyze_file(
         function_scores.push(health_score);
 
         functions.push(FunctionAnalysisResult {
+            is_rust: false,
             name: cycl.name.clone(),
             start_line: cycl.start_line,
             end_line: cycl.end_line,

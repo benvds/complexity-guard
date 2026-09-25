@@ -1,5 +1,7 @@
 # Structural Metrics
 
+Rust-specific counting rules and defaults are documented in [Rust support](rust-support.md).
+
 Structural metrics describe the *shape* of code — how long functions are, how many parameters they take, how deeply nested they get, and how large files are. They complement flow-based metrics (cyclomatic, cognitive) and information-theoretic metrics (Halstead) by flagging code that is structurally unwieldy even when its logic is simple.
 
 A function with low cyclomatic complexity can still be hard to maintain if it is 200 lines long. Structural metrics catch those issues.

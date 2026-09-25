@@ -1,5 +1,7 @@
 # Halstead Metrics
 
+Rust-specific counting rules and defaults are documented in [Rust support](rust-support.md).
+
 Halstead metrics are information-theoretic measurements that quantify the vocabulary diversity and mental effort required to understand a piece of code. Where cyclomatic complexity asks "how many paths are there?", Halstead metrics ask "how mentally dense is this code?".
 
 Halstead metrics were introduced by Maurice Halstead in 1977 in *"Elements of Software Science"*. They are derived entirely from token counts — no control flow analysis needed.

@@ -57,7 +57,7 @@ The binary will be at `target/release/complexity-guard`. Add it to your PATH or 
 ComplexityGuard works without any configuration. Just point it at a directory or files:
 
 ```sh
-# Analyze all TypeScript/JavaScript files in src/
+# Analyze TypeScript, JavaScript, and Rust files in src/
 complexity-guard src/
 
 # Analyze specific files
@@ -67,7 +67,7 @@ complexity-guard src/auth.ts src/utils.ts
 complexity-guard .
 ```
 
-ComplexityGuard automatically finds all `.ts`, `.tsx`, `.js`, and `.jsx` files in the given paths and analyzes them in parallel across all available CPU cores by default. On multi-core machines this means large codebases run significantly faster than single-threaded analysis. Use `--threads 1` if you need single-threaded sequential output (useful for debugging or timing comparisons).
+ComplexityGuard automatically finds `.ts`, `.tsx`, `.js`, `.jsx`, and `.rs` files in the given paths and analyzes them in parallel across all available CPU cores by default. Directory scans respect `.gitignore` and skip `target/` and other generated directories. On multi-core machines this means large codebases run significantly faster than single-threaded analysis. Use `--threads 1` if you need single-threaded sequential output (useful for debugging or timing comparisons). See [Rust support](rust-support.md) for Rust-specific counting rules and defaults.
 
 ComplexityGuard also applies automatic safety limits: files exceeding 10,000 lines and functions exceeding 5,000 lines are skipped and reported in the output. This prevents crashes or hangs on auto-generated code, minified bundles, or unusually large files. See [Size Limits](cli-reference.md#size-limits) for details.
 
@@ -178,7 +178,7 @@ Here is an example config file:
 ```json
 {
   "files": {
-    "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+    "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.rs"],
     "exclude": ["node_modules/**", "dist/**", "build/**"]
   },
   "analysis": {
@@ -219,7 +219,7 @@ Control which files are analyzed using glob patterns:
 }
 ```
 
-**Include patterns** specify which files to analyze. If not specified, all TypeScript/JavaScript files are included.
+**Include patterns** specify which files to analyze. If not specified, all supported TypeScript, JavaScript, and Rust files are included.
 
 **Exclude patterns** filter out files you don't want analyzed (tests, build output, dependencies, etc.).
 

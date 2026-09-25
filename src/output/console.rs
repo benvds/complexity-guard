@@ -51,6 +51,32 @@ pub fn function_violations(
     config: &ResolvedConfig,
 ) -> Vec<Violation> {
     let mut violations: Vec<Violation> = Vec::new();
+    let (
+        cognitive_warning,
+        cognitive_error,
+        line_count_warning,
+        line_count_error,
+        params_count_warning,
+        params_count_error,
+    ) = if func.is_rust {
+        (
+            config.rust_cognitive_warning,
+            config.rust_cognitive_error,
+            config.rust_line_count_warning,
+            config.rust_line_count_error,
+            config.rust_params_count_warning,
+            config.rust_params_count_error,
+        )
+    } else {
+        (
+            config.cognitive_warning,
+            config.cognitive_error,
+            config.line_count_warning,
+            config.line_count_error,
+            config.params_count_warning,
+            config.params_count_error,
+        )
+    };
 
     // Cyclomatic complexity
     let cyc = func.cyclomatic as f64;
@@ -80,25 +106,25 @@ pub fn function_violations(
 
     // Cognitive complexity
     let cog = func.cognitive as f64;
-    if cog >= config.cognitive_error as f64 {
+    if cog >= cognitive_error as f64 {
         violations.push(Violation {
             line: func.start_line,
             col: func.start_col,
             severity: Severity::Error,
             message: format!(
                 "Cognitive complexity {} exceeds error threshold {}",
-                func.cognitive, config.cognitive_error
+                func.cognitive, cognitive_error
             ),
             rule_id: "complexity-guard/cognitive".to_string(),
         });
-    } else if cog >= config.cognitive_warning as f64 {
+    } else if cog >= cognitive_warning as f64 {
         violations.push(Violation {
             line: func.start_line,
             col: func.start_col,
             severity: Severity::Warning,
             message: format!(
                 "Cognitive complexity {} exceeds warning threshold {}",
-                func.cognitive, config.cognitive_warning
+                func.cognitive, cognitive_warning
             ),
             rule_id: "complexity-guard/cognitive".to_string(),
         });
@@ -232,25 +258,25 @@ pub fn function_violations(
 
     // Line count (function_length in FunctionAnalysisResult)
     let lc = func.function_length as f64;
-    if lc >= config.line_count_error as f64 {
+    if lc >= line_count_error as f64 {
         violations.push(Violation {
             line: func.start_line,
             col: func.start_col,
             severity: Severity::Error,
             message: format!(
                 "Line count {} exceeds error threshold {}",
-                func.function_length, config.line_count_error
+                func.function_length, line_count_error
             ),
             rule_id: "complexity-guard/line-count".to_string(),
         });
-    } else if lc >= config.line_count_warning as f64 {
+    } else if lc >= line_count_warning as f64 {
         violations.push(Violation {
             line: func.start_line,
             col: func.start_col,
             severity: Severity::Warning,
             message: format!(
                 "Line count {} exceeds warning threshold {}",
-                func.function_length, config.line_count_warning
+                func.function_length, line_count_warning
             ),
             rule_id: "complexity-guard/line-count".to_string(),
         });
@@ -258,25 +284,25 @@ pub fn function_violations(
 
     // Params count
     let pc = func.params_count as f64;
-    if pc >= config.params_count_error as f64 {
+    if pc >= params_count_error as f64 {
         violations.push(Violation {
             line: func.start_line,
             col: func.start_col,
             severity: Severity::Error,
             message: format!(
                 "Params count {} exceeds error threshold {}",
-                func.params_count, config.params_count_error
+                func.params_count, params_count_error
             ),
             rule_id: "complexity-guard/param-count".to_string(),
         });
-    } else if pc >= config.params_count_warning as f64 {
+    } else if pc >= params_count_warning as f64 {
         violations.push(Violation {
             line: func.start_line,
             col: func.start_col,
             severity: Severity::Warning,
             message: format!(
                 "Params count {} exceeds warning threshold {}",
-                func.params_count, config.params_count_warning
+                func.params_count, params_count_warning
             ),
             rule_id: "complexity-guard/param-count".to_string(),
         });
@@ -707,6 +733,7 @@ mod tests {
         health_score: f64,
     ) -> FunctionAnalysisResult {
         FunctionAnalysisResult {
+            is_rust: false,
             name: name.to_string(),
             start_line,
             end_line: start_line + 10,

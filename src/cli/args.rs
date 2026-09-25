@@ -6,7 +6,7 @@ use std::path::PathBuf;
 /// All flags match the Zig binary interface for v0.8 parity.
 #[derive(Parser, Debug)]
 #[command(name = "complexityguard")]
-#[command(about = "Analyze code complexity for TypeScript/JavaScript files")]
+#[command(about = "Analyze code complexity for TypeScript, JavaScript, and Rust files")]
 #[command(version)]
 pub struct Args {
     /// Paths to analyze (files or directories)

@@ -1,11 +1,11 @@
 use std::path::{Path, PathBuf};
 
 use globset::{GlobSet, GlobSetBuilder};
-use walkdir::WalkDir;
+use ignore::WalkBuilder;
 
 /// Directory names that are always excluded from file discovery.
 ///
-/// Matches the Zig `EXCLUDED_DIRS` constant in `src/discovery/filter.zig`.
+/// Shared generated and vendor directory names, including Cargo's target directory.
 pub const EXCLUDED_DIRS: &[&str] = &[
     "node_modules",
     ".git",
@@ -17,13 +17,14 @@ pub const EXCLUDED_DIRS: &[&str] = &[
     ".svn",
     ".hg",
     "vendor",
+    "target",
 ];
 
-/// Returns true if the file extension is one of .ts, .tsx, .js, or .jsx.
+/// Returns true if the file extension is one of .ts, .tsx, .js, .jsx, or .rs.
 fn is_target_extension(path: &Path) -> bool {
     matches!(
         path.extension().and_then(|e| e.to_str()),
-        Some("ts" | "tsx" | "js" | "jsx")
+        Some("ts" | "tsx" | "js" | "jsx" | "rs")
     )
 }
 
@@ -48,7 +49,7 @@ fn build_globset(patterns: &[String]) -> anyhow::Result<GlobSet> {
 /// Returns true if the file should be included in analysis.
 ///
 /// A file is included when:
-/// - It has a target extension (.ts/.tsx/.js/.jsx)
+/// - It has a target extension (.ts/.tsx/.js/.jsx/.rs)
 /// - It is not a TypeScript declaration file (.d.ts/.d.tsx)
 /// - It is not matched by any exclude pattern
 /// - Either no include patterns are provided, or at least one include pattern matches
@@ -95,9 +96,10 @@ pub fn discover_files(
 
     for path in paths {
         if path.is_dir() {
-            let walker = WalkDir::new(path).into_iter().filter_entry(|e| {
+            let mut builder = WalkBuilder::new(path);
+            builder.hidden(false).filter_entry(|e| {
                 // Prune excluded directory names early to avoid descending into them.
-                if e.file_type().is_dir() {
+                if e.file_type().is_some_and(|kind| kind.is_dir()) {
                     if let Some(name) = e.file_name().to_str() {
                         if EXCLUDED_DIRS.contains(&name) {
                             return false;
@@ -107,8 +109,8 @@ pub fn discover_files(
                 true
             });
 
-            for entry in walker.filter_map(|e| e.ok()) {
-                if entry.file_type().is_file() {
+            for entry in builder.build().filter_map(|e| e.ok()) {
+                if entry.file_type().is_some_and(|kind| kind.is_file()) {
                     let p = entry.into_path();
                     if should_include(&p, &exclude, &include) {
                         result.push(p);
@@ -137,7 +139,7 @@ mod tests {
         assert!(is_target_extension(Path::new("file.js")));
         assert!(is_target_extension(Path::new("file.jsx")));
 
-        assert!(!is_target_extension(Path::new("file.rs")));
+        assert!(is_target_extension(Path::new("file.rs")));
         assert!(!is_target_extension(Path::new("file.py")));
         assert!(!is_target_extension(Path::new("file.json")));
         assert!(!is_target_extension(Path::new("file.css")));
@@ -157,8 +159,7 @@ mod tests {
 
     #[test]
     fn test_excluded_dirs_matches_zig() {
-        // Must contain exactly these 10 entries matching src/discovery/filter.zig
-        assert_eq!(EXCLUDED_DIRS.len(), 10);
+        assert_eq!(EXCLUDED_DIRS.len(), 11);
         assert!(EXCLUDED_DIRS.contains(&"node_modules"));
         assert!(EXCLUDED_DIRS.contains(&".git"));
         assert!(EXCLUDED_DIRS.contains(&"dist"));
@@ -169,6 +170,7 @@ mod tests {
         assert!(EXCLUDED_DIRS.contains(&".svn"));
         assert!(EXCLUDED_DIRS.contains(&".hg"));
         assert!(EXCLUDED_DIRS.contains(&"vendor"));
+        assert!(EXCLUDED_DIRS.contains(&"target"));
     }
 
     #[test]

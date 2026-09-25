@@ -4,13 +4,15 @@ use crate::types::{FunctionInfo, ParseError, ParseResult};
 
 /// Select the tree-sitter language grammar based on file extension.
 ///
-/// Maps `.ts` to TypeScript, `.tsx` to TSX, `.js` and `.jsx` to JavaScript.
+/// Maps `.ts` to TypeScript, `.tsx` to TSX, `.js` and `.jsx` to JavaScript,
+/// and `.rs` to Rust.
 /// Returns `ParseError` for unsupported or missing extensions.
 pub fn select_language(path: &Path) -> Result<tree_sitter::Language, ParseError> {
     match path.extension().and_then(|e| e.to_str()) {
         Some("ts") => Ok(tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into()),
         Some("tsx") => Ok(tree_sitter_typescript::LANGUAGE_TSX.into()),
         Some("js") | Some("jsx") => Ok(tree_sitter_javascript::LANGUAGE.into()),
+        Some("rs") => Ok(tree_sitter_rust::LANGUAGE.into()),
         Some(ext) => Err(ParseError::UnsupportedExtension(ext.to_string())),
         None => Err(ParseError::NoExtension),
     }
@@ -36,7 +38,19 @@ pub fn parse_file(path: &Path) -> Result<ParseResult, ParseError> {
 
     let root = tree.root_node();
     let has_error = root.has_error();
-    let functions = extract_functions(root, &source);
+    let functions = if path.extension().and_then(|e| e.to_str()) == Some("rs") {
+        crate::metrics::rust::collect_functions(root, &source)
+            .into_iter()
+            .map(|function| FunctionInfo {
+                name: function.name,
+                start_line: function.node.start_position().row + 1,
+                start_column: function.node.start_position().column,
+                end_line: function.node.end_position().row + 1,
+            })
+            .collect()
+    } else {
+        extract_functions(root, &source)
+    };
 
     Ok(ParseResult {
         path: path.to_path_buf(),

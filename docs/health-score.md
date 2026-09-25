@@ -1,5 +1,7 @@
 # Health Score
 
+Rust-specific counting rules and defaults are documented in [Rust support](rust-support.md).
+
 Health score gives you a single number — 0 to 100 — representing the overall complexity health of your codebase. Rather than juggling four separate metric families with separate warning/error thresholds, the health score collapses everything into one actionable signal. 100 means minimal complexity across all metrics; lower scores indicate areas that need attention.
 
 The score is designed for CI enforcement: set a baseline, keep it from dropping, and improve it over time.

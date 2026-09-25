@@ -12,6 +12,8 @@ npm install -g complexity-guard
 
 ## What ComplexityGuard Measures
 
+Supports TypeScript, JavaScript, and Rust source files, including Cargo workspaces.
+
 - **Cyclomatic Complexity** — independent code paths (testability)
 - **Cognitive Complexity** — nesting-penalized readability score
 - **Halstead Metrics** — vocabulary density, volume, difficulty, effort, estimated bugs

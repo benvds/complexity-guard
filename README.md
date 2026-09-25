@@ -1,6 +1,6 @@
 # ComplexityGuard
 
-Fast complexity analysis for TypeScript/JavaScript — single static binary built with Rust, zero dependencies.
+Fast complexity analysis for TypeScript, JavaScript, and Rust — single static binary built with Rust, zero runtime dependencies.
 
 ## Quick Start
 
@@ -70,7 +70,7 @@ Top Halstead volume hotspots:
 
 ## Benchmarks
 
-Analyzed across 83 open-source projects (107k files, 321k functions). Selection of results on Apple M1 Max with parallel analysis:
+Analyzed across 83 open-source JavaScript/TypeScript projects (107k files, 321k functions). Rust performance has not yet been benchmarked. Selection of results on Apple M1 Max with parallel analysis:
 
 | Project | Files | Functions | Time (ms) | Health Score |
 |---------|------:|----------:|----------:|-------------:|
@@ -97,6 +97,7 @@ See the [full benchmark results](docs/benchmarks.md) for all 83 projects.
 - **Configurable Thresholds**: Warning and error levels for all metric families, customizable per project
 - **Selective Metrics**: Use `--metrics cyclomatic,halstead` to compute only specific families
 - **Zero Config**: Works out of the box with sensible defaults, optional `.complexityguard.json` for customization
+- **Rust Support**: Analyze Cargo packages and workspaces with Rust-specific function, branch, and threshold rules; see [Rust support](docs/rust-support.md)
 - **Single Binary**: No runtime dependencies, runs offline, fast startup — under 300ms on mid-size projects
 - **Fast**: Analyzes thousands of files in seconds with parallel analysis across all CPU cores (see [benchmarks](docs/benchmarks.md))
 - **Low Memory Footprint**: 1.2–2.2x less memory than Node.js-based tools on small and medium projects (see [benchmarks](docs/benchmarks.md))
@@ -106,6 +107,7 @@ See the [full benchmark results](docs/benchmarks.md) for all 83 projects.
 ## Documentation
 
 - **[Getting Started](docs/getting-started.md)** — Installation, first analysis, configuration basics
+- **[Rust Support](docs/rust-support.md)** — Rust metrics, defaults, and source-level limitations
 - **[CLI Reference](docs/cli-reference.md)** — All flags, config options, exit codes
 - **[Examples](docs/examples.md)** — Real-world usage patterns, CI integration recipes
 - **[SARIF Output](docs/sarif-output.md)** — GitHub Code Scanning integration with inline PR annotations

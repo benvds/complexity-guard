@@ -180,8 +180,8 @@ mod tests {
 
     #[test]
     fn test_analyze_parallel_invalid_file_returns_error() {
-        // A .rs file is not a supported language; analyze_file returns an error for it.
-        let invalid = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/lib.rs");
+        // A .toml file is not a supported language; analyze_file returns an error for it.
+        let invalid = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("Cargo.toml");
         let valid = fixture("simple_function.ts");
 
         let paths = vec![invalid, valid];

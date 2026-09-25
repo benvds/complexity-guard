@@ -59,6 +59,7 @@ pub struct JsonSummary {
 #[derive(serde::Serialize)]
 pub struct JsonFileOutput {
     pub path: String,
+    pub language: &'static str,
     pub functions: Vec<JsonFunctionOutput>,
     pub file_length: u32,
     pub export_count: u32,
@@ -211,6 +212,11 @@ pub fn render_json(
 
             JsonFileOutput {
                 path: file.path.to_string_lossy().to_string(),
+                language: match file.path.extension().and_then(|ext| ext.to_str()) {
+                    Some("rs") => "rust",
+                    Some("ts" | "tsx") => "typescript",
+                    _ => "javascript",
+                },
                 functions: json_functions,
                 file_length: file.file_length,
                 export_count: file.export_count,
@@ -387,6 +393,7 @@ mod tests {
         health_score: f64,
     ) -> FunctionAnalysisResult {
         FunctionAnalysisResult {
+            is_rust: false,
             name: name.to_string(),
             start_line,
             end_line: start_line + 10,
